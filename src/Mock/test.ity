@@ -1,0 +1,5 @@
+const STR hello = 'Hello';
+const STR world = 'World';
+const STR hello_world = hello + ' ' + world + '!';
+
+IO.out(hello_world);
