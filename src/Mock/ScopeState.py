@@ -18,7 +18,7 @@ def scope_in(state:dict):
 		data=state['data'],
 	)
 	state['parent'] = copy
-	state['data'] = []
+	state['data'] = {}
 
 
 # Transforms "state" into a copy of it's parent state, deleting all data on the current state.
@@ -42,7 +42,7 @@ def is_name_globally_free(state:dict, name:str):
 	parent = state.get('parent')
 	if name in state['data']: return False
 	if parent != None:
-		return is_name_totally_free(parent, name)
+		return is_name_globally_free(parent, name)
 	return True
 
 

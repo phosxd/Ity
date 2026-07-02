@@ -6,7 +6,6 @@ import Instructions.var as INST_var
 import Instructions.set as INST_set
 
 ALPHANUM = 'AaBbCcDdEeFfGgHhIiJjKkLlMmOoPpQqRrSsTtUuVvWwXxYyZz0123456789'.split()
-NAME = ALPHANUM+['_']
 INSTRUCTIONS = {
 	'merge':None,
 	'import':None,
@@ -84,6 +83,8 @@ def tokenize(script:str):
 			if (char == '\'' or char == '"'):
 				is_string = True
 				string_type = char
+				buffer += char
+				continue
 
 			# Add argument to args.
 			if char == ' ' or char == '\n':
@@ -141,6 +142,8 @@ file_text = f.read()
 f.close()
 
 result = tokenize(file_text)
+print(result['sequence'])
+exit()
 state = exec(result['sequence'])
 print(state)
 
