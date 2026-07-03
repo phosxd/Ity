@@ -5,7 +5,7 @@
 
 #include "Common.hpp"
 #include "ScriptErrors.hpp"
-#include "ExpressionParser.hpp"
+//#include "ExpressionParser.hpp"
 
 
 // Create a new blank scope state.

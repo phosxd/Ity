@@ -49,7 +49,7 @@ def is_special_symbol(char:str):
 
 def _check_ahead(text:str, start_idx:int, substr:str):
 	substr_length = len(substr)
-	if len(text) > start_idx+len(substr): return False
+	if len(text) > start_idx+substr_length: return False
 	i = 0
 	while i < substr_length:
 		if text[start_idx+i] != substr[i]: return False

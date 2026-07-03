@@ -13,7 +13,6 @@
 #include "Inst/Var.hpp"
 
 
-const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmOoPpQqRrSsTtUuVvWwXxYyZz0123456789";
 const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
 	{"var", INST_Var},
 	{"const", INST_Var},
@@ -118,9 +117,9 @@ std::vector<InstToken> tokenize(std::string src) {
 
 ScopeState exec(std::vector<InstToken> sequence) {
 	const unsigned int seq_len = sequence.size();
-	const ScopeState state = create_new_scope_state({});
+	ScopeState state = create_new_scope_state({});
 	for (unsigned int i = 0; i < seq_len; i++) {
-		const InstToken item = sequence[i];
+		InstToken item = sequence[i];
 		current_line = item.ln;
 		current_column = item.col;
 		const unsigned int arg_count = item.args.size();
@@ -128,16 +127,16 @@ ScopeState exec(std::vector<InstToken> sequence) {
 
 		// If not matched any instruction, run as expression.
 		if (INSTRUCTIONS.find(item.args[0]) == INSTRUCTIONS.end()) {
-			expression_exec(state, item.args);
+			expr_exec(state, std::reduce(item.args.begin(), item.args.end()));
 		}
 		// Execute instruction.
 		else {
-			const Instruction inst = INSTRUCTIONS.at(item.args[0]);
+			Instruction inst = INSTRUCTIONS.at(item.args[0]);
 			if (arg_count < inst.REQUIRED) {
 				emit_error("Invalid number of arguments for instruction \"" + item.args[0] + "\". Expected at least " + std::to_string(inst.REQUIRED) + " separated by a space.");
 				return state;
 			}
-			inst.exec(state, item.args);
+			inst.exec(inst, state, item.args);
 		}
 	}
 
@@ -161,8 +160,8 @@ int main(int argc, char *argv[]) {
 		}
 
 		std::vector<InstToken> sequence = tokenize(script);
-		std::cout << sequence.size() << "\n";
-		std::cout << sequence << "\n";
+		ScopeState state = exec(sequence);
+		std::cout << state << "\n";
 	}
 
 	return 0;

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <variant>
+#include <algorithm>
 
 
 // Types.
@@ -48,7 +49,7 @@ std::ostream& operator<<(std::ostream& os, const VariantData& s) {
 // --------
 
 struct Variant {
-	std::string t;
+	std::string t = ".";
 	std::variant<bool,int,float,std::string> d;
 	unsigned int m = 0;
 };
@@ -57,11 +58,21 @@ struct Variant {
 std::ostream& operator<<(std::ostream& os, const Variant& s) {
 	return os << "{t=" << s.t << ",d=" << s.d << '}';
 }
+// Vector.
 std::ostream& operator<<(std::ostream& os, const std::vector<Variant>& s) {
 	os << '[';
 	const unsigned int len = s.size();
 	for (unsigned int i = 0; i < len; i++) {
 		os << s[i] << ", ";
+	}
+	return os << ']';
+}
+// Unordered string map.
+std::ostream& operator<<(std::ostream& os, const std::unordered_map<std::string,Variant>& s) {
+	os << '{';
+	const unsigned int len = s.size();
+	for (auto i:s) {
+		os << i.first << "=" << i.second << ", ";
 	}
 	return os << ']';
 }
@@ -92,7 +103,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<InstToken>& s) {
 	}
 	return os << ']';
 }
-// Unordered map.
+// Unordered string map.
 std::ostream& operator<<(std::ostream& os, const std::unordered_map<std::string,InstToken>& s) {
 	os << '{';
 	const unsigned int len = s.size();
@@ -114,6 +125,12 @@ struct ScopeState {
 };
 
 
+std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
+	os << "ScopeState{p=" << s.p << ", " << s.d << "}";
+	return os;
+}
+
+
 
 
 // Instruction.
@@ -122,5 +139,47 @@ struct ScopeState {
 struct Instruction {
 	unsigned int REQUIRED = 0;
 	int OPTIONAL = 0;
-	void (*exec)(ScopeState state, std::vector<std::string> args) = nullptr;
+	void (*exec)(Instruction& inst, ScopeState& state, std::vector<std::string> args) = nullptr;
 };
+
+std::ostream& operator<<(std::ostream& os, const Instruction& s) {
+	return os << "Instruction{}";
+}
+
+
+
+
+// Operation.
+// ----------
+
+struct Operation {
+	std::unordered_map<std::string,std::vector<std::string>> TYPE_MAP;
+	Variant (*exec)(Operation& op, ScopeState& state, Variant& first, Variant& second, std::string symbol) = nullptr;
+};
+
+
+
+
+// Utility Functions.
+// ------------------
+
+bool exists_in_strvec(std::vector<std::string>& v, std::string val) {
+	return (std::find(v.begin(), v.end(), val) != v.end());
+}
+
+
+std::string get_variant_data_type(VariantData& d) {
+	if (std::holds_alternative<bool>(d)) {
+		return "BOOL";
+	}
+	else if (std::holds_alternative<int>(d)) {
+		return "INT";
+	}
+	else if (std::holds_alternative<float>(d)) {
+		return "FLOAT";
+	}
+	else if (std::holds_alternative<std::string>(d)) {
+		return "STR";
+	}
+	return "NULL";
+}
