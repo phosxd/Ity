@@ -1,9 +1,11 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <numeric>
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include "Common.hpp"
 #include "ScriptErrors.hpp"
@@ -11,11 +13,13 @@
 #include "ExpressionParser.hpp"
 
 #include "Inst/Var.hpp"
+#include "Inst/Set.hpp"
 
 
 const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
 	{"var", INST_Var},
 	{"const", INST_Var},
+	{"set", INST_Set},
 };
 
 
@@ -127,7 +131,7 @@ ScopeState exec(std::vector<InstToken> sequence) {
 
 		// If not matched any instruction, run as expression.
 		if (INSTRUCTIONS.find(item.args[0]) == INSTRUCTIONS.end()) {
-			expr_exec(state, std::reduce(item.args.begin(), item.args.end()));
+			//expr_exec(state, std::reduce(item.args.begin(), item.args.end()));
 		}
 		// Execute instruction.
 		else {
@@ -136,7 +140,7 @@ ScopeState exec(std::vector<InstToken> sequence) {
 				emit_error("Invalid number of arguments for instruction \"" + item.args[0] + "\". Expected at least " + std::to_string(inst.REQUIRED) + " separated by a space.");
 				return state;
 			}
-			inst.exec(inst, state, item.args);
+			inst.exec(inst, state, item.args, item.args[0]);
 		}
 	}
 
@@ -148,19 +152,21 @@ ScopeState exec(std::vector<InstToken> sequence) {
 
 int main(int argc, char *argv[]) {
 	if (argc == 2) {
-		std::ifstream f (argv[1], std::ios::in);
+		std::ifstream f (argv[1], std::ios::in | std::ios::binary);
 		if (f.is_open() == false) {
 			std::cerr << "Unable to open script at \"" << argv[1] << "\".\n";
 			return 0;
 		}
-		std::string script;
-		std::string line;
-		while(std::getline(f,line)) {
-			script = script+line+"\n";
-		}
 
+		// Read file.
+		std::ostringstream ss; ss << f.rdbuf();
+		std::string script = ss.str();
+
+		// Tokenize the script.
 		std::vector<InstToken> sequence = tokenize(script);
+		// Execute tokens.
 		ScopeState state = exec(sequence);
+		// Output the state.
 		std::cout << state << "\n";
 	}
 

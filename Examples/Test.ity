@@ -1,0 +1,11 @@
+const STR hello = 'Hello';
+const STR world = 'World';
+const STR hello_world = hello + ' ' + world + '!';
+
+#var STR big_string = 'abc';
+
+# This is a comment;
+#"This is a literal expression";
+
+var INT counter = 0;
+set counter += 1;

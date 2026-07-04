@@ -27,6 +27,11 @@
 *.lib
 
 # Executables
+*.bin
 *.exe
 *.out
 *.app
+
+
+# Python excludes:
+*.pyc

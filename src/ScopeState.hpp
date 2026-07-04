@@ -5,7 +5,6 @@
 
 #include "Common.hpp"
 #include "ScriptErrors.hpp"
-//#include "ExpressionParser.hpp"
 
 
 // Create a new blank scope state.
@@ -83,23 +82,24 @@ Variant get_data_globally(ScopeState& state, std::string& name) {
 
 
 // Sets the data for name in this scope.
-// If mode is "1" (constant), will throw an error when if the name is already taken in the current scope.
+// If mode is "0" (dynamic type), the set "type" & the actual type of "data" can be different.
+// If mode is "1" (constant & locked type), will throw an error when if the name is already taken in the current scope.
 // If mode is "2" (locked type), will throw an error if the data type does not match the given type.
-void set_data(ScopeState& state, std::string& name, std::string& type, VariantData& data, unsigned int mode) {
+void set_data(ScopeState& state, std::string& name, VariantType type, VariantData& data, unsigned int mode) {
 	if (is_name_free(state, name) == false) {
 		Variant var = get_data(state, name);
 		if (var.m == 1) {
 			emit_error("Cannot change value of constant \"" + name + "\" after declaration.");
 			return;
 		}
-		std::string data_type = get_variant_data_type(data);
-		if (var.m == 2 && type != data_type) {
-			emit_error("Cannot assign value of type \"" + data_type + "\" to a variable of type \"" + type + "\".");
-			return;
-		}
+	}
+	VariantType data_type = get_variant_data_type(data);
+	if (mode != 0 && type != data_type) {
+		emit_error(err_assignment_type_mismatch(get_variant_type_name(data_type), get_variant_type_name(type)));
+		return;
 	}
 
-	Variant var = Variant{};
+	Variant var;
 	var.t = type;
 	var.d = data;
 	var.m = mode;
@@ -107,7 +107,7 @@ void set_data(ScopeState& state, std::string& name, std::string& type, VariantDa
 }
 
 
-void set_data_globally(ScopeState& state, std::string& name, std::string& type, VariantData& data, unsigned int mode) {
+void set_data_globally(ScopeState& state, std::string& name, VariantType type, VariantData& data, unsigned int mode) {
 	if (is_name_free(state, name) == false) {
 		set_data(state, name, type, data, mode);
 	}

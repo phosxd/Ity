@@ -2,22 +2,30 @@
 
 #include <string>
 #include <unordered_map>
-#include <numeric>
 
 #include "Common.hpp"
 #include "ScriptErrors.hpp"
 #include "ScopeState.hpp"
 
 #include "Op/Add.hpp"
+#include "Op/Subtract.hpp"
+#include "Op/Multiply.hpp"
+#include "Op/Divide.hpp"
 
 
-const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmOoPpQqRrSsTtUuVvWwXxYyZz0123456789";
+const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
 const std::string NUM = "0123456789";
-const std::string STRING_SYMBOLS = "'\"";
-const std::string MISC_RESERVED_SYMBOLS = "_." + STRING_SYMBOLS;
-std::vector<std::string> NORMAL_TYPES = {"OP","BOOL","INT","FLOAT","STR"};
+const std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
+const std::string MISC_RESERVED_SYMBOLS = "_.()" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain ay of these characters.
 std::unordered_map<std::string, Operation> OPERATIONS = {
 	{"+", OP_Add},
+	{"+-", OP_Add},
+	{"-", OP_Subtract},
+	{"--", OP_Subtract},
+	{"*", OP_Multiply},
+	{"*-", OP_Multiply},
+	{"/", OP_Divide},
+	{"/-", OP_Divide},
 };
 
 std::unordered_map<std::string, std::vector<Variant>> expr_cache;
@@ -26,7 +34,9 @@ std::unordered_map<std::string, std::vector<Variant>> expr_cache;
 bool is_valid_name(std::string name) {
 	unsigned int name_len = name.size();
 	for(unsigned int i = 0; i < name_len; i++) {
-		if ((ALPHA.find(name[i]) == std::string::npos) && name[i] != '_') {return false;}
+		bool is_digit = (NUM.find(name[i]) != std::string::npos);
+		if (i == 0 && is_digit) {return false;}
+		if ((ALPHA.find(name[i]) == std::string::npos && is_digit == false) && name[i] != '_') {return false;}
 	}
 	return true;
 }
@@ -51,15 +61,18 @@ bool check_ahead(std::string text, unsigned int start_idx, std::string substr) {
 }
 
 
-VariantData get_literal_from_str(std::string type, std::string str_val) {
-	if (type == "OP" || type == "REF" || type == "STR") {return str_val;}
-	else if (type == "BOOL") {return (str_val == "true");}
-	else if (type == "INT") {return std::stoi(str_val);}
-	else if (type == "FLOAT") {return std::stof(str_val);}
-	else {
-		emit_error("Unexpected (ExpressionParser.get_literal_from_str): unknown type \"" + type + "\".");
-		return 0;
+VariantData get_literal_from_str(VariantType type, std::string str_val) {
+	if (type == OP || type == REF || type == STR) {return str_val;}
+	else if (type == BOOL) {return (str_val == "true");}
+	else if (type == INT) {
+		if (is_int_str_32_in_range(str_val) == false) {
+			emit_error("Cannot initialize an integer larger than 1,999,999,999. You can go above this limit by adding numbers together, however they may wrap.");
+			return None{};
+		}
+		return std::stoi(str_val);
 	}
+	else if (type == FLOAT) {return std::stof(str_val);}
+	else {return None{};}
 }
 
 
@@ -88,36 +101,28 @@ std::vector<Variant> expr_tokenize(std::string expr) {
 
 			if (is_start) {
 				if (NUM.find(expr[i]) != std::string::npos) {
-					item.t = "INT";
+					item.t = INT;
 				}
 				else if (STRING_SYMBOLS.find(expr[i]) != std::string::npos) {
-					item.t = "STR";
+					item.t = STR;
 					string_type = expr[i];
 					is_string = true;
 					is_start = false;
 					continue;
 				}
 				else if (check_ahead(expr, i, "true") || check_ahead(expr, i, "false")) {
-					item.t = "BOOL";
+					item.t = BOOL;
 				}
-				else if (is_valid_name(std::to_string(expr[i]))) {
-					item.t = "REF";
+				else if (check_ahead(expr, i, "none")) {
+					item.t = NONE;
+				}
+				else if (is_valid_name(std::string(1,expr[i]))) {
+					item.t = REF;
 				}
 				is_start = false;
 			}
 
 			if (is_operator == false) {
-				// If "." found in INT, convert to FLOAT.
-				if (item.t == "INT") {
-					if (expr[i] == '.') {
-						item.t = "FLOAT";
-					}
-					else if ((NUM.find(expr[i]) == std::string::npos) && expr[i] != '_') {
-						emit_error("Invalid number construct, invalid character \"" + std::to_string(expr[i]) + "\".");
-						return sequence;
-					}
-				}
-
 				// Start operator.
 				if (is_special_symbol(expr[i])) {
 					item.d = get_literal_from_str(item.t, buffer);
@@ -126,12 +131,29 @@ std::vector<Variant> expr_tokenize(std::string expr) {
 					buffer = "";
 					is_operator = true;
 				}
+
+				// Skip over underscore in numbers.
+				else if ((item.t == INT || item.t == FLOAT) && expr[i] == '_') {
+					continue;
+				}
+
+				else if (item.t == INT) {
+					// If "." found in INT, convert to FLOAT.
+					if (expr[i] == '.') {
+						item.t = FLOAT;
+					}
+					// Throw error if invalid character found.
+					else if ((NUM.find(expr[i]) == std::string::npos)) {
+						emit_error("Invalid number construct, invalid character \"" + std::string(1,expr[i]) + "\".");
+						return sequence;
+					}
+				}
 			}
 
 			// End operator.
 			if (is_operator == true && expr_len > i+1 && not is_special_symbol(expr[i+1])) {
 				sequence.push_back(Variant{
-					"OP",
+					OP,
 					buffer+expr[i],
 				});
 				item = Variant{};
@@ -145,7 +167,7 @@ std::vector<Variant> expr_tokenize(std::string expr) {
 		buffer += expr[i];
 	}
 
-	if (item.t != "." && buffer.size() > 0) {
+	if (item.t != NONE && buffer.size() > 0) {
 		item.d = get_literal_from_str(item.t, buffer);
 		buffer = "";
 		sequence.push_back(item);
@@ -156,7 +178,7 @@ std::vector<Variant> expr_tokenize(std::string expr) {
 
 
 Variant resolve_variant(ScopeState& state, Variant& item) {
-	if (item.t == "REF") {
+	if (item.t == REF) {
 		std::string name = std::get<std::string>(item.d);
 		if (is_name_globally_free(state, name) == true) {
 			emit_error(err_name_does_not_exist(name));
@@ -164,10 +186,7 @@ Variant resolve_variant(ScopeState& state, Variant& item) {
 		}
 		return get_data_globally(state, name);
 	}
-	else if (exists_in_strvec(NORMAL_TYPES, item.t) == true) {
-		return item;
-	}
-	emit_error("Unexpected (ExpressionParser.resolve_variant): unknown type. Please report bug.");
+
 	return item;
 }
 
@@ -188,7 +207,7 @@ Variant expr_exec(ScopeState& state, std::string expr) {
 			op_symbol = "";
 			continue;
 		}
-		else if (item.t == "OP") {
+		else if (item.t == OP) {
 			op_symbol = std::get<std::string>(item.d);
 			if (OPERATIONS.find(op_symbol) == OPERATIONS.end()) {
 				emit_error("Invalid operator \"" + op_symbol + "\".");

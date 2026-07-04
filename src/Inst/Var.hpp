@@ -1,30 +1,28 @@
 #pragma once
 
-#include <string>
-#include <iostream>
-
 #include "../Common.hpp"
 #include "../ScriptErrors.hpp"
 
 
-void INST_Var_exec(Instruction& inst, ScopeState& state, std::vector<std::string> args) {
+void INST_Var_exec(Instruction& inst, ScopeState& state, std::vector<std::string> args, std::string symbol) {
 	const unsigned int args_len = args.size();
-	std::string type;
+	std::string type_name;
 	std::string name;
-	std::string op;
+	std::string op = "";
 	std::string expr = "";
-	for(unsigned int i = 0; i < args_len; i++) {
+	for (unsigned int i = 0; i < args_len; i++) {
 		if (i == 0) {continue;}
-		if (i == 1) {type = args[i];}
+		if (i == 1) {type_name = args[i];}
 		else if (i == 2) {name = args[i];}
 		else if (i == 3) {op = args[i];}
 		else {
 			expr += args[i];
 		}
 	}
+	current_column += 4 + symbol.size() + type_name.size() + name.size() + op.size();
 
 	if (is_valid_name(name) == false) {
-		emit_error("Name must not contain any numbers or symbols.");
+		emit_error("Name must not contain any symbols.");
 		return;
 	}
 
@@ -39,17 +37,11 @@ void INST_Var_exec(Instruction& inst, ScopeState& state, std::vector<std::string
 		emit_warn("Name \"" + name + "\" is shadowing another variable with the same name, you will not be able to access the shadowed variable unless you change the name.");
 	}
 
-	// Get value from expression.
-	Variant value = expr_exec(state, expr);
-	if (type != "ANY" && value.t != type) {
-		emit_error("Cannot assign value of type \"" + value.t + "\" to variable of type \"" + type + "\".");
-		return;
-	}
-
 	// Set variable mode.
+	VariantType type = get_variant_type_from_name(type_name);
 	unsigned int mode = 2; // Locked type.
 	if (args[0] == "const") {mode = 1;} // Constant.
-	if (type == "ANY") {
+	if (type == ANY) {
 		if (mode == 1) {
 			emit_error("Constant must have an explicit type, not \"ANY\".");
 			return;
@@ -57,22 +49,23 @@ void INST_Var_exec(Instruction& inst, ScopeState& state, std::vector<std::string
 		mode = 0; // Dynamic type.
 	}
 
-	// Set.
-	if (op == "=") {
-		set_data(state, name, value.t, value.d, mode);
-	}
+	// Get value from expression.
+	Variant value = expr_exec(state, expr);
 
+	// Set variable data.
+	if (op == "=" || op == "") {
+		set_data(state, name, type, value.d, mode);
+	}
+	// Throw error if invalid operator.
 	else {
 		emit_error(err_invalid_assignment_op(args[0], op));
 		return;
 	}
-
-	return;
 }
 
 
 Instruction INST_Var {
-	4, // "REQUIRED". Type, Name, Operator, & first part of Expression.
+	3, // "REQUIRED". Type, Name, & Operator.
 	-1, // "OPTIONAL". Other parts of Expression.
 	INST_Var_exec,
 };
