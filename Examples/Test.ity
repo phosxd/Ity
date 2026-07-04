@@ -4,8 +4,14 @@ const STR hello_world = hello + ' ' + world + '!';
 
 var STR big_string = 'abc' * 100;
 
+var ANY one = "1";
+set one = 1;
+
 # This is a comment;
-"This is a literal expression";
+"This is a string literal expression";
+
+# Complex expression;
+# 1 + (4 * (10-8)); # Output: 9;
 
 var INT counter = 0;
 set counter += 1;

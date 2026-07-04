@@ -46,17 +46,22 @@ std::vector<InstToken> tokenize(std::string src) {
 			col = 0;
 		}
 
-		// Skip over spaces & tabs at the start of the item.
-		if (is_start) {
-			if (src[i] == ' ' || src[i] == '\n' || src[i] == '\t') {continue;}
-			item = InstToken{ln,col};
-			is_start = false;
-		}
-
 		// End comment.
 		if (is_comment) {
 			if (src[i] == ';') {is_comment = false;}
 			continue;
+		}
+
+		// Skip over spaces & tabs at the start of the item.
+		if (is_start) {
+			if (src[i] == ' ' || src[i] == '\n' || src[i] == '\t') {continue;}
+			// Start comment.
+			if (src[i] == '#') {
+				is_comment = true;
+				continue;
+			}
+			item = InstToken{ln,col};
+			is_start = false;
 		}
 
 		// End string.
@@ -69,12 +74,6 @@ std::vector<InstToken> tokenize(std::string src) {
 		}
 
 		else {
-			// Start comment.
-			if (src[i] == '#' && item.args.size() == 0) {
-				is_comment = true;
-				continue;
-			}
-
 			// Start string.
 			if (src[i] == '\'' || src[i] == '"') {
 				is_string = true;
@@ -113,6 +112,7 @@ std::vector<InstToken> tokenize(std::string src) {
 
 
 
+// Execute a sequence of instruction tokens.
 ScopeState exec(std::vector<InstToken> sequence) {
 	const unsigned int seq_len = sequence.size();
 	ScopeState state = create_new_scope_state({});
@@ -152,7 +152,6 @@ int main(int argc, char *argv[]) {
 			std::cerr << "Unable to open script at \"" << argv[1] << "\".\n";
 			return 0;
 		}
-
 
 		// Read file.
 		std::ostringstream ss; ss << f.rdbuf();

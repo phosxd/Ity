@@ -1,15 +1,5 @@
 - Add sub-expression parsing. E.g. `1 + (1+1)`.
 - Add composite capability for instructions. This is necessary for functions, loops, & conditionals.
-- Update current column counter during expression execution for more accurate error locations.
 
 - Add simple array data type (std::vector).
 - Add simple dictionary data type (std::unordered_map).
-
-- Don't tokenize duplicate instructions. Instead of naively tokenizing the same exact instruction multiple times, it should store every unique instruction it sees for possible reuse.
-- Try not to re-allocate buffers during instruction & expression tokenization, or at least be smarter about it.
-
-
-- Optimize data allocations in source. Also optimize the creation & allocation of Variants.
-
-  Even with no optimizations this C++ implementation is already many multitudes faster than the Python implementation of Ity, but I still want to push it farther so that Ity is faster than Python itself.
-  Maybe this can be done by smartly caching certain data & by taking advantage of the statically typed nature of Ity as well as just writing more efficient code for the interpreter.

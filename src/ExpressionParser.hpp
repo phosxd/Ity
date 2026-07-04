@@ -28,7 +28,7 @@ std::unordered_map<std::string, Operation> OPERATIONS = {
 	{"/-", OP_Divide},
 };
 
-std::unordered_map<std::string, std::vector<Variant>> expr_cache;
+std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
 
 
 bool is_valid_name(std::string name) {
@@ -51,7 +51,7 @@ bool is_special_symbol(char ch) {
 }
 
 
-bool check_ahead(std::string text, unsigned int start_idx, std::string substr) {
+bool check_ahead(std::string& text, unsigned int start_idx, std::string substr) {
 	unsigned int substr_len = substr.size();
 	if (text.size() > start_idx+substr_len) {return false;}
 	for (unsigned int i = 0; i < substr_len; i++) {
@@ -76,20 +76,42 @@ VariantData get_literal_from_str(VariantType type, std::string& str_val) {
 }
 
 
-std::vector<Variant> expr_tokenize(std::string expr) {
-	if (expr_cache.find(expr) != expr_cache.end()) {return expr_cache[expr];}
-	unsigned int expr_len = expr.size();
+std::vector<ExprToken> expr_tokenize(std::string expr) {
+	std::vector<ExprToken> sequence;
 
-	std::vector<Variant> sequence;
-	Variant item = Variant{};
+	// Return cached token with updated line & column (column is not entirely accurate).
+	if (auto it = expr_cache.find(expr); it != expr_cache.end()) {
+		const std::vector<ExprToken>& cached_seq = it->second;
+		const unsigned int cached_seq_len = cached_seq.size();
+		for (const ExprToken& cached_token: cached_seq) {
+			ExprToken token = cached_token;
+			token.ln = current_line;
+			token.col = current_column;
+			sequence.push_back(token);
+		}
+		return sequence;
+	}
+
+	const unsigned int expr_len = expr.size();
 	std::string buffer;
 	buffer.reserve(expr_len);
+	ExprToken item;
+	unsigned int ln = current_line;
+	unsigned int col = current_column;
+
 	bool is_start = true;
 	bool is_operator = false;
 	bool is_string = false;
 	char string_type;
 
 	for (unsigned int i = 0; i < expr_len; i++) {
+		// Advance column or line number.
+		col++;
+		if(expr[i] == '\n') {
+			ln++;
+			col = 0;
+		}
+
 		if (is_string) {
 			if (expr[i] == string_type) {
 				is_string = false;
@@ -101,24 +123,25 @@ std::vector<Variant> expr_tokenize(std::string expr) {
 			if (expr[i] == ' ' || expr[i] == '\n' || expr[i] == '\t') {continue;}
 
 			if (is_start) {
+				item = ExprToken{ln,col};
 				if (NUM.find(expr[i]) != std::string::npos) {
-					item.t = INT;
+					item.var.t = INT;
 				}
 				else if (STRING_SYMBOLS.find(expr[i]) != std::string::npos) {
-					item.t = STR;
+					item.var.t = STR;
 					string_type = expr[i];
 					is_string = true;
 					is_start = false;
 					continue;
 				}
-				else if ((expr[i] == 't' && check_ahead(expr, i, "true")) || (expr[i] == 'f' && check_ahead(expr, i, "false"))) {
-					item.t = BOOL;
+				else if (check_ahead(expr, i, "true") || check_ahead(expr, i, "false")) {
+					item.var.t = BOOL;
 				}
 				else if (check_ahead(expr, i, "none")) {
-					item.t = NONE;
+					item.var.t = NONE;
 				}
 				else if (is_valid_name(std::string(1,expr[i]))) {
-					item.t = REF;
+					item.var.t = REF;
 				}
 				is_start = false;
 			}
@@ -126,26 +149,26 @@ std::vector<Variant> expr_tokenize(std::string expr) {
 			if (is_operator == false) {
 				// Start operator.
 				if (is_special_symbol(expr[i])) {
-					item.d = get_literal_from_str(item.t, buffer);
+					item.var.d = get_literal_from_str(item.var.t, buffer);
 					sequence.push_back(item);
-					item = Variant{};
+					item = ExprToken{ln,col};
 					buffer = "";
 					is_operator = true;
 				}
 
 				// Skip over underscore in numbers.
-				else if ((item.t == INT || item.t == FLOAT) && expr[i] == '_') {
+				else if ((item.var.t == INT || item.var.t == FLOAT) && expr[i] == '_') {
 					continue;
 				}
 
-				else if (item.t == INT) {
+				else if (item.var.t == INT) {
 					// If "." found in INT, convert to FLOAT.
 					if (expr[i] == '.') {
-						item.t = FLOAT;
+						item.var.t = FLOAT;
 					}
 					// Throw error if invalid character found.
 					else if ((NUM.find(expr[i]) == std::string::npos)) {
-						emit_error("Invalid number construct, invalid character \"" + std::string(1,expr[i]) + "\".");
+						emit_error("Invalid number construct, invalid character \"" + std::string(1,expr[i]) + "\".", ln, col);
 						return sequence;
 					}
 				}
@@ -153,11 +176,13 @@ std::vector<Variant> expr_tokenize(std::string expr) {
 
 			// End operator.
 			if (is_operator == true && expr_len > i+1 && not is_special_symbol(expr[i+1])) {
-				sequence.push_back(Variant{
-					OP,
-					buffer+expr[i],
+				sequence.push_back(ExprToken{
+					ln,col,
+					{
+						OP,
+						buffer+expr[i],
+					},
 				});
-				item = Variant{};
 				buffer = "";
 				is_operator = false;
 				is_start = true;
@@ -168,8 +193,8 @@ std::vector<Variant> expr_tokenize(std::string expr) {
 		buffer.push_back(expr[i]);
 	}
 
-	if (item.t != NONE && buffer.size() > 0) {
-		item.d = get_literal_from_str(item.t, buffer);
+	if (item.var.t != NONE && buffer.size() > 0) {
+		item.var.d = get_literal_from_str(item.var.t, buffer);
 		buffer = "";
 		sequence.push_back(item);
 	}
@@ -193,23 +218,26 @@ Variant resolve_variant(ScopeState& state, Variant& item) {
 
 
 Variant expr_exec(ScopeState& state, std::string expr) {
-	std::vector<Variant> sequence = expr_tokenize(expr);
+	std::vector<ExprToken> sequence = expr_tokenize(expr);
 	//std::cout << "EXPR SEQ: " << sequence << "\n";
 	const unsigned int seq_len = sequence.size();
 	Variant result;
 	Operation* op = nullptr;
 	std::string op_symbol;
 	for (unsigned int i = 0; i < seq_len; i++) {
-		Variant item = sequence[i];
+		ExprToken item = sequence[i];
+		current_line = item.ln;
+		current_column = item.col;
+
 		if (op != nullptr) {
-			Variant resolved_var = resolve_variant(state,item);
+			Variant resolved_var = resolve_variant(state, item.var);
 			result = op->exec(*op, state, result, resolved_var, op_symbol);
 			op = nullptr;
 			op_symbol = "";
 			continue;
 		}
-		else if (item.t == OP) {
-			op_symbol = std::get<std::string>(item.d);
+		else if (item.var.t == OP) {
+			op_symbol = std::get<std::string>(item.var.d);
 			if (OPERATIONS.find(op_symbol) == OPERATIONS.end()) {
 				emit_error("Invalid operator \"" + op_symbol + "\".");
 				return result;
@@ -218,7 +246,7 @@ Variant expr_exec(ScopeState& state, std::string expr) {
 			continue;
 		}
 		else {
-			result = resolve_variant(state, item);
+			result = resolve_variant(state, item.var);
 			continue;
 		}
 	}

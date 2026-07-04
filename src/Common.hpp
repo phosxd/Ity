@@ -10,6 +10,49 @@
 #include "ScriptErrors.hpp"
 
 
+template<class D_um>
+std::ostream& display_unordered_map(std::ostream& os, const D_um& s) {
+	os << '{';
+	const unsigned int len = s.size();
+	unsigned int idx = 0;
+	for (auto i:s) {
+		if (idx != 0) {os << ", ";}
+		os << i.first << '=' << i.second;
+		idx++;
+	}
+	return os << '}';
+}
+
+
+template<class D_v>
+std::ostream& display_vector(std::ostream& os, const D_v& s) {
+	os << '[';
+	const unsigned int len = s.size();
+	for (unsigned int i = 0; i < len; i++) {
+		if (i != 0) {os << ", ";}
+		os << s[i];
+	}
+	return os << ']';
+}
+
+
+
+
+// Misc display overloads.
+// -----------------------
+
+// uint8_t
+std::ostream& operator<<(std::ostream& os, const uint8_t& s) {
+	return os << std::to_string(s); // Convert to string, otherwie displays as empty.
+}
+// vector<string>
+std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& s) {
+	return display_vector(os, s);
+}
+
+
+
+
 // VariantType.
 // ------------
 
@@ -56,13 +99,7 @@ std::ostream& operator<<(std::ostream& os, const VariantType& s) {
 }
 // Vector.
 std::ostream& operator<<(std::ostream& os, const std::vector<VariantType>& s) {
-	os << '[';
-	const unsigned int len = s.size();
-	for (unsigned int i = 0; i < len; i++) {
-		if (i != 0) {os << ", ";}
-		os << s[i];
-	}
-	return os << ']';
+	return display_vector(os, s);
 }
 
 
@@ -250,7 +287,7 @@ std::ostream& operator<<(std::ostream& os, const VariantData& s) {
 		os << std::get<int>(s);
 	}
 	else if (std::holds_alternative<float>(s)) {
-		os << std::get<float>(s);
+		os << std::to_string(std::get<float>(s)); // `std::cout` wont show the full precision by default, so we convert to string.
 	}
 	else if (std::holds_alternative<std::string>(s)) {
 		os << std::get<std::string>(s);
@@ -272,46 +309,15 @@ struct Variant {
 
 
 std::ostream& operator<<(std::ostream& os, const Variant& s) {
-	return os << "{t=" << s.t << ", d=" << s.d << '}';
+	return os << "{t=" << s.t << ", d=" << s.d << ", m=" << s.m << '}';
 }
 // Vector.
 std::ostream& operator<<(std::ostream& os, const std::vector<Variant>& s) {
-	os << '[';
-	const unsigned int len = s.size();
-	for (unsigned int i = 0; i < len; i++) {
-		if (i != 0) {os << ", ";}
-		os << s[i];
-	}
-	return os << ']';
+	return display_vector(os, s);
 }
 // Unordered string map.
 std::ostream& operator<<(std::ostream& os, const std::unordered_map<std::string,Variant>& s) {
-	os << '{';
-	const unsigned int len = s.size();
-	unsigned int idx = 0;
-	for (auto i:s) {
-		if (idx != 0) {os << ", ";}
-		os << i.first << "=" << i.second;
-		idx++;
-	}
-	return os << '}';
-}
-
-
-
-
-// Misc display overloads.
-// -----------------------
-
-// vector<string>
-std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& s) {
-	os << '[';
-	const unsigned int len = s.size();
-	for(unsigned int i = 0; i < len; i++) {
-		if (i != 0) {os << ", ";}
-		os << '"' << s[i] << '"';
-	}
-	return os << ']';
+	return display_unordered_map(os, s);
 }
 
 
@@ -333,25 +339,37 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 }
 // Vector.
 std::ostream& operator<<(std::ostream& os, const std::vector<InstToken>& s) {
-	os << '[';
-	const unsigned int len = s.size();
-	for (unsigned int i = 0; i < len; i++) {
-		if (i != 0) {os << ", ";}
-		os << s[i];
-	}
-	return os << ']';
+	return display_vector(os, s);
 }
 // Unordered string map.
 std::ostream& operator<<(std::ostream& os, const std::unordered_map<std::string,InstToken>& s) {
-	os << '{';
-	const unsigned int len = s.size();
-	unsigned int idx = 0;
-	for (auto i:s) {
-		if (idx != 0) {os << ", ";}
-		os << i.first << '=' << i.second;
-		idx++;
-	}
-	return os << '}';
+	return display_unordered_map(os, s);
+}
+
+
+
+
+// ExprToken.
+// ----------
+
+
+struct ExprToken {
+	unsigned int ln = 0;
+	unsigned int col = 0;
+	Variant var;
+};
+
+
+std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
+	return os << "{ln=" << s.ln << ", col=" << s.col << ", var=" << s.var << '}';
+}
+// Vector.
+std::ostream& operator<<(std::ostream& os, const std::vector<ExprToken>& s) {
+	return display_vector(os, s);
+}
+// Unordered string map.
+std::ostream& operator<<(std::ostream& os, const std::unordered_map<std::string,ExprToken>& s) {
+	return display_unordered_map(os, s);
 }
 
 
@@ -402,15 +420,7 @@ struct Operation {
 
 // Unordered VariantDataType map.
 std::ostream& operator<<(std::ostream& os, const std::unordered_map<VariantType,std::vector<VariantType>>& s) {
-	os << '{';
-	const unsigned int len = s.size();
-	unsigned int idx = 0;
-	for (auto i:s) {
-		if (idx != 0) {os << ", ";}
-		os << i.first << '=' << i.second;
-		idx++;
-	}
-	return os << '}';
+	return display_unordered_map(os, s);
 }
 
 
@@ -426,6 +436,18 @@ std::string trim_left(std::string& text, char ch) {
 	int end = text.find_last_not_of(ch);
 	if (end == std::string::npos) {return text;}
 	return text.substr(start, (end-start+1));
+}
+
+
+unsigned int count_non_empty_strings(std::vector<std::string> items) {
+	unsigned int count = 0;
+	unsigned int items_len = items.size();
+	for (unsigned int i = 0; i < items_len; i++) {
+		if (items[i].empty() == false) {
+			count++;
+		}
+	}
+	return count;
 }
 
 

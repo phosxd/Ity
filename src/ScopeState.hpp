@@ -101,7 +101,7 @@ void set_data(ScopeState& state, std::string& name, VariantType type, VariantDat
 	}
 
 	Variant var;
-	var.t = type;
+	var.t = data_type;
 	var.d = data;
 	var.m = mode;
 	state.d[name] = var;

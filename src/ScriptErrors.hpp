@@ -34,8 +34,10 @@ std::string err_invalid_assignment_op(std::string instruction, std::string op_st
 
 
 
-std::string get_script_pos() {
-	return "Ln: " + std::to_string(current_line) + ", Col: " + std::to_string(current_column);
+std::string get_script_pos(unsigned int ln_override=0, unsigned int col_override=0) {
+	if (ln_override == 0) {ln_override = current_line;}
+	if (col_override == 0) {col_override = current_column;}
+	return "Ln: " + std::to_string(ln_override) + ", Col: " + std::to_string(col_override);
 }
 
 
@@ -44,7 +46,7 @@ void emit_warn(std::string message) {
 }
 
 
-void emit_error(std::string message) {
-	std::cout << "ERROR at (" << get_script_pos() << "): " << message << "\n";
+void emit_error(std::string message, unsigned int ln_override=0, unsigned int col_override=0) {
+	std::cout << "ERROR at (" << get_script_pos(ln_override, col_override) << "): " << message << "\n";
 	exit(1);
 }

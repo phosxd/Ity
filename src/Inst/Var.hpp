@@ -19,7 +19,6 @@ void INST_Var_exec(Instruction& inst, ScopeState& state, std::vector<std::string
 			expr += args[i];
 		}
 	}
-	current_column += 4 + symbol.size() + type_name.size() + name.size() + op.size();
 
 	if (is_valid_name(name) == false) {
 		emit_error("Name must not contain any symbols.");
@@ -50,6 +49,7 @@ void INST_Var_exec(Instruction& inst, ScopeState& state, std::vector<std::string
 	}
 
 	// Get value from expression.
+	current_column += count_non_empty_strings({symbol,type_name,name,op}) + symbol.size() + type_name.size() + name.size() + op.size();
 	Variant value = expr_exec(state, expr);
 
 	// Set variable data.
