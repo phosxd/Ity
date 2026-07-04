@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <chrono>
 
 #include "Common.hpp"
 #include "ScriptErrors.hpp"
@@ -23,18 +24,11 @@ const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
 };
 
 
-InstToken new_inst_token(int ln, int col) {
-	InstToken result;
-	result.ln = ln;
-	result.col = col;
-	return result;
-}
-
-
 std::vector<InstToken> tokenize(std::string src) {
-	const int src_len = src.size();
+	const unsigned int src_len = src.size();
 	std::vector<InstToken> sequence;
 	std::string buffer;
+	buffer.reserve(src_len);
 	InstToken item;
 	unsigned int ln = 1;
 	unsigned int col = 0;
@@ -55,7 +49,7 @@ std::vector<InstToken> tokenize(std::string src) {
 		// Skip over spaces & tabs at the start of the item.
 		if (is_start) {
 			if (src[i] == ' ' || src[i] == '\n' || src[i] == '\t') {continue;}
-			item = new_inst_token(ln, col);
+			item = InstToken{ln,col};
 			is_start = false;
 		}
 
@@ -69,7 +63,7 @@ std::vector<InstToken> tokenize(std::string src) {
 		if (is_string) {
 			if (src[i] == string_type) {
 				is_string = false;
-				buffer += src[i];
+				buffer.push_back(src[i]);
 				continue;
 			}
 		}
@@ -85,7 +79,7 @@ std::vector<InstToken> tokenize(std::string src) {
 			if (src[i] == '\'' || src[i] == '"') {
 				is_string = true;
 				string_type = src[i];
-				buffer += src[i];
+				buffer.push_back(src[i]);
 				continue;
 			}
 
@@ -111,7 +105,7 @@ std::vector<InstToken> tokenize(std::string src) {
 			}
 		}
 
-		buffer += src[i];
+		buffer.push_back(src[i]);
 	}
 	return sequence;
 }
@@ -122,6 +116,7 @@ std::vector<InstToken> tokenize(std::string src) {
 ScopeState exec(std::vector<InstToken> sequence) {
 	const unsigned int seq_len = sequence.size();
 	ScopeState state = create_new_scope_state({});
+
 	for (unsigned int i = 0; i < seq_len; i++) {
 		InstToken item = sequence[i];
 		current_line = item.ln;
@@ -131,7 +126,7 @@ ScopeState exec(std::vector<InstToken> sequence) {
 
 		// If not matched any instruction, run as expression.
 		if (INSTRUCTIONS.find(item.args[0]) == INSTRUCTIONS.end()) {
-			//expr_exec(state, std::reduce(item.args.begin(), item.args.end()));
+			expr_exec(state, std::reduce(item.args.begin(), item.args.end()));
 		}
 		// Execute instruction.
 		else {
@@ -158,9 +153,14 @@ int main(int argc, char *argv[]) {
 			return 0;
 		}
 
+
 		// Read file.
 		std::ostringstream ss; ss << f.rdbuf();
 		std::string script = ss.str();
+		f.close();
+
+		// Start timer.
+		clock_start = std::chrono::high_resolution_clock::now();
 
 		// Tokenize the script.
 		std::vector<InstToken> sequence = tokenize(script);
@@ -168,6 +168,11 @@ int main(int argc, char *argv[]) {
 		ScopeState state = exec(sequence);
 		// Output the state.
 		std::cout << state << "\n";
+
+		// Time it.
+		auto end = std::chrono::high_resolution_clock::now();
+		unsigned int milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end-clock_start).count();
+		std::cout << "Program finished in " << (float)milliseconds/1000.0 << "s.\n";
 	}
 
 	return 0;

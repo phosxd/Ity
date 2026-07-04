@@ -1,8 +1,10 @@
 #pragma once
 
 #include <string>
+#include <chrono>
 
 
+std::chrono::time_point<std::chrono::high_resolution_clock> clock_start;
 unsigned int current_line = 0;
 unsigned int current_column = 0;
 

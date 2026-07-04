@@ -2,10 +2,10 @@ const STR hello = 'Hello';
 const STR world = 'World';
 const STR hello_world = hello + ' ' + world + '!';
 
-#var STR big_string = 'abc';
+var STR big_string = 'abc' * 100;
 
 # This is a comment;
-#"This is a literal expression";
+"This is a literal expression";
 
 var INT counter = 0;
 set counter += 1;

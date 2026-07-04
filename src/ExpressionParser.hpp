@@ -61,7 +61,7 @@ bool check_ahead(std::string text, unsigned int start_idx, std::string substr) {
 }
 
 
-VariantData get_literal_from_str(VariantType type, std::string str_val) {
+VariantData get_literal_from_str(VariantType type, std::string& str_val) {
 	if (type == OP || type == REF || type == STR) {return str_val;}
 	else if (type == BOOL) {return (str_val == "true");}
 	else if (type == INT) {
@@ -83,6 +83,7 @@ std::vector<Variant> expr_tokenize(std::string expr) {
 	std::vector<Variant> sequence;
 	Variant item = Variant{};
 	std::string buffer;
+	buffer.reserve(expr_len);
 	bool is_start = true;
 	bool is_operator = false;
 	bool is_string = false;
@@ -110,7 +111,7 @@ std::vector<Variant> expr_tokenize(std::string expr) {
 					is_start = false;
 					continue;
 				}
-				else if (check_ahead(expr, i, "true") || check_ahead(expr, i, "false")) {
+				else if ((expr[i] == 't' && check_ahead(expr, i, "true")) || (expr[i] == 'f' && check_ahead(expr, i, "false"))) {
 					item.t = BOOL;
 				}
 				else if (check_ahead(expr, i, "none")) {
@@ -164,7 +165,7 @@ std::vector<Variant> expr_tokenize(std::string expr) {
 			}
 		}
 
-		buffer += expr[i];
+		buffer.push_back(expr[i]);
 	}
 
 	if (item.t != NONE && buffer.size() > 0) {

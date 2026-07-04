@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 
@@ -85,7 +86,7 @@ Variant get_data_globally(ScopeState& state, std::string& name) {
 // If mode is "0" (dynamic type), the set "type" & the actual type of "data" can be different.
 // If mode is "1" (constant & locked type), will throw an error when if the name is already taken in the current scope.
 // If mode is "2" (locked type), will throw an error if the data type does not match the given type.
-void set_data(ScopeState& state, std::string& name, VariantType type, VariantData& data, unsigned int mode) {
+void set_data(ScopeState& state, std::string& name, VariantType type, VariantData& data, uint8_t mode) {
 	if (is_name_free(state, name) == false) {
 		Variant var = get_data(state, name);
 		if (var.m == 1) {
@@ -107,7 +108,7 @@ void set_data(ScopeState& state, std::string& name, VariantType type, VariantDat
 }
 
 
-void set_data_globally(ScopeState& state, std::string& name, VariantType type, VariantData& data, unsigned int mode) {
+void set_data_globally(ScopeState& state, std::string& name, VariantType type, VariantData& data, uint8_t mode) {
 	if (is_name_free(state, name) == false) {
 		set_data(state, name, type, data, mode);
 	}

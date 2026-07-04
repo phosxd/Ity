@@ -179,7 +179,7 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 			return a;
 		}
 		std::string a_val = std::get<std::string>(a);
-		std::string sum;
+		std::string sum; sum.reserve(a_val.size()*b_val);
 		for (unsigned int i = 0; i < b_val; i++) {sum += a_val;}
 		return sum;
 	}
@@ -267,12 +267,12 @@ std::ostream& operator<<(std::ostream& os, const VariantData& s) {
 struct Variant {
 	VariantType t = NONE;
 	VariantData d = None{};
-	unsigned int m = 0;
+	uint8_t m = 0;
 };
 
 
 std::ostream& operator<<(std::ostream& os, const Variant& s) {
-	return os << "{t=" << s.t << ",d=" << s.d << '}';
+	return os << "{t=" << s.t << ", d=" << s.d << '}';
 }
 // Vector.
 std::ostream& operator<<(std::ostream& os, const std::vector<Variant>& s) {
@@ -329,7 +329,7 @@ struct InstToken {
 
 
 std::ostream& operator<<(std::ostream& os, const InstToken& s) {
-	return os << "{ln=" << s.ln << ",col=" << s.col << ",args=" << s.args << '}';
+	return os << "{ln=" << s.ln << ", col=" << s.col << ", args=" << s.args << '}';
 }
 // Vector.
 std::ostream& operator<<(std::ostream& os, const std::vector<InstToken>& s) {
@@ -348,7 +348,7 @@ std::ostream& operator<<(std::ostream& os, const std::unordered_map<std::string,
 	unsigned int idx = 0;
 	for (auto i:s) {
 		if (idx != 0) {os << ", ";}
-		os << i.first << '=' << i.second << ", ";
+		os << i.first << '=' << i.second;
 		idx++;
 	}
 	return os << '}';
