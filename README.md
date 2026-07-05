@@ -26,7 +26,7 @@ You can run this in your terminal with `./Ity.bin`.
 If you run the interpreter with the path of an Ity script file, it will parse then execute it without printing anything (unless debug flags are set).
 
 ## Interactive mode
-Running the interpreter without passing any arguments will run it in "interactive" mode, similar to the Python interpreter's interactive mode, it allows you to immediately parse & execute the code you give it.
+Running the interpreter without passing a script file path will run it in "interactive" mode, similar to the Python interpreter's interactive mode, it allows you to immediately parse & execute the code you give it.
 
 ```bash
 ./Ity.bin -d-expr-result
