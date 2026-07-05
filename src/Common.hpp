@@ -74,6 +74,7 @@ enum VariantType {
 	STR,
 	ARR,
 	MAP,
+	OBJ,
 };
 
 
@@ -92,6 +93,7 @@ std::string get_variant_type_name(VariantType type) {
 		case STR: return "STR";
 		case ARR: return "ARR";
 		case MAP: return "MAP";
+		case OBJ: return "OBJ";
 	}
 	return "NONE";
 }
@@ -111,6 +113,7 @@ VariantType get_variant_type_from_name(std::string name) {
 	else if (name == "STR") {return STR;}
 	else if (name == "ARR") {return ARR;}
 	else if (name == "MAP") {return MAP;}
+	else if (name == "OBJ") {return OBJ;}
 	return NONE;
 }
 
@@ -322,15 +325,27 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 // ----------
 
 
+enum ExprTokenType {
+	ExprTokenType_variant,
+	ExprTokenType_sequence,
+};
+
+
 struct ExprToken {
 	unsigned int ln = 0;
 	unsigned int col = 0;
+	ExprTokenType t = ExprTokenType_variant;
 	Variant var;
+	std::vector<ExprToken> seq;
 };
 
 
 std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
-	return os << "{ln=" << s.ln << ", col=" << s.col << ", var=" << s.var << '}';
+	os << "{ln=" << s.ln << ", col=" << s.col;
+	if (s.t == ExprTokenType_variant) {os << ", var=" << s.var;}
+	else if (s.t == ExprTokenType_sequence) {os << ", seq=" << s.seq;}
+	os << '}';
+	return os;
 }
 
 

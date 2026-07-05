@@ -17,6 +17,11 @@
 # Assignment;
 # ----------;
 
+var * none_ = "a";
+none_; none;
+var * true_ = "a";
+true_; true;
+
 var NONE _a;
 var BOOL _b = true;
 set _b = false;
@@ -95,4 +100,9 @@ set _j = "abc";
 # -----------------;
 
 "early") + "exit";
+
+1 + (2);
+1 + (2 ;
+20 - (5+5);
+"Hello" + " "+ ( "W"+"o" + ("r"+"d") );
 

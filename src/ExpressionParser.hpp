@@ -77,8 +77,10 @@ VariantData get_literal_from_str(VariantType type, std::string& str_val) {
 }
 
 
-std::vector<ExprToken> expr_tokenize(std::string expr) {
-	std::vector<ExprToken> sequence;
+// Tokenize an expression. Returns an ExprToken with type "ExprTokenType_sequence".
+ExprToken expr_tokenize(std::string expr, unsigned int ln=0, unsigned int col=0) {
+	ExprToken result_token = ExprToken{current_line, current_column};
+	result_token.t = ExprTokenType_sequence;
 
 	// Return cached token with updated line & column (column is not entirely accurate).
 	if (auto it = expr_cache.find(expr); it != expr_cache.end()) {
@@ -88,23 +90,25 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 			ExprToken token = cached_token;
 			token.ln = current_line;
 			token.col = current_column;
-			sequence.push_back(token);
+			result_token.seq.push_back(token);
 		}
-		return sequence;
+		return result_token;
 	}
 
 	const unsigned int expr_len = expr.size();
 	std::string buffer;
+	std::string secondary_buffer;;
 	buffer.reserve(expr_len);
 	ExprToken item;
-	unsigned int ln = current_line;
-	unsigned int col = current_column;
+	if (ln == 0) {ln = current_line;}
+	if (col == 0) {col = current_column;}
+	unsigned int skip_to_ln = 0;
+	unsigned int skip_to_col = 0;
 
 	bool is_start = true;
 	bool is_operator = false;
 	bool is_string = false;
 	bool is_escaped_char = false;
-	char string_type;
 
 	for (unsigned int i = 0; i < expr_len; i++) {
 		// Advance column or line number.
@@ -112,6 +116,16 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 		if(expr[i] == '\n') {
 			ln++;
 			col = 0;
+		}
+
+		// Skip to desired column or line number.
+		if (skip_to_ln != 0) {
+			if (ln >= skip_to_ln) {skip_to_ln = 0;}
+			else {continue;}
+		}
+		if (skip_to_col != 0) {
+			if (col >= skip_to_col) {skip_to_col = 0;}
+			else {continue;}
 		}
 
 		if (is_string) {
@@ -127,7 +141,7 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 				continue;
 			}
 			// End string.
-			if (expr[i] == string_type) {
+			if (std::string(1,expr[i]) == secondary_buffer) {
 				is_string = false;
 				continue;
 			}
@@ -137,6 +151,37 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 			// Ignore spaces.
 			if (expr[i] == ' ' || expr[i] == '\n' || expr[i] == '\t') {continue;}
 
+			// Start sub-expression.
+			if (expr[i] == '(') {
+				if (expr_len <= i+1) {
+					emit_error("Unexpected \"(\" character at end of expression.");
+					return result_token;
+				}
+				std::string subexpr = expr.substr(i+1);
+				if (subexpr.empty() == false) {
+					if (item.var.t != NONE && buffer.size() > 0) {
+						item.var.d = get_literal_from_str(item.var.t, buffer);
+						result_token.seq.push_back(item);
+						buffer = "";
+					}
+
+					// Tokenize sub-expression.
+					ExprToken token = expr_tokenize(subexpr, ln, col);
+					// Create expression sequence token.
+					item = ExprToken{token.ln, token.col};
+					item.t = ExprTokenType_sequence;
+					item.seq = token.seq;
+					// Add to sequence.
+					result_token.seq.push_back(item);
+					// Skip over characters inside the sub-expression.
+					skip_to_ln = ln+token.ln-1;
+					skip_to_col = col+token.col-1;
+
+					buffer = "";
+				}
+				continue;
+			}
+
 			// End expression.
 			if (expr[i] == ')') {
 				break;
@@ -144,22 +189,33 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 
 			if (is_start) {
 				item = ExprToken{ln,col};
+				// Set type integer.
 				if (NUM.find(expr[i]) != std::string::npos) {
 					item.var.t = INT;
 				}
+				// Start string.
 				else if (STRING_SYMBOLS.find(expr[i]) != std::string::npos) {
 					item.var.t = STR;
-					string_type = expr[i];
+					secondary_buffer = expr[i];
 					is_string = true;
 					is_start = false;
 					continue;
 				}
-				else if (check_ahead(expr, i, "true") || check_ahead(expr, i, "false")) {
+				// Set type bool.
+				else if (check_ahead(expr, i, "true")) {
+					secondary_buffer = "true";
 					item.var.t = BOOL;
 				}
+				else if (check_ahead(expr, i, "false")) {
+					secondary_buffer = "false";
+					item.var.t = BOOL;
+				}
+				// Set type none.
 				else if (check_ahead(expr, i, "none")) {
+					secondary_buffer = "none";
 					item.var.t = NONE;
 				}
+				// Set type reference.
 				else if (is_valid_name(std::string(1,expr[i]))) {
 					item.var.t = REF;
 				}
@@ -170,7 +226,7 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 				// Start operator.
 				if (is_special_symbol(expr[i]) == true) {
 					item.var.d = get_literal_from_str(item.var.t, buffer);
-					sequence.push_back(item);
+					result_token.seq.push_back(item);
 					item = ExprToken{ln,col};
 					buffer = "";
 					is_operator = true;
@@ -189,15 +245,24 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 					// Throw error if invalid character found.
 					else if ((NUM.find(expr[i]) == std::string::npos)) {
 						emit_error("Invalid number construct, invalid character \"" + std::string(1,expr[i]) + "\".", ln, col);
-						return sequence;
+						return result_token;
+					}
+				}
+
+				else if (item.var.t == BOOL || item.var.t == REF) {
+					// If no longer matches the bool or none token, switch to a reference.
+					if ((buffer+expr[i]).size() >= secondary_buffer.size() && (buffer+expr[i]) != secondary_buffer) {
+						item.var.t = REF;
+						secondary_buffer = "";
 					}
 				}
 			}
 
 			// End operator.
 			if (is_operator == true && expr_len > i+1 && (expr[i+1] == ' ' or not is_special_symbol(expr[i+1])) ) {
-				sequence.push_back(ExprToken{
+				result_token.seq.push_back(ExprToken{
 					ln,col,
+					ExprTokenType_variant,
 					{
 						OP,
 						buffer+expr[i],
@@ -216,10 +281,13 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 	if (item.var.t != NONE && buffer.size() > 0) {
 		item.var.d = get_literal_from_str(item.var.t, buffer);
 		buffer = "";
-		sequence.push_back(item);
+		result_token.seq.push_back(item);
 	}
-	expr_cache[expr] = sequence;
-	return sequence;
+	expr_cache[expr] = result_token.seq;
+
+	result_token.ln = ln;
+	result_token.col = col;
+	return result_token;
 }
 
 
@@ -237,12 +305,11 @@ Variant resolve_variant(ScopeState& state, Variant& item) {
 }
 
 
-Variant expr_exec(ScopeState& state, std::string expr) {
-	std::vector<ExprToken> sequence = expr_tokenize(expr);
-
+// Execute a sequence of ExprTokens.
+Variant expr_exec(ScopeState& state, std::vector<ExprToken>& sequence, bool subexpr=false) {
 	// Output sequence in debug mode.
-	if (debug_flags.expr_seq) {
-		std::cout << "\nExprToken Sequence: " << sequence << "\n";
+	if (debug_flags.expr_seq && not subexpr) {
+		std::cout << ANSI.purple << "ExprToken Sequence: " << ANSI.reset << sequence << "\n";
 	};
 
 	const unsigned int seq_len = sequence.size();
@@ -254,32 +321,57 @@ Variant expr_exec(ScopeState& state, std::string expr) {
 		current_line = item.ln;
 		current_column = item.col;
 
+		// Execute operator.
 		if (op != nullptr) {
-			Variant resolved_var = resolve_variant(state, item.var);
+			Variant resolved_var;
+			// Get variant.
+			if (item.t == ExprTokenType_variant) {resolved_var = resolve_variant(state, item.var);}
+			// Get variant from sub-expression.
+			else if (item.t == ExprTokenType_sequence) {resolved_var = expr_exec(state, item.seq, true);}
+			// Execute...
 			result = op->exec(*op, state, result, resolved_var, op_symbol);
 			op = nullptr;
 			op_symbol = "";
 			continue;
 		}
-		else if (item.var.t == OP) {
-			op_symbol = std::get<std::string>(item.var.d);
-			if (OPERATIONS.find(op_symbol) == OPERATIONS.end()) {
-				emit_error("Invalid operator \"" + op_symbol + "\".");
-				return result;
+
+		else if (item.t == ExprTokenType_variant) {
+			// Get operator.
+			if (item.var.t == OP) {
+				op_symbol = std::get<std::string>(item.var.d);
+				if (OPERATIONS.find(op_symbol) == OPERATIONS.end()) {
+					emit_error("Invalid operator \"" + op_symbol + "\".");
+					return result;
+				}
+				op = &OPERATIONS.at(op_symbol);
+				continue;
 			}
-			op = &OPERATIONS.at(op_symbol);
-			continue;
+			// Get variant.
+			else {
+				result = resolve_variant(state, item.var);
+				continue;
+			}
 		}
-		else {
-			result = resolve_variant(state, item.var);
+
+		// Get value from sub-sequence
+		else if (item.t == ExprTokenType_sequence) {
+			result = expr_exec(state, item.seq);
 			continue;
 		}
 	}
 
 	// Output result in debug mode.
-	if (debug_flags.expr_result) {
-		std::cout << ANSI.green << "\nExpression result: " << ANSI.reset << result << "\n";
+	if (debug_flags.expr_result && not subexpr) {
+		std::cout << ANSI.purple << "Expression result: " << ANSI.reset << result << "\n";
 	};
 
 	return result;
+}
+
+
+
+// Tokenize then execute an expression.
+Variant expr_run(ScopeState& state, std::string expr) {
+	ExprToken token = expr_tokenize(expr);
+	return expr_exec(state, token.seq);
 }

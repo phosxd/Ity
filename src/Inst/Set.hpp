@@ -34,7 +34,7 @@ void INST_Set_exec(Instruction& inst, ScopeState& state, std::vector<std::string
 	Variant var = get_data_globally(state, name);
 	// Get value from expression.
 	current_column += count_non_empty_strings({symbol,name,op}) + symbol.size() + name.size() + op.size();
-	Variant value = expr_exec(state, expr);
+	Variant value = expr_run(state, expr);
 
 	// Set variable data.
 	if (op == "=" || op == "") {
