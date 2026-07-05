@@ -6,6 +6,10 @@
 #include <chrono>
 
 
+using Clock = std::chrono::high_resolution_clock;
+using ClockType = std::chrono::time_point<std::chrono::high_resolution_clock>;
+
+
 struct ANSI_struct {
 	std::string reset = "\033[0m";
 	std::string black = "\x1B[30m";
@@ -29,7 +33,7 @@ const ANSI_struct ANSI;
 debug_flags_struct debug_flags;
 
 
-std::chrono::time_point<std::chrono::high_resolution_clock> clock_start;
+ClockType clock_start;
 unsigned int current_line = 1;
 unsigned int current_column = 1;
 

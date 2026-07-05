@@ -372,9 +372,9 @@ std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
 // ------------
 
 struct Instruction {
-	unsigned int REQUIRED = 0;
-	int OPTIONAL = 0;
-	void (*exec)(Instruction& inst, ScopeState& state, std::vector<std::string> args, std::string symbol) = nullptr;
+	uint8_t REQUIRED = 0;
+	int8_t OPTIONAL = 0;
+	void (*exec)(const Instruction& inst, ScopeState& state, const std::vector<std::string>& args, const std::string& symbol) = nullptr;
 };
 
 

@@ -4,7 +4,7 @@
 #include "../ScriptErrors.hpp"
 
 
-void INST_Set_exec(Instruction& inst, ScopeState& state, std::vector<std::string> args, std::string symbol) {
+void INST_Set_exec(const Instruction& inst, ScopeState& state, const std::vector<std::string>& args, const std::string& symbol) {
 	const unsigned int args_len = args.size();
 	std::string name;
 	std::string op = "";

@@ -31,7 +31,7 @@ std::unordered_map<std::string, Operation> OPERATIONS = {
 std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
 
 
-bool is_valid_name(std::string name) {
+bool is_valid_name(const std::string name) {
 	unsigned int name_len = name.size();
 	for(unsigned int i = 0; i < name_len; i++) {
 		bool is_digit = (NUM.find(name[i]) != std::string::npos);
@@ -42,7 +42,7 @@ bool is_valid_name(std::string name) {
 }
 
 
-bool is_special_symbol(char ch) {
+bool is_special_symbol(const char ch) {
 	return (
 		ALPHA.find(ch) == std::string::npos
 		&& NUM.find(ch) == std::string::npos
@@ -51,7 +51,7 @@ bool is_special_symbol(char ch) {
 }
 
 
-bool check_ahead(std::string& text, unsigned int start_idx, std::string substr, bool ignore_spaces=false) {
+bool check_ahead(const std::string& text, const unsigned int start_idx, const std::string substr, const bool ignore_spaces=false) {
 	unsigned int substr_len = substr.size();
 	if (text.size() > start_idx+substr_len) {return false;}
 	for (unsigned int i = 0; i < substr_len; i++) {
@@ -62,7 +62,7 @@ bool check_ahead(std::string& text, unsigned int start_idx, std::string substr, 
 }
 
 
-VariantData get_literal_from_str(VariantType type, std::string& str_val) {
+VariantData get_literal_from_str(const VariantType type, const std::string& str_val) {
 	if (type == OP || type == REF || type == STR) {return str_val;}
 	else if (type == BOOL) {return (str_val == "true");}
 	else if (type == INT) {
@@ -78,7 +78,7 @@ VariantData get_literal_from_str(VariantType type, std::string& str_val) {
 
 
 // Tokenize an expression. Returns an ExprToken with type "ExprTokenType_sequence".
-ExprToken expr_tokenize(std::string expr, unsigned int ln=0, unsigned int col=0) {
+ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int col=0) {
 	ExprToken result_token = ExprToken{current_line, current_column};
 	result_token.t = ExprTokenType_sequence;
 
@@ -306,7 +306,7 @@ Variant resolve_variant(ScopeState& state, Variant& item) {
 
 
 // Execute a sequence of ExprTokens.
-Variant expr_exec(ScopeState& state, std::vector<ExprToken>& sequence, bool subexpr=false) {
+Variant expr_exec(ScopeState& state, const std::vector<ExprToken>& sequence, const bool subexpr=false) {
 	// Output sequence in debug mode.
 	if (debug_flags.expr_seq && not subexpr) {
 		std::cout << ANSI.purple << "ExprToken Sequence: " << ANSI.reset << sequence << "\n";
@@ -371,7 +371,7 @@ Variant expr_exec(ScopeState& state, std::vector<ExprToken>& sequence, bool sube
 
 
 // Tokenize then execute an expression.
-Variant expr_run(ScopeState& state, std::string expr) {
+Variant expr_run(ScopeState& state, const std::string& expr) {
 	ExprToken token = expr_tokenize(expr);
 	return expr_exec(state, token.seq);
 }

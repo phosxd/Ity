@@ -174,6 +174,9 @@ int main(int argc, char *argv[]) {
 		if (arg_str[0] == '-') {flags.push_back(arg_str);}
 	}
 
+	std::string source_script_path = "";
+	if (argc > 1 && argv[argc-1][0] != '-') {source_script_path = argv[argc-1];}
+
 	// Set debug flags
 	if (exists_in_vec(flags, "-d-full")) {
 		debug_flags.result = true;
@@ -196,13 +199,15 @@ int main(int argc, char *argv[]) {
 
 
 	ScopeState state = create_new_scope_state({});
+	std::vector<ClockType> timers;
+	for (unsigned int i = 0; i < 2; i++) {timers.push_back(Clock::now());}
 
 
 	// Parse & execute script file...
-	if (argc > 1 && argv[argc-1][0] != '-') {
-		std::ifstream f (argv[argc-1], std::ios::in | std::ios::binary);
+	if (source_script_path.empty() == false) {
+		std::ifstream f (source_script_path, std::ios::in | std::ios::binary);
 		if (f.is_open() == false) {
-			std::cerr << "Unable to open script at \"" << argv[argc-1] << "\".\n";
+			std::cerr << "Unable to open script at \"" << source_script_path << "\".\n";
 			return 0;
 		}
 
@@ -211,11 +216,13 @@ int main(int argc, char *argv[]) {
 		std::string script = ss.str();
 		f.close();
 
-		// Start timer.
-		clock_start = std::chrono::high_resolution_clock::now();
+		clock_start = Clock::now();
 
 		// Tokenize the script.
+		timers[0] = Clock::now();
 		std::vector<InstToken> sequence = tokenize(script);
+		timers[1] = Clock::now();
+
 		// Execute tokens.
 		exec(sequence, state);
 	}
@@ -247,12 +254,15 @@ int main(int argc, char *argv[]) {
 
 	// Output program results in debug mode.
 	if (debug_flags.result) {
-		auto end = std::chrono::high_resolution_clock::now();
-		unsigned int micro = std::chrono::duration_cast<std::chrono::microseconds>(end-clock_start).count();
-		unsigned int milli = std::chrono::duration_cast<std::chrono::milliseconds>(end-clock_start).count();
+		auto total_end = std::chrono::high_resolution_clock::now();
+		std::vector<std::vector<long int>> times = {
+			{std::chrono::duration_cast<std::chrono::microseconds>(total_end-clock_start).count(),std::chrono::duration_cast<std::chrono::milliseconds>(total_end-clock_start).count()},
+			{std::chrono::duration_cast<std::chrono::microseconds>(timers[1]-timers[0]).count(), std::chrono::duration_cast<std::chrono::milliseconds>(timers[1]-timers[0]).count()},
+		};
 		std::cout << "\n\n" << "Program results...\n------------------\n";
-		std::cout << "TIME: " << std::to_string(milli/1000.0) << "s (" << micro << "us).\n";
-		std::cout << "STATE:\n	" << state << '\n';
+		if (source_script_path.empty() == false) {std::cout << "TIME (Inst-Tokenization): " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
+		std::cout <<                                           "TIME (total):             " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
+		std::cout <<                                           "STATE:\n	" << state << '\n';
 		std::cout << '\n';
 	}
 
