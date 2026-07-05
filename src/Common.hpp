@@ -5,13 +5,12 @@
 #include <vector>
 #include <unordered_map>
 #include <variant>
-#include <algorithm>
 
 #include "ScriptErrors.hpp"
 
 
-template<class D_um>
-std::ostream& display_unordered_map(std::ostream& os, const D_um& s) {
+template<class T_display_unordered_map_s>
+std::ostream& display_unordered_map(std::ostream& os, const T_display_unordered_map_s& s) {
 	os << '{';
 	const unsigned int len = s.size();
 	unsigned int idx = 0;
@@ -24,8 +23,8 @@ std::ostream& display_unordered_map(std::ostream& os, const D_um& s) {
 }
 
 
-template<class D_v>
-std::ostream& display_vector(std::ostream& os, const D_v& s) {
+template<class T_display_vector_s>
+std::ostream& display_vector(std::ostream& os, const T_display_vector_s& s) {
 	os << '[';
 	const unsigned int len = s.size();
 	for (unsigned int i = 0; i < len; i++) {
@@ -49,9 +48,15 @@ std::ostream& operator<<(std::ostream& os, const std::monostate& s) {
 std::ostream& operator<<(std::ostream& os, const uint8_t& s) {
 	return os << std::to_string(s); // Convert to string, otherwie displays as empty.
 }
-// vector<string>
-std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& s) {
+// vector
+template<class T_operator_lshift_vector_s>
+std::ostream& operator<<(std::ostream& os, const std::vector<T_operator_lshift_vector_s>& s) {
 	return display_vector(os, s);
+}
+// unordered_map
+template<class T_operator_lshift_umap_key_s, class T_operator_lshift_umap_value_s>
+std::ostream& operator<<(std::ostream& os, const std::unordered_map<T_operator_lshift_umap_key_s, T_operator_lshift_umap_value_s>& s) {
+	return display_unordered_map(os, s);
 }
 
 
@@ -116,10 +121,6 @@ VariantType get_variant_type_from_name(std::string name) {
 
 std::ostream& operator<<(std::ostream& os, const VariantType& s) {
 	return os << get_variant_type_name(s);
-}
-// Vector.
-std::ostream& operator<<(std::ostream& os, const std::vector<VariantType>& s) {
-	return display_vector(os, s);
 }
 
 
@@ -296,15 +297,6 @@ struct Variant {
 std::ostream& operator<<(std::ostream& os, const Variant& s) {
 	return os << "{t=" << s.t << ", d=" << s.d << ", m=" << s.m << '}';
 }
-// Vector.
-std::ostream& operator<<(std::ostream& os, const std::vector<Variant>& s) {
-	return display_vector(os, s);
-}
-// Unordered string map.
-std::ostream& operator<<(std::ostream& os, const std::unordered_map<std::string,Variant>& s) {
-	return display_unordered_map(os, s);
-}
-
 
 
 
@@ -321,14 +313,6 @@ struct InstToken {
 
 std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 	return os << "{ln=" << s.ln << ", col=" << s.col << ", args=" << s.args << '}';
-}
-// Vector.
-std::ostream& operator<<(std::ostream& os, const std::vector<InstToken>& s) {
-	return display_vector(os, s);
-}
-// Unordered string map.
-std::ostream& operator<<(std::ostream& os, const std::unordered_map<std::string,InstToken>& s) {
-	return display_unordered_map(os, s);
 }
 
 
@@ -347,14 +331,6 @@ struct ExprToken {
 
 std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 	return os << "{ln=" << s.ln << ", col=" << s.col << ", var=" << s.var << '}';
-}
-// Vector.
-std::ostream& operator<<(std::ostream& os, const std::vector<ExprToken>& s) {
-	return display_vector(os, s);
-}
-// Unordered string map.
-std::ostream& operator<<(std::ostream& os, const std::unordered_map<std::string,ExprToken>& s) {
-	return display_unordered_map(os, s);
 }
 
 
@@ -401,12 +377,6 @@ struct Operation {
 	std::unordered_map<VariantType,std::vector<VariantType>> type_map;
 	Variant (*exec)(Operation& op, ScopeState& state, Variant& first, Variant& second, std::string symbol) = nullptr;
 };
-
-
-// Unordered VariantDataType map.
-std::ostream& operator<<(std::ostream& os, const std::unordered_map<VariantType,std::vector<VariantType>>& s) {
-	return display_unordered_map(os, s);
-}
 
 
 
@@ -471,13 +441,12 @@ bool is_int_str_32_in_range(std::string int_str) {
 }
 
 
-bool exists_in_strvec(std::vector<std::string>& v, std::string& val) {
-	return (std::find(v.begin(), v.end(), val) != v.end());
-}
-
-
-bool exists_in_vtvec(std::vector<VariantType>& v, VariantType val) {
-	return (std::find(v.begin(), v.end(), val) != v.end());
+template<class T_exists_in_vec_v, class T_exists_in_vec_val>
+bool exists_in_vec(T_exists_in_vec_v& v, T_exists_in_vec_val& val) {
+	for (auto i:v) {
+		if (i == val) {return true;}
+	}
+	return false;
 }
 
 
@@ -496,7 +465,7 @@ void CheckOperationExec(Operation& op, ScopeState& state, Variant& first, Varian
 		return;
 	}
 
-	if (exists_in_vtvec(op.type_map.at(first.t), second.t) == false) {
+	if (exists_in_vec(op.type_map.at(first.t), second.t) == false) {
 		emit_error(err_operand_type_mismatch(op_str, get_variant_type_name(first.t), get_variant_type_name(second.t)));
 		return;
 	}
