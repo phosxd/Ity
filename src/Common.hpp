@@ -41,6 +41,10 @@ std::ostream& display_vector(std::ostream& os, const D_v& s) {
 // Misc display overloads.
 // -----------------------
 
+// std::monostate
+std::ostream& operator<<(std::ostream& os, const std::monostate& s) {
+	return os << "std::monostate";
+}
 // uint8_t
 std::ostream& operator<<(std::ostream& os, const uint8_t& s) {
 	return os << std::to_string(s); // Convert to string, otherwie displays as empty.
@@ -435,8 +439,8 @@ std::string join_str(std::vector<std::string>& vec, std::string sep) {
 
 // Returns the number of strings that are empty inside the given vector.
 unsigned int count_non_empty_strings(std::vector<std::string> items) {
+	const unsigned int items_len = items.size();
 	unsigned int count = 0;
-	unsigned int items_len = items.size();
 	for (unsigned int i = 0; i < items_len; i++) {
 		if (items[i].empty() == false) {
 			count++;

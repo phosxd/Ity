@@ -35,6 +35,7 @@ std::vector<InstToken> tokenize(std::string src) {
 	bool is_start = true;
 	bool is_comment = false;
 	bool is_string = false;
+	bool is_escaped_char = false;
 	char string_type;
 
 	for (unsigned int i = 0; i < src_len; i++) {
@@ -63,8 +64,20 @@ std::vector<InstToken> tokenize(std::string src) {
 			is_start = false;
 		}
 
-		// End string.
 		if (is_string) {
+			// End escaped.
+			if (is_escaped_char == true) {
+				is_escaped_char = false;
+				buffer.push_back(src[i]);
+				continue;
+			}
+			// Start escaped.
+			if (src[i] == '\\') {
+				is_escaped_char = true;
+				buffer.push_back(src[i]); // Keep backslash, in case it is needed for an expression.
+				continue;
+			}
+			// End string.
 			if (src[i] == string_type) {
 				is_string = false;
 				buffer.push_back(src[i]);
@@ -165,12 +178,13 @@ int main(int argc, char *argv[]) {
 		// Execute tokens.
 		ScopeState state = exec(sequence);
 		// Output the state.
-		std::cout << state << "\n";
+		std::cout << state << '\n';
 
 		// Time it.
 		auto end = std::chrono::high_resolution_clock::now();
-		unsigned int milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end-clock_start).count();
-		std::cout << "Program finished in " << (float)milliseconds/1000.0 << "s.\n";
+		unsigned int micro = std::chrono::duration_cast<std::chrono::microseconds>(end-clock_start).count();
+		unsigned int milli = std::chrono::duration_cast<std::chrono::milliseconds>(end-clock_start).count();
+		std::cout << "Program finished in " << std::to_string(milli/1000.0) << "s (" << micro << "us).\n";
 	}
 
 	return 0;

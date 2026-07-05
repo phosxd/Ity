@@ -103,6 +103,7 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 	bool is_start = true;
 	bool is_operator = false;
 	bool is_string = false;
+	bool is_escaped_char = false;
 	char string_type;
 
 	for (unsigned int i = 0; i < expr_len; i++) {
@@ -114,6 +115,17 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 		}
 
 		if (is_string) {
+			// End escaped.
+			if (is_escaped_char == true) {
+				is_escaped_char = false;
+				buffer.push_back(expr[i]);
+				continue;
+			}
+			// Start escaped.
+			if (expr[i] == '\\') {
+				is_escaped_char = true;
+				continue;
+			}
 			// End string.
 			if (expr[i] == string_type) {
 				is_string = false;

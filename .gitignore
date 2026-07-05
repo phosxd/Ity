@@ -35,3 +35,8 @@
 
 # Python excludes:
 *.pyc
+
+
+# Excluded tests
+Tests/SpeedTest.ity
+Tests/SpeedTest.py

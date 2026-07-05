@@ -1,0 +1,61 @@
+# Comment comprehension;
+# ---------------------;
+
+# Comment;
+#
+	Multi-line
+	comment
+;
+
+# Comment; # Another comment;
+# "literals" inside of a comment;
+###; #\n;
+
+
+
+
+# Assignment;
+# ----------;
+
+var NONE _a;
+var BOOL _b = true;
+set _b = false;
+
+var INT _c = 0;
+set _c = 00;
+set _c = 0_0;
+set _c = 0 0;
+set _c = 01;
+set _c = 00000000000000000001;
+set _c = -0;
+set _c = -1;
+set _c = - 10 0_0;
+
+var FLOAT _d = 0.0;
+set _d = 0.00000000000001;
+set _d = 1.0;
+set _d = 100 000 000 . 500;
+set _d = -0.0;
+set _d = -1.0;
+set _d = -0.001;
+set _d = -100 000 000 . 500;
+
+var STR _e = 'a';
+set _e = "a";
+set _e = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+set _e = "
+	multi
+	line
+	string
+";
+set _e = '\;';
+set _e = '\'escape\'';
+
+var ANY _j = none;
+set _j = true;
+set _j = false;
+set _j = 0;
+set _j = 1;
+set _j = 1.123;
+set _j = "a";
+set _j = "abc";
