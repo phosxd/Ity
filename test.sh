@@ -1,27 +1,9 @@
+log_file="TestResults.txt"
 
-# Comprehension test.
 
-echo
 echo
 echo "Testing interpreter comprehension..."
-echo
 
-./Ity.bin Tests/CompTest.ity
+./Ity.bin -d Tests/CompTest.ity > $log_file
 
-echo
-echo "Test completed. Check for errors."
-
-
-
-
-# Speed test.
-
-# echo
-# echo
-# echo "Testing interpreter speed..."
-# echo
-#
-# ./Ity.bin Tests/SpeedTest.ity
-#
-# echo
-# echo "Test completed. Check for errors."
+echo "Tests completed. Logs printed to \"$log_file\"."

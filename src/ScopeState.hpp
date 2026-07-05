@@ -87,6 +87,11 @@ Variant get_data_globally(ScopeState& state, std::string& name) {
 // If mode is "1" (constant & locked type), will throw an error when if the name is already taken in the current scope.
 // If mode is "2" (locked type), will throw an error if the data type does not match the given type.
 void set_data(ScopeState& state, std::string& name, VariantType type, VariantData& data, uint8_t mode) {
+	// Output function call in debug mode...
+	if (debug_flags.data_assign) {
+		std::cout << '\n' << ANSI.blue << "Data assignment:" << ANSI.reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
+	}
+
 	if (is_name_free(state, name) == false) {
 		Variant var = get_data(state, name);
 		if (var.m == 1) {

@@ -59,3 +59,40 @@ set _j = 1;
 set _j = 1.123;
 set _j = "a";
 set _j = "abc";
+
+
+
+
+# Mathematical expression;
+# -----------------------;
+
+0 + 0;
+1 + 1;
+1+1;
+1    +   1;
+1.0 + 1.0;
+
+0 - 0;
+1 - 1;
+
+2 * 4;
+2 * 2.5;
+
+8 / 2;
+8 / 1.5;
+
+
+# String addition & multiplication;
+
+"Hello" + ' World';
+"Hello" + " " + "World" + "!";
+"a" * 100;
+
+
+
+
+# Expression syntax;
+# -----------------;
+
+"early") + "exit";
+

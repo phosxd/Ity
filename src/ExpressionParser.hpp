@@ -137,6 +137,11 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 			// Ignore spaces.
 			if (expr[i] == ' ' || expr[i] == '\n' || expr[i] == '\t') {continue;}
 
+			// End expression.
+			if (expr[i] == ')') {
+				break;
+			}
+
 			if (is_start) {
 				item = ExprToken{ln,col};
 				if (NUM.find(expr[i]) != std::string::npos) {
@@ -234,7 +239,12 @@ Variant resolve_variant(ScopeState& state, Variant& item) {
 
 Variant expr_exec(ScopeState& state, std::string expr) {
 	std::vector<ExprToken> sequence = expr_tokenize(expr);
-	//std::cout << "EXPR SEQ: " << sequence << "\n";
+
+	// Output sequence in debug mode.
+	if (debug_flags.expr_seq) {
+		std::cout << "\nExprToken Sequence: " << sequence << "\n";
+	};
+
 	const unsigned int seq_len = sequence.size();
 	Variant result;
 	Operation* op = nullptr;
@@ -265,6 +275,11 @@ Variant expr_exec(ScopeState& state, std::string expr) {
 			continue;
 		}
 	}
+
+	// Output result in debug mode.
+	if (debug_flags.expr_result) {
+		std::cout << ANSI.green << "\nExpression result: " << ANSI.reset << result << "\n";
+	};
 
 	return result;
 }

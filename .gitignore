@@ -40,3 +40,4 @@
 # Excluded tests
 Tests/SpeedTest.ity
 Tests/SpeedTest.py
+TestResults.txt

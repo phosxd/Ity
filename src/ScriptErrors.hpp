@@ -1,12 +1,39 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
+
 #include <chrono>
 
 
+struct ANSI_struct {
+	std::string reset = "\033[0m";
+	std::string black = "\x1B[30m";
+	std::string red = "\x1B[31m";
+	std::string green = "\x1B[32m";
+	std::string orange = "\x1B[33m";
+	std::string blue = "\x1B[34m";
+	std::string purple = "\x1B[35m";
+	std::string white = "\x1B[37m";
+	std::string yellow = "\x1B[93m";
+};
+
+struct debug_flags_struct {
+	bool result = false;        // Print program results when done.
+	bool expr_seq = false;      // Print ExprToken sequences directly after tokenization.
+	bool expr_result = false;   // Print result of ExprToken directly after execution.
+	bool data_assign = false;   // Print data being assigned to the current state.
+};
+
+const ANSI_struct ANSI;
+debug_flags_struct debug_flags;
+
+
 std::chrono::time_point<std::chrono::high_resolution_clock> clock_start;
-unsigned int current_line = 0;
-unsigned int current_column = 0;
+unsigned int current_line = 1;
+unsigned int current_column = 1;
+
+bool debug_mode = false;
 
 
 std::string err_name_does_not_exist(std::string name) {
@@ -42,11 +69,11 @@ std::string get_script_pos(unsigned int ln_override=0, unsigned int col_override
 
 
 void emit_warn(std::string message) {
-	std::cout << "WARNING at (" << get_script_pos() << "): " << message << "\n";
+	std::cout << ANSI.yellow << "WARNING at (" << ANSI.orange << get_script_pos() << ANSI.yellow << "): " << ANSI.white << message << ANSI.reset << "\n";
 }
 
 
 void emit_error(std::string message, unsigned int ln_override=0, unsigned int col_override=0) {
-	std::cout << "ERROR at (" << get_script_pos(ln_override, col_override) << "): " << message << "\n";
+	std::cout << ANSI.red << "ERROR at (" << ANSI.orange << get_script_pos(ln_override, col_override) << ANSI.red << "): " << ANSI.white << message << ANSI.reset << "\n";
 	exit(1);
 }

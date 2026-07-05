@@ -9,22 +9,26 @@
 #include "ScriptErrors.hpp"
 
 
-template<class T_display_unordered_map_s>
-std::ostream& display_unordered_map(std::ostream& os, const T_display_unordered_map_s& s) {
-	os << '{';
-	const unsigned int len = s.size();
-	unsigned int idx = 0;
-	for (auto i:s) {
-		if (idx != 0) {os << ", ";}
-		os << i.first << '=' << i.second;
-		idx++;
-	}
-	return os << '}';
+
+
+// Misc display overloads.
+// -----------------------
+
+// std::monostate
+std::ostream& operator<<(std::ostream& os, const std::monostate& s) {
+	return os << "std::monostate";
 }
 
 
-template<class T_display_vector_s>
-std::ostream& display_vector(std::ostream& os, const T_display_vector_s& s) {
+// uint8_t
+std::ostream& operator<<(std::ostream& os, const uint8_t& s) {
+	return os << std::to_string(s); // Convert to string, otherwie displays as empty.
+}
+
+
+// vector
+template<class T_operator_lshift_vector_s>
+std::ostream& operator<<(std::ostream& os, const std::vector<T_operator_lshift_vector_s>& s) {
 	os << '[';
 	const unsigned int len = s.size();
 	for (unsigned int i = 0; i < len; i++) {
@@ -35,28 +39,18 @@ std::ostream& display_vector(std::ostream& os, const T_display_vector_s& s) {
 }
 
 
-
-
-// Misc display overloads.
-// -----------------------
-
-// std::monostate
-std::ostream& operator<<(std::ostream& os, const std::monostate& s) {
-	return os << "std::monostate";
-}
-// uint8_t
-std::ostream& operator<<(std::ostream& os, const uint8_t& s) {
-	return os << std::to_string(s); // Convert to string, otherwie displays as empty.
-}
-// vector
-template<class T_operator_lshift_vector_s>
-std::ostream& operator<<(std::ostream& os, const std::vector<T_operator_lshift_vector_s>& s) {
-	return display_vector(os, s);
-}
 // unordered_map
 template<class T_operator_lshift_umap_key_s, class T_operator_lshift_umap_value_s>
 std::ostream& operator<<(std::ostream& os, const std::unordered_map<T_operator_lshift_umap_key_s, T_operator_lshift_umap_value_s>& s) {
-	return display_unordered_map(os, s);
+	os << '{';
+	const unsigned int len = s.size();
+	unsigned int idx = 0;
+	for (auto i:s) {
+		if (idx != 0) {os << ", ";}
+		os << i.first << '=' << i.second;
+		idx++;
+	}
+	return os << '}';
 }
 
 
@@ -82,6 +76,7 @@ enum VariantType {
 	MAP,
 };
 
+
 // Get string representation of a VariantType.
 std::string get_variant_type_name(VariantType type) {
 	switch (type) {
@@ -100,6 +95,7 @@ std::string get_variant_type_name(VariantType type) {
 	}
 	return "NONE";
 }
+
 
 // Get VariantType from a string representation.
 VariantType get_variant_type_from_name(std::string name) {
@@ -133,6 +129,7 @@ struct VariantDataStr {
 	std::string v;
 };
 
+
 using VariantData = std::variant<
 	std::monostate,
 	bool,
@@ -156,6 +153,30 @@ VariantType get_variant_data_type(const VariantData& d) {
 	// }
 	return NONE;
 }
+
+
+std::ostream& operator<<(std::ostream& os, const VariantData& s) {
+	if (std::holds_alternative<std::monostate>(s)) {
+		os << std::get<std::monostate>(s);
+	}
+	else if (std::holds_alternative<bool>(s)) {
+		os << std::get<bool>(s);
+	}
+	else if (std::holds_alternative<int>(s)) {
+		os << std::get<int>(s);
+	}
+	else if (std::holds_alternative<float>(s)) {
+		os << std::to_string(std::get<float>(s)); // `std::cout` wont show the full precision by default, so we convert to string.
+	}
+	else if (std::holds_alternative<std::string>(s)) {
+		os << std::get<std::string>(s);
+	}
+	else if (std::holds_alternative<VariantDataStr>(s)) {
+		os << std::get<VariantDataStr>(s).v;
+	}
+	return os;
+}
+
 
 
 VariantData operator+(const VariantData& a, const VariantData& b) {
@@ -262,27 +283,6 @@ VariantData operator/(const VariantData& a, const VariantData& b) {
 }
 
 
-std::ostream& operator<<(std::ostream& os, const VariantData& s) {
-	if (std::holds_alternative<std::monostate>(s)) {
-		os << std::get<std::monostate>(s);
-	}
-	else if (std::holds_alternative<bool>(s)) {
-		os << std::get<bool>(s);
-	}
-	else if (std::holds_alternative<int>(s)) {
-		os << std::get<int>(s);
-	}
-	else if (std::holds_alternative<float>(s)) {
-		os << std::to_string(std::get<float>(s)); // `std::cout` wont show the full precision by default, so we convert to string.
-	}
-	else if (std::holds_alternative<std::string>(s)) {
-		os << std::get<std::string>(s);
-	}
-	return os;
-}
-
-
-
 
 // Variant.
 // --------
@@ -346,7 +346,7 @@ struct ScopeState {
 
 
 std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
-	os << "ScopeState{p=" << s.p << ", " << s.d << "}";
+	os << "ScopeState{p=" << s.p << ", d=" << s.d << "}";
 	return os;
 }
 
@@ -364,7 +364,7 @@ struct Instruction {
 
 
 std::ostream& operator<<(std::ostream& os, const Instruction& s) {
-	return os << "Instruction{}";
+	return os << "Instruction{REQUIRED=" << s.REQUIRED << ", OPTIONAL=" << s.OPTIONAL << "}";
 }
 
 
@@ -379,19 +379,30 @@ struct Operation {
 };
 
 
+std::ostream& operator<<(std::ostream& os, const Operation& s) {
+	return os << "Operation{type_map=" << s.type_map << "}";
+}
+
+
 
 
 // Misc utility functions.
 // -----------------------
 
 
-// Returns a new string with all instances of `ch` removed from the start of the given string.
+// Returns the string with all instances of `ch` removed from the start of it.
 std::string trim_left(std::string& text, char ch) {
-	int start = text.find_first_not_of(ch);
-	if (start == std::string::npos) {return text;}
-	int end = text.find_last_not_of(ch);
-	if (end == std::string::npos) {return text;}
-	return text.substr(start, (end-start+1));
+	const unsigned int text_len = text.size();
+	if (text_len == 0) {return text;}
+	if (text.at(0) != ch) {return text;}
+	bool ended = false;
+	std::string result;
+	result.reserve(text_len);
+	for (unsigned int i = 0; i < text_len; i++) {
+		if (text.at(i) != ch) {ended = true;}
+		if (ended == true) {result.push_back(text.at(i));}
+	}
+	return result;
 }
 
 
@@ -436,7 +447,7 @@ bool is_int_str_32_in_range(std::string int_str) {
 
 	uint8_t i = 0;
 	if (negative) {i++;}
-	if (int_str[i] == '1') {return true;}
+	if (int_str.at(i) == '1') {return true;}
 	return false;
 }
 

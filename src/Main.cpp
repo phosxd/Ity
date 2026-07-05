@@ -29,8 +29,8 @@ std::vector<InstToken> tokenize(std::string src) {
 	std::string buffer;
 	buffer.reserve(src_len);
 	InstToken item;
-	unsigned int ln = 1;
-	unsigned int col = 0;
+	unsigned int ln = current_line;
+	unsigned int col = current_column-1;
 
 	bool is_start = true;
 	bool is_comment = false;
@@ -134,9 +134,8 @@ std::vector<InstToken> tokenize(std::string src) {
 
 
 // Execute a sequence of instruction tokens.
-ScopeState exec(std::vector<InstToken> sequence) {
+ScopeState exec(std::vector<InstToken> sequence, ScopeState& state) {
 	const unsigned int seq_len = sequence.size();
-	ScopeState state = create_new_scope_state({});
 
 	for (unsigned int i = 0; i < seq_len; i++) {
 		InstToken item = sequence[i];
@@ -167,10 +166,43 @@ ScopeState exec(std::vector<InstToken> sequence) {
 
 
 int main(int argc, char *argv[]) {
-	if (argc == 2) {
-		std::ifstream f (argv[1], std::ios::in | std::ios::binary);
+	// Get command line flags...
+	std::vector<std::string> flags;
+	for (unsigned int i = 0; i < argc; i++) {
+		std::string arg_str (argv[i]);
+		if (arg_str.size() < 2) {continue;}
+		if (arg_str[0] == '-') {flags.push_back(arg_str);}
+	}
+
+	// Set debug flags
+	if (exists_in_vec(flags, "-d-full")) {
+		debug_flags.result = true;
+		debug_flags.expr_seq = true;
+		debug_flags.expr_result = true;
+		debug_flags.data_assign = true;
+	}
+	if (exists_in_vec(flags, "-d-result")) {
+		debug_flags.result = true;
+	}
+	if (exists_in_vec(flags, "-d-expr-seq")) {
+		debug_flags.expr_seq = true;
+	}
+	if (exists_in_vec(flags, "-d-expr-result")) {
+		debug_flags.expr_result = true;
+	}
+	if (exists_in_vec(flags, "-d-data-assign")) {
+		debug_flags.data_assign = true;
+	}
+
+
+	ScopeState state = create_new_scope_state({});
+
+
+	// Parse & execute script file...
+	if (argc > 1 && argv[argc-1][0] != '-') {
+		std::ifstream f (argv[argc-1], std::ios::in | std::ios::binary);
 		if (f.is_open() == false) {
-			std::cerr << "Unable to open script at \"" << argv[1] << "\".\n";
+			std::cerr << "Unable to open script at \"" << argv[argc-1] << "\".\n";
 			return 0;
 		}
 
@@ -185,15 +217,43 @@ int main(int argc, char *argv[]) {
 		// Tokenize the script.
 		std::vector<InstToken> sequence = tokenize(script);
 		// Execute tokens.
-		ScopeState state = exec(sequence);
-		// Output the state.
-		std::cout << state << '\n';
+		exec(sequence, state);
+	}
 
-		// Time it.
+
+	// Run interactive interpreter...
+	else {
+		// Start timer.
+		clock_start = std::chrono::high_resolution_clock::now();
+
+		// Input loop...
+		while (true) {
+			std::cout << "\n>> ";
+			std::string command;
+			std::getline(std::cin, command);
+			if (command == "exit") {
+				break;
+			}
+			else {
+				command += ';';
+				// Tokenize the command.
+				std::vector<InstToken> sequence = tokenize(command);
+				// Execute tokens.
+				exec(sequence, state);
+			}
+		}
+	}
+
+
+	// Output program results in debug mode.
+	if (debug_flags.result) {
 		auto end = std::chrono::high_resolution_clock::now();
 		unsigned int micro = std::chrono::duration_cast<std::chrono::microseconds>(end-clock_start).count();
 		unsigned int milli = std::chrono::duration_cast<std::chrono::milliseconds>(end-clock_start).count();
-		std::cout << "Program finished in " << std::to_string(milli/1000.0) << "s (" << micro << "us).\n";
+		std::cout << "\n\n" << "Program results...\n------------------\n";
+		std::cout << "TIME: " << std::to_string(milli/1000.0) << "s (" << micro << "us).\n";
+		std::cout << "STATE:\n	" << state << '\n';
+		std::cout << '\n';
 	}
 
 	return 0;
