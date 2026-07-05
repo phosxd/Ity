@@ -37,7 +37,6 @@ Operation OP_Subtract {
 	{
 		{INT, {INT,FLOAT}},
 		{FLOAT, {FLOAT,INT}},
-		{ANY, {ANY,INT,FLOAT}},
 	},
 	OP_Subtract_exec,
 };

@@ -59,6 +59,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& s) {
 
 enum VariantType {
 	// Meta types.
+	INFERRED,
 	ANY,
 	OP,
 	REF,
@@ -76,6 +77,7 @@ enum VariantType {
 std::string get_variant_type_name(VariantType type) {
 	switch (type) {
 		// Meta types.
+		case INFERRED: return "*";
 		case ANY: return "ANY";
 		case OP: return "OP";
 		case REF: return "REF";
@@ -93,7 +95,8 @@ std::string get_variant_type_name(VariantType type) {
 // Get VariantType from a string representation.
 VariantType get_variant_type_from_name(std::string name) {
 	// Meta types.
-	if (name == "ANY") {return ANY;}
+	if (name == "*") { return INFERRED;}
+	else if (name == "ANY") {return ANY;}
 	else if (name == "OP") {return OP;}
 	else if (name == "REF") {return REF;}
 	// Real types.
@@ -464,7 +467,7 @@ bool is_int_str_32_in_range(std::string int_str) {
 }
 
 
-bool exists_in_strvec(std::vector<std::string>& v, std::string val) {
+bool exists_in_strvec(std::vector<std::string>& v, std::string& val) {
 	return (std::find(v.begin(), v.end(), val) != v.end());
 }
 

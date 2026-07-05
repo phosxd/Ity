@@ -28,10 +28,9 @@ Variant OP_Multiply_exec(Operation& op, ScopeState& state, Variant& first, Varia
 
 Operation OP_Multiply {
 	{
-		{INT, {INT,FLOAT}},
+		{INT, {INT,FLOAT,STR}},
 		{FLOAT, {FLOAT,INT}},
 		{STR, {STR,INT}},
-		{ANY, {ANY,INT,FLOAT,STR}},
 	},
 	OP_Multiply_exec,
 };

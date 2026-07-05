@@ -53,6 +53,11 @@ void INST_Var_exec(Instruction& inst, ScopeState& state, std::vector<std::string
 	current_column += count_non_empty_strings({symbol,type_name,name,op}) + symbol.size() + type_name.size() + name.size() + op.size();
 	Variant value = expr_exec(state, expr);
 
+	// Infer the variable's type as expression return type.
+	if (type == INFERRED) {
+		type = value.t;
+	}
+
 	// Set variable data.
 	if (op == "=" || op == "") {
 		set_data(state, name, type, value.d, mode);

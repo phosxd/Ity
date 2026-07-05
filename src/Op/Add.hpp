@@ -30,8 +30,7 @@ Operation OP_Add {
 	{
 		{INT, {INT,FLOAT}},
 		{FLOAT, {FLOAT,INT}},
-		{STR, {STR,ANY}},
-		{ANY, {ANY,INT,FLOAT,STR}},
+		{STR, {STR}},
 	},
 	OP_Add_exec,
 };

@@ -30,7 +30,6 @@ Operation OP_Divide {
 	{
 		{INT, {INT,FLOAT}},
 		{FLOAT, {FLOAT,INT}},
-		{ANY, {ANY,INT,FLOAT}},
 	},
 	OP_Divide_exec,
 };
