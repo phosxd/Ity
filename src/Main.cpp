@@ -36,6 +36,8 @@ std::vector<InstToken> tokenize(std::string src) {
 	bool is_comment = false;
 	bool is_string = false;
 	bool is_escaped_char = false;
+	unsigned int str_start_ln = 1;
+	unsigned int str_start_col = 0;
 	char string_type;
 
 	for (unsigned int i = 0; i < src_len; i++) {
@@ -90,6 +92,8 @@ std::vector<InstToken> tokenize(std::string src) {
 			if (src[i] == '\'' || src[i] == '"') {
 				is_string = true;
 				string_type = src[i];
+				str_start_ln = ln;
+				str_start_col = col;
 				buffer.push_back(src[i]);
 				continue;
 			}
@@ -117,6 +121,11 @@ std::vector<InstToken> tokenize(std::string src) {
 		}
 
 		buffer.push_back(src[i]);
+	}
+
+	// Throw error if unterminated string.
+	if (is_string) {
+		emit_error("String literal has no end.", str_start_ln,str_start_col);
 	}
 	return sequence;
 }
