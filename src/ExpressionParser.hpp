@@ -51,10 +51,11 @@ bool is_special_symbol(char ch) {
 }
 
 
-bool check_ahead(std::string& text, unsigned int start_idx, std::string substr) {
+bool check_ahead(std::string& text, unsigned int start_idx, std::string substr, bool ignore_spaces=false) {
 	unsigned int substr_len = substr.size();
 	if (text.size() > start_idx+substr_len) {return false;}
 	for (unsigned int i = 0; i < substr_len; i++) {
+		if (ignore_spaces == true && text[start_idx+i] == ' ') {continue;}
 		if (text[start_idx+i] != substr[i]) {return false;}
 	}
 	return true;
@@ -67,12 +68,12 @@ VariantData get_literal_from_str(VariantType type, std::string& str_val) {
 	else if (type == INT) {
 		if (is_int_str_32_in_range(str_val) == false) {
 			emit_error("Cannot initialize an integer larger than 1,999,999,999. You can go above this limit by adding numbers together, however they may wrap.");
-			return None{};
+			return std::monostate();
 		}
 		return std::stoi(str_val);
 	}
 	else if (type == FLOAT) {return std::stof(str_val);}
-	else {return None{};}
+	else {return std::monostate();}
 }
 
 
@@ -113,6 +114,7 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 		}
 
 		if (is_string) {
+			// End string.
 			if (expr[i] == string_type) {
 				is_string = false;
 				continue;
@@ -120,6 +122,7 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 		}
 
 		else {
+			// Ignore spaces.
 			if (expr[i] == ' ' || expr[i] == '\n' || expr[i] == '\t') {continue;}
 
 			if (is_start) {
@@ -148,7 +151,7 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 
 			if (is_operator == false) {
 				// Start operator.
-				if (is_special_symbol(expr[i])) {
+				if (is_special_symbol(expr[i]) == true) {
 					item.var.d = get_literal_from_str(item.var.t, buffer);
 					sequence.push_back(item);
 					item = ExprToken{ln,col};
@@ -175,7 +178,7 @@ std::vector<ExprToken> expr_tokenize(std::string expr) {
 			}
 
 			// End operator.
-			if (is_operator == true && expr_len > i+1 && not is_special_symbol(expr[i+1])) {
+			if (is_operator == true && expr_len > i+1 && (expr[i+1] == ' ' or not is_special_symbol(expr[i+1])) ) {
 				sequence.push_back(ExprToken{
 					ln,col,
 					{

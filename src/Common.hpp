@@ -58,38 +58,51 @@ std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& s) {
 
 
 enum VariantType {
+	// Meta types.
 	ANY,
-	NONE,
 	OP,
 	REF,
+	// Real types.
+	NONE,
 	BOOL,
 	INT,
 	FLOAT,
 	STR,
+	ARR,
+	MAP,
 };
-
 
 // Get string representation of a VariantType.
 std::string get_variant_type_name(VariantType type) {
-	if (type == ANY) {return "ANY";}
-	if (type == OP) {return "OP";}
-	if (type == REF) {return "REF";}
-	if (type == BOOL) {return "BOOL";}
-	if (type == INT) {return "INT";}
-	if (type == FLOAT) {return "FLOAT";}
-	if (type == STR) {return "STR";}
+	switch (type) {
+		// Meta types.
+		case ANY: return "ANY";
+		case OP: return "OP";
+		case REF: return "REF";
+		// Real types.
+		case BOOL: return "BOOL";
+		case INT: return "INT";
+		case FLOAT: return "FLOAT";
+		case STR: return "STR";
+		case ARR: return "ARR";
+		case MAP: return "MAP";
+	}
 	return "NONE";
 }
 
 // Get VariantType from a string representation.
 VariantType get_variant_type_from_name(std::string name) {
+	// Meta types.
 	if (name == "ANY") {return ANY;}
-	if (name == "OP") {return OP;}
-	if (name == "REF") {return REF;}
-	if (name == "BOOL") {return BOOL;}
-	if (name == "INT") {return INT;}
-	if (name == "FLOAT") {return FLOAT;}
-	if (name == "STR") {return STR;}
+	else if (name == "OP") {return OP;}
+	else if (name == "REF") {return REF;}
+	// Real types.
+	else if (name == "BOOL") {return BOOL;}
+	else if (name == "INT") {return INT;}
+	else if (name == "FLOAT") {return FLOAT;}
+	else if (name == "STR") {return STR;}
+	else if (name == "ARR") {return ARR;}
+	else if (name == "MAP") {return MAP;}
 	return NONE;
 }
 
@@ -108,38 +121,38 @@ std::ostream& operator<<(std::ostream& os, const std::vector<VariantType>& s) {
 // VariantData.
 // ------------
 
+struct VariantDataStr {
+	std::string v;
+};
 
-struct None{};
-std::ostream& operator<<(std::ostream& os, const None& s) {
-	return os << "None";
-}
-
-
-using VariantData = std::variant<None,bool,int,float,std::string>;
+using VariantData = std::variant<
+	std::monostate,
+	bool,
+	int,
+	float,
+	std::string,
+	// Value is stored as an expression string which will need to be processed to get the actual value.
+	VariantDataStr
+>;
 
 
 // Resolve VariantData to a real VariantType.
-VariantType get_variant_data_type(VariantData& d) {
+VariantType get_variant_data_type(const VariantData& d) {
 	if (std::holds_alternative<bool>(d)) {return BOOL;}
 	else if (std::holds_alternative<int>(d)) {return INT;}
 	else if (std::holds_alternative<float>(d)) {return FLOAT;}
 	else if (std::holds_alternative<std::string>(d)) {return STR;}
+	// else if (std::holds_alternative<VariantDataStr>(d)) {
+	// 	std::string val = std::get<VariantDataStr>(d).v;
+	// 	return get_variant_type_from_name()
+	// }
 	return NONE;
 }
 
 
 VariantData operator+(const VariantData& a, const VariantData& b) {
-	// No addition on None.
-	if (std::holds_alternative<None>(a) || std::holds_alternative<None>(b)) {
-		emit_error(err_operand_type_mismatch("add", get_variant_type_name(NONE), ""));
-	}
-	// No addition on bool.
-	else if (std::holds_alternative<bool>(a) || std::holds_alternative<bool>(b)) {
-		emit_error(err_operand_type_mismatch("add", get_variant_type_name(BOOL), ""));
-	}
-
 	// If a is string & b is string...
-	else if (std::holds_alternative<std::string>(a) && std::holds_alternative<std::string>(b)) {
+	if (std::holds_alternative<std::string>(a) && std::holds_alternative<std::string>(b)) {
 		return std::get<std::string>(a) + std::get<std::string>(b);
 	}
 	// If a is int...
@@ -158,27 +171,14 @@ VariantData operator+(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error("Unable to add variants.");
+	emit_error(err_operand_type_mismatch("add", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
 	return a;
 }
 
 
 VariantData operator-(const VariantData& a, const VariantData& b) {
-	// No subtraction on None.
-	if (std::holds_alternative<None>(a) || std::holds_alternative<None>(b)) {
-		emit_error(err_operand_type_mismatch("subtract", get_variant_type_name(NONE), ""));
-	}
-	// No subtraction on bool.
-	else if (std::holds_alternative<bool>(a) || std::holds_alternative<bool>(b)) {
-		emit_error(err_operand_type_mismatch("subtract", get_variant_type_name(BOOL), ""));
-	}
-	// No subtraction on string.
-	else if (std::holds_alternative<std::string>(a) || std::holds_alternative<std::string>(b)) {
-		emit_error(err_operand_type_mismatch("subtract", get_variant_type_name(STR), ""));
-	}
-
 	// If a is int...
-	else if (std::holds_alternative<int>(a)) {
+	if (std::holds_alternative<int>(a)) {
 		// If b is int...
 		if (std::holds_alternative<int>(b)) {return std::get<int>(a) - std::get<int>(b);}
 		// If b is float...
@@ -193,23 +193,14 @@ VariantData operator-(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error("Unable to subtract variants.");
+	emit_error(err_operand_type_mismatch("subtract", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
 	return a;
 }
 
 
 VariantData operator*(const VariantData& a, const VariantData& b) {
-	// No multiplication on None.
-	if (std::holds_alternative<None>(a) || std::holds_alternative<None>(b)) {
-		emit_error(err_operand_type_mismatch("multiply", get_variant_type_name(NONE), ""));
-	}
-	// No multiplication on bool.
-	else if (std::holds_alternative<bool>(a) || std::holds_alternative<bool>(b)) {
-		emit_error(err_operand_type_mismatch("multiply", get_variant_type_name(BOOL), ""));
-	}
-
 	// If a is string & b is int.
-	else if (std::holds_alternative<std::string>(a) && std::holds_alternative<int>(b)) {
+	if (std::holds_alternative<std::string>(a) && std::holds_alternative<int>(b)) {
 		int b_val = std::get<int>(b);
 		if (b_val < 0) {
 			emit_error("Cannot multiply string by a negative number.");
@@ -236,27 +227,14 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error("Unable to multiply variants.");
+	emit_error(err_operand_type_mismatch("multiply", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
 	return a;
 }
 
 
 VariantData operator/(const VariantData& a, const VariantData& b) {
-	// No division on None.
-	if (std::holds_alternative<None>(a) || std::holds_alternative<None>(b)) {
-		emit_error(err_operand_type_mismatch("divide", get_variant_type_name(NONE), ""));
-	}
-	// No division on bool.
-	else if (std::holds_alternative<bool>(a) || std::holds_alternative<bool>(b)) {
-		emit_error(err_operand_type_mismatch("divide", get_variant_type_name(BOOL), ""));
-	}
-	// No division on string.
-	else if (std::holds_alternative<std::string>(a) || std::holds_alternative<std::string>(b)) {
-		emit_error(err_operand_type_mismatch("divide", get_variant_type_name(STR), ""));
-	}
-
 	// If a is int...
-	else if (std::holds_alternative<int>(a)) {
+	if (std::holds_alternative<int>(a)) {
 		// If b is int...
 		if (std::holds_alternative<int>(b)) {return std::get<int>(a) / std::get<int>(b);}
 		// If b is float...
@@ -271,14 +249,14 @@ VariantData operator/(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error("Unable to divide variants.");
+	emit_error(err_operand_type_mismatch("divide", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
 	return a;
 }
 
 
 std::ostream& operator<<(std::ostream& os, const VariantData& s) {
-	if (std::holds_alternative<None>(s)) {
-		os << std::get<None>(s);
+	if (std::holds_alternative<std::monostate>(s)) {
+		os << std::get<std::monostate>(s);
 	}
 	else if (std::holds_alternative<bool>(s)) {
 		os << std::get<bool>(s);
@@ -303,7 +281,7 @@ std::ostream& operator<<(std::ostream& os, const VariantData& s) {
 
 struct Variant {
 	VariantType t = NONE;
-	VariantData d = None{};
+	VariantData d = std::monostate();
 	uint8_t m = 0;
 };
 
@@ -430,6 +408,7 @@ std::ostream& operator<<(std::ostream& os, const std::unordered_map<VariantType,
 // -----------------------
 
 
+// Returns a new string with all instances of `ch` removed from the start of the given string.
 std::string trim_left(std::string& text, char ch) {
 	int start = text.find_first_not_of(ch);
 	if (start == std::string::npos) {return text;}
@@ -439,6 +418,19 @@ std::string trim_left(std::string& text, char ch) {
 }
 
 
+// Joins all elements in the vector into a new string, with each element separated by the given `sep`.
+std::string join_str(std::vector<std::string>& vec, std::string sep) {
+	const unsigned int vec_len = vec.size();
+	std::string result = vec.front();
+	result.reserve(sep.size() * (vec.size()-1));
+	for (unsigned int i = 1; i < vec_len; i++) {
+		result += sep + vec[i];
+	}
+	return result;
+}
+
+
+// Returns the number of strings that are empty inside the given vector.
 unsigned int count_non_empty_strings(std::vector<std::string> items) {
 	unsigned int count = 0;
 	unsigned int items_len = items.size();

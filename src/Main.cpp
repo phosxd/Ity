@@ -1,7 +1,6 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <numeric>
 
 #include <iostream>
 #include <fstream>
@@ -126,7 +125,7 @@ ScopeState exec(std::vector<InstToken> sequence) {
 
 		// If not matched any instruction, run as expression.
 		if (INSTRUCTIONS.find(item.args[0]) == INSTRUCTIONS.end()) {
-			expr_exec(state, std::reduce(item.args.begin(), item.args.end()));
+			expr_exec(state, join_str(item.args, " "));
 		}
 		// Execute instruction.
 		else {

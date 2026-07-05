@@ -9,12 +9,13 @@ void INST_Set_exec(Instruction& inst, ScopeState& state, std::vector<std::string
 	std::string name;
 	std::string op = "";
 	std::string expr = "";
+	expr.reserve(args_len-inst.REQUIRED);
 	for (unsigned int i = 0; i < args_len; i++) {
 		if (i == 0) {continue;}
 		if (i == 1) {name = args[i];}
 		else if (i == 2) {op = args[i];}
 		else {
-			expr += args[i];
+			expr += ' '+args[i];
 		}
 	}
 
