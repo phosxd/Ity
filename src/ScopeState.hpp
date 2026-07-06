@@ -89,7 +89,7 @@ Variant get_data_globally(ScopeState& state, std::string& name) {
 void set_data(ScopeState& state, std::string& name, VariantType type, const VariantData& data, uint8_t mode) {
 	// Output function call in debug mode...
 	if (debug_flags.data_assign) {
-		std::cout << ANSI.blue << "Data assignment: " << ANSI.reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
+		std::cout << ANSI::blue << "Data assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
 	}
 
 	if (is_name_free(state, name) == false) {

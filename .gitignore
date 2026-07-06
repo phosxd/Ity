@@ -37,6 +37,8 @@
 *.pyc
 
 
-# Excluded tests
-Tests/Benchmark/
+# Other excludes
 TestResults.txt
+Tests/
+Mock/
+Scripts/

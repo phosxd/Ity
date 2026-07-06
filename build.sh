@@ -15,6 +15,7 @@ mv src/Ity.bin Ity.bin
 
 end=$(date +%s)
 echo "Done in" $((end-start))"s."
+echo "Final size: $(wc -c < Ity.bin) bytes."
 
 
 

@@ -5,17 +5,17 @@ using Clock = std::chrono::high_resolution_clock;
 using ClockType = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 
-struct ANSI_struct {
-	std::string reset = "\033[0m";
-	std::string black = "\x1B[30m";
-	std::string red = "\x1B[31m";
-	std::string green = "\x1B[32m";
-	std::string orange = "\x1B[33m";
-	std::string blue = "\x1B[34m";
-	std::string purple = "\x1B[35m";
-	std::string white = "\x1B[37m";
-	std::string yellow = "\x1B[93m";
-};
+namespace ANSI {
+	static std::string reset = "\033[0m";
+	static std::string black = "\x1B[30m";
+	static std::string red = "\x1B[31m";
+	static std::string green = "\x1B[32m";
+	static std::string orange = "\x1B[33m";
+	static std::string blue = "\x1B[34m";
+	static std::string purple = "\x1B[35m";
+	static std::string white = "\x1B[37m";
+	static std::string yellow = "\x1B[93m";
+}
 
 struct debug_flags_struct {
 	bool result = false;        // Print program results when done.
@@ -25,7 +25,6 @@ struct debug_flags_struct {
 	bool data_assign = false;   // Print data being assigned to the current state.
 };
 
-const ANSI_struct ANSI;
 debug_flags_struct debug_flags;
 
 
@@ -69,11 +68,11 @@ std::string get_script_pos(unsigned int ln_override=0, unsigned int col_override
 
 
 void emit_warn(std::string message) {
-	std::cout << ANSI.yellow << "WARNING at (" << ANSI.orange << get_script_pos() << ANSI.yellow << "): " << ANSI.white << message << ANSI.reset << "\n";
+	std::cout << ANSI::yellow << "WARNING at (" << ANSI::orange << get_script_pos() << ANSI::yellow << "): " << ANSI::white << message << ANSI::reset << "\n";
 }
 
 
 void emit_error(std::string message, unsigned int ln_override=0, unsigned int col_override=0) {
-	std::cout << ANSI.red << "ERROR at (" << ANSI.orange << get_script_pos(ln_override, col_override) << ANSI.red << "): " << ANSI.white << message << ANSI.reset << "\n";
+	std::cout << ANSI::red << "ERROR at (" << ANSI::orange << get_script_pos(ln_override, col_override) << ANSI::red << "): " << ANSI::white << message << ANSI::reset << "\n";
 	exit(1);
 }

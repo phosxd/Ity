@@ -313,7 +313,7 @@ Variant resolve_variant(ScopeState& state, const Variant& item) {
 Variant expr_exec(ScopeState& state, const std::vector<ExprToken>& sequence, const bool subexpr=false) {
 	// Output sequence in debug mode.
 	if (debug_flags.expr_seq && not subexpr) {
-		std::cout << ANSI.purple << "ExprToken Sequence: " << ANSI.reset << sequence << "\n";
+		std::cout << ANSI::purple << "ExprToken Sequence: " << ANSI::reset << sequence << "\n";
 	};
 
 	const unsigned int seq_len = sequence.size();
@@ -366,7 +366,7 @@ Variant expr_exec(ScopeState& state, const std::vector<ExprToken>& sequence, con
 
 	// Output result in debug mode.
 	if (debug_flags.expr_result && not subexpr) {
-		std::cout << ANSI.purple << "Expression result: " << ANSI.reset << result << "\n";
+		std::cout << ANSI::purple << "Expression result: " << ANSI::reset << result << "\n";
 	};
 
 	return result;
