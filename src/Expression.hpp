@@ -10,27 +10,16 @@ const std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
 const std::string MISC_RESERVED_SYMBOLS = "_.()" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain ay of these characters.
 std::unordered_map<std::string, Operation> OPERATIONS = {
 	{"+", OP_Arith},
-	{"+-", OP_Arith},
 	{"-", OP_Arith},
-	{"--", OP_Arith},
 	{"*", OP_Arith},
-	{"*-", OP_Arith},
 	{"/", OP_Arith},
-	{"/-", OP_Arith},
 	{"%", OP_Arith},
-	{"%-", OP_Arith},
 	{"==", OP_Compare},
-	{"==-", OP_Compare},
 	{"!=", OP_Compare},
-	{"!=-", OP_Compare},
 	{">", OP_Compare},
-	{">-", OP_Compare},
 	{">=", OP_Compare},
-	{">=-", OP_Compare},
 	{"<", OP_Compare},
-	{"<-", OP_Compare},
 	{"<=", OP_Compare},
-	{"<=-", OP_Compare},
 };
 
 std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;

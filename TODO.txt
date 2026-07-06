@@ -1,6 +1,5 @@
 - Add simple array data type (std::vector).
 - Add simple dictionary data type (std::unordered_map).
 
-- Fix negative number Variants' type being "NONE" when being used as an operand (????). Probably a tokenization error.
-
 - Add "while" instruction to make it easier to create a conditional loop.
+- Add "func" instruction for defining named functions that use a child scope.

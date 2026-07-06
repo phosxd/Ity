@@ -10,7 +10,6 @@ Variant OP_Arith_exec(const Operation& op, ScopeState& state, Variant& first, Va
 			second.d,
 		};
 	}
-	AccountNegativeSymbol(second, symbol);
 
 	VariantType type = first.t;
 	// Convert output type to FLOAT if either operands are of type FLOAT.

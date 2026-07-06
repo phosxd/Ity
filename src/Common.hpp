@@ -567,11 +567,3 @@ bool exists_in_vec(T_exists_in_vec_v& v, T_exists_in_vec_val& val) {
 	}
 	return false;
 }
-
-
-void AccountNegativeSymbol(Variant& second, std::string& symbol) {
-	if (symbol != "-" && symbol[symbol.size()-1] == '-') {
-		second.d = second.d-(second.d*2);
-		symbol.pop_back();
-	}
-}
