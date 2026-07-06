@@ -8,7 +8,8 @@ echo "Building..."
 start=$(date +%s)
 
 cd src
-g++ -flto=4 -O3 Main.cpp -o Ity.bin
+g++ -flto=4 -O3 -fno-exceptions -fno-rtti Main.cpp -o Ity.bin
+strip Ity.bin
 cd ../
 mv src/Ity.bin Ity.bin
 

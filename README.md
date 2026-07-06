@@ -49,6 +49,8 @@ Flags:
 
 - `-d-full`:
 	Enable all debug flags.
+- `-d-result`:
+	Print program times & other information when completed.
 - `-d-expr-seq`:
 	Print expressions as ExprTokens as soon as they are parsed.
 - `-d-expr-result`:

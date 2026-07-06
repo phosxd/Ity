@@ -1,16 +1,7 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
-
-#include "Common.hpp"
-#include "ScriptErrors.hpp"
-#include "ScopeState.hpp"
-
-#include "Op/Add.hpp"
-#include "Op/Subtract.hpp"
-#include "Op/Multiply.hpp"
-#include "Op/Divide.hpp"
+#include "Op/Arith.hpp"
+#include "Op/Compare.hpp"
 
 
 const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
@@ -18,14 +9,28 @@ const std::string NUM = "0123456789";
 const std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
 const std::string MISC_RESERVED_SYMBOLS = "_.()" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain ay of these characters.
 std::unordered_map<std::string, Operation> OPERATIONS = {
-	{"+", OP_Add},
-	{"+-", OP_Add},
-	{"-", OP_Subtract},
-	{"--", OP_Subtract},
-	{"*", OP_Multiply},
-	{"*-", OP_Multiply},
-	{"/", OP_Divide},
-	{"/-", OP_Divide},
+	{"+", OP_Arith},
+	{"+-", OP_Arith},
+	{"-", OP_Arith},
+	{"--", OP_Arith},
+	{"*", OP_Arith},
+	{"*-", OP_Arith},
+	{"/", OP_Arith},
+	{"/-", OP_Arith},
+	{"%", OP_Arith},
+	{"%-", OP_Arith},
+	{"==", OP_Compare},
+	{"==-", OP_Compare},
+	{"!=", OP_Compare},
+	{"!=-", OP_Compare},
+	{">", OP_Compare},
+	{">-", OP_Compare},
+	{">=", OP_Compare},
+	{">=-", OP_Compare},
+	{"<", OP_Compare},
+	{"<-", OP_Compare},
+	{"<=", OP_Compare},
+	{"<=-", OP_Compare},
 };
 
 std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
@@ -53,7 +58,7 @@ bool is_special_symbol(const char ch) {
 
 bool check_ahead(const std::string& text, const unsigned int start_idx, const std::string substr, const bool ignore_spaces=false) {
 	unsigned int substr_len = substr.size();
-	if (text.size() > start_idx+substr_len) {return false;}
+	if (text.size() < start_idx+substr_len) {return false;}
 	for (unsigned int i = 0; i < substr_len; i++) {
 		if (ignore_spaces == true && text[start_idx+i] == ' ') {continue;}
 		if (text[start_idx+i] != substr[i]) {return false;}
@@ -202,16 +207,16 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 					continue;
 				}
 				// Set type bool.
-				else if (check_ahead(expr, i, "true")) {
+				else if (check_ahead(expr, i, "true", true)) {
 					secondary_buffer = "true";
 					item.var.t = BOOL;
 				}
-				else if (check_ahead(expr, i, "false")) {
+				else if (check_ahead(expr, i, "false", true)) {
 					secondary_buffer = "false";
 					item.var.t = BOOL;
 				}
 				// Set type none.
-				else if (check_ahead(expr, i, "none")) {
+				else if (check_ahead(expr, i, "none", true)) {
 					secondary_buffer = "none";
 					item.var.t = NONE;
 				}
@@ -249,7 +254,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 					}
 				}
 
-				else if (item.var.t == BOOL || item.var.t == REF) {
+				else if (item.var.t == BOOL || item.var.t == NONE) {
 					// If no longer matches the bool or none token, switch to a reference.
 					if ((buffer+expr[i]).size() >= secondary_buffer.size() && (buffer+expr[i]) != secondary_buffer) {
 						item.var.t = REF;

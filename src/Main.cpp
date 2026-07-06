@@ -1,26 +1,37 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <variant>
+#include <cstdint>
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <chrono>
 
-#include "Common.hpp"
 #include "ScriptErrors.hpp"
+#include "Common.hpp"
 #include "ScopeState.hpp"
 #include "ExpressionParser.hpp"
 
 #include "Inst/Var.hpp"
 #include "Inst/Set.hpp"
+#include "Inst/Jump.hpp"
+#include "Inst/End.hpp"
+#include "Inst/If.hpp"
 
 
 const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
 	{"var", INST_Var},
 	{"const", INST_Var},
 	{"set", INST_Set},
+	{"jump", INST_Jump},
+	{"end", INST_End},
+	{"if", INST_If},
 };
+
+
+Variant last_expr_result;
 
 
 std::vector<InstToken> tokenize(std::string src) {
@@ -36,9 +47,15 @@ std::vector<InstToken> tokenize(std::string src) {
 	bool is_comment = false;
 	bool is_string = false;
 	bool is_escaped_char = false;
-	unsigned int str_start_ln = 1;
-	unsigned int str_start_col = 0;
+	unsigned int str_start_ln = ln;
+	unsigned int str_start_col = col;
 	char string_type;
+
+	InstToken last_composite_token;
+	int last_composite_token_index = -1;
+	unsigned int composite_size = 0;
+	unsigned int last_comp_token_start_ln = ln;
+	unsigned int last_comp_token_start_col = col;
 
 	for (unsigned int i = 0; i < src_len; i++) {
 		// Advance column or line number.
@@ -114,6 +131,40 @@ std::vector<InstToken> tokenize(std::string src) {
 					item.args.push_back(buffer);
 					buffer = "";
 				}
+				// Handle composite instructions.
+				if (last_composite_token_index != -1) {
+					// Throw error if composite size is about to go over the max for a 16-bit unsigned integer.
+					if (composite_size == 65535) {
+						emit_error("Exceeded maximum number of instructions under a composite instruction (65,535). This is not healthy. Please divorce your love for nesting.",ln,col);
+						return sequence;
+					}
+					composite_size += 1;
+				}
+				if (item.args.size() > 0) {
+					std::string inst_name = item.args[0];
+					if (INSTRUCTIONS.find(inst_name) != INSTRUCTIONS.end()) {
+						Instruction inst = INSTRUCTIONS.at(inst_name);
+						if (inst.is_composite) {
+							last_composite_token = item;
+							last_composite_token_index = sequence.size();
+							last_comp_token_start_ln = ln;
+							last_comp_token_start_col = col;
+						}
+						else if (inst_name == "end") {
+							if (last_composite_token_index != -1) {
+								last_composite_token.composite_size = composite_size;
+								sequence[last_composite_token_index] = last_composite_token;
+								composite_size = 0;
+								last_composite_token_index = -1;
+							}
+							// Throw error if there is no composite to end.
+							else {
+								emit_error("There is no instruction requiring an \"end\" here.",ln,col);
+								return sequence;
+							}
+						}
+					}
+				}
 				sequence.push_back(item);
 				is_start = true;
 				continue;
@@ -125,7 +176,11 @@ std::vector<InstToken> tokenize(std::string src) {
 
 	// Throw error if unterminated string.
 	if (is_string) {
-		emit_error("String literal has no end.", str_start_ln,str_start_col);
+		emit_error("String literal has no end.", str_start_ln, str_start_col);
+	}
+	// Throw error if unterminated composite.
+	if (last_composite_token_index != -1) {
+		emit_error("Composite instruction has no end.", last_comp_token_start_ln, last_comp_token_start_col);
 	}
 	return sequence;
 }
@@ -136,7 +191,7 @@ std::vector<InstToken> tokenize(std::string src) {
 // Execute a sequence of instruction tokens.
 ScopeState exec(std::vector<InstToken> sequence, ScopeState& state) {
 	const unsigned int seq_len = sequence.size();
-
+	unsigned int composite_nest = 0;
 	for (unsigned int i = 0; i < seq_len; i++) {
 		InstToken item = sequence[i];
 		current_line = item.ln;
@@ -146,7 +201,7 @@ ScopeState exec(std::vector<InstToken> sequence, ScopeState& state) {
 
 		// If not matched any instruction, run as expression.
 		if (INSTRUCTIONS.find(item.args[0]) == INSTRUCTIONS.end()) {
-			expr_run(state, join_str(item.args, " "));
+			last_expr_result = expr_run(state, join_str(item.args, " "));
 		}
 		// Execute instruction.
 		else {
@@ -155,7 +210,10 @@ ScopeState exec(std::vector<InstToken> sequence, ScopeState& state) {
 				emit_error("Invalid number of arguments for instruction \"" + item.args[0] + "\". Expected at least " + std::to_string(inst.REQUIRED) + " separated by a space.");
 				return state;
 			}
-			inst.exec(inst, state, item.args, item.args[0]);
+			inst.exec(inst, item, state, item.args, item.args[0]);
+			if (exec_jump_value != 0) {
+				i += exec_jump_value;
+			}
 		}
 	}
 
@@ -230,12 +288,16 @@ int main(int argc, char *argv[]) {
 
 	// Run interactive interpreter...
 	else {
+		std::cout << "* " << ANSI.yellow << "Ity (" << ItyVersionString << ")" << ANSI.reset << '\n'
+			      << "* " << ANSI.purple << "Runing interactive mode interpreter. Run Ity code directly in the terminal!" << ANSI.reset << '\n'
+			      << "* " << ANSI.purple << "Type \"exit\" to stop." << ANSI.reset << '\n';
+
 		// Start timer.
 		clock_start = std::chrono::high_resolution_clock::now();
 
 		// Input loop...
 		while (true) {
-			std::cout << "\n>> ";
+			std::cout << ANSI.purple << "\n>> " << ANSI.reset;
 			std::string command;
 			std::getline(std::cin, command);
 			if (command == "exit") {
@@ -243,10 +305,17 @@ int main(int argc, char *argv[]) {
 			}
 			else {
 				command += ';';
+				last_expr_result = Variant{};
+
 				// Tokenize the command.
 				std::vector<InstToken> sequence = tokenize(command);
 				// Execute tokens.
 				exec(sequence, state);
+
+				// Print expression result if there is one.
+				if (last_expr_result.t != NONE) {
+					std::cout << last_expr_result.d;
+				}
 			}
 		}
 	}

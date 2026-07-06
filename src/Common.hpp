@@ -1,12 +1,11 @@
 #pragma once
 
-#include <cstdint>
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <variant>
 
-#include "ScriptErrors.hpp"
+const std::string ItyVersionString = "0.0.1";
+const uint16_t ItyVersion = 0;
+
+// This may be changed by the `jump` instruction during `exec`.
+int exec_jump_value = 0;
 
 
 
@@ -181,6 +180,84 @@ std::ostream& operator<<(std::ostream& os, const VariantData& s) {
 }
 
 
+// COMPARISON OPERATORS
+
+bool operator==(const VariantData& a, const VariantData& b) {
+	// If a is string & b is string...
+	if (std::holds_alternative<std::string>(a) && std::holds_alternative<std::string>(b)) {
+		return std::get<std::string>(a) == std::get<std::string>(b);
+	}
+	// If a is bool & b is bool...
+	else if (std::holds_alternative<bool>(a) && std::holds_alternative<bool>(b)) {
+		return std::get<bool>(a) == std::get<bool>(b);
+	}
+	// If a is int...
+	else if (std::holds_alternative<int>(a)) {
+		// If b is int...
+		if (std::holds_alternative<int>(b)) {return std::get<int>(a) == std::get<int>(b);}
+		// If b is float...
+		else if (std::holds_alternative<float>(b)) {return std::get<int>(a) == std::get<float>(b);}
+	}
+	// If a is float...
+	else if (std::holds_alternative<float>(a)) {;
+		// If b is int...
+		if (std::holds_alternative<int>(b)) {return std::get<float>(a) == std::get<int>(b);}
+		// If b is float...
+		else if (std::holds_alternative<float>(b)) {return std::get<float>(a) == std::get<float>(b);}
+	}
+
+	// Throw error is none matched.
+	emit_error(err_operand_type_mismatch("compare(==)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	return false;
+}
+
+
+bool operator>(const VariantData& a, const VariantData& b) {
+	// If a is int...
+	if (std::holds_alternative<int>(a)) {
+		// If b is int...
+		if (std::holds_alternative<int>(b)) {return std::get<int>(a) > std::get<int>(b);}
+		// If b is float...
+		else if (std::holds_alternative<float>(b)) {return std::get<int>(a) > std::get<float>(b);}
+	}
+	// If a is float...
+	else if (std::holds_alternative<float>(a)) {;
+		// If b is int...
+		if (std::holds_alternative<int>(b)) {return std::get<float>(a) > std::get<int>(b);}
+		// If b is float...
+		else if (std::holds_alternative<float>(b)) {return std::get<float>(a) > std::get<float>(b);}
+	}
+
+	// Throw error is none matched.
+	emit_error(err_operand_type_mismatch("compare(>)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	return false;
+}
+
+
+bool operator<(const VariantData& a, const VariantData& b) {
+	// If a is int...
+	if (std::holds_alternative<int>(a)) {
+		// If b is int...
+		if (std::holds_alternative<int>(b)) {return std::get<int>(a) < std::get<int>(b);}
+		// If b is float...
+		else if (std::holds_alternative<float>(b)) {return std::get<int>(a) < std::get<float>(b);}
+	}
+	// If a is float...
+	else if (std::holds_alternative<float>(a)) {;
+		// If b is int...
+		if (std::holds_alternative<int>(b)) {return std::get<float>(a) < std::get<int>(b);}
+		// If b is float...
+		else if (std::holds_alternative<float>(b)) {return std::get<float>(a) < std::get<float>(b);}
+	}
+
+	// Throw error is none matched.
+	emit_error(err_operand_type_mismatch("compare(<)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	return false;
+}
+
+
+// MATH OPERATORS
+
 
 VariantData operator+(const VariantData& a, const VariantData& b) {
 	// If a is string & b is string...
@@ -286,6 +363,18 @@ VariantData operator/(const VariantData& a, const VariantData& b) {
 }
 
 
+VariantData operator%(const VariantData& a, const VariantData& b) {
+	// If a is int & b is int...
+	if (std::holds_alternative<int>(a) && std::holds_alternative<int>(b)) {
+		return std::get<int>(a) % std::get<int>(b);
+	}
+
+	// Throw error is none matched.
+	emit_error(err_operand_type_mismatch("modulo", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	return a;
+}
+
+
 
 // Variant.
 // --------
@@ -311,11 +400,15 @@ struct InstToken {
 	unsigned int ln = 0;
 	unsigned int col = 0;
 	std::vector<std::string> args;
+	uint16_t composite_size = 0; // How large the composite instruction is. If `0`, is not a composite instruction.
 };
 
 
 std::ostream& operator<<(std::ostream& os, const InstToken& s) {
-	return os << "{ln=" << s.ln << ", col=" << s.col << ", args=" << s.args << '}';
+	os << "{ln=" << s.ln << ", col=" << s.col << ", args=" << s.args;
+	if (s.composite_size > 0) {os << ", composite_size=" << s.composite_size;}
+	os << '}';
+	return os;
 }
 
 
@@ -372,9 +465,10 @@ std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
 // ------------
 
 struct Instruction {
-	uint8_t REQUIRED = 0;
-	int8_t OPTIONAL = 0;
-	void (*exec)(const Instruction& inst, ScopeState& state, const std::vector<std::string>& args, const std::string& symbol) = nullptr;
+	uint8_t REQUIRED = 0; // Required argument count,
+	int8_t OPTIONAL = 0; // Optional argument count.
+	void (*exec)(const Instruction& inst, const InstToken& token, ScopeState& state, const std::vector<std::string>& args, const std::string& symbol) = nullptr;
+	bool is_composite = false;
 };
 
 
@@ -389,13 +483,12 @@ std::ostream& operator<<(std::ostream& os, const Instruction& s) {
 // ----------
 
 struct Operation {
-	std::unordered_map<VariantType,std::vector<VariantType>> type_map;
 	Variant (*exec)(Operation& op, ScopeState& state, Variant& first, Variant& second, std::string symbol) = nullptr;
 };
 
 
 std::ostream& operator<<(std::ostream& os, const Operation& s) {
-	return os << "Operation{type_map=" << s.type_map << "}";
+	return os << "Operation{}";
 }
 
 
@@ -476,23 +569,9 @@ bool exists_in_vec(T_exists_in_vec_v& v, T_exists_in_vec_val& val) {
 }
 
 
-// Performs checks on the Operation execution. If a check fails, it will throw an error.
-// Checks:
-//  - Not operating on type NONE.
-//  - Variant types match `op.type_map`.
-void CheckOperationExec(Operation& op, ScopeState& state, Variant& first, Variant& second, std::string op_str) {
-	if (first.t == NONE || second.t == NONE) {
-		emit_error(err_operand_type_mismatch(op_str, get_variant_type_name(first.t), ""));
-		return;
-	}
-
-	if (op.type_map.find(first.t) == op.type_map.end()) {
-		emit_error(err_operand_type_mismatch(op_str, get_variant_type_name(first.t), ""));
-		return;
-	}
-
-	if (exists_in_vec(op.type_map.at(first.t), second.t) == false) {
-		emit_error(err_operand_type_mismatch(op_str, get_variant_type_name(first.t), get_variant_type_name(second.t)));
-		return;
+void AccountNegativeSymbol(Variant& second, std::string& symbol) {
+	if (symbol != "-" && symbol[symbol.size()-1] == '-') {
+		second.d = second.d-(second.d*2);
+		symbol.pop_back();
 	}
 }

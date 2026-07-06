@@ -23,8 +23,11 @@ var * true_ = "a";
 true_; true;
 
 var NONE _a;
+set _a = none;
+set _a = none);
 var BOOL _b = true;
 set _b = false;
+set _b = false);
 
 var INT _c = 0;
 set _c = 00;
@@ -86,12 +89,35 @@ set _j = "abc";
 8 / 2;
 8 / 1.5;
 
+10 % 4; # Should be 2;
+
 
 # String addition & multiplication;
 
 "Hello" + ' World';
 "Hello" + " " + "World" + "!";
 "a" * 100;
+
+
+
+
+# Comparison expression;
+# ---------------------;
+
+true == true;
+true == false;
+true != true;
+1 == 1;
+0 == 1;
+1.3 == 1.4;
+2 > 1;
+2 < 1;
+2 >= 2;
+2 >= 1;
+2 <= 2;
+2 <= 1;
+"Hello" == "World";
+"Hello" != "World";
 
 
 
@@ -106,3 +132,28 @@ set _j = "abc";
 20 - (5+5);
 "Hello" + " "+ ( "W"+"o" + ("r"+"d") );
 
+
+
+
+# Conditional code block;
+# ----------------------;
+
+if true == true;
+	"true is true";
+end;
+if true == false;
+	"true is false";
+end;
+
+
+
+# Code jump;
+# ---------;
+
+var INT jump_counter = 0;
+set jump_counter += 1;
+if jump_counter == 50;
+	jump 3;
+end;
+jump -4;
+"Loop ended";

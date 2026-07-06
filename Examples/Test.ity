@@ -13,5 +13,13 @@ set one = 1;
 # Complex expression;
 1 + (4 * (10-8)); # Output: 9;
 
+
+# Conditional;
+
 var INT counter = 0;
 set counter += 1;
+if counter == 5;
+	set counter = 100;
+end;
+
+"hey";

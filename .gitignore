@@ -38,8 +38,5 @@
 
 
 # Excluded tests
-Tests/SpeedTest.ity
-Tests/SpeedTest2.ity
-Tests/SpeedTest.py
-Tests/SpeedTest2.py
+Tests/Benchmark/
 TestResults.txt

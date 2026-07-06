@@ -1,10 +1,7 @@
 #pragma once
 
-#include "../Common.hpp"
-#include "../ScriptErrors.hpp"
 
-
-void INST_Set_exec(const Instruction& inst, ScopeState& state, const std::vector<std::string>& args, const std::string& symbol) {
+void INST_Set_exec(const Instruction& inst, const InstToken& token, ScopeState& state, const std::vector<std::string>& args, const std::string& symbol) {
 	const unsigned int args_len = args.size();
 	std::string name;
 	std::string op = "";
@@ -41,6 +38,10 @@ void INST_Set_exec(const Instruction& inst, ScopeState& state, const std::vector
 		set_data(state, name, var.t, value.d, var.m);
 	}
 	else if (op == "+=") {
+		VariantData sum = (var.d + value.d);
+		set_data(state, name, var.t, sum, var.m);
+	}
+	else if (op == "-=") {
 		VariantData sum = (var.d + value.d);
 		set_data(state, name, var.t, sum, var.m);
 	}
