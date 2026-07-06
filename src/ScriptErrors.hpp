@@ -19,6 +19,7 @@ struct ANSI_struct {
 
 struct debug_flags_struct {
 	bool result = false;        // Print program results when done.
+	bool inst_seq = false;      // Print InstToken sequences directly after tokenization.
 	bool expr_seq = false;      // Print ExprToken sequences directly after tokenization.
 	bool expr_result = false;   // Print result of ExprToken directly after execution.
 	bool data_assign = false;   // Print data being assigned to the current state.

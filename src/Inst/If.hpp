@@ -11,7 +11,7 @@ void INST_If_exec(const Instruction& inst, const InstToken& token, ScopeState& s
 	}
 
 	// Get value from expression.
-	Variant value = expr_run(state, expr);
+	const Variant& value = expr_run(state, expr);
 
 	// Throw error if not boolean.
 	if (value.t != BOOL) {
@@ -19,7 +19,7 @@ void INST_If_exec(const Instruction& inst, const InstToken& token, ScopeState& s
 		return;
 	}
 
-	// Jump past instructions under this composite if condition failed.
+	// Jump past instructions in this composite if condition failed.
 	bool can_continue = std::get<bool>(value.d);
 	if (can_continue == false) {
 		exec_jump_value += token.composite_size;

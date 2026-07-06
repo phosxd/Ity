@@ -28,21 +28,21 @@ void INST_Set_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 	}
 
 	// Get current var.
-	Variant var = get_data_globally(state, name);
+	const Variant& var = get_data_globally(state, name);
 	// Get value from expression.
 	current_column += count_non_empty_strings({symbol,name,op}) + symbol.size() + name.size() + op.size();
-	Variant value = expr_run(state, expr);
+	const Variant& value = expr_run(state, expr);
 
 	// Set variable data.
 	if (op == "=" || op == "") {
 		set_data(state, name, var.t, value.d, var.m);
 	}
 	else if (op == "+=") {
-		VariantData sum = (var.d + value.d);
+		const VariantData& sum = (var.d + value.d);
 		set_data(state, name, var.t, sum, var.m);
 	}
 	else if (op == "-=") {
-		VariantData sum = (var.d + value.d);
+		const VariantData& sum = (var.d + value.d);
 		set_data(state, name, var.t, sum, var.m);
 	}
 	// Throw error if invalid operator.

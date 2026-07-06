@@ -12,7 +12,7 @@
 #include "ScriptErrors.hpp"
 #include "Common.hpp"
 #include "ScopeState.hpp"
-#include "ExpressionParser.hpp"
+#include "Expression.hpp"
 
 #include "Inst/Var.hpp"
 #include "Inst/Set.hpp"
@@ -53,7 +53,7 @@ std::vector<InstToken> tokenize(std::string src) {
 
 	InstToken last_composite_token;
 	int last_composite_token_index = -1;
-	unsigned int composite_size = 0;
+	uint16_t composite_size = 0;
 	unsigned int last_comp_token_start_ln = ln;
 	unsigned int last_comp_token_start_col = col;
 
@@ -182,6 +182,9 @@ std::vector<InstToken> tokenize(std::string src) {
 	if (last_composite_token_index != -1) {
 		emit_error("Composite instruction has no end.", last_comp_token_start_ln, last_comp_token_start_col);
 	}
+	if (debug_flags.inst_seq) {
+		std::cout << ANSI.purple << "Instruction Sequence: " << ANSI.reset << sequence << '\n';
+	}
 	return sequence;
 }
 
@@ -213,10 +216,10 @@ ScopeState exec(std::vector<InstToken> sequence, ScopeState& state) {
 			inst.exec(inst, item, state, item.args, item.args[0]);
 			if (exec_jump_value != 0) {
 				i += exec_jump_value;
+				exec_jump_value = 0;
 			}
 		}
 	}
-
 	return state;
 }
 
@@ -238,12 +241,16 @@ int main(int argc, char *argv[]) {
 	// Set debug flags
 	if (exists_in_vec(flags, "-d-full")) {
 		debug_flags.result = true;
+		debug_flags.inst_seq = true;
 		debug_flags.expr_seq = true;
 		debug_flags.expr_result = true;
 		debug_flags.data_assign = true;
 	}
 	if (exists_in_vec(flags, "-d-result")) {
 		debug_flags.result = true;
+	}
+	if (exists_in_vec(flags, "-d-inst-seq")) {
+		debug_flags.inst_seq = true;
 	}
 	if (exists_in_vec(flags, "-d-expr-seq")) {
 		debug_flags.expr_seq = true;

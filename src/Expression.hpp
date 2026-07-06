@@ -36,7 +36,7 @@ std::unordered_map<std::string, Operation> OPERATIONS = {
 std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
 
 
-bool is_valid_name(const std::string name) {
+bool is_valid_name(const std::string& name) {
 	unsigned int name_len = name.size();
 	for(unsigned int i = 0; i < name_len; i++) {
 		bool is_digit = (NUM.find(name[i]) != std::string::npos);
@@ -47,7 +47,7 @@ bool is_valid_name(const std::string name) {
 }
 
 
-bool is_special_symbol(const char ch) {
+bool is_special_symbol(const char& ch) {
 	return (
 		ALPHA.find(ch) == std::string::npos
 		&& NUM.find(ch) == std::string::npos
@@ -91,11 +91,10 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 	if (auto it = expr_cache.find(expr); it != expr_cache.end()) {
 		const std::vector<ExprToken>& cached_seq = it->second;
 		const unsigned int cached_seq_len = cached_seq.size();
-		for (const ExprToken& cached_token: cached_seq) {
-			ExprToken token = cached_token;
-			token.ln = current_line;
-			token.col = current_column;
-			result_token.seq.push_back(token);
+		for (ExprToken cached_token: cached_seq) {
+			cached_token.ln = current_line;
+			cached_token.col = current_column;
+			result_token.seq.push_back(cached_token);
 		}
 		return result_token;
 	}
@@ -296,7 +295,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 }
 
 
-Variant resolve_variant(ScopeState& state, Variant& item) {
+Variant resolve_variant(ScopeState& state, const Variant& item) {
 	if (item.t == REF) {
 		std::string name = std::get<std::string>(item.d);
 		if (is_name_globally_free(state, name) == true) {
@@ -322,7 +321,7 @@ Variant expr_exec(ScopeState& state, const std::vector<ExprToken>& sequence, con
 	Operation* op = nullptr;
 	std::string op_symbol;
 	for (unsigned int i = 0; i < seq_len; i++) {
-		ExprToken item = sequence[i];
+		const ExprToken& item = sequence[i];
 		current_line = item.ln;
 		current_column = item.col;
 
@@ -377,6 +376,6 @@ Variant expr_exec(ScopeState& state, const std::vector<ExprToken>& sequence, con
 
 // Tokenize then execute an expression.
 Variant expr_run(ScopeState& state, const std::string& expr) {
-	ExprToken token = expr_tokenize(expr);
+	const ExprToken& token = expr_tokenize(expr);
 	return expr_exec(state, token.seq);
 }

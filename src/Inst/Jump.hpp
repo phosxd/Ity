@@ -14,6 +14,8 @@ void INST_Jump_exec(const Instruction& inst, const InstToken& token, ScopeState&
 	}
 
 	if (jump_count == 0) {return;}
+	jump_count -= 1; // Exclude the current instruction from count.
+	// Set jump value.
 	exec_jump_value = jump_count;
 }
 

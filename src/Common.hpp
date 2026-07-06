@@ -483,7 +483,7 @@ std::ostream& operator<<(std::ostream& os, const Instruction& s) {
 // ----------
 
 struct Operation {
-	Variant (*exec)(Operation& op, ScopeState& state, Variant& first, Variant& second, std::string symbol) = nullptr;
+	Variant (*exec)(const Operation& op, ScopeState& state, Variant& first, Variant& second, std::string symbol) = nullptr;
 };
 
 

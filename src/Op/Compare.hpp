@@ -1,7 +1,7 @@
 #pragma once
 
 
-Variant OP_Compare_exec(Operation& op, ScopeState& state, Variant& first, Variant& second, std::string symbol) {
+Variant OP_Compare_exec(const Operation& op, ScopeState& state, Variant& first, Variant& second, std::string symbol) {
 	AccountNegativeSymbol(second, symbol);
 
 	bool test_result = false;

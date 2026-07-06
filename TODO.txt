@@ -1,7 +1,8 @@
-- Add sub-expression parsing. E.g. `1 + (1+1)`.
-- Add composite capability for instructions. This is necessary for functions, loops, & conditionals.
 
 - Add simple array data type (std::vector).
 - Add simple dictionary data type (std::unordered_map).
 
 - Fix negative number Variants' type being "NONE" when being used as an operand (????). Probably a tokenization error.
+
+- Add ability to nest practically unlimited composite instructions.
+- Add "while" instruction to make it easier to create a conditional loop.

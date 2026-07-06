@@ -138,6 +138,9 @@ true != true;
 # Conditional code block;
 # ----------------------;
 
+
+# NOTE: something here causes a seg-fault. Im too tired to figure it out rn................;
+
 if true == true;
 	"true is true";
 end;
@@ -150,6 +153,7 @@ end;
 # Code jump;
 # ---------;
 
+# Simple loop that counts to 50;
 var INT jump_counter = 0;
 set jump_counter += 1;
 if jump_counter == 50;
