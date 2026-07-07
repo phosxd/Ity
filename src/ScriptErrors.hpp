@@ -7,6 +7,7 @@ using ClockType = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 namespace ANSI {
 	static std::string reset = "\033[0m";
+	static std::string bold = "\033[1m";
 	static std::string black = "\x1B[30m";
 	static std::string red = "\x1B[31m";
 	static std::string green = "\x1B[32m";
