@@ -30,6 +30,6 @@ Variant OP_Arith_exec(const Operation& op, ScopeState& state, Variant& first, Va
 }
 
 
-Operation OP_Arith {
+const Operation OP_Arith {
 	OP_Arith_exec,
 };

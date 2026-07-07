@@ -5,11 +5,10 @@ void INST_Var_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 	const unsigned int args_len = args.size();
 	std::string type_name;
 	std::string name;
-	std::string op = "";
-	std::string expr = "";
+	std::string op;
+	std::string expr;
 	expr.reserve(args_len-inst.REQUIRED);
-	for (unsigned int i = 0; i < args_len; i++) {
-		if (i == 0) {continue;}
+	for (unsigned int i = 1; i < args_len; i++) {
 		if (i == 1) {type_name = args[i];}
 		else if (i == 2) {name = args[i];}
 		else if (i == 3) {op = args[i];}
@@ -67,8 +66,9 @@ void INST_Var_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 }
 
 
-Instruction INST_Var {
-	3, // "REQUIRED". Type, Name, & Operator.
-	-1, // "OPTIONAL". Other parts of Expression.
-	INST_Var_exec,
+const Instruction INST_Var {
+	3,              // Required arg count.
+	-1,             // Optional arg count.
+	INST_Var_exec,  // Function.
+	false,          // Is composite.
 };

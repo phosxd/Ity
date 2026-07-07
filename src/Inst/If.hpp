@@ -9,8 +9,7 @@ void INST_If_exec(const Instruction& inst, const InstToken& token, ScopeState& s
 	const unsigned int args_len = args.size();
 	std::string expr;
 	expr.reserve(args_len);
-	for (unsigned int i = 0; i < args_len; i++) {
-		if (i == 0) {continue;}
+	for (unsigned int i = 1; i < args_len; i++) {
 		expr += ' '+args[i];
 	}
 
@@ -37,9 +36,9 @@ void INST_If_exec(const Instruction& inst, const InstToken& token, ScopeState& s
 }
 
 
-Instruction INST_If {
-	0,
-	-1,
-	INST_If_exec,
-	true, // Is composite.
+const Instruction INST_If {
+	0,             // Required arg count.
+	-1,            // Optional arg count.
+	INST_If_exec,  // Function.
+	true,          // Is composite.
 };

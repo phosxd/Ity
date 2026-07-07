@@ -78,12 +78,13 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 
 	// Return cached token with updated line & column (column is not entirely accurate).
 	if (auto it = expr_cache.find(expr); it != expr_cache.end()) {
-		const std::vector<ExprToken>& cached_seq = it->second;
+		std::vector<ExprToken>& cached_seq = it->second;
 		const unsigned int cached_seq_len = cached_seq.size();
-		for (ExprToken cached_token: cached_seq) {
-			cached_token.ln = current_line;
-			cached_token.col = current_column;
-			result_token.seq.push_back(cached_token);
+		result_token.seq.reserve(cached_seq_len);
+		for (unsigned int i = 0; i < cached_seq_len; i++) {
+			cached_seq[i].ln = current_line;
+			cached_seq[i].col = current_column;
+			result_token.seq.push_back(cached_seq[i]);
 		}
 		return result_token;
 	}

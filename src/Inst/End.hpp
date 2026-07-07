@@ -11,8 +11,9 @@ void INST_End_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 }
 
 
-Instruction INST_End {
-	0,
-	0,
-	INST_End_exec,
+const Instruction INST_End {
+	0,              // Required arg count.
+	0,              // Optional arg count.
+	INST_End_exec,  // Function.
+	false,          // Is composite.
 };

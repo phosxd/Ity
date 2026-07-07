@@ -7,8 +7,7 @@ void INST_Set_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 	std::string op = "";
 	std::string expr = "";
 	expr.reserve(args_len-inst.REQUIRED);
-	for (unsigned int i = 0; i < args_len; i++) {
-		if (i == 0) {continue;}
+	for (unsigned int i = 1; i < args_len; i++) {
 		if (i == 1) {name = args[i];}
 		else if (i == 2) {op = args[i];}
 		else {
@@ -53,8 +52,9 @@ void INST_Set_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 }
 
 
-Instruction INST_Set {
-	2, // "REQUIRED". Name & Operator.
-	-1, // "OPTIONAL". Other parts of Expression.
-	INST_Set_exec,
+const Instruction INST_Set {
+	2,              // Required arg count.
+	-1,             // Optional arg count.
+	INST_Set_exec,  // Function.
+	false,          // Is composite.
 };

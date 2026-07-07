@@ -141,7 +141,7 @@ std::vector<InstToken> tokenize(std::string src) {
 					buffer = "";
 				}
 				// Handle composite instructions.
-				for (auto& comp_item : composite_nest) {
+				for (CompositeItem& comp_item:composite_nest) {
 					// Throw error if composite size is about to go over the max for a 16-bit unsigned integer.
 					if (comp_item.size == 65535) {
 						emit_error("Exceeded maximum number of instructions under a composite instruction (65,535). This is not healthy. Please divorce your love for nesting.",ln,col);
@@ -171,7 +171,7 @@ std::vector<InstToken> tokenize(std::string src) {
 							}
 							// Throw error if there is no composite to end.
 							else {
-								emit_error("There is no instruction requiring an \"end\" here.",ln,col);
+								emit_error("There is no instruction requiring a composite end here.",ln,col);
 								return sequence;
 							}
 						}

@@ -5,8 +5,7 @@ void INST_While_exec(const Instruction& inst, const InstToken& token, ScopeState
 	const unsigned int args_len = args.size();
 	std::string expr;
 	expr.reserve(args_len);
-	for (unsigned int i = 0; i < args_len; i++) {
-		if (i == 0) {continue;}
+	for (unsigned int i = 1; i < args_len; i++) {
 		expr += ' '+args[i];
 	}
 
@@ -25,9 +24,9 @@ void INST_While_exec(const Instruction& inst, const InstToken& token, ScopeState
 }
 
 
-Instruction INST_While {
-	0,
-	-1,
-	INST_While_exec,
-	true, // Is composite.
+const Instruction INST_While {
+	0,                // Required arg count.
+	-1,               // Optional arg count.
+	INST_While_exec,  // Function.
+	true,             // Is composite.
 };
