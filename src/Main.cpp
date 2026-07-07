@@ -244,8 +244,7 @@ int main(int argc, char *argv[]) {
 	std::vector<std::string> script_args;
 	std::vector<std::string> flags;
 	std::string source_script_path = "";
-	for (unsigned int i = 0; i < argc; i++) {
-		if (i == 0) {continue;}
+	for (unsigned int i = 1; i < argc; i++) {
 		std::string arg_str (argv[i]);
 		if (arg_str.size() < 2) {continue;}
 		if (arg_str[0] == '-') {flags.push_back(arg_str);}
@@ -315,7 +314,7 @@ int main(int argc, char *argv[]) {
 	else {
 		std::cout << "* " << ANSI::yellow << "Ity (" << ItyVersionString << ")" << ANSI::reset << '\n'
 			      << "* " << ANSI::purple << "Runing interactive mode interpreter. Run Ity code directly in the terminal!" << ANSI::reset << '\n'
-			      << "* " << ANSI::purple << "Type \"exit\" to stop." << ANSI::reset << '\n';
+			      << "* " << ANSI::purple << "Type \"quit\" or \"q\" to stop." << ANSI::reset << '\n';
 
 		current_line = 1;
 		current_column = 1;
@@ -326,7 +325,7 @@ int main(int argc, char *argv[]) {
 			std::cout << ANSI::purple << "\n>> " << ANSI::reset;
 			std::string command;
 			std::getline(std::cin, command);
-			if (command == "exit") {
+			if (command == "quit" || command == "q") {
 				break;
 			}
 			else {

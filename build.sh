@@ -5,6 +5,9 @@ RED=$'\x1B[31m'
 GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
 
+BIN_SIZE_LIMIT=101256
+BUILD_ARGS="-flto=4 -O3 -fno-exceptions -fno-rtti -Wl,--gc-sections Main.cpp -o Ity.bin"
+
 DO_TEST=0
 DEBUG=0
 
@@ -39,19 +42,23 @@ start=$(date +%s)
 cd src
 
 if [[ $DEBUG == 0 ]]; then
-	g++ -flto=4 -O3 -fno-exceptions -fno-rtti Main.cpp -o Ity.bin
+	g++ $BUILD_ARGS
 	strip Ity.bin
 fi
 if [[ $DEBUG == 1 ]]; then
-	g++ -g -flto=4 -O3 -fno-exceptions -fno-rtti Main.cpp -o Ity.bin
+	g++ -g $BUILD_ARGS
 fi
 
 cd ../
 mv src/Ity.bin Ity.bin
 
 end=$(date +%s)
+bin_size=$(wc -c < Ity.bin)
 echo "Done in" $((end-start))"s."
-echo "Final size: ${ORANGE}$(wc -c < Ity.bin)${RESET} bytes."
+echo "Final size: ${ORANGE}${bin_size}${RESET} bytes."
+if [[ $bin_size > $BIN_SIZE_LIMIT ]]; then
+	echo "${RED}Binary size is over the goal of \"${BIN_SIZE_LIMIT}\"."
+fi
 
 
 
