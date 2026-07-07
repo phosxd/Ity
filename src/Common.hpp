@@ -280,7 +280,7 @@ VariantData operator+(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("add", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(err_operand_type_mismatch("arith(+)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
 	return a;
 }
 
@@ -302,7 +302,7 @@ VariantData operator-(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("subtract", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(err_operand_type_mismatch("arith(-)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
 	return a;
 }
 
@@ -336,7 +336,7 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("multiply", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(err_operand_type_mismatch("arith(*)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
 	return a;
 }
 
@@ -358,7 +358,7 @@ VariantData operator/(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("divide", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(err_operand_type_mismatch("arith(/)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
 	return a;
 }
 
@@ -370,7 +370,7 @@ VariantData operator%(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("modulo", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(err_operand_type_mismatch("arith(%)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
 	return a;
 }
 
@@ -379,10 +379,16 @@ VariantData operator%(const VariantData& a, const VariantData& b) {
 // Variant.
 // --------
 
+enum VariantMode {
+	VariantMode_dynamic_type,
+	VariantMode_constant,
+	VariantMode_locked_type,
+};
+
 struct Variant {
 	VariantType t = NONE;
 	VariantData d = std::monostate();
-	uint8_t m = 0;
+	VariantMode m = VariantMode_dynamic_type;
 };
 
 
@@ -401,12 +407,19 @@ struct InstToken {
 	unsigned int col = 0;
 	std::vector<std::string> args;
 	uint16_t composite_size = 0; // How large the composite instruction is. If `0`, is not a composite instruction.
+
+	std::string linked_inst = "";
+	int32_t linked_inst_pos = 0;
 };
 
 
 std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 	os << "{ln=" << s.ln << ", col=" << s.col << ", args=" << s.args;
 	if (s.composite_size > 0) {os << ", composite_size=" << s.composite_size;}
+	if (s.linked_inst.empty() == false) {
+		os << ", linked_inst=" << s.linked_inst;
+		os << ", linked_inst_pos=" << s.linked_inst_pos;
+	}
 	os << '}';
 	return os;
 }
@@ -498,6 +511,11 @@ std::ostream& operator<<(std::ostream& os, const Operation& s) {
 // -----------------------
 
 
+bool str_ends_with(const std::string& text, const std::string suffix) {
+	return text.size() >= suffix.size() && (text.compare(text.size()-suffix.size(), suffix.size(), suffix) == 0);
+}
+
+
 // Returns the string with all instances of `ch` removed from the start of it.
 std::string trim_left(std::string& text, char ch) {
 	const unsigned int text_len = text.size();
@@ -548,9 +566,8 @@ bool is_int_str_32_in_range(std::string int_str) {
 	bool negative = (int_str.at(0) == '-');
 	unsigned int digits = int_str.size();
 	if (negative) {digits--;}
-	// If too many digits, return false.
+	// If too many or not enough digits, return false.
 	if (digits > 10) {return false;}
-	// If less than max, return true.
 	else if (digits < 10) {return true;}
 
 	uint8_t i = 0;

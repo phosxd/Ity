@@ -237,7 +237,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 					}
 					// Throw error if invalid character found.
 					else if ((NUM.find(expr[i]) == std::string::npos)) {
-						emit_error("Invalid number construct, invalid character \"" + std::string(1,expr[i]) + "\".", ln, col);
+						emit_error("Invalid character for number construct \"" + std::string(1,expr[i]) + "\".", ln, col);
 						return result_token;
 					}
 				}
@@ -333,7 +333,7 @@ Variant expr_exec(ScopeState& state, const std::vector<ExprToken>& sequence, con
 			if (item.var.t == OP) {
 				op_symbol = std::get<std::string>(item.var.d);
 				if (OPERATIONS.find(op_symbol) == OPERATIONS.end()) {
-					emit_error("Invalid operator \"" + op_symbol + "\".");
+					emit_error(err_invalid_op(op_symbol));
 					return result;
 				}
 				op = &OPERATIONS.at(op_symbol);

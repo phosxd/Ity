@@ -19,6 +19,7 @@
 #include "Inst/Jump.hpp"
 #include "Inst/End.hpp"
 #include "Inst/If.hpp"
+#include "Inst/While.hpp"
 
 
 const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
@@ -30,6 +31,7 @@ const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
 	{"if", INST_If},
 	{"elif", INST_If},
 	{"else", INST_If},
+	{"while", INST_While},
 };
 
 
@@ -164,6 +166,8 @@ std::vector<InstToken> tokenize(std::string src) {
 								// Apply updated token to sequence.
 								comp_item.token.composite_size = comp_item.size;
 								sequence[comp_item.index] = comp_item.token;
+								item.linked_inst = comp_item.token.args[0];
+								item.linked_inst_pos = -comp_item.size;
 							}
 							// Throw error if there is no composite to end.
 							else {
@@ -237,17 +241,28 @@ ScopeState exec(std::vector<InstToken> sequence, ScopeState& state) {
 
 int main(int argc, char *argv[]) {
 	// Get command line flags...
+	std::vector<std::string> script_args;
 	std::vector<std::string> flags;
+	std::string source_script_path = "";
 	for (unsigned int i = 0; i < argc; i++) {
+		if (i == 0) {continue;}
 		std::string arg_str (argv[i]);
 		if (arg_str.size() < 2) {continue;}
 		if (arg_str[0] == '-') {flags.push_back(arg_str);}
+		else if (source_script_path.empty()) {
+			source_script_path = arg_str;
+		}
+		else {
+			script_args.push_back(arg_str);
+		}
 	}
 
-	std::string source_script_path = "";
-	if (argc > 1 && argv[argc-1][0] != '-') {source_script_path = argv[argc-1];}
-
 	// Set debug flags
+	debug_flags.result = exists_in_vec(flags, "-d-result");
+	debug_flags.inst_seq = exists_in_vec(flags, "-d-inst-seq");
+	debug_flags.expr_seq = exists_in_vec(flags, "-d-expr-seq");
+	debug_flags.expr_result = exists_in_vec(flags, "-d-expr-result");
+	debug_flags.data_assign = exists_in_vec(flags, "-d-data-assign");
 	if (exists_in_vec(flags, "-d-full")) {
 		debug_flags.result = true;
 		debug_flags.inst_seq = true;
@@ -255,33 +270,25 @@ int main(int argc, char *argv[]) {
 		debug_flags.expr_result = true;
 		debug_flags.data_assign = true;
 	}
-	if (exists_in_vec(flags, "-d-result")) {
-		debug_flags.result = true;
-	}
-	if (exists_in_vec(flags, "-d-inst-seq")) {
-		debug_flags.inst_seq = true;
-	}
-	if (exists_in_vec(flags, "-d-expr-seq")) {
-		debug_flags.expr_seq = true;
-	}
-	if (exists_in_vec(flags, "-d-expr-result")) {
-		debug_flags.expr_result = true;
-	}
-	if (exists_in_vec(flags, "-d-data-assign")) {
-		debug_flags.data_assign = true;
-	}
 
 
-	ScopeState state = create_new_scope_state({});
+	ScopeState state = create_new_scope_state({
+		{"CORE", Variant {
+		}},
+	});
 	std::vector<ClockType> timers;
 	for (unsigned int i = 0; i < 2; i++) {timers.push_back(Clock::now());}
 
 
 	// Parse & execute script file...
 	if (source_script_path.empty() == false) {
+		if (str_ends_with(source_script_path,".ity") == false) {
+			emit_error("Expected file with \".ity\" extension.");
+			return 0;
+		}
 		std::ifstream f (source_script_path, std::ios::in | std::ios::binary);
 		if (f.is_open() == false) {
-			std::cerr << "Unable to open script at \"" << source_script_path << "\".\n";
+			emit_error("Unable to open script at \"" + source_script_path + "\".");
 			return 0;
 		}
 
@@ -290,6 +297,8 @@ int main(int argc, char *argv[]) {
 		std::string script = ss.str();
 		f.close();
 
+		current_line = 1;
+		current_column = 1;
 		clock_start = Clock::now();
 
 		// Tokenize the script.
@@ -308,7 +317,8 @@ int main(int argc, char *argv[]) {
 			      << "* " << ANSI::purple << "Runing interactive mode interpreter. Run Ity code directly in the terminal!" << ANSI::reset << '\n'
 			      << "* " << ANSI::purple << "Type \"exit\" to stop." << ANSI::reset << '\n';
 
-		// Start timer.
+		current_line = 1;
+		current_column = 1;
 		clock_start = std::chrono::high_resolution_clock::now();
 
 		// Input loop...
@@ -333,6 +343,8 @@ int main(int argc, char *argv[]) {
 					std::cout << last_expr_result.d;
 				}
 			}
+			current_line += 1;
+			current_column = 1;
 		}
 	}
 

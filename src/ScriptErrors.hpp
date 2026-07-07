@@ -29,8 +29,8 @@ debug_flags_struct debug_flags;
 
 
 ClockType clock_start;
-unsigned int current_line = 1;
-unsigned int current_column = 1;
+unsigned int current_line = 0;
+unsigned int current_column = 0;
 
 bool debug_mode = false;
 
@@ -56,6 +56,15 @@ std::string err_assignment_type_mismatch(std::string type_1, std::string type_2)
 
 std::string err_invalid_assignment_op(std::string instruction, std::string op_str) {
 	return "Invalid assignment operator \"" + op_str + "\" for instruction \"" + instruction + "\".";
+}
+
+
+std::string err_invalid_op(std::string op_symbol) {
+	std::string part = "\".";
+	if (op_symbol[op_symbol.size()-1] == '-') {
+		part = "\". Hint: encapsulate negative number literal in a sub-expression (E.g. `1+(-1)`).";
+	}
+	return "Invalid operator \"" + op_symbol + part;
 }
 
 

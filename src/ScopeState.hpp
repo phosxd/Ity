@@ -83,10 +83,10 @@ Variant get_data_globally(ScopeState& state, std::string& name) {
 
 
 // Sets the data for name in this scope.
-// If mode is "0" (dynamic type), the set "type" & the actual type of "data" can be different.
-// If mode is "1" (constant & locked type), will throw an error when if the name is already taken in the current scope.
-// If mode is "2" (locked type), will throw an error if the data type does not match the given type.
-void set_data(ScopeState& state, std::string& name, VariantType type, const VariantData& data, uint8_t mode) {
+// If mode is dynamic type, the set "type" & the actual type of "data" can be different.
+// If mode is constant, will throw an error when if the name is already taken in the current scope.
+// If mode is locked type, will throw an error if the data type does not match the given type.
+void set_data(ScopeState& state, std::string& name, VariantType type, const VariantData& data, VariantMode mode) {
 	// Output function call in debug mode...
 	if (debug_flags.data_assign) {
 		std::cout << ANSI::blue << "Data assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
@@ -100,7 +100,7 @@ void set_data(ScopeState& state, std::string& name, VariantType type, const Vari
 		}
 	}
 	const VariantType data_type = get_variant_data_type(data);
-	if (mode != 0 && type != data_type) {
+	if (mode != VariantMode_dynamic_type && type != data_type) {
 		emit_error(err_assignment_type_mismatch(get_variant_type_name(data_type), get_variant_type_name(type)));
 		return;
 	}
@@ -109,7 +109,7 @@ void set_data(ScopeState& state, std::string& name, VariantType type, const Vari
 }
 
 
-void set_data_globally(ScopeState& state, std::string& name, VariantType type, const VariantData& data, uint8_t mode) {
+void set_data_globally(ScopeState& state, std::string& name, VariantType type, const VariantData& data, VariantMode mode) {
 	if (is_name_free(state, name) == false) {
 		set_data(state, name, type, data, mode);
 	}

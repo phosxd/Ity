@@ -36,14 +36,14 @@ void INST_Var_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 
 	// Set variable mode.
 	VariantType type = get_variant_type_from_name(type_name);
-	unsigned int mode = 2; // Locked type.
-	if (args[0] == "const") {mode = 1;} // Constant.
+	VariantMode mode = VariantMode_locked_type;
+	if (args[0] == "const") {mode = VariantMode_constant;}
 	if (type == ANY) {
 		if (mode == 1) {
 			emit_error("Constant must have an explicit type, not \"ANY\".");
 			return;
 		}
-		mode = 0; // Dynamic type.
+		mode = VariantMode_dynamic_type;
 	}
 
 	// Get value from expression.
