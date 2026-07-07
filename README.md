@@ -14,8 +14,29 @@ Ity is a light-weight interpreted programming language built with C++.
 The build process for the Ity interpreter is very straight-forward. After cloning this repository you should notice a `build.sh` bash script inside the root directory.
 Run the build script by typing `./build.sh` in your terminal, doing so will build the source code using the GCC compiler on your system.
 
-After building has finished, it will immediately try to run test scripts with the interpreter to make sure everything is working fine.
-If you are building from a published version you can disable these tests by running `./build.sh no` instead.
+After compilation has finished, the build script will display the time it took to compile & the final build size along with the difference in size compared to the previous build.
+
+```
+Building prodution binary...
+Done in 2s.
+Final size: 93288 bytes. (+0)
+```
+
+If the final build size is larger than 100,000 bytes it will give you a warning message.
+
+```
+Binary size is over the goal of 100000.
+```
+
+## Flags
+You can pass flags to the build script.
+
+Flags:
+
+- `-d` or `--debug`:
+	Build with debug symbols in-tact.
+- `-t` or `--test`:
+	Run tests after compilation.
 
 
 # Interpreter usage
@@ -29,12 +50,13 @@ If you run the interpreter with the path of an Ity script file, it will parse th
 Running the interpreter without passing a script file path will run it in "interactive" mode, similar to the Python interpreter's interactive mode, it allows you to immediately parse & execute the code you give it.
 
 ```bash
-./Ity.bin -d-expr-result
+./Ity.bin
+* Ity (0.0.1)
+* Runing interactive mode interpreter. Run Ity code directly in the terminal!
+* Type "quit" or "q" to stop.
 
 >> 1+1
-
-Expression result: {t=INT, d=2, m=0}
-
+2
 >> 
 ```
 
