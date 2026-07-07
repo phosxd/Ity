@@ -38,6 +38,17 @@ void scope_out(ScopeState& state) {
 }
 
 
+// Returns the cumulative size of all Variants in the state data.
+// This does *not* account for the data inside the state's parent.
+unsigned int get_state_size(ScopeState& state) {
+	unsigned int final_size = 0;
+	for (const auto& i:state.d) {
+		final_size += sizeof(i.first) + sizeof(i.second);
+	}
+	return final_size;
+}
+
+
 // Checks if the name is available in this scope.
 bool is_name_free(ScopeState& state, std::string& name) {
 	return (state.d.find(name) == state.d.end());

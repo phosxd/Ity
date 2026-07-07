@@ -14,7 +14,7 @@
 #include "ScopeState.hpp"
 #include "Expression.hpp"
 
-#include "Inst/Var.hpp"
+ #include "Inst/Var.hpp"
 #include "Inst/Set.hpp"
 #include "Inst/Jump.hpp"
 #include "Inst/End.hpp"
@@ -226,7 +226,7 @@ ScopeState exec(std::vector<InstToken> sequence, ScopeState& state) {
 				emit_error("Invalid number of arguments for \"" + item.args[0] + "\". Expected at least " + std::to_string(inst.REQUIRED) + " separated by a space.");
 				return state;
 			}
-			if (inst.exec != nullptr) {inst.exec(inst, item, state, item.args, item.args[0]);}
+			if (inst.exec != nullptr) {inst.exec(inst, item, state, item.args);}
 			if (exec_jump_value != 0) {
 				i += exec_jump_value;
 				exec_jump_value = 0;
@@ -292,8 +292,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Read file.
-		std::ostringstream ss; ss << f.rdbuf();
-		std::string script = ss.str();
+		std::string script = (std::ostringstream() << f.rdbuf()).str();
 		f.close();
 
 		current_line = 1;
@@ -358,6 +357,7 @@ int main(int argc, char *argv[]) {
 		std::cout << "\n\n" << "Program results...\n------------------\n";
 		if (source_script_path.empty() == false) {std::cout << "TIME (Inst-Tokenization): " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
 		std::cout <<                                           "TIME (total):             " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
+		std::cout <<                                           "STATE SIZE:               " << get_state_size(state) << " bytes." << '\n';
 		std::cout <<                                           "STATE:\n	" << state << '\n';
 		std::cout << '\n';
 	}

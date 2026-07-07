@@ -5,8 +5,8 @@ RED=$'\x1B[31m'
 GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
 
-BIN_SIZE_LIMIT=101256
-BUILD_ARGS="-flto=4 -O3 -fno-exceptions -fno-rtti -Wl,--gc-sections Main.cpp -o Ity.bin"
+BIN_SIZE_LIMIT=100000
+BUILD_ARGS="-flto=4 -O3 -fno-exceptions -fno-rtti -fno-asynchronous-unwind-tables -Wl,--gc-sections Main.cpp -o Ity.bin"
 
 DO_TEST=0
 DEBUG=0
@@ -31,6 +31,8 @@ done
 clear
 
 
+# Run build process...
+
 if [[ $DEBUG == 1 ]]; then
 	echo "${BOLD}Building debug binary...${RESET}"
 fi
@@ -43,7 +45,7 @@ cd src
 
 if [[ $DEBUG == 0 ]]; then
 	g++ $BUILD_ARGS
-	strip Ity.bin
+	strip Ity.bin # Better results than "-s" flag for gcc.
 fi
 if [[ $DEBUG == 1 ]]; then
 	g++ -g $BUILD_ARGS
@@ -52,16 +54,41 @@ fi
 cd ../
 mv src/Ity.bin Ity.bin
 
+
+
+
+# Print results...
+
 end=$(date +%s)
-bin_size=$(wc -c < Ity.bin)
 echo "Done in" $((end-start))"s."
-echo "Final size: ${ORANGE}${bin_size}${RESET} bytes."
-if [[ $bin_size > $BIN_SIZE_LIMIT ]]; then
+
+# Get size difference between this & the last build.
+bin_size=$(wc -c < Ity.bin)
+prev_bin_size=0
+if [[ -e ".last_build_size" ]]; then
+	prev_bin_size=$(cat .last_build_size)
+fi
+diff=$((bin_size-prev_bin_size))
+diff_text="${RED}+${diff}${RESET}"
+if (( $diff < 0 )); then
+	diff_text="${GREEN}${diff}${RESET}"
+fi
+if (( $diff == 0 )); then
+	diff_text="${GREEN}+${diff}${RESET}"
+fi
+# Save size of current build for next diff.
+echo "$bin_size" > .last_build_size
+
+# Print results...
+echo "Final size: ${ORANGE}${bin_size}${RESET} bytes. (${diff_text})"
+if (( $bin_size > $BIN_SIZE_LIMIT )); then
 	echo "${RED}Binary size is over the goal of \"${BIN_SIZE_LIMIT}\"."
 fi
 
 
 
+
+# Run tests...
 
 if [[ $DO_TESTS == 1 ]]; then
 	echo

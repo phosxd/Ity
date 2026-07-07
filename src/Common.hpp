@@ -461,8 +461,8 @@ std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 // ------------
 
 struct ScopeState {
-	ScopeState* p = nullptr;
-	std::unordered_map<std::string,Variant> d;
+	ScopeState* p = nullptr;                    // Parent scope state.
+	std::unordered_map<std::string,Variant> d;  // Scope data.
 };
 
 
@@ -478,10 +478,10 @@ std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
 // ------------
 
 struct Instruction {
-	uint8_t REQUIRED = 0; // Required argument count,
-	int8_t OPTIONAL = 0; // Optional argument count.
-	void (*exec)(const Instruction& inst, const InstToken& token, ScopeState& state, const std::vector<std::string>& args, const std::string& symbol) = nullptr;
-	bool is_composite = false;
+	uint8_t REQUIRED; // Required argument count,
+	int8_t OPTIONAL; // Optional argument count.
+	void (*exec)(const Instruction&, const InstToken&, ScopeState&, const std::vector<std::string>&) = nullptr;
+	bool is_composite;
 };
 
 

@@ -1,8 +1,9 @@
 #pragma once
 
 
-void INST_Var_exec(const Instruction& inst, const InstToken& token, ScopeState& state, const std::vector<std::string>& args, const std::string& symbol) {
+void INST_Var_exec(const Instruction& inst, const InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
+	const std::string symbol = args[0];
 	std::string type_name;
 	std::string name;
 	std::string op;
@@ -36,7 +37,7 @@ void INST_Var_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 	// Set variable mode.
 	VariantType type = get_variant_type_from_name(type_name);
 	VariantMode mode = VariantMode_locked_type;
-	if (args[0] == "const") {mode = VariantMode_constant;}
+	if (symbol == "const") {mode = VariantMode_constant;}
 	if (type == ANY) {
 		if (mode == 1) {
 			emit_error("Constant must have an explicit type, not \"ANY\".");
@@ -60,7 +61,7 @@ void INST_Var_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 	}
 	// Throw error if invalid operator.
 	else {
-		emit_error(err_invalid_assignment_op(args[0], op));
+		emit_error(err_invalid_assignment_op(symbol, op));
 		return;
 	}
 }

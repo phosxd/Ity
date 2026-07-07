@@ -1,8 +1,9 @@
 #pragma once
 
 
-void INST_Set_exec(const Instruction& inst, const InstToken& token, ScopeState& state, const std::vector<std::string>& args, const std::string& symbol) {
+void INST_Set_exec(const Instruction& inst, const InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
+	const std::string symbol = args[0];
 	std::string name;
 	std::string op = "";
 	std::string expr = "";
@@ -37,12 +38,10 @@ void INST_Set_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 		set_data(state, name, var.t, value.d, var.m);
 	}
 	else if (op == "+=") {
-		const VariantData& sum = (var.d + value.d);
-		set_data(state, name, var.t, sum, var.m);
+		set_data(state, name, var.t, (var.d+value.d), var.m);
 	}
 	else if (op == "-=") {
-		const VariantData& sum = (var.d + value.d);
-		set_data(state, name, var.t, sum, var.m);
+		set_data(state, name, var.t, (var.d-value.d), var.m);
 	}
 	// Throw error if invalid operator.
 	else {

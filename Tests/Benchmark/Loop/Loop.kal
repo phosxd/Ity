@@ -1,0 +1,8 @@
+var n = $(stdin "Count: ") as int.
+var start = $(time this ms) as int.
+
+loop i = 0 as int -- i < n -- i = i+1 {
+	stdout i "\n".
+}
+
+stdout "\nDone in " (($(time this ms)-start) / 1000.0) " seconds." "\n".
