@@ -62,12 +62,12 @@ VariantData get_literal_from_str(const VariantType type, const std::string& str_
 	else if (type == INT) {
 		if (is_int_str_32_in_range(str_val) == false) {
 			emit_error("Cannot initialize an integer larger than 1,999,999,999. You can go above this limit by adding numbers together, however they may wrap.");
-			return std::monostate();
+			return std::any();
 		}
 		return std::stoi(str_val);
 	}
 	else if (type == FLOAT) {return std::stof(str_val);}
-	else {return std::monostate();}
+	else {return std::any();}
 }
 
 
@@ -277,7 +277,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 
 Variant resolve_variant(ScopeState& state, const Variant& item) {
 	if (item.t == REF) {
-		std::string name = std::get<std::string>(item.d);
+		std::string name = std::any_cast<std::string>(item.d);
 		if (is_name_globally_free(state, name) == true) {
 			emit_error(err_name_does_not_exist(name));
 			return item;
@@ -322,7 +322,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 		else if (item.t == ExprTokenType_variant) {
 			// Get operator.
 			if (item.var.t == OP) {
-				op_symbol = std::get<std::string>(item.var.d);
+				op_symbol = std::any_cast<std::string>(item.var.d);
 				if (OPERATIONS.find(op_symbol) == OPERATIONS.end()) {
 					emit_error(err_invalid_op(op_symbol));
 					return result;

@@ -6,7 +6,7 @@ GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
 
 BIN_SIZE_LIMIT=100000
-BUILD_ARGS="-flto=4 -O3 -fno-exceptions -fno-rtti -fno-asynchronous-unwind-tables -Wl,--gc-sections Main.cpp -o Ity.bin"
+BUILD_ARGS="-flto=4 -O3 -fno-exceptions -fno-asynchronous-unwind-tables -Wl,--gc-sections Main.cpp -o Ity.bin"
 
 DO_TEST=0
 DEBUG=0
@@ -26,9 +26,6 @@ for i in "$@"; do
 		;;
 	esac
 done
-
-
-clear
 
 
 # Run build process...

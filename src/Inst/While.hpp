@@ -17,7 +17,7 @@ void INST_While_exec(const Instruction& inst, const InstToken& token, ScopeState
 		emit_error("Expected a boolean result in expression.");
 		return;
 	}
-	bool expr_passed = std::get<bool>(value.d);
+	bool expr_passed = std::any_cast<bool>(value.d);
 
 	// Jump past instructions in this composite if failed.
 	if (not expr_passed) {exec_jump_value += token.composite_size;} // Add 1 to skip the end instruction, which for loops will jump back to it's corresponding composite instruction.
