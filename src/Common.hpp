@@ -49,6 +49,24 @@ std::ostream& operator<<(std::ostream& os, const std::unordered_map<T, T2>& s) {
 
 
 
+// Misc equality overloads.
+// ------------------------
+
+// vector
+template<class T, class T2>
+bool is_vec_equal(const std::vector<T>& a, const std::vector<T2>& b) {
+	const unsigned int a_len = a.size();
+	const unsigned int b_len = b.size();
+	if (a_len != b_len) {return false;}
+	for (unsigned int i = 0; i < a_len; i++) {
+		if (not (a[i] == b[i])) {return false;}
+	}
+	return true;
+}
+
+
+
+
 // VariantType.
 // ------------
 
@@ -138,7 +156,7 @@ VariantType get_variant_data_type(const VariantData& d) {
 }
 
 
-std::ostream& operator<<(std::ostream& os, const std::any& s) {
+std::ostream& operator<<(std::ostream& os, const VariantData& s) {
 	const std::type_info& t = s.type();
 	if (s.has_value() == false) {
 		os << "None";
@@ -155,9 +173,9 @@ std::ostream& operator<<(std::ostream& os, const std::any& s) {
 	else if (t == typeid(std::string)) {
 		os << std::any_cast<std::string>(s);
 	}
-	else if (t == typeid(std::vector<VariantData>)) {
-		os << std::any_cast<std::vector<VariantData>>(s);
-	}
+	// else if (t == typeid(std::vector<VariantData>)) {
+	// 	os << std::any_cast<std::vector<VariantData>>(s);
+	// }
 	// else if (t == typeid(std::unordered_map<VariantData,VariantData>)) {
 	// 	os << std::any_cast<std::unordered_map<VariantData,VariantData>>(s);
 	// }

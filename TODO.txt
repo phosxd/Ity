@@ -1,5 +1,4 @@
 - Add simple array data type (std::vector).
 - Add simple dictionary data type (std::unordered_map).
 
-- Add "while" instruction to make it easier to create a conditional loop.
 - Add "func" instruction for defining named functions that use a child scope.

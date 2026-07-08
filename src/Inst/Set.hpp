@@ -43,6 +43,12 @@ void INST_Set_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 	else if (op == "-=") {
 		set_data(state, name, var.t, (var.d-value.d), var.m);
 	}
+	else if (op == "*=") {
+		set_data(state, name, var.t, (var.d*value.d), var.m);
+	}
+	else if (op == "/=") {
+		set_data(state, name, var.t, (var.d/value.d), var.m);
+	}
 	// Throw error if invalid operator.
 	else {
 		emit_error(err_invalid_assignment_op(args[0], op));

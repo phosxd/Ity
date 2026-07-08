@@ -7,7 +7,7 @@
 const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
 const std::string NUM = "0123456789";
 const std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
-const std::string MISC_RESERVED_SYMBOLS = "_.()" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain ay of these characters.
+const std::string MISC_RESERVED_SYMBOLS = "_.()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
 std::unordered_map<std::string, Operation> OPERATIONS = {
 	{"+", OP_Arith},
 	{"-", OP_Arith},
@@ -71,6 +71,24 @@ VariantData get_literal_from_str(const VariantType type, const std::string& str_
 }
 
 
+// ExprToken tokenize_array(const std::string arr_expr, unsigned int ln=0, unsigned int col=0) {
+//
+// }
+
+
+// Add the pending literal token if available.
+// Also resets the current buffer.
+void clean_up_buffer(ExprToken& result_token, ExprToken& item, std::string& buffer) {
+	if (item.var.t != NONE && buffer.size() > 0) {
+		item.var.d = get_literal_from_str(item.var.t, buffer);
+		result_token.seq.push_back(item);
+		buffer = "";
+	}
+}
+
+
+unsigned int final_ln_offset = 0;
+unsigned int final_col_offset = 0;
 // Tokenize an expression. Returns an ExprToken with type "ExprTokenType_sequence".
 ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int col=0) {
 	ExprToken result_token = ExprToken{ln, col};
@@ -96,6 +114,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 	bool is_operator = false;
 	bool is_string = false;
 	bool is_escaped_char = false;
+	bool is_array = true;
 
 	for (unsigned int i = 0; i < expr_len; i++) {
 		// Advance column or line number.
@@ -145,13 +164,8 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 					return result_token;
 				}
 				std::string subexpr = expr.substr(i+1);
-				if (subexpr.empty() == false) {
-					if (item.var.t != NONE && buffer.size() > 0) {
-						item.var.d = get_literal_from_str(item.var.t, buffer);
-						result_token.seq.push_back(item);
-						buffer = "";
-					}
-
+				if (not subexpr.empty()) {
+					clean_up_buffer(result_token, item, buffer);
 					// Tokenize sub-expression.
 					ExprToken token = expr_tokenize(subexpr, ln_offset, col_offset);
 					// Create expression sequence token.
@@ -161,10 +175,8 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 					// Add to sequence.
 					result_token.seq.push_back(item);
 					// Skip over characters inside the sub-expression.
-					skip_to_ln = ln_offset + token.ln-1;
-					skip_to_col = col_offset + token.col-1;
-
-					buffer = "";
+					skip_to_ln = ln_offset + final_ln_offset;
+					skip_to_col = col_offset + (final_col_offset) + 1;
 				}
 				continue;
 			}
@@ -206,16 +218,21 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 				else if (is_valid_name(std::string(1,expr[i]))) {
 					item.var.t = REF;
 				}
+				// Set type array.
+				// else if (expr[i] == '[') {
+				// 	item.var.t = ARR;
+				// 	is_array = true;
+				// 	is_start = false;
+				// 	continue;
+				// }
 				is_start = false;
 			}
 
 			if (is_operator == false) {
 				// Start operator.
 				if (is_special_symbol(expr[i]) == true) {
-					item.var.d = get_literal_from_str(item.var.t, buffer);
-					result_token.seq.push_back(item);
+					clean_up_buffer(result_token, item, buffer);
 					item = ExprToken{ln_offset, col_offset};
-					buffer = "";
 					is_operator = true;
 				}
 
@@ -265,12 +282,10 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 		buffer.push_back(expr[i]);
 	}
 
-	if (item.var.t != NONE && buffer.size() > 0) {
-		item.var.d = get_literal_from_str(item.var.t, buffer);
-		buffer = "";
-		result_token.seq.push_back(item);
-	}
+	clean_up_buffer(result_token, item, buffer);
 	expr_cache[expr] = result_token.seq;
+	final_ln_offset = ln_offset;
+	final_col_offset = col_offset;
 	return result_token;
 }
 
