@@ -69,6 +69,16 @@ std::string err_invalid_op(std::string op_symbol) {
 }
 
 
+std::string err_invalid_property_access(std::string type_1, std::string type_2) {
+	return "Invalid access to value (" + type_1 + ") using value of type \"" + type_2 + "\".";
+}
+
+
+std::string err_index_out_of_range(const int index) {
+	return "Index \"" + std::to_string(index) + "\" out of range. Make sure the item you are accessing has the correct number of elements.";
+}
+
+
 
 std::string get_script_pos(unsigned int ln_override=0, unsigned int col_override=0) {
 	if (ln_override == 0) {ln_override = current_line;}

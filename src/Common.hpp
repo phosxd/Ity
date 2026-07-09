@@ -290,12 +290,28 @@ bool operator<(const VariantData& a, const VariantData& b) {
 // MATH OPERATORS
 
 
+std::vector<Variant> operator+(const std::vector<Variant>& a, const std::vector<Variant>& b) {
+	std::vector<Variant> result = a;
+	result.reserve(b.size());
+	for (unsigned int i = 0; i < b.size(); i++) {
+		result.push_back(b[i]);
+	}
+	return result;
+}
+
+
 VariantData operator+(const VariantData& a, const VariantData& b) {
 	const std::type_info& t1 = a.type();
 	const std::type_info& t2 = b.type();
 	// If a is string & b is string...
 	if (t1 == typeid(std::string) && t2 == typeid(std::string)) {
 		return std::any_cast<std::string>(a) + std::any_cast<std::string>(b);
+	}
+	// If a is array & b is array...
+	else if (t1 == typeid(std::vector<Variant>) && t2 == typeid(std::vector<Variant>)) {
+		std::vector<Variant> a_val = std::any_cast<std::vector<Variant>>(a);
+		std::vector<Variant> b_val = std::any_cast<std::vector<Variant>>(b);
+		return a_val + b_val;
 	}
 	// If a is int...
 	else if (t1 == typeid(int)) {
@@ -355,6 +371,18 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 		std::string a_val = std::any_cast<std::string>(a);
 		std::string sum; sum.reserve(a_val.size()*b_val);
 		for (unsigned int i = 0; i < b_val; i++) {sum += a_val;}
+		return sum;
+	}
+	// If a is array & b is int.
+	else if (t1 == typeid(std::vector<Variant>) && t2 == typeid(int)) {
+		int b_val = std::any_cast<int>(b);
+		if (b_val < 0) {
+			emit_error("Cannot multiply array by a negative number.");
+			return a;
+		}
+		std::vector<Variant> a_val = std::any_cast<std::vector<Variant>>(a);
+		std::vector<Variant> sum; sum.reserve(a_val.size()*b_val);
+		for (unsigned int i = 0; i < b_val; i++) {sum = sum+a_val;}
 		return sum;
 	}
 	// If a is int...
@@ -474,8 +502,8 @@ struct ExprToken {
 
 std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 	os << "{ln=" << s.ln << ", col=" << s.col;
-	if (s.t == ExprTokenType_variant) {os << ", var=" << s.var;}
-	else if (s.t == ExprTokenType_sequence) {os << ", seq=" << s.seq;}
+	os << ", var=" << s.var;
+	os << ", seq=" << s.seq;
 	os << '}';
 	return os;
 }
@@ -522,7 +550,7 @@ std::ostream& operator<<(std::ostream& os, const Instruction& s) {
 // ----------
 
 struct Operation {
-	Variant (*exec)(const Operation& op, ScopeState& state, Variant& first, Variant& second, std::string symbol) = nullptr;
+	Variant (*exec)(const Operation& op, ScopeState& state, Variant& first, Variant& second, std::string& symbol) = nullptr;
 };
 
 

@@ -2,6 +2,7 @@
 
 #include "Op/Arith.hpp"
 #include "Op/Compare.hpp"
+#include "Op/Access.hpp"
 
 
 const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
@@ -20,6 +21,7 @@ std::unordered_map<std::string, Operation> OPERATIONS = {
 	{">=", OP_Compare},
 	{"<", OP_Compare},
 	{"<=", OP_Compare},
+	{":", OP_Access},
 };
 
 std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
@@ -69,11 +71,6 @@ VariantData get_literal_from_str(const VariantType type, const std::string& str_
 	else if (type == FLOAT) {return std::stof(str_val);}
 	else {return std::any();}
 }
-
-
-// ExprToken tokenize_array(const std::string arr_expr, unsigned int ln=0, unsigned int col=0) {
-//
-// }
 
 
 // Add the pending literal token if available.
@@ -163,16 +160,15 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 			std::string subexpr = expr.substr(i);
 			if (not subexpr.empty()) {
 				clean_up_buffer(result_token, item, buffer);
-				// Tokenize sub-expression.
+				// Tokenize sub-expression & add to sequence.
 				ExprToken token = expr_tokenize(subexpr, ln_offset, col_offset);
-				// Set data.
 				item.seq = token.seq;
-				// Add to sequence.
 				result_token.seq.push_back(item);
 				// Skip over characters inside the sub-expression.
 				skip_to_ln = ln_offset + final_ln_offset;
 				skip_to_col = col_offset + (final_col_offset) + 1;
 			}
+			is_array = false;
 			continue;
 		}
 
@@ -205,7 +201,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 			}
 
 			// End expression.
-			if (expr[i] == ')' || expr[i] == ']') {
+			if (expr[i] == ')' || expr[i] == ']' || expr[i] == '}') {
 				break;
 			}
 
@@ -322,6 +318,8 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 }
 
 
+
+
 Variant resolve_variant(ScopeState& state, const Variant& item) {
 	if (item.t == REF) {
 		std::string name = std::any_cast<std::string>(item.d);
@@ -342,6 +340,25 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 	if (debug_flags.expr_seq && not subexpr) {
 		std::cout << ANSI::purple << "ExprToken Sequence: " << ANSI::reset << token.seq << "\n";
 	};
+
+	// Resolve array.
+	if (token.var.t == ARR) {
+		std::vector<Variant> array;
+		array.reserve(token.seq.size());
+		for (ExprToken subtoken:token.seq) {
+			if (subtoken.var.t == OP) {
+				emit_error("Operators not allowed inside \"ARR\". Use sub-expressions instead ( YES: [1, (1+1), 3]  |  NO: [1, 1+1, 3] ).");
+				return Variant{};
+			}
+			else if (subtoken.t == ExprTokenType_sequence) {array.push_back(expr_exec(state, subtoken, current_line, current_column));}
+			else {array.push_back(resolve_variant(state, subtoken.var));}
+		}
+
+		return Variant{
+			ARR,
+			array,
+		};
+	}
 
 	const unsigned int seq_len = token.seq.size();
 	Variant result;
@@ -386,24 +403,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 
 		// Get value from sub-sequence
 		else if (item.t == ExprTokenType_sequence) {
-			if (item.var.t == NONE) {
-				result = expr_exec(state, item, current_line, current_column);
-			}
-			else if (item.var.t == ARR) {
-				std::vector<Variant> array;
-				array.reserve(item.seq.size());
-				for (ExprToken token:item.seq) {
-					if (token.var.t == OP) {
-						emit_error("Operators not allowed inside \"ARR\". Use sub-expressions instead ( YES: [1, (1+1), 3]  |  NO: [1, 1+1, 3] ).");
-						return result;
-					}
-					else if (token.t == ExprTokenType_sequence) {array.push_back(expr_exec(state, token, current_line, current_column));}
-					else {array.push_back(resolve_variant(state, token.var));}
-				}
-				result = Variant{};
-				result.t = ARR;
-				result.d = array;
-			}
+			result = expr_exec(state, item, current_line, current_column);
 		}
 	}
 
@@ -414,6 +414,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 
 	return result;
 }
+
 
 
 
