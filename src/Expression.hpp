@@ -7,7 +7,7 @@
 const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
 const std::string NUM = "0123456789";
 const std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
-const std::string MISC_RESERVED_SYMBOLS = "_.()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
+const std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
 std::unordered_map<std::string, Operation> OPERATIONS = {
 	{"+", OP_Arith},
 	{"-", OP_Arith},
@@ -114,7 +114,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 	bool is_operator = false;
 	bool is_string = false;
 	bool is_escaped_char = false;
-	bool is_array = true;
+	bool is_array = false;
 
 	for (unsigned int i = 0; i < expr_len; i++) {
 		// Advance column or line number.
@@ -134,6 +134,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 			else {continue;}
 		}
 
+		// Handle string logic.
 		if (is_string) {
 			// End escaped.
 			if (is_escaped_char == true) {
@@ -151,6 +152,28 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 				is_string = false;
 				continue;
 			}
+		}
+
+		// Compile array of expressions into a Variant.
+		else if (is_array) {
+			if (expr_len <= i+1) {
+				emit_error("Unexpected \"[\" character at end of expression.");
+				return result_token;
+			}
+			std::string subexpr = expr.substr(i);
+			if (not subexpr.empty()) {
+				clean_up_buffer(result_token, item, buffer);
+				// Tokenize sub-expression.
+				ExprToken token = expr_tokenize(subexpr, ln_offset, col_offset);
+				// Set data.
+				item.seq = token.seq;
+				// Add to sequence.
+				result_token.seq.push_back(item);
+				// Skip over characters inside the sub-expression.
+				skip_to_ln = ln_offset + final_ln_offset;
+				skip_to_col = col_offset + (final_col_offset) + 1;
+			}
+			continue;
 		}
 
 		else {
@@ -182,7 +205,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 			}
 
 			// End expression.
-			if (expr[i] == ')') {
+			if (expr[i] == ')' || expr[i] == ']') {
 				break;
 			}
 
@@ -219,20 +242,29 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 					item.var.t = REF;
 				}
 				// Set type array.
-				// else if (expr[i] == '[') {
-				// 	item.var.t = ARR;
-				// 	is_array = true;
-				// 	is_start = false;
-				// 	continue;
-				// }
+				else if (expr[i] == '[') {
+					item.t = ExprTokenType_sequence;
+					item.var.t = ARR;
+					is_array = true;
+					is_start = false;
+					continue;
+				}
 				is_start = false;
 			}
 
 			if (is_operator == false) {
-				// Start operator.
-				if (is_special_symbol(expr[i]) == true) {
+				// Separate expression.
+				if (expr[i] == ',') {
 					clean_up_buffer(result_token, item, buffer);
-					item = ExprToken{ln_offset, col_offset};
+					item.var.t = NONE;
+					is_start = true;
+					continue;
+				}
+
+				// Start operator.
+				else if (is_special_symbol(expr[i]) == true) {
+					clean_up_buffer(result_token, item, buffer);
+					item.var.t = NONE;
 					is_operator = true;
 				}
 
@@ -354,8 +386,24 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 
 		// Get value from sub-sequence
 		else if (item.t == ExprTokenType_sequence) {
-			result = expr_exec(state, item, current_line, current_column);
-			continue;
+			if (item.var.t == NONE) {
+				result = expr_exec(state, item, current_line, current_column);
+			}
+			else if (item.var.t == ARR) {
+				std::vector<Variant> array;
+				array.reserve(item.seq.size());
+				for (ExprToken token:item.seq) {
+					if (token.var.t == OP) {
+						emit_error("Operators not allowed inside \"ARR\". Use sub-expressions instead ( YES: [1, (1+1), 3]  |  NO: [1, 1+1, 3] ).");
+						return result;
+					}
+					else if (token.t == ExprTokenType_sequence) {array.push_back(expr_exec(state, token, current_line, current_column));}
+					else {array.push_back(resolve_variant(state, token.var));}
+				}
+				result = Variant{};
+				result.t = ARR;
+				result.d = array;
+			}
 		}
 	}
 

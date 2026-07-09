@@ -40,12 +40,20 @@ fi
 start=$(date +%s)
 cd src
 
+result=0
 if [[ $DEBUG == 0 ]]; then
 	g++ $BUILD_ARGS
+	result=$?
 	strip Ity.bin # Better results than "-s" flag for gcc.
 fi
 if [[ $DEBUG == 1 ]]; then
 	g++ -g $BUILD_ARGS
+	result=$?
+fi
+
+if (( result != 0 )); then
+	echo "${RED}Build failed... Resolve errors then try again.${RESET}"
+	exit
 fi
 
 cd ../

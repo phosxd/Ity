@@ -140,7 +140,25 @@ std::ostream& operator<<(std::ostream& os, const VariantType& s) {
 // ------------
 
 
+//struct Variant{};
 using VariantData = std::any;
+
+
+
+// Variant.
+// --------
+
+enum VariantMode {
+	VariantMode_dynamic_type,
+	VariantMode_constant,
+	VariantMode_locked_type,
+};
+
+struct Variant {
+	VariantType t = NONE;
+	VariantData d = std::any();
+	VariantMode m = VariantMode_dynamic_type;
+};
 
 
 // Resolve VariantData to a real VariantType.
@@ -150,16 +168,16 @@ VariantType get_variant_data_type(const VariantData& d) {
 	else if (t == typeid(int)) {return INT;}
 	else if (t == typeid(float)) {return FLOAT;}
 	else if (t == typeid(std::string)) {return STR;}
-	else if (t == typeid(std::vector<VariantData>)) {return ARR;}
+	else if (t == typeid(std::vector<Variant>)) {return ARR;}
 	// else if (t == typeid(std::unordered_map<VariantData,VariantData>)) {return MAP;}
 	return NONE;
 }
 
 
-std::ostream& operator<<(std::ostream& os, const VariantData& s) {
+std::ostream& operator<<(std::ostream& os, const std::any& s) {
 	const std::type_info& t = s.type();
 	if (s.has_value() == false) {
-		os << "None";
+		os << "none";
 	}
 	else if (t == typeid(bool)) {
 		os << std::any_cast<bool>(s);
@@ -173,11 +191,11 @@ std::ostream& operator<<(std::ostream& os, const VariantData& s) {
 	else if (t == typeid(std::string)) {
 		os << std::any_cast<std::string>(s);
 	}
-	// else if (t == typeid(std::vector<VariantData>)) {
-	// 	os << std::any_cast<std::vector<VariantData>>(s);
-	// }
-	// else if (t == typeid(std::unordered_map<VariantData,VariantData>)) {
-	// 	os << std::any_cast<std::unordered_map<VariantData,VariantData>>(s);
+	else if (t == typeid(std::vector<Variant>)) {
+		os << std::any_cast<std::vector<Variant>>(s);
+	}
+	// else if (t == typeid(std::unordered_map<Variant,Variant>)) {
+	// 	os << std::any_cast<std::unordered_map<Variant,Variant>>(s);
 	// }
 	return os;
 }
@@ -191,6 +209,10 @@ bool operator==(const VariantData& a, const VariantData& b) {
 	// If a is string & b is string...
 	if (t1 == typeid(std::string) && t2 == typeid(std::string)) {
 		return std::any_cast<std::string>(a) == std::any_cast<std::string>(b);
+	}
+	// If a is array & b is array...
+	else if (t1 == typeid(std::vector<Variant>) && t2 == typeid(std::vector<Variant>)) {
+		return std::any_cast<std::vector<Variant>>(a) == std::any_cast<std::vector<Variant>>(b);
 	}
 	// If a is bool & b is bool...
 	else if (t1 == typeid(bool) && t2 == typeid(bool)) {
@@ -394,22 +416,7 @@ VariantData operator%(const VariantData& a, const VariantData& b) {
 }
 
 
-
-// Variant.
-// --------
-
-enum VariantMode {
-	VariantMode_dynamic_type,
-	VariantMode_constant,
-	VariantMode_locked_type,
-};
-
-struct Variant {
-	VariantType t = NONE;
-	VariantData d = std::any();
-	VariantMode m = VariantMode_dynamic_type;
-};
-
+// VARIANT OVERLOADS.
 
 std::ostream& operator<<(std::ostream& os, const Variant& s) {
 	return os << "{t=" << s.t << ", d=" << s.d << ", m=" << s.m << '}';
