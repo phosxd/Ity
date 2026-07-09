@@ -17,13 +17,13 @@ void INST_Set_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 	}
 
 	if (is_valid_name(name) == false) {
-		emit_error("Name must not contain any symbols.");
+		emit_error(ERR_name_must_not_contain_symbols);
 		return;
 	}
 
 	// Give error if the var name is not available on the current scope.
 	if (is_name_free(state, name) == true) {
-		emit_error(err_name_does_not_exist(name));
+		emit_error(ERR_name_does_not_exist, {name});
 		return;
 	}
 
@@ -51,7 +51,7 @@ void INST_Set_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 	}
 	// Throw error if invalid operator.
 	else {
-		emit_error(err_invalid_assignment_op(args[0], op));
+		emit_error(ERR_invalid_assignment_op, {symbol, op});
 		return;
 	}
 }

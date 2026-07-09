@@ -234,7 +234,7 @@ bool operator==(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("compare(==)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(ERR_operand_type_mismatch, {"compare(==)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return false;
 }
 
@@ -258,7 +258,7 @@ bool operator>(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("compare(>)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(ERR_operand_type_mismatch, {"compare(>)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return false;
 }
 
@@ -282,7 +282,7 @@ bool operator<(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("compare(<)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(ERR_operand_type_mismatch, {"compare(<)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return false;
 }
 
@@ -329,7 +329,7 @@ VariantData operator+(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("arith(+)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(ERR_operand_type_mismatch, {"arith(+)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return a;
 }
 
@@ -353,7 +353,7 @@ VariantData operator-(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("arith(-)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(ERR_operand_type_mismatch, {"arith(-)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return a;
 }
 
@@ -365,7 +365,7 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 	if (t1 == typeid(std::string) && t2 == typeid(int)) {
 		int b_val = std::any_cast<int>(b);
 		if (b_val < 0) {
-			emit_error("Cannot multiply string by a negative number.");
+			emit_error(ERR_cannot_multiply_by_negative, {"STR"});
 			return a;
 		}
 		std::string a_val = std::any_cast<std::string>(a);
@@ -377,7 +377,7 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 	else if (t1 == typeid(std::vector<Variant>) && t2 == typeid(int)) {
 		int b_val = std::any_cast<int>(b);
 		if (b_val < 0) {
-			emit_error("Cannot multiply array by a negative number.");
+			emit_error(ERR_cannot_multiply_by_negative, {"ARR"});
 			return a;
 		}
 		std::vector<Variant> a_val = std::any_cast<std::vector<Variant>>(a);
@@ -401,7 +401,7 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("arith(*)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(ERR_operand_type_mismatch, {"arith(*)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return a;
 }
 
@@ -425,7 +425,7 @@ VariantData operator/(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("arith(/)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(ERR_operand_type_mismatch, {"arith(/)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return a;
 }
 
@@ -439,7 +439,7 @@ VariantData operator%(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(err_operand_type_mismatch("arith(%)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))));
+	emit_error(ERR_operand_type_mismatch, {"arith(%)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return a;
 }
 
@@ -540,7 +540,7 @@ struct Instruction {
 
 
 std::ostream& operator<<(std::ostream& os, const Instruction& s) {
-	return os << "Instruction{REQUIRED=" << s.REQUIRED << ", OPTIONAL=" << s.OPTIONAL << "}";
+	return os << "Instruction{}";
 }
 
 
@@ -571,7 +571,7 @@ bool str_ends_with(const std::string& text, const std::string suffix) {
 
 
 // Returns the string with all instances of `ch` removed from the start of it.
-std::string trim_left(std::string& text, char ch) {
+std::string trim_left(const std::string& text, char ch) {
 	const unsigned int text_len = text.size();
 	if (text_len == 0) {return text;}
 	if (text.at(0) != ch) {return text;}
@@ -631,8 +631,8 @@ bool is_int_str_32_in_range(std::string int_str) {
 }
 
 
-template<class T_exists_in_vec_v, class T_exists_in_vec_val>
-bool exists_in_vec(T_exists_in_vec_v& v, T_exists_in_vec_val& val) {
+template<class T, class T2>
+bool exists_in_vec(const T& v, const T2& val) {
 	for (auto i:v) {
 		if (i == val) {return true;}
 	}

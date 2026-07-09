@@ -21,7 +21,7 @@ void INST_If_exec(const Instruction& inst, const InstToken& token, ScopeState& s
 	bool expr_passed = false;
 	if (symbol != "else") {
 		if (value.t != BOOL) {
-			emit_error("Expected a boolean result in expression.");
+			emit_error(ERR_expected_boolean_expression);
 			return;
 		}
 		else {expr_passed = std::any_cast<bool>(value.d);}

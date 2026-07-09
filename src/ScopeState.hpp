@@ -30,7 +30,7 @@ void scope_out(ScopeState& state) {
 	ScopeState p;
 	if (state.p != nullptr) {p = *state.p;}
 	else {
-		emit_error("Unexpected (ScopeState.scope_out): minimum depth reached, unable to scope out. Please report bug.");
+		emit_error(ERR_unexpected, {"ScopeState.scope_out", "minimum depth reached, unable to scope out."});
 		return;
 	}
 	state.p = p.p;
@@ -71,7 +71,7 @@ bool is_name_globally_free(ScopeState& state, std::string& name) {
 // Gets the data for name in the current scope. Ensure the name exists in the current scope first.
 Variant get_data(ScopeState& state, std::string& name) {
 	if (state.d.find(name) == state.d.end()) {
-		emit_error("Unexpected (ScopeState.get_data): cannot get non-existent data. Please report bug.");
+		emit_error(ERR_unexpected, {"ScopeState.get_data", "cannot get non-existent data."});
 		return Variant{};
 	}
 	return state.d[name];
@@ -87,7 +87,7 @@ Variant get_data_globally(ScopeState& state, std::string& name) {
 		return get_data_globally(*state.p, name);
 	}
 	else {
-		emit_error("Unexpected (ScopeState.get_data_globally): cannot get non-existent data. Please report bug.");
+		emit_error(ERR_unexpected, {"ScopeState.get_data_globally", "cannot get non-existent data."});
 		return Variant{};
 	}
 }
@@ -106,13 +106,13 @@ void set_data(ScopeState& state, std::string& name, VariantType type, const Vari
 	if (is_name_free(state, name) == false) {
 		const Variant& var = get_data(state, name);
 		if (var.m == 1) {
-			emit_error("Cannot change value of constant \"" + name + "\" after declaration.");
+			emit_error(ERR_cannot_change_constant, {name});
 			return;
 		}
 	}
 	const VariantType data_type = get_variant_data_type(data);
 	if (mode != VariantMode_dynamic_type && type != data_type) {
-		emit_error(err_assignment_type_mismatch(get_variant_type_name(data_type), get_variant_type_name(type)));
+		emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data_type), get_variant_type_name(type)});
 		return;
 	}
 

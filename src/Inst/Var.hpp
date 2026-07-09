@@ -19,19 +19,19 @@ void INST_Var_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 	}
 
 	if (is_valid_name(name) == false) {
-		emit_error("Name must not contain any symbols.");
+		emit_error(ERR_name_must_not_contain_symbols, {name});
 		return;
 	}
 
 	// Give error if the var name is not free on the current scope.
 	if (is_name_free(state, name) == false) {
-		emit_error("Name \"" + name + "\" is already taken within this scope. Use another name for this variable.");
+		emit_error(ERR_name_is_taken, {name});
 		return;
 	}
 
 	// Give warning if the var name is shadowing another var name.
 	if (is_name_globally_free(state, name) == false) {
-		emit_warn("Name \"" + name + "\" is shadowing another variable with the same name, you will not be able to access the shadowed variable unless you change the name.");
+		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
 	// Set variable mode.
@@ -40,7 +40,7 @@ void INST_Var_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 	if (symbol == "const") {mode = VariantMode_constant;}
 	if (type == ANY) {
 		if (mode == 1) {
-			emit_error("Constant must have an explicit type, not \"ANY\".");
+			emit_error(ERR_constant_type_not_explicit);
 			return;
 		}
 		mode = VariantMode_dynamic_type;
@@ -61,7 +61,7 @@ void INST_Var_exec(const Instruction& inst, const InstToken& token, ScopeState& 
 	}
 	// Throw error if invalid operator.
 	else {
-		emit_error(err_invalid_assignment_op(symbol, op));
+		emit_error(ERR_invalid_assignment_op, {symbol, op});
 		return;
 	}
 }

@@ -14,7 +14,7 @@ void INST_While_exec(const Instruction& inst, const InstToken& token, ScopeState
 
 	// Throw error if not boolean.
 	if (value.t != BOOL) {
-		emit_error("Expected a boolean result in expression.");
+		emit_error(ERR_expected_boolean_expression);
 		return;
 	}
 	bool expr_passed = std::any_cast<bool>(value.d);

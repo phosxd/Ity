@@ -144,7 +144,7 @@ std::vector<InstToken> tokenize(std::string src) {
 				for (CompositeItem& comp_item:composite_nest) {
 					// Throw error if composite size is about to go over the max for a 16-bit unsigned integer.
 					if (comp_item.size == 65535) {
-						emit_error("Exceeded maximum number of instructions under a composite instruction (65,535). This is not healthy. Please divorce your love for nesting.",ln,col);
+						emit_error(ERR_max_composite_size, {}, ln,col);
 						return sequence;
 					}
 					comp_item.size += 1;
@@ -171,7 +171,7 @@ std::vector<InstToken> tokenize(std::string src) {
 							}
 							// Throw error if there is no composite to end.
 							else {
-								emit_error("There is no instruction requiring a composite end here.",ln,col);
+								emit_error(ERR_no_composite_requiring_end, {}, ln,col);
 								return sequence;
 							}
 						}
@@ -188,12 +188,12 @@ std::vector<InstToken> tokenize(std::string src) {
 
 	// Throw error if unterminated string.
 	if (is_string) {
-		emit_error("String literal has no end.", str_start_ln, str_start_col);
+		emit_error(ERR_no_string_end, {}, str_start_ln, str_start_col);
 	}
 	// Throw error if unterminated composite.
 	if (composite_nest.size() > 0) {
 		const CompositeItem& comp_item = composite_nest[composite_nest.size()-1];
-		emit_error("Composite instruction has no end.", comp_item.ln, comp_item.col);
+		emit_error(ERR_no_composite_end, {}, comp_item.ln, comp_item.col);
 	}
 	if (debug_flags.inst_seq) {
 		std::cout << ANSI::purple << "Instruction Sequence: " << ANSI::reset << sequence << '\n';
@@ -223,7 +223,7 @@ ScopeState exec(std::vector<InstToken> sequence, ScopeState& state) {
 		else {
 			Instruction inst = INSTRUCTIONS.at(item.args[0]);
 			if (arg_count < inst.REQUIRED) {
-				emit_error("Invalid number of arguments for \"" + item.args[0] + "\". Expected at least " + std::to_string(inst.REQUIRED) + " separated by a space.");
+				emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst.REQUIRED)});
 				return state;
 			}
 			if (inst.exec != nullptr) {inst.exec(inst, item, state, item.args);}
@@ -282,12 +282,12 @@ int main(int argc, char *argv[]) {
 	// Parse & execute script file...
 	if (source_script_path.empty() == false) {
 		if (str_ends_with(source_script_path,".ity") == false) {
-			emit_error("Expected file with \".ity\" extension.");
+			emit_error(ERR_expected_ity_extension);
 			return 0;
 		}
 		std::ifstream f (source_script_path, std::ios::in | std::ios::binary);
 		if (f.is_open() == false) {
-			emit_error("Unable to open script at \"" + source_script_path + "\".");
+			emit_error(ERR_unable_to_open_script, {source_script_path});
 			return 0;
 		}
 

@@ -1,6 +1,41 @@
 #pragma once
 
 
+enum ERR_CODE {
+	ERR_unexpected,
+	ERR_expected_ity_extension,
+	ERR_unable_to_open_script,
+
+	ERR_max_composite_size,
+	ERR_no_composite_requiring_end,
+	ERR_no_composite_end,
+	ERR_no_string_end,
+
+	ERR_invalid_inst_arg_count,
+	ERR_invalid_op,
+	ERR_invalid_assignment_op,
+
+	ERR_operand_type_mismatch,
+	ERR_assignment_type_mismatch,
+	ERR_operators_not_allowed,
+	ERR_expected_boolean_expression,
+
+	ERR_name_is_taken,
+	ERR_name_is_shadowed,
+	ERR_name_must_not_contain_symbols,
+	ERR_name_does_not_exist,
+	ERR_cannot_initialize_value,
+	ERR_cannot_change_constant,
+	ERR_constant_type_not_explicit,
+	ERR_invalid_property_access,
+	ERR_index_out_of_range,
+
+	ERR_cannot_multiply_by_negative,
+
+	ERR_unexpected_char_at_expr_end,
+	ERR_invalid_character_for_construct,
+};
+
 using Clock = std::chrono::high_resolution_clock;
 using ClockType = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
@@ -36,49 +71,6 @@ unsigned int current_column = 0;
 bool debug_mode = false;
 
 
-std::string err_name_does_not_exist(std::string name) {
-	return "Name \"" + name + "\" does not exist.";
-}
-
-
-std::string err_operand_type_mismatch(std::string operation, std::string type_1, std::string type_2) {
-	std::string part = "\".";
-	if (type_2.size() > 0) {
-		part = "\" with value of type \"" + type_2 + part;
-	}
-	return "Cannot perform operation \"" + operation + "\" on value of type \"" + type_1 + part;
-}
-
-
-std::string err_assignment_type_mismatch(std::string type_1, std::string type_2) {
-	return "Cannot assign value of type \"" + type_1 + "\" to variable of type \"" + type_2 + "\".";
-}
-
-
-std::string err_invalid_assignment_op(std::string instruction, std::string op_str) {
-	return "Invalid assignment operator \"" + op_str + "\" for instruction \"" + instruction + "\".";
-}
-
-
-std::string err_invalid_op(std::string op_symbol) {
-	std::string part = "\".";
-	if (op_symbol[op_symbol.size()-1] == '-') {
-		part = "\". Hint: encapsulate negative number literal in a sub-expression (E.g. `1+(-1)`).";
-	}
-	return "Invalid operator \"" + op_symbol + part;
-}
-
-
-std::string err_invalid_property_access(std::string type_1, std::string type_2) {
-	return "Invalid access to value (" + type_1 + ") using value of type \"" + type_2 + "\".";
-}
-
-
-std::string err_index_out_of_range(const int index) {
-	return "Index \"" + std::to_string(index) + "\" out of range. Make sure the item you are accessing has the correct number of elements.";
-}
-
-
 
 std::string get_script_pos(unsigned int ln_override=0, unsigned int col_override=0) {
 	if (ln_override == 0) {ln_override = current_line;}
@@ -87,12 +79,109 @@ std::string get_script_pos(unsigned int ln_override=0, unsigned int col_override
 }
 
 
-void emit_warn(std::string message) {
-	std::cout << ANSI::yellow << "WARNING at (" << ANSI::orange << get_script_pos() << ANSI::yellow << "): " << ANSI::white << message << ANSI::reset << "\n";
+std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
+	if (code == ERR_unexpected) {
+		return "Unexpected (" + args[0] + "): " + args[1] + "Please report bug.";
+	}
+	else if (code == ERR_expected_ity_extension) {
+		return "Expected file with \".ity\" extension.";
+	}
+	else if (code == ERR_unable_to_open_script) {
+		return "Unable to open script at \"" + args[0] + "\".";
+	}
+
+	else if (code == ERR_max_composite_size) {
+		return "Exceeded maximum number of instructions under a composite instruction (65,535). Nesting is not healthy.";
+	}
+	else if (code == ERR_no_composite_requiring_end) {
+		return "There is no instruction requiring a composite end here.";
+	}
+	else if (code == ERR_no_composite_end) {
+		return "Composite instruction has no end.";
+	}
+	else if (code == ERR_no_string_end) {
+		return "String literal has no end.";
+	}
+
+	else if (code == ERR_invalid_inst_arg_count) {
+		return "Invalid number of arguments for \"" + args[0] + "\". Expected at least " + args[1] + " separated by a space.";
+	}
+	else if (code == ERR_invalid_op) {
+		std::string part = "\".";
+		if (args[0][args[0].size()-1] == '-') {
+			part = "\". Hint: encapsulate negative number literal in a sub-expression (E.g. `1+(-1)`).";
+		}
+		return "Invalid operator \"" + args[0] + part;
+	}
+	else if (code == ERR_invalid_assignment_op) {
+		return "Invalid assignment operator \"" + args[0] + "\" for instruction \"" + args[1] + "\".";
+	}
+	else if (code == ERR_operand_type_mismatch) {
+		std::string part = "\".";
+		if (args[2].size() > 0) {
+			part = "\" with value of type \"" + args[2] + part;
+		}
+		return "Cannot perform operation \"" + args[0] + "\" on value of type \"" + args[1] + part;
+	}
+	else if (code == ERR_assignment_type_mismatch) {
+		return "Cannot assign value of type \"" + args[0] + "\" to variable of type \"" + args[1] + "\".";
+	}
+	else if (code == ERR_operators_not_allowed) {
+		return "Operators not allowed inside \"" + args[0] + "\". Use sub-expressions instead: " + args[1] + ".";
+	}
+	else if (code == ERR_expected_boolean_expression) {
+		return "Expected a boolean result in expression.";
+	}
+
+	else if (code == ERR_name_is_taken) {
+		return "Name \"" + args[0] + "\" is already taken within this scope. Use another name for this variable.";
+	}
+	else if (code == ERR_name_is_shadowed) {
+		return "Name \"" + args[0] + "\" is shadowing another variable with the same name, you will not be able to access the shadowed variable unless you change the name.";
+	}
+	else if (code == ERR_name_must_not_contain_symbols) {
+		return "Name must not contain any symbols. Underscores are allowed.";
+	}
+	else if (code == ERR_name_does_not_exist) {
+		return "Name \"" + args[0] + "\" does not exist.";
+	}
+	else if (code == ERR_cannot_initialize_value) {
+		return "Cannot initialize value \"" + args[0] + "\": " + args[1] + ".";
+	}
+	else if (code == ERR_cannot_change_constant) {
+		return "Cannot change value of constant \"" + args[0] + "\" after declaration.";
+	}
+	else if (code == ERR_constant_type_not_explicit) {
+		return "Constant must have an explicit type, not \"ANY\".";
+	}
+	else if (code == ERR_invalid_property_access) {
+		return "Invalid access to value (" + args[0] + ") using value of type \"" + args[1] + "\".";
+	}
+	else if (code == ERR_index_out_of_range) {
+		return "Index \"" + args[0] + "\" out of range. Make sure the item you are accessing has the correct number of elements.";
+	}
+
+	else if (code == ERR_cannot_multiply_by_negative) {
+		return "Cannot multiply \"" + args[0] + "\"by a negative number.";
+	}
+
+	else if (code == ERR_unexpected_char_at_expr_end) {
+		return "Unexpected character \"" + args[0] + "\" at end of expression.";
+	}
+	else if (code == ERR_invalid_character_for_construct) {
+		return "Invalid character for " + args[0] + " construct: \"" + args[1] + "\".";
+	}
+
+	return "Error code \"" + std::to_string(code) + "\".";
 }
 
 
-void emit_error(std::string message, unsigned int ln_override=0, unsigned int col_override=0) {
-	std::cout << ANSI::red << "ERROR at (" << ANSI::orange << get_script_pos(ln_override, col_override) << ANSI::red << "): " << ANSI::white << message << ANSI::reset << "\n";
+void emit_warn(ERR_CODE code, std::vector<std::string> args={}) {
+	std::cout << ANSI::yellow << "WARNING at (" << ANSI::orange << get_script_pos() << ANSI::yellow << "): " << ANSI::white << make_err_message(code,args) << ANSI::reset << "\n";
+}
+
+
+void emit_error(ERR_CODE code, std::vector<std::string> args={}, unsigned int ln_override=0, unsigned int col_override=0) {
+	std::cout << ANSI::red << "ERROR at (" << ANSI::orange << get_script_pos(ln_override, col_override) << ANSI::red << "): " << ANSI::white << make_err_message(code,args) << ANSI::reset << "\n";
 	exit(1);
 }

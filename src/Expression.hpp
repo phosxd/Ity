@@ -32,7 +32,7 @@ bool is_valid_name(const std::string& name) {
 	for(unsigned int i = 0; i < name_len; i++) {
 		bool is_digit = (NUM.find(name[i]) != std::string::npos);
 		if (i == 0 && is_digit) {return false;}
-		if ((ALPHA.find(name[i]) == std::string::npos && is_digit == false) && name[i] != '_') {return false;}
+		if ((ALPHA.find(name[i]) == std::string::npos && not is_digit) && name[i] != '_') {return false;}
 	}
 	return true;
 }
@@ -47,11 +47,10 @@ bool is_special_symbol(const char& ch) {
 }
 
 
-bool check_ahead(const std::string& text, const unsigned int start_idx, const std::string substr, const bool ignore_spaces=false) {
+bool check_ahead(const std::string& text, const unsigned int start_idx, const std::string substr) {
 	unsigned int substr_len = substr.size();
 	if (text.size() < start_idx+substr_len) {return false;}
 	for (unsigned int i = 0; i < substr_len; i++) {
-		if (ignore_spaces == true && text[start_idx+i] == ' ') {continue;}
 		if (text[start_idx+i] != substr[i]) {return false;}
 	}
 	return true;
@@ -62,8 +61,8 @@ VariantData get_literal_from_str(const VariantType type, const std::string& str_
 	if (type == OP || type == REF || type == STR) {return str_val;}
 	else if (type == BOOL) {return (str_val == "true");}
 	else if (type == INT) {
-		if (is_int_str_32_in_range(str_val) == false) {
-			emit_error("Cannot initialize an integer larger than 1,999,999,999. You can go above this limit by adding numbers together, however they may wrap.");
+		if (not is_int_str_32_in_range(str_val)) {
+			emit_error(ERR_cannot_initialize_value, {str_val, "Number too large"});
 			return std::any();
 		}
 		return std::stoi(str_val);
@@ -154,7 +153,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 		// Compile array of expressions into a Variant.
 		else if (is_array) {
 			if (expr_len <= i+1) {
-				emit_error("Unexpected \"[\" character at end of expression.");
+				emit_error(ERR_unexpected_char_at_expr_end, {"["});
 				return result_token;
 			}
 			std::string subexpr = expr.substr(i);
@@ -179,7 +178,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 			// Start sub-expression.
 			if (expr[i] == '(') {
 				if (expr_len <= i+1) {
-					emit_error("Unexpected \"(\" character at end of expression.");
+					emit_error(ERR_unexpected_char_at_expr_end, {"["});
 					return result_token;
 				}
 				std::string subexpr = expr.substr(i+1);
@@ -220,16 +219,16 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 					continue;
 				}
 				// Set type bool.
-				else if (check_ahead(expr, i, "true", true)) {
+				else if (check_ahead(expr, i, "true")) {
 					secondary_buffer = "true";
 					item.var.t = BOOL;
 				}
-				else if (check_ahead(expr, i, "false", true)) {
+				else if (check_ahead(expr, i, "false")) {
 					secondary_buffer = "false";
 					item.var.t = BOOL;
 				}
 				// Set type none.
-				else if (check_ahead(expr, i, "none", true)) {
+				else if (check_ahead(expr, i, "none")) {
 					secondary_buffer = "none";
 					item.var.t = NONE;
 				}
@@ -276,7 +275,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 					}
 					// Throw error if invalid character found.
 					else if ((NUM.find(expr[i]) == std::string::npos)) {
-						emit_error("Invalid character for number construct \"" + std::string(1,expr[i]) + "\".", ln, col);
+						emit_error(ERR_invalid_character_for_construct, {"number", std::string(1,expr[i])}, ln, col);
 						return result_token;
 					}
 				}
@@ -324,7 +323,7 @@ Variant resolve_variant(ScopeState& state, const Variant& item) {
 	if (item.t == REF) {
 		std::string name = std::any_cast<std::string>(item.d);
 		if (is_name_globally_free(state, name) == true) {
-			emit_error(err_name_does_not_exist(name));
+			emit_error(ERR_name_does_not_exist, {name});
 			return item;
 		}
 		return get_data_globally(state, name);
@@ -347,7 +346,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 		array.reserve(token.seq.size());
 		for (ExprToken subtoken:token.seq) {
 			if (subtoken.var.t == OP) {
-				emit_error("Operators not allowed inside \"ARR\". Use sub-expressions instead ( YES: [1, (1+1), 3]  |  NO: [1, 1+1, 3] ).");
+				emit_error(ERR_operators_not_allowed, {"ARR", "( YES: [1, (1+1), 3]  |  NO: [1, 1+1, 3] )"});
 				return Variant{};
 			}
 			else if (subtoken.t == ExprTokenType_sequence) {array.push_back(expr_exec(state, subtoken, current_line, current_column));}
@@ -388,7 +387,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 			if (item.var.t == OP) {
 				op_symbol = std::any_cast<std::string>(item.var.d);
 				if (OPERATIONS.find(op_symbol) == OPERATIONS.end()) {
-					emit_error(err_invalid_op(op_symbol));
+					emit_error(ERR_invalid_op, {op_symbol});
 					return result;
 				}
 				op = &OPERATIONS.at(op_symbol);
