@@ -1,3 +1,17 @@
 - Add simple dictionary data type (std::unordered_map).
 
 - Add "func" instruction for defining named functions that use a child scope.
+
+
+- Add standard library which can be compiled to pick & choose what you will actually use. It should include modules for:
+	- Pipe IO
+	- Array/Map manipulation
+	- Advanced mathematical functions
+	- date/time (using std::chrono)
+	- file system management (file & directory read/write)
+	- JSON parsing
+
+	- D-Bus IPC
+	- Networking over HTTP/HTTPS
+
+	A lot of these are going to be excluded by default or are going to be developed way later down the line.

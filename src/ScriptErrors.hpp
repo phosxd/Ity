@@ -2,6 +2,7 @@
 
 
 enum ERR_CODE {
+	ERR_custom,
 	ERR_unexpected,
 	ERR_expected_ity_extension,
 	ERR_unable_to_open_script,
@@ -19,6 +20,7 @@ enum ERR_CODE {
 	ERR_assignment_type_mismatch,
 	ERR_operators_not_allowed,
 	ERR_expected_boolean_expression,
+	ERR_expected_string_expression,
 
 	ERR_name_is_taken,
 	ERR_name_is_shadowed,
@@ -68,7 +70,8 @@ ClockType clock_start;
 unsigned int current_line = 0;
 unsigned int current_column = 0;
 
-bool debug_mode = false;
+// If true, no fancy messages are displayed, just "ERROR: <code>" or "WARN: <code>".
+bool emit_just_codes = false;
 
 
 
@@ -80,7 +83,10 @@ std::string get_script_pos(unsigned int ln_override=0, unsigned int col_override
 
 
 std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
-	if (code == ERR_unexpected) {
+	if (code == ERR_custom) {
+		return args[0];
+	}
+	else if (code == ERR_unexpected) {
 		return "Unexpected (" + args[0] + "): " + args[1] + "Please report bug.";
 	}
 	else if (code == ERR_expected_ity_extension) {
@@ -132,6 +138,9 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 	else if (code == ERR_expected_boolean_expression) {
 		return "Expected a boolean result in expression.";
 	}
+	else if (code == ERR_expected_string_expression) {
+		return "Expected a string result in expression.";
+	}
 
 	else if (code == ERR_name_is_taken) {
 		return "Name \"" + args[0] + "\" is already taken within this scope. Use another name for this variable.";
@@ -177,11 +186,20 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 
 
 void emit_warn(ERR_CODE code, std::vector<std::string> args={}) {
+	if (emit_just_codes) {
+		std::cout << "WARN: " << std::to_string(code) << '\n';
+		return;
+	}
 	std::cout << ANSI::yellow << "WARNING at (" << ANSI::orange << get_script_pos() << ANSI::yellow << "): " << ANSI::white << make_err_message(code,args) << ANSI::reset << "\n";
 }
 
 
 void emit_error(ERR_CODE code, std::vector<std::string> args={}, unsigned int ln_override=0, unsigned int col_override=0) {
+	if (emit_just_codes) {
+		std::cout << "ERROR: " << std::to_string(code) << '\n';
+		exit(1);
+		return;
+	}
 	std::cout << ANSI::red << "ERROR at (" << ANSI::orange << get_script_pos(ln_override, col_override) << ANSI::red << "): " << ANSI::white << make_err_message(code,args) << ANSI::reset << "\n";
 	exit(1);
 }

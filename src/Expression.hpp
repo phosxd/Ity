@@ -419,6 +419,8 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 
 // Tokenize then execute an expression.
 Variant expr_run(ScopeState& state, const std::string& expr) {
-	const ExprToken& token = expr_tokenize(expr, current_line, current_column);
-	return expr_exec(state, token);
+	return expr_exec(
+		state,
+		expr_tokenize(expr, current_line, current_column)
+	);
 }

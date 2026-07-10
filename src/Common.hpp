@@ -169,7 +169,7 @@ VariantType get_variant_data_type(const VariantData& d) {
 	else if (t == typeid(float)) {return FLOAT;}
 	else if (t == typeid(std::string)) {return STR;}
 	else if (t == typeid(std::vector<Variant>)) {return ARR;}
-	// else if (t == typeid(std::unordered_map<VariantData,VariantData>)) {return MAP;}
+	//else if (t == typeid(std::unordered_map<Variant,Variant>)) {return MAP;}
 	return NONE;
 }
 
@@ -214,6 +214,11 @@ bool operator==(const VariantData& a, const VariantData& b) {
 	else if (t1 == typeid(std::vector<Variant>) && t2 == typeid(std::vector<Variant>)) {
 		return std::any_cast<std::vector<Variant>>(a) == std::any_cast<std::vector<Variant>>(b);
 	}
+	// If a is map & b is map...
+	// else if (t1 == typeid(std::unordered_map<Variant,Variant>) && t2 == typeid(std::unordered_map<Variant,Variant>)) {
+	// 	return std::any_cast<std::unordered_map<Variant,Variant>>(a) == std::any_cast<std::unordered_map<Variant,Variant>>(b);
+	// }
+
 	// If a is bool & b is bool...
 	else if (t1 == typeid(bool) && t2 == typeid(bool)) {
 		return std::any_cast<bool>(a) == std::any_cast<bool>(b);

@@ -14,7 +14,8 @@
 #include "ScopeState.hpp"
 #include "Expression.hpp"
 
- #include "Inst/Var.hpp"
+#include "Inst/Throw.hpp"
+#include "Inst/Var.hpp"
 #include "Inst/Set.hpp"
 #include "Inst/Jump.hpp"
 #include "Inst/End.hpp"
@@ -23,6 +24,7 @@
 
 
 const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
+	{"throw", INST_Throw},
 	{"var", INST_Var},
 	{"const", INST_Var},
 	{"set", INST_Set},
@@ -269,6 +271,9 @@ int main(int argc, char *argv[]) {
 		debug_flags.expr_result = true;
 		debug_flags.data_assign = true;
 	}
+
+	// Set other flags.
+	emit_just_codes = exists_in_vec(flags, "-codes");
 
 
 	ScopeState state = create_new_scope_state({

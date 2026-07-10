@@ -39,9 +39,6 @@
 
 # Other excludes
 .src/
-TestResults.txt
 .last_build_size
-Tests/Standard.ity
-Tests/Test.ity
 Mock/
 Scripts/
