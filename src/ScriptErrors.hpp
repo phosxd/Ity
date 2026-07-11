@@ -15,6 +15,7 @@ enum ERR_CODE {
 	ERR_invalid_inst_arg_count,
 	ERR_invalid_op,
 	ERR_invalid_assignment_op,
+	ERR_unexpected_else,
 
 	ERR_operand_type_mismatch,
 	ERR_assignment_type_mismatch,
@@ -122,6 +123,10 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 	else if (code == ERR_invalid_assignment_op) {
 		return "Invalid assignment operator \"" + args[0] + "\" for instruction \"" + args[1] + "\".";
 	}
+	else if (code == ERR_unexpected_else) {
+		return "Unexpected \"else\" or \"elif\" instruction. No previous conditional.";
+	}
+
 	else if (code == ERR_operand_type_mismatch) {
 		std::string part = "\".";
 		if (args[2].size() > 0) {

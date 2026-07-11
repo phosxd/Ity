@@ -1,11 +1,7 @@
 #pragma once
 
 
-bool previous_conditional_passed = true;
-bool chain_start_passed = true;
-
-
-void INST_If_exec(const Instruction& inst, const InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
+void INST_If_exec(const Instruction& _inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	const std::string symbol = args[0];
 	std::string expr;
@@ -27,11 +23,24 @@ void INST_If_exec(const Instruction& inst, const InstToken& token, ScopeState& s
 		else {expr_passed = std::any_cast<bool>(value.d);}
 	}
 
+	bool previous_conditional_passed = true;
+	if (token.linked_inst == "if" || token.linked_inst == "elif") {
+		InstToken& linked_token = InstTokenSeq.at(token.i + token.linked_inst_pos);
+		if (linked_token.meta.size() == 0) {
+			emit_error(ERR_unexpected_else);
+			return;
+		}
+		previous_conditional_passed = std::any_cast<bool>(linked_token.meta.at(0));
+	}
+
 	bool passed = false;
-	if (symbol == "if") {passed = expr_passed; chain_start_passed = passed;}
+	if (symbol == "if") {passed = expr_passed;}
 	else if (symbol == "elif") {passed = expr_passed && not previous_conditional_passed;}
-	else if (symbol == "else") {passed = not chain_start_passed && not previous_conditional_passed;}
-	previous_conditional_passed = passed;
+	else if (symbol == "else") {passed = not previous_conditional_passed;}
+
+	token.meta = {passed};
+	if (symbol == "elif" && not passed) {token.meta[0] = previous_conditional_passed;}
+	InstTokenSeq[token.i] = token;
 	// Jump past instructions in this composite if failed.
 	if (not passed) {exec_jump_value += token.composite_size;}
 }

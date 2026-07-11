@@ -67,6 +67,8 @@ std::vector<InstToken> tokenize(std::string src) {
 	char string_type;
 
 	std::vector<CompositeItem> composite_nest;
+	CompositeItem last_comp_item;
+	uint16_t last_comp_item_dist = 0;
 
 	for (unsigned int i = 0; i < src_len; i++) {
 		// Advance column or line number.
@@ -90,7 +92,7 @@ std::vector<InstToken> tokenize(std::string src) {
 				is_comment = true;
 				continue;
 			}
-			item = InstToken{ln,col};
+			item = InstToken{(unsigned int)sequence.size(), ln,col};
 			is_start = false;
 		}
 
@@ -137,6 +139,8 @@ std::vector<InstToken> tokenize(std::string src) {
 
 			// If is instruction end, append item to sequence & reset state.
 			if (src[i] == ';') {
+				last_comp_item_dist += 1;
+
 				// Append remaining argument to args.
 				if (buffer.size() > 0) {
 					item.args.push_back(buffer);
@@ -155,9 +159,20 @@ std::vector<InstToken> tokenize(std::string src) {
 					const std::string& inst_name = item.args[0];
 					if (INSTRUCTIONS.find(inst_name) != INSTRUCTIONS.end()) {
 						const Instruction& inst = INSTRUCTIONS.at(inst_name);
+
+						// Link elif / else.
+						if (inst_name == "elif" || inst_name == "else") {
+							if (last_comp_item.token.args[0] != "if" && last_comp_item.token.args[0] != "elif") {
+								emit_error(ERR_unexpected_else, {}, ln,col);
+								return sequence;
+							}
+							item.linked_inst = last_comp_item.token.args[0];
+							item.linked_inst_pos = -((int32_t)last_comp_item_dist);
+						}
+
 						// Start composite item...
 						if (inst.is_composite) {
-							composite_nest.push_back(CompositeItem {item, (unsigned int)sequence.size(), 0, ln, col});
+							composite_nest.push_back(CompositeItem{item, (unsigned int)sequence.size(), 0, ln, col});
 						}
 						// End composite item...
 						else if (inst_name == "/") {
@@ -170,6 +185,9 @@ std::vector<InstToken> tokenize(std::string src) {
 								sequence[comp_item.index] = comp_item.token;
 								item.linked_inst = comp_item.token.args[0];
 								item.linked_inst_pos = -comp_item.size;
+								// Save composite item for later.
+								last_comp_item = comp_item;
+								last_comp_item_dist = -item.linked_inst_pos;
 							}
 							// Throw error if there is no composite to end.
 							else {
@@ -207,11 +225,12 @@ std::vector<InstToken> tokenize(std::string src) {
 
 
 // Execute a sequence of instruction tokens.
-ScopeState exec(std::vector<InstToken> sequence, ScopeState& state) {
-	const unsigned int seq_len = sequence.size();
+ScopeState exec(std::vector<InstToken>& sequence, ScopeState& state) {
+	InstTokenSeq = sequence;
+	const unsigned int seq_len = InstTokenSeq.size();
 	unsigned int composite_nest = 0;
 	for (unsigned int i = 0; i < seq_len; i++) {
-		InstToken item = sequence[i];
+		InstToken item = InstTokenSeq[i];
 		current_line = item.ln;
 		current_column = item.col;
 		const unsigned int arg_count = item.args.size();

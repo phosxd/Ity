@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Set_exec(const Instruction& inst, const InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
+void INST_Set_exec(const Instruction& inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	const std::string symbol = args[0];
 	std::string name;

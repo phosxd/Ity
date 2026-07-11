@@ -462,13 +462,17 @@ std::ostream& operator<<(std::ostream& os, const Variant& s) {
 
 
 struct InstToken {
+	unsigned int i = 0;
 	unsigned int ln = 0;
 	unsigned int col = 0;
 	std::vector<std::string> args;
+
 	uint16_t composite_size = 0; // How large the composite instruction is. If `0`, is not a composite instruction.
 
 	std::string linked_inst = "";
 	int32_t linked_inst_pos = 0;
+
+	std::vector<std::any> meta;
 };
 
 
@@ -539,7 +543,7 @@ std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
 struct Instruction {
 	uint8_t REQUIRED; // Required argument count,
 	int8_t OPTIONAL; // Optional argument count.
-	void (*exec)(const Instruction&, const InstToken&, ScopeState&, const std::vector<std::string>&) = nullptr;
+	void (*exec)(const Instruction&, InstToken&, ScopeState&, const std::vector<std::string>&) = nullptr;
 	bool is_composite;
 };
 
@@ -643,3 +647,7 @@ bool exists_in_vec(const T& v, const T2& val) {
 	}
 	return false;
 }
+
+
+
+std::vector<InstToken> InstTokenSeq;
