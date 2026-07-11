@@ -296,7 +296,22 @@ int main(int argc, char *argv[]) {
 
 
 	ScopeState state = create_new_scope_state({
-		{"CORE", Variant {
+		{"__VERSION__", Variant{
+			ARR,
+			(std::vector<Variant>){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}},
+			VariantMode_constant
+		}},
+		{"__VERSION_STRING__", Variant{
+			STR,
+			ItyVersionString,
+			VariantMode_constant
+		}},
+		{"__OS_NAME__", Variant{
+			STR,
+			OSName,
+			VariantMode_constant
+		}},
+		{"CORE", Variant{
 		}},
 	});
 	std::vector<ClockType> timers;

@@ -1,11 +1,6 @@
 #pragma once
 
-
-const std::string ItyVersionString = "0.0.1";
-const uint16_t ItyVersion = 0;
-
-// This may be changed by the `jump` instruction during `exec`.
-int exec_jump_value = 0;
+// Variable declarations at the end of the file.
 
 
 
@@ -650,4 +645,47 @@ bool exists_in_vec(const T& v, const T2& val) {
 
 
 
+
+// Constants.
+// ----------
+
+const std::string ItyVersionString = "0.0.1";
+// Last number indicates release type:
+//	0 = release.
+//	1 = beta / pre-release.
+//	2 = experimental.
+const std::vector<int> ItyVersion = {0,0,1, 0};
+
+const std::string OSName =
+#if _WIN32
+	"windows"
+#elif __linux__
+	"linux"
+#elif __unix__
+	"unix"
+#elif _POSIX_VERSION
+	"posix"
+
+#elif __APPLE__
+	#include "TargetConditionals.h"
+	#if TARGET_OS_MAC
+		"apple_mac"
+	#elif TARGET_OS_IPHONE
+		"apple_iphone"
+	#endif
+
+#else
+	"unknown"
+#endif
+;
+
+
+
+
+// Variables.
+// ----------
+
 std::vector<InstToken> InstTokenSeq;
+
+// This may be changed by the `jump` instruction during `exec`.
+int exec_jump_value = 0;
