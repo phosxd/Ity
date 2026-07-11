@@ -602,6 +602,18 @@ std::string join_str(std::vector<std::string>& vec, std::string sep) {
 }
 
 
+// Splits the `text` into a vector of strings, with each element separated by the given `sep`.
+std::vector<std::string> split_str(const std::string& text, const char sep) {
+	std::stringstream ss (text);
+	std::vector<std::string> result;
+	std::string item;
+	while (std::getline(ss, item, sep)) {
+		result.push_back(item);
+	}
+	return result;
+}
+
+
 // Returns the number of strings that are empty inside the given vector.
 unsigned int count_non_empty_strings(std::vector<std::string> items) {
 	const unsigned int items_len = items.size();
@@ -661,11 +673,6 @@ const std::string OSName =
 	"windows"
 #elif __linux__
 	"linux"
-#elif __unix__
-	"unix"
-#elif _POSIX_VERSION
-	"posix"
-
 #elif __APPLE__
 	#include "TargetConditionals.h"
 	#if TARGET_OS_MAC
@@ -673,7 +680,10 @@ const std::string OSName =
 	#elif TARGET_OS_IPHONE
 		"apple_iphone"
 	#endif
-
+#elif __unix__
+	"unix"
+#elif _POSIX_VERSION
+	"posix"
 #else
 	"unknown"
 #endif

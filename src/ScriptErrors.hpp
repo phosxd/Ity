@@ -40,7 +40,7 @@ enum ERR_CODE {
 };
 
 using Clock = std::chrono::high_resolution_clock;
-using ClockType = std::chrono::time_point<std::chrono::high_resolution_clock>;
+using Clock_t = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 
 namespace ANSI {
@@ -67,7 +67,7 @@ struct debug_flags_struct {
 debug_flags_struct debug_flags;
 
 
-ClockType clock_start;
+Clock_t clock_start;
 unsigned int current_line = 0;
 unsigned int current_column = 0;
 

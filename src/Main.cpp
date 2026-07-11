@@ -294,6 +294,9 @@ int main(int argc, char *argv[]) {
 	// Set other flags.
 	emit_just_codes = exists_in_vec(flags, "-codes");
 
+	std::vector<std::string> split_source_script = {""};
+	for (std::string& i : (split_str(source_script_path, '/')) ) {split_source_script.push_back(i);}
+
 
 	ScopeState state = create_new_scope_state({
 		{"__VERSION__", Variant{
@@ -311,10 +314,20 @@ int main(int argc, char *argv[]) {
 			OSName,
 			VariantMode_constant
 		}},
+		{"__SCRIPT_FILE_NAME__", Variant{
+			STR,
+			split_source_script.back(),
+			VariantMode_constant
+		}},
+		{"__SCRIPT_START_TIME_MS__", Variant{
+			INT,
+			(int)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count(),
+			VariantMode_constant
+		}},
 		{"CORE", Variant{
 		}},
 	});
-	std::vector<ClockType> timers;
+	std::vector<Clock_t> timers;
 	for (unsigned int i = 0; i < 2; i++) {timers.push_back(Clock::now());}
 
 
@@ -351,12 +364,12 @@ int main(int argc, char *argv[]) {
 	// Run interactive interpreter...
 	else {
 		std::cout << "* " << ANSI::yellow << "Ity (" << ItyVersionString << ")" << ANSI::reset << '\n'
-			      << "* " << ANSI::purple << "Runing interactive mode interpreter. Run Ity code directly in the terminal!" << ANSI::reset << '\n'
+			      << "* " << ANSI::purple << "Runing interactive mode interpreter." << ANSI::reset << '\n'
 			      << "* " << ANSI::purple << "Type \"quit\" or \"q\" to stop." << ANSI::reset << '\n';
 
 		current_line = 1;
 		current_column = 1;
-		clock_start = std::chrono::high_resolution_clock::now();
+		clock_start = Clock::now();
 
 		// Input loop...
 		while (true) {
@@ -390,7 +403,7 @@ int main(int argc, char *argv[]) {
 	if (debug_flags.result) {
 		auto total_end = std::chrono::high_resolution_clock::now();
 		std::vector<std::vector<long int>> times = {
-			{std::chrono::duration_cast<std::chrono::microseconds>(total_end-clock_start).count(),std::chrono::duration_cast<std::chrono::milliseconds>(total_end-clock_start).count()},
+			{std::chrono::duration_cast<std::chrono::microseconds>(total_end-clock_start).count(), std::chrono::duration_cast<std::chrono::milliseconds>(total_end-clock_start).count()},
 			{std::chrono::duration_cast<std::chrono::microseconds>(timers[1]-timers[0]).count(), std::chrono::duration_cast<std::chrono::milliseconds>(timers[1]-timers[0]).count()},
 		};
 		std::cout << "\n\n" << "Program results...\n------------------\n";
