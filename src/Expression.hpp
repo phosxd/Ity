@@ -344,10 +344,10 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 	if (token.var.t == ARR) {
 		std::vector<Variant> array;
 		array.reserve(token.seq.size());
-		for (ExprToken subtoken:token.seq) {
+		for (const ExprToken& subtoken : token.seq) {
 			if (subtoken.var.t == OP) {
 				emit_error(ERR_operators_not_allowed, {"ARR", "( YES: [1, (1+1), 3]  |  NO: [1, 1+1, 3] )"});
-				return Variant{};
+				return VariantPresets.empty;
 			}
 			else if (subtoken.t == ExprTokenType_sequence) {array.push_back(expr_exec(state, subtoken, current_line, current_column));}
 			else {array.push_back(resolve_variant(state, subtoken.var));}

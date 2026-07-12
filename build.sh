@@ -69,6 +69,13 @@ if [[ $DEBUG == 0 ]]; then
 	g++ $BUILD_ARGS
 	result=$?
 	strip Ity.bin # Better results than "-s" flag for gcc.
+	objcopy \
+		--remove-section=.note.ABI-tag \
+		--remove-section=.note.gnu.property \
+		--remove-section=.comment \
+		--remove-section=.annobin.notes \
+		--remove-section=.gnu.build.attributes \
+		Ity.bin Ity.bin
 fi
 if [[ $DEBUG == 1 ]]; then
 	g++ -g $BUILD_ARGS

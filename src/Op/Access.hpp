@@ -1,7 +1,7 @@
 #pragma once
 
 
-Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, Variant& second, std::string& symbol) {
+Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, Variant& second, const std::string& _symbol) {
 	if (first.t == ARR) {
 		if (second.t != INT) {
 			emit_error(ERR_invalid_property_access, {get_variant_type_name(first.t), get_variant_type_name(second.t)});
@@ -20,10 +20,10 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 	// Access object property.
 	// For hash tables, functions, or other objects.
 	else if (first.t == MAP) {
-		const std::unordered_map<std::string,Variant>& map = std::any_cast<MAP_t>(first.d);
+		const MAP_t& map = std::any_cast<MAP_t>(first.d);
 
 		// Determine type of the object.
-		std::string obj_type = "m";
+		STR_t obj_type = "m";
 		if (map.find("__t") != map.end()) {
 			const Variant& obj_type_var = map.at("__t");
 			if (obj_type_var.t != STR) {

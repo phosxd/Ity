@@ -521,8 +521,8 @@ std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 // ------------
 
 struct ScopeState {
-	ScopeState* p = nullptr;                    // Parent scope state.
-	MAP_t d;  // Scope data.
+	ScopeState* p = nullptr;  // Parent scope state.
+	MAP_t d;                  // Scope data.
 };
 
 
@@ -556,7 +556,7 @@ std::ostream& operator<<(std::ostream& os, const Instruction& s) {
 // ----------
 
 struct Operation {
-	Variant (*exec)(const Operation& op, ScopeState& state, Variant& first, Variant& second, std::string& symbol) = nullptr;
+	Variant (*exec)(const Operation& op, ScopeState& state, Variant& first, Variant& second, const std::string& symbol) = nullptr;
 };
 
 
@@ -571,7 +571,7 @@ std::ostream& operator<<(std::ostream& os, const Operation& s) {
 // -----------------------
 
 
-bool str_ends_with(const std::string& text, const std::string suffix) {
+bool str_ends_with(const std::string& text, const std::string& suffix) {
 	return text.size() >= suffix.size() && (text.compare(text.size()-suffix.size(), suffix.size(), suffix) == 0);
 }
 
@@ -582,8 +582,7 @@ std::string trim_left(const std::string& text, char ch) {
 	if (text_len == 0) {return text;}
 	if (text.at(0) != ch) {return text;}
 	bool ended = false;
-	std::string result;
-	result.reserve(text_len);
+	std::string result; result.reserve(text_len);
 	for (unsigned int i = 0; i < text_len; i++) {
 		if (text.at(i) != ch) {ended = true;}
 		if (ended == true) {result.push_back(text.at(i));}
