@@ -703,6 +703,13 @@ using ARR_t = std::vector<Variant>;
 using MAP_t = std::unordered_map<std::string,Variant>;
 using NativeFunc_t = Variant(*)(ScopeState& state, const std::vector<Variant>& args);
 
+struct VariantPresets_struct {
+	Variant obj_type_m {STR, (STR_t)"f", VariantMode_constant};
+	Variant obj_type_f {STR, (STR_t)"f", VariantMode_constant};
+	Variant none_type_str {STR, (STR_t)"NONE", VariantMode_constant};
+};
+const VariantPresets_struct VariantPresets;
+
 
 
 

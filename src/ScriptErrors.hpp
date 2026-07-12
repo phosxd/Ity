@@ -192,7 +192,7 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 		return "No property with name \"" + args[0] + "\" in this object.";
 	}
 	else if (code == ERR_invalid_func_call) {
-		return "Cannot call function with value of type \"" + args[0] + "\". Wrap function arguments in an \"ARR\" literal.";
+		return "Cannot call function with value of type \"" + args[0] + "\". Wrap arguments in an array literal.";
 	}
 
 	else if (code == ERR_cannot_multiply_by_negative) {

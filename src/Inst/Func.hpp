@@ -23,8 +23,8 @@ void INST_Func_exec(const Instruction& inst, InstToken& token, ScopeState& state
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
-	std::unordered_map<std::string,Variant> func_data = {
-		{"__t", Variant(STR, (STR_t)"f")},
+	MAP_t func_data = {
+		{"__t", VariantPresets.obj_type_f},
 		{"__idx", Variant{INT, (int)token.i}},
 		{"__ret_t", Variant{STR, type_name}}
 	};

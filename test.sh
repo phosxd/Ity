@@ -154,22 +154,26 @@ true != true;
 # ---
 
 "
+merge IO;
+
 # Conditional code block;
 # ----------------------;
 
 if true == true;
-	'true is true';
+	print:['true is true'];
 /; else; throw; /;
 if true == false;
 	throw 'true is false';
 /;
 "
 
-""
+"true is true"
 
 # ---
 
 "
+merge IO;
+
 # Nested conditionals;
 
 if true == true;
@@ -178,7 +182,7 @@ if true == true;
 			if 2 == 2;
 				if 1 == 0; throw; /;
 				elif 'A' != 'B';
-					'All good';
+					print:['passed'];
 				/; else; throw; /;
 			/; else; throw; /;
 		/; else; throw; /;
@@ -186,7 +190,7 @@ if true == true;
 /;
 "
 
-""
+"passed"
 
 # ---
 
@@ -229,6 +233,8 @@ else;
 # ---
 
 "
+merge IO;
+
 # Code jump;
 # ---------;
 
@@ -239,7 +245,63 @@ if jump_counter == 50;
 	jump 3;
 /;
 jump -4;
-'Loop ended';
+print:[jump_counter];
+"
+
+"50"
+
+# ---
+
+"
+merge IO;
+
+# While loop;
+# ----------;
+
+var INT i = 0;
+while i < 10;
+	set i += 1;
+/;
+
+print:[i];
+"
+
+"10"
+
+# ---
+
+"
+merge IO;
+
+# Function definition;
+# -------------------;
+
+func NONE say_hi;
+	print:['Hello there!'];
+/;
+
+say_hi:[];
+"
+
+"Hello there!"
+
+# ---
+
+"
+"
+
+""
+
+# ---
+
+"
+"
+
+""
+
+# ---
+
+"
 "
 
 ""

@@ -9,7 +9,7 @@
 
 
 // Create a new blank scope state.
-ScopeState create_new_scope_state(std::unordered_map<std::string,Variant> data, ScopeState* parent = nullptr) {
+ScopeState create_new_scope_state(MAP_t data, ScopeState* parent = nullptr) {
 	ScopeState result;
 	if (parent != nullptr) {result.p = parent;}
 	result.d = data;
@@ -21,7 +21,7 @@ ScopeState create_new_scope_state(std::unordered_map<std::string,Variant> data, 
 // This will effectively change the depth of the current scope while preserving the state reference.
 void scope_in(ScopeState& state) {
 	state.p = new ScopeState(create_new_scope_state(state.d, state.p));
-	state.d = std::unordered_map<std::string,Variant>();
+	state.d = MAP_t();
 }
 
 

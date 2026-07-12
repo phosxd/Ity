@@ -30,10 +30,12 @@ const Variant LIBS[] = {
 #include "Inst/If.hpp"
 #include "Inst/While.hpp"
 #include "Inst/Func.hpp"
+#include "Inst/Return.hpp"
 
 
 const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
 	{"import", INST_Import},
+	{"merge", INST_Import},
 	{"throw", INST_Throw},
 	{"var", INST_Var},
 	{"const", INST_Var},
@@ -45,6 +47,7 @@ const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
 	{"else", INST_If},
 	{"while", INST_While},
 	{"func", INST_Func},
+	{"return", INST_Return},
 };
 
 

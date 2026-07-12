@@ -40,5 +40,7 @@
 # Other excludes
 .src/
 .last_build_size
+.test.ity
+.test_result.txt
 Mock/
 Scripts/
