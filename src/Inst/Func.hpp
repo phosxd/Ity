@@ -24,9 +24,9 @@ void INST_Func_exec(const Instruction& inst, InstToken& token, ScopeState& state
 	}
 
 	std::unordered_map<std::string,Variant> func_data = {
-		{"__t", Variant(STR, (std::string)"f")},
+		{"__t", Variant(STR, (STR_t)"f")},
 		{"__idx", Variant{INT, (int)token.i}},
-		{"__ret_type", Variant{STR, type_name}}
+		{"__ret_t", Variant{STR, type_name}}
 	};
 	set_data(state, name, MAP, func_data, VariantMode_constant);
 	exec_jump_value += token.composite_size;

@@ -20,7 +20,7 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 	// Access object property.
 	// For hash tables, functions, or other objects.
 	else if (first.t == MAP) {
-		const std::unordered_map<std::string,Variant>& map = std::any_cast<std::unordered_map<std::string,Variant>>(first.d);
+		const std::unordered_map<std::string,Variant>& map = std::any_cast<MAP_t>(first.d);
 
 		// Determine type of the object.
 		std::string obj_type = "m";
@@ -30,7 +30,7 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 				emit_error(ERR_unexpected, {"OP_Access.exec", "improper type of \"__t\" property."});
 				return first;
 			}
-			obj_type = std::any_cast<std::string>(obj_type_var.d);
+			obj_type = std::any_cast<STR_t>(obj_type_var.d);
 		}
 
 		// Access map.
@@ -41,7 +41,7 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 				return first;
 			}
 			// Find key.
-			const std::string& key = std::any_cast<std::string>(second.d);
+			const std::string& key = std::any_cast<STR_t>(second.d);
 			if (map.find(key) == map.end()) {
 				emit_error(ERR_no_property_with_name, {key});
 				return first;
@@ -57,17 +57,36 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 				emit_error(ERR_invalid_func_call, {get_variant_type_name(second.t)});
 				return first;
 			}
-			const int func_token_index = std::any_cast<int>(map.at("__idx").d);
-			const InstToken& func_token = InstTokenSeq.at(func_token_index);
-			const unsigned int func_body_start = func_token.i+1;
-			const unsigned int func_body_end = std::any_cast<unsigned int>(func_token.meta.at(0));
-			// Run function.
-			std::vector<InstToken> inst_token_seq (InstTokenSeq.begin()+func_body_start, InstTokenSeq.begin()+func_body_end);
-			scope_in(state);                                                  // Create new scope on top of the previous.
-			set_data(state, "_ARGS", ARR, second.d, VariantMode_constant);    // Make the passed arguments available in the scope.
-			std::cout << "SCOPE: " << state << '\n';
-			Ity.exec(inst_token_seq, state);                                  // Execute instructions in the function.
-			scope_out(state);                                                 // Return to previous scope.
+			// Call native function...
+			if (map.find("__ncall") != map.end()) {
+				const NativeFunc_t& n_func = std::any_cast<NativeFunc_t>(map.at("__ncall").d);
+				const ARR_t& n_args = std::any_cast<ARR_t>(second.d);
+				return n_func(state, n_args);
+			}
+
+			// Call in-code function...
+			else {
+				const int& func_token_index = std::any_cast<int>(map.at("__idx").d);
+				const VariantType func_return_type = get_variant_type_from_name(std::any_cast<STR_t>(map.at("__ret_t").d));
+				const InstToken& func_token = InstTokenSeq.at(func_token_index);
+				const unsigned int func_body_start = func_token.i+1;
+				const unsigned int func_body_end = std::any_cast<unsigned int>(func_token.meta.at(0));
+				// Run function.
+				std::vector<InstToken> inst_token_seq (InstTokenSeq.begin()+func_body_start, InstTokenSeq.begin()+func_body_end);
+				scope_in(state);                                                     // Create new scope on top of the previous.
+				set_data(state, "_ARGS", ARR, second.d, VariantMode_constant);       // Make the passed arguments available in the scope.
+				set_data(state, "_RET", ANY, std::any(), VariantMode_dynamic_type);  // Initialize return variable.
+				Ity.exec(inst_token_seq, state);                                     // Execute instructions in the function.
+
+				// Get result & check if return type matches.
+				Variant result = get_data(state, "_RET");
+				if (result.t != func_return_type) {
+					emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_return_type), get_variant_type_name(result.t)});
+				}
+				// Restore previous scope, then return result.
+				scope_out(state);
+				return result;
+			}
 		}
 
 	}

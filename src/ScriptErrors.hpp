@@ -6,12 +6,14 @@ enum ERR_CODE {
 	ERR_unexpected,
 	ERR_expected_ity_extension,
 	ERR_unable_to_open_script,
+	ERR_unknown_module,
 
 	ERR_max_composite_size,
 	ERR_no_composite_requiring_end,
 	ERR_no_composite_end,
 	ERR_no_string_end,
 
+	ERR_invalid_syntax,
 	ERR_invalid_inst_arg_count,
 	ERR_invalid_op,
 	ERR_invalid_assignment_op,
@@ -19,6 +21,7 @@ enum ERR_CODE {
 
 	ERR_operand_type_mismatch,
 	ERR_assignment_type_mismatch,
+	ERR_return_type_mismatch,
 	ERR_operators_not_allowed,
 	ERR_expected_boolean_expression,
 	ERR_expected_string_expression,
@@ -98,6 +101,9 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 	else if (code == ERR_unable_to_open_script) {
 		return "Unable to open script at \"" + args[0] + "\".";
 	}
+	else if (code == ERR_unknown_module) {
+		return "No module with the name \"" + args[0] + "\" is available.";
+	}
 
 	else if (code == ERR_max_composite_size) {
 		return "Exceeded maximum number of instructions under a composite instruction (65,535). Nesting is not healthy.";
@@ -112,6 +118,9 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 		return "String literal has no end.";
 	}
 
+	else if (code == ERR_invalid_syntax) {
+		return "Invalid syntax: " + args[0] + ".";
+	}
 	else if (code == ERR_invalid_inst_arg_count) {
 		return "Invalid number of arguments for \"" + args[0] + "\". Expected at least " + args[1] + " separated by a space.";
 	}
@@ -138,6 +147,9 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 	}
 	else if (code == ERR_assignment_type_mismatch) {
 		return "Cannot assign value of type \"" + args[0] + "\" to variable of type \"" + args[1] + "\".";
+	}
+	else if (code == ERR_return_type_mismatch) {
+		return "Cannot return value of type \"" + args[0] + "\" in a function that returns type \"" + args[1] + "\".";
 	}
 	else if (code == ERR_operators_not_allowed) {
 		return "Operators not allowed inside \"" + args[0] + "\". Use sub-expressions instead: " + args[1] + ".";

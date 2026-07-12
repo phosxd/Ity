@@ -1,6 +1,5 @@
-- Add simple dictionary data type (std::unordered_map).
-
-- Add "func" instruction for defining named functions that use a child scope.
+- Fix function scope deriving from caller scope instead of definition scope.
+- Add ability to define MAP literals in expressions.
 
 
 - Add standard library which can be compiled to pick & choose what you will actually use. It should include modules for:

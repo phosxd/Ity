@@ -1,0 +1,49 @@
+#pragma once
+
+
+void INST_Import_exec(const Instruction& inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
+	const unsigned int args_len = args.size();
+	const std::string& lib_name = args[1];
+	std::string applied_name = lib_name;
+
+	// Get alias.
+	if (args_len == 4) {
+		if (args[2] != "as") {
+			emit_error(ERR_invalid_syntax, {"Expected keyword \"as\""});
+			return;
+		}
+		applied_name = args[3];
+	}
+
+	// Throw error if the name is already declared in this scope.
+	if (not is_name_free(state, applied_name)) {
+		emit_error(ERR_name_is_taken, {applied_name});
+		return;
+	}
+
+	// Find library.
+	const Variant* lib = nullptr;
+	for (const Variant& item : LIBS) {
+		if ( std::any_cast<STR_t>(std::any_cast<MAP_t>(item.d).at("__name").d) == lib_name) {
+			lib = &item;
+			break;
+		}
+	}
+
+	// Throw error if library doesn't exist.
+	if (lib == nullptr) {
+		emit_error(ERR_unknown_module, {lib_name});
+		return;
+	}
+
+	// Add library to scope with the given name.
+	set_data(state, applied_name, MAP, lib->d, VariantMode_constant);
+}
+
+
+const Instruction INST_Import {
+	1,                 // Required arg count.
+	2,                 // Optional arg count.
+	INST_Import_exec,  // Function.
+	false,             // Is composite.
+};

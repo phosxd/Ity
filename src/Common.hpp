@@ -29,7 +29,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& s) {
 
 // unordered_map
 template<class T, class T2>
-std::ostream& operator<<(std::ostream& os, const std::unordered_map<T, T2>& s) {
+std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
 	os << '{';
 	const unsigned int len = s.size();
 	unsigned int idx = 0;
@@ -65,13 +65,13 @@ bool is_vec_equal(const std::vector<T>& a, const std::vector<T2>& b) {
 // VariantType.
 // ------------
 
-
 enum VariantType {
 	// Meta types.
 	INFERRED,
 	ANY,
 	OP,
 	REF,
+	FUNC,
 	// Real types.
 	NONE,
 	BOOL,
@@ -91,6 +91,7 @@ std::string get_variant_type_name(VariantType type) {
 		case ANY: return "ANY";
 		case OP: return "OP";
 		case REF: return "REF";
+		case FUNC: return "FUNC";
 		// Real types.
 		case BOOL: return "BOOL";
 		case INT: return "INT";
@@ -110,6 +111,7 @@ VariantType get_variant_type_from_name(std::string name) {
 	else if (name == "ANY") {return ANY;}
 	else if (name == "OP") {return OP;}
 	else if (name == "REF") {return REF;}
+	else if (name == "FUNC") {return FUNC;}
 	// Real types.
 	else if (name == "BOOL") {return BOOL;}
 	else if (name == "INT") {return INT;}
@@ -614,7 +616,7 @@ unsigned int count_non_empty_strings(std::vector<std::string> items) {
 	const unsigned int items_len = items.size();
 	unsigned int count = 0;
 	for (unsigned int i = 0; i < items_len; i++) {
-		if (items[i].empty() == false) {
+		if (items.at(i).empty() == false) {
 			count++;
 		}
 	}
@@ -653,7 +655,7 @@ bool exists_in_vec(const T& v, const T2& val) {
 
 
 
-// k
+// Ity global structure.
 
 struct ItyStruct {
 	std::vector<InstToken> (*tokenize)(std::string src) = nullptr;
@@ -694,6 +696,12 @@ const std::string OSName =
 	"unknown"
 #endif
 ;
+
+
+using STR_t = std::string;
+using ARR_t = std::vector<Variant>;
+using MAP_t = std::unordered_map<std::string,Variant>;
+using NativeFunc_t = Variant(*)(ScopeState& state, const std::vector<Variant>& args);
 
 
 

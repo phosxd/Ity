@@ -1,24 +1,48 @@
 #pragma once
 
 
-// void INST_End_exec(const Instruction& inst, const InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
-// 	if (token.linked_inst.empty()) {return;}
-//
-// 	if (token.linked_inst == "while") {
-// 		// Jump back to the while instruction. If it's condition failed, it should jump past this end instruction.
-// 		exec_jump_value += token.linked_inst_pos-1;
-// 	}
-// }
+Variant LIB_IO_init_exec(ScopeState& state, const std::vector<Variant>& args) {
+	return Variant{};
+}
 
 
-// const Instruction INST_End {
-// 	0,              // Required arg count.
-// 	0,              // Optional arg count.
-// 	INST_End_exec,  // Function.
-// 	false,          // Is composite.
-// };
+Variant LIB_IO_print_exec(ScopeState& state, const std::vector<Variant>& args) {
+	for (const Variant& var : args) {
+		std::cout << var.d << '\n';
+	}
+	return Variant{};
+}
+
+
+// Define translations.
+// --------------------
+
+
+const Variant LIB_IO_init {
+	MAP,
+	(MAP_t){
+		{"__t", Variant{STR, (STR_t)"f"}},
+		{"__ret_t", Variant{STR, (STR_t)"NONE"}},
+		{"__ncall", Variant{FUNC, (NativeFunc_t)LIB_IO_init_exec}}
+	},
+	VariantMode_constant
+};
+const Variant LIB_IO_print {
+	MAP,
+	(MAP_t){
+		{"__t", Variant{STR, (STR_t)"f"}},
+		{"__ret_t", Variant{STR, (STR_t)"NONE"}},
+		{"__ncall", Variant{FUNC, (NativeFunc_t)LIB_IO_print_exec}}
+	},
+	VariantMode_constant
+};
 
 
 const Variant LIB_IO {
-
-}
+	MAP,
+	(MAP_t){
+		{"__name", Variant{STR, (STR_t)"IO", VariantMode_constant}},
+		{"__init__", LIB_IO_init},
+		{"print", LIB_IO_print},
+	}
+};

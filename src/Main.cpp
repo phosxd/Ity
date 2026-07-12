@@ -14,6 +14,14 @@
 #include "ScopeState.hpp"
 #include "Expression.hpp"
 
+// Lib imports...
+#include "Lib/IO.hpp"
+const Variant LIBS[] = {
+	LIB_IO
+};
+
+// Instruction imports...
+#include "Inst/Import.hpp"
 #include "Inst/Throw.hpp"
 #include "Inst/Var.hpp"
 #include "Inst/Set.hpp"
@@ -25,6 +33,7 @@
 
 
 const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
+	{"import", INST_Import},
 	{"throw", INST_Throw},
 	{"var", INST_Var},
 	{"const", INST_Var},
@@ -310,6 +319,7 @@ int main(int argc, char *argv[]) {
 	for (std::string& i : (split_str(source_script_path, '/')) ) {split_source_script.push_back(i);}
 
 
+	// Initialize state.
 	ScopeState state = create_new_scope_state({
 		{"__VERSION__", Variant{
 			ARR,
@@ -336,9 +346,8 @@ int main(int argc, char *argv[]) {
 			(int)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count(),
 			VariantMode_constant
 		}},
-		{"CORE", Variant{
-		}},
 	});
+
 	std::vector<Clock_t> timers;
 	for (unsigned int i = 0; i < 2; i++) {timers.push_back(Clock::now());}
 
@@ -422,7 +431,6 @@ int main(int argc, char *argv[]) {
 		if (source_script_path.empty() == false) {std::cout << "TIME (Inst-Tokenization): " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
 		std::cout <<                                           "TIME (total):             " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
 		std::cout <<                                           "STATE SIZE:               " << get_state_size(state) << " bytes." << '\n';
-		std::cout <<                                           "STATE:\n	" << state << '\n';
 		std::cout << '\n';
 	}
 

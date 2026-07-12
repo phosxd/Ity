@@ -47,7 +47,7 @@ bool is_special_symbol(const char& ch) {
 }
 
 
-bool check_ahead(const std::string& text, const unsigned int start_idx, const std::string substr) {
+bool check_ahead(const std::string& text, const unsigned int& start_idx, const std::string substr) {
 	unsigned int substr_len = substr.size();
 	if (text.size() < start_idx+substr_len) {return false;}
 	for (unsigned int i = 0; i < substr_len; i++) {
@@ -57,7 +57,7 @@ bool check_ahead(const std::string& text, const unsigned int start_idx, const st
 }
 
 
-VariantData get_literal_from_str(const VariantType type, const std::string& str_val) {
+VariantData get_literal_from_str(const VariantType& type, const std::string& str_val) {
 	if (type == OP || type == REF || type == STR) {return str_val;}
 	else if (type == BOOL) {return (str_val == "true");}
 	else if (type == INT) {
@@ -86,7 +86,7 @@ void clean_up_buffer(ExprToken& result_token, ExprToken& item, std::string& buff
 unsigned int final_ln_offset = 0;
 unsigned int final_col_offset = 0;
 // Tokenize an expression. Returns an ExprToken with type "ExprTokenType_sequence".
-ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int col=0) {
+ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int col=0) {
 	ExprToken result_token = ExprToken{ln, col};
 	result_token.t = ExprTokenType_sequence;
 
