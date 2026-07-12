@@ -37,6 +37,8 @@ enum ERR_CODE {
 	ERR_index_out_of_range,
 	ERR_no_property_with_name,
 	ERR_invalid_func_call,
+	ERR_invalid_func_arg_count,
+	ERR_invalid_func_arg_type,
 
 	ERR_cannot_multiply_by_negative,
 
@@ -193,6 +195,12 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 	}
 	else if (code == ERR_invalid_func_call) {
 		return "Cannot call function with value of type \"" + args[0] + "\". Wrap arguments in an array literal.";
+	}
+	else if (code == ERR_invalid_func_arg_count) {
+		return "Function expected a minimum of " + args[0] + " arguments. Not " + args[1] + ".";
+	}
+	else if (code == ERR_invalid_func_arg_type) {
+		return "Function argument " + args[0] + " expected vaue of type \"" + args[1] + "\", not \"" + args[1] + "\"";
 	}
 
 	else if (code == ERR_cannot_multiply_by_negative) {

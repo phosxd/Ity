@@ -25,7 +25,7 @@ func BOOL is_prime; arg INT n;
 /;
 
 
-const INT n = 100 000;
+const * n = INT:[in:[]];
 
 
 var INT p = 2;

@@ -16,8 +16,10 @@
 
 // Lib imports...
 #include "Lib/IO.hpp"
+#include "Lib/TIME.hpp"
 const Variant LIBS[] = {
-	LIB_IO
+	LIB_IO,
+	LIB_TIME
 };
 
 // Instruction imports...

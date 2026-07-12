@@ -1,4 +1,16 @@
+import INT; import STR;
+merge IO;
+merge TIME;
+
+out:['Count: '];
+var * n = INT:'from':[ in:[] ];
+var INT start = now:[];
+
 var INT i = 0;
-while i < 100 000;
+while i < n;
 	set i += 1;
+	print:[i];
 /;
+
+var * time = now:[] - start;
+print:['\nDone in ' + STR:'from':[time] + 's.'];

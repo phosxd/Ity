@@ -4,7 +4,7 @@
 // Called whenever the module is imported.
 // This can be called multiple times.
 Variant LIB_IO_init_exec(ScopeState& state, const std::vector<Variant>& args) {
-	return Variant{};
+	return VariantPresets.empty;
 }
 
 
@@ -19,7 +19,7 @@ Variant LIB_IO_out_exec(ScopeState& state, const std::vector<Variant>& args) {
 	for (const Variant& var : args) {
 		std::cout << var.d;
 	}
-	return Variant{};
+	return VariantPresets.empty;
 }
 
 
@@ -27,7 +27,7 @@ Variant LIB_IO_print_exec(ScopeState& state, const std::vector<Variant>& args) {
 	for (const Variant& var : args) {
 		std::cout << var.d << '\n';
 	}
-	return Variant{};
+	return VariantPresets.empty;
 }
 
 
@@ -48,7 +48,7 @@ const Variant LIB_IO_in {
 	MAP,
 	(MAP_t){
 		{"__t", VariantPresets.obj_type_f},
-		{"__ret_t", VariantPresets.none_type_str},
+		{"__ret_t", VariantPresets.str_type_str},
 		{"__ncall", Variant{FUNC, (NativeFunc_t)LIB_IO_in_exec}}
 	},
 	VariantMode_constant
