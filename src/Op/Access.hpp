@@ -8,7 +8,7 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 			return first;
 		}
 		const std::vector<Variant>& array = std::any_cast<std::vector<Variant>>(first.d);
-		const int& index = std::any_cast<int>(second.d);
+		const long unsigned int& index = std::any_cast<int>(second.d);
 		if (index >= array.size()) {
 			emit_error(ERR_index_out_of_range, {std::to_string(index)});
 			return first;
@@ -41,7 +41,7 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 				return first;
 			}
 			// Find key.
-			const std::string& key = std::any_cast<STR_t>(second.d);
+			const STR_t& key = std::any_cast<STR_t>(second.d);
 			if (map.find(key) == map.end()) {
 				emit_error(ERR_no_property_with_name, {key});
 				return first;
@@ -67,10 +67,10 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 			// Call in-code function...
 			else {
 				const int& func_token_index = std::any_cast<int>(map.at("__idx").d);
-				const VariantType func_return_type = get_variant_type_from_name(std::any_cast<STR_t>(map.at("__ret_t").d));
+				const VariantType& func_return_type = get_variant_type_from_name(std::any_cast<STR_t>(map.at("__ret_t").d));
 				const InstToken& func_token = InstTokenSeq.at(func_token_index);
 				const unsigned int func_body_start = func_token.i+1;
-				const unsigned int func_body_end = std::any_cast<unsigned int>(func_token.meta.at(0));
+				const unsigned int& func_body_end = std::any_cast<unsigned int>(func_token.meta.at(0));
 				// Run function.
 				std::vector<InstToken> inst_token_seq (InstTokenSeq.begin()+func_body_start, InstTokenSeq.begin()+func_body_end);
 				scope_in(state);                                                        // Create new scope on top of the previous.
@@ -79,7 +79,7 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 				Ity.exec(inst_token_seq, state);                                        // Execute instructions in the function.
 
 				// Get result & check if return type matches.
-				Variant result = get_data(state, "__RET__");
+				const Variant& result = get_data(state, "__RET__");
 				if (result.t != func_return_type) {
 					emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_return_type), get_variant_type_name(result.t)});
 				}

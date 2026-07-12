@@ -31,7 +31,6 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& s) {
 template<class T, class T2>
 std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
 	os << '{';
-	const unsigned int len = s.size();
 	unsigned int idx = 0;
 	for (auto i:s) {
 		if (idx != 0) {os << ", ";}
@@ -84,8 +83,9 @@ enum VariantType {
 
 
 // Get string representation of a VariantType.
-std::string get_variant_type_name(VariantType type) {
+std::string get_variant_type_name(const VariantType& type) {
 	switch (type) {
+		case NONE: return "NONE";
 		// Meta types.
 		case INFERRED: return "*";
 		case ANY: return "ANY";
@@ -105,7 +105,7 @@ std::string get_variant_type_name(VariantType type) {
 
 
 // Get VariantType from a string representation.
-VariantType get_variant_type_from_name(std::string name) {
+VariantType get_variant_type_from_name(const std::string& name) {
 	// Meta types.
 	if (name == "*") { return INFERRED;}
 	else if (name == "ANY") {return ANY;}
@@ -153,15 +153,20 @@ struct Variant {
 };
 
 
+using STR_t = std::string;
+using ARR_t = std::vector<Variant>;
+using MAP_t = std::unordered_map<std::string,Variant>;
+
+
 // Resolve VariantData to a real VariantType.
 VariantType get_variant_data_type(const VariantData& d) {
 	const std::type_info& t = d.type();
 	if (t == typeid(bool)) {return BOOL;}
 	else if (t == typeid(int)) {return INT;}
 	else if (t == typeid(float)) {return FLOAT;}
-	else if (t == typeid(std::string)) {return STR;}
-	else if (t == typeid(std::vector<Variant>)) {return ARR;}
-	else if (t == typeid(std::unordered_map<std::string,Variant>)) {return MAP;}
+	else if (t == typeid(STR_t)) {return STR;}
+	else if (t == typeid(ARR_t)) {return ARR;}
+	else if (t == typeid(MAP_t)) {return MAP;}
 	return NONE;
 }
 
@@ -183,11 +188,11 @@ std::ostream& operator<<(std::ostream& os, const std::any& s) {
 	else if (t == typeid(std::string)) {
 		os << std::any_cast<std::string>(s);
 	}
-	else if (t == typeid(std::vector<Variant>)) {
-		os << std::any_cast<std::vector<Variant>>(s);
+	else if (t == typeid(ARR_t)) {
+		os << std::any_cast<ARR_t>(s);
 	}
-	else if (t == typeid(std::unordered_map<std::string,Variant>)) {
-		os << std::any_cast<std::unordered_map<std::string,Variant>>(s);
+	else if (t == typeid(MAP_t)) {
+		os << std::any_cast<MAP_t>(s);
 	}
 	return os;
 }
@@ -199,16 +204,16 @@ bool operator==(const VariantData& a, const VariantData& b) {
 	const std::type_info& t1 = a.type();
 	const std::type_info& t2 = b.type();
 	// If a is string & b is string...
-	if (t1 == typeid(std::string) && t2 == typeid(std::string)) {
-		return std::any_cast<std::string>(a) == std::any_cast<std::string>(b);
+	if (t1 == typeid(STR_t) && t2 == typeid(STR_t)) {
+		return std::any_cast<STR_t>(a) == std::any_cast<STR_t>(b);
 	}
 	// If a is array & b is array...
-	else if (t1 == typeid(std::vector<Variant>) && t2 == typeid(std::vector<Variant>)) {
-		return std::any_cast<std::vector<Variant>>(a) == std::any_cast<std::vector<Variant>>(b);
+	else if (t1 == typeid(ARR_t) && t2 == typeid(ARR_t)) {
+		return std::any_cast<ARR_t>(a) == std::any_cast<ARR_t>(b);
 	}
 	// If a is map & b is map...
-	else if (t1 == typeid(std::unordered_map<std::string,Variant>) && t2 == typeid(std::unordered_map<std::string,Variant>)) {
-		return std::any_cast<std::unordered_map<std::string,Variant>>(a) == std::any_cast<std::unordered_map<std::string,Variant>>(b);
+	else if (t1 == typeid(MAP_t) && t2 == typeid(MAP_t)) {
+		return std::any_cast<MAP_t>(a) == std::any_cast<MAP_t>(b);
 	}
 
 	// If a is bool & b is bool...
@@ -287,8 +292,8 @@ bool operator<(const VariantData& a, const VariantData& b) {
 // MATH OPERATORS
 
 
-std::vector<Variant> operator+(const std::vector<Variant>& a, const std::vector<Variant>& b) {
-	std::vector<Variant> result = a;
+ARR_t operator+(const ARR_t& a, const ARR_t& b) {
+	ARR_t result = a;
 	result.reserve(b.size());
 	for (unsigned int i = 0; i < b.size(); i++) {
 		result.push_back(b[i]);
@@ -301,13 +306,13 @@ VariantData operator+(const VariantData& a, const VariantData& b) {
 	const std::type_info& t1 = a.type();
 	const std::type_info& t2 = b.type();
 	// If a is string & b is string...
-	if (t1 == typeid(std::string) && t2 == typeid(std::string)) {
-		return std::any_cast<std::string>(a) + std::any_cast<std::string>(b);
+	if (t1 == typeid(STR_t) && t2 == typeid(STR_t)) {
+		return std::any_cast<STR_t>(a) + std::any_cast<STR_t>(b);
 	}
 	// If a is array & b is array...
-	else if (t1 == typeid(std::vector<Variant>) && t2 == typeid(std::vector<Variant>)) {
-		std::vector<Variant> a_val = std::any_cast<std::vector<Variant>>(a);
-		std::vector<Variant> b_val = std::any_cast<std::vector<Variant>>(b);
+	else if (t1 == typeid(ARR_t) && t2 == typeid(ARR_t)) {
+		ARR_t a_val = std::any_cast<ARR_t>(a);
+		ARR_t b_val = std::any_cast<ARR_t>(b);
 		return a_val + b_val;
 	}
 	// If a is int...
@@ -359,27 +364,27 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 	const std::type_info& t1 = a.type();
 	const std::type_info& t2 = b.type();
 	// If a is string & b is int.
-	if (t1 == typeid(std::string) && t2 == typeid(int)) {
+	if (t1 == typeid(STR_t) && t2 == typeid(int)) {
 		int b_val = std::any_cast<int>(b);
 		if (b_val < 0) {
 			emit_error(ERR_cannot_multiply_by_negative, {"STR"});
 			return a;
 		}
-		std::string a_val = std::any_cast<std::string>(a);
-		std::string sum; sum.reserve(a_val.size()*b_val);
-		for (unsigned int i = 0; i < b_val; i++) {sum += a_val;}
+		STR_t a_val = std::any_cast<STR_t>(a);
+		STR_t sum; sum.reserve(a_val.size()*b_val);
+		for (int i = 0; i < b_val; i++) {sum += a_val;}
 		return sum;
 	}
 	// If a is array & b is int.
-	else if (t1 == typeid(std::vector<Variant>) && t2 == typeid(int)) {
+	else if (t1 == typeid(ARR_t) && t2 == typeid(int)) {
 		int b_val = std::any_cast<int>(b);
 		if (b_val < 0) {
 			emit_error(ERR_cannot_multiply_by_negative, {"ARR"});
 			return a;
 		}
-		std::vector<Variant> a_val = std::any_cast<std::vector<Variant>>(a);
-		std::vector<Variant> sum; sum.reserve(a_val.size()*b_val);
-		for (unsigned int i = 0; i < b_val; i++) {sum = sum+a_val;}
+		ARR_t a_val = std::any_cast<ARR_t>(a);
+		ARR_t sum; sum.reserve(a_val.size()*b_val);
+		for (int i = 0; i < b_val; i++) {sum = sum+a_val;}
 		return sum;
 	}
 	// If a is int...
@@ -517,7 +522,7 @@ std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 
 struct ScopeState {
 	ScopeState* p = nullptr;                    // Parent scope state.
-	std::unordered_map<std::string,Variant> d;  // Scope data.
+	MAP_t d;  // Scope data.
 };
 
 
@@ -645,7 +650,7 @@ bool is_int_str_32_in_range(std::string int_str) {
 
 
 template<class T, class T2>
-bool exists_in_vec(const T& v, const T2& val) {
+bool exists_in_vec(const std::vector<T>& v, const T2& val) {
 	for (auto i:v) {
 		if (i == val) {return true;}
 	}
@@ -658,7 +663,7 @@ bool exists_in_vec(const T& v, const T2& val) {
 // Ity global structure.
 
 struct ItyStruct {
-	std::vector<InstToken> (*tokenize)(std::string src) = nullptr;
+	std::vector<InstToken> (*tokenize)(const std::string& src) = nullptr;
 	ScopeState (*exec)(std::vector<InstToken>& sequence, ScopeState& state) = nullptr;
 };
 
@@ -669,14 +674,14 @@ ItyStruct Ity;
 // Constants.
 // ----------
 
-const std::string ItyVersionString = "0.0.1";
+constexpr std::string ItyVersionString = "0.0.1";
 // Last number indicates release type:
 //	0 = release.
 //	1 = beta / pre-release.
 //	2 = experimental.
 const std::vector<int> ItyVersion = {0,0,1, 0};
 
-const std::string OSName =
+constexpr std::string OSName =
 #if _WIN32
 	"windows"
 #elif __linux__
@@ -698,18 +703,15 @@ const std::string OSName =
 ;
 
 
-using STR_t = std::string;
-using ARR_t = std::vector<Variant>;
-using MAP_t = std::unordered_map<std::string,Variant>;
-using NativeFunc_t = Variant(*)(ScopeState& state, const std::vector<Variant>& args);
+using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
 
 struct VariantPresets_struct {
-	Variant empty {NONE,std::any(), VariantMode_constant};
-	Variant obj_type_m {STR, (STR_t)"f", VariantMode_constant};
-	Variant obj_type_f {STR, (STR_t)"f", VariantMode_constant};
-	Variant none_type_str {STR, (STR_t)"NONE", VariantMode_constant};
-	Variant int_type_str {STR, (STR_t)"INT", VariantMode_constant};
-	Variant str_type_str {STR, (STR_t)"STR", VariantMode_constant};
+	const Variant empty {NONE, std::any(), VariantMode_constant};
+	const Variant obj_type_m {STR, (STR_t)"f", VariantMode_constant};
+	const Variant obj_type_f {STR, (STR_t)"f", VariantMode_constant};
+	const Variant none_type_str {STR, (STR_t)"NONE", VariantMode_constant};
+	const Variant int_type_str {STR, (STR_t)"INT", VariantMode_constant};
+	const Variant str_type_str {STR, (STR_t)"STR", VariantMode_constant};
 };
 const VariantPresets_struct VariantPresets;
 

@@ -3,16 +3,14 @@
 
 void INST_Var_exec(const Instruction& inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
-	const std::string symbol = args[0];
-	std::string type_name;
-	std::string name;
+	const std::string& symbol = args[0];
+	const std::string& type_name = args[1];
+	const std::string& name = args[2];
 	std::string op;
 	std::string expr;
 	expr.reserve(args_len-inst.REQUIRED);
-	for (unsigned int i = 1; i < args_len; i++) {
-		if (i == 1) {type_name = args[i];}
-		else if (i == 2) {name = args[i];}
-		else if (i == 3) {op = args[i];}
+	for (unsigned int i = 3; i < args_len; i++) {
+		if (i == 3) {op = args[i];}
 		else {
 			expr += ' '+args[i];
 		}
@@ -48,7 +46,7 @@ void INST_Var_exec(const Instruction& inst, InstToken& token, ScopeState& state,
 
 	// Get value from expression.
 	current_column += count_non_empty_strings({symbol,type_name,name,op}) + symbol.size() + type_name.size() + name.size() + op.size();
-	Variant value = expr_run(state, expr);
+	const Variant& value = expr_run(state, expr);
 
 	// Infer the variable's type as expression return type.
 	if (type == INFERRED) {

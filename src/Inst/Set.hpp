@@ -3,17 +3,13 @@
 
 void INST_Set_exec(const Instruction& inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
-	const std::string symbol = args[0];
-	std::string name;
-	std::string op = "";
+	const std::string& symbol = args[0];
+	const std::string& name = args[1];
+	const std::string& op = args[2];
 	std::string expr = "";
 	expr.reserve(args_len-inst.REQUIRED);
-	for (unsigned int i = 1; i < args_len; i++) {
-		if (i == 1) {name = args[i];}
-		else if (i == 2) {op = args[i];}
-		else {
-			expr += ' '+args[i];
-		}
+	for (unsigned int i = 3; i < args_len; i++) {
+		expr += ' '+args[i];
 	}
 
 	if (is_valid_name(name) == false) {

@@ -65,7 +65,7 @@ struct CompositeItem {
 };
 
 
-std::vector<InstToken> ity_tokenize(std::string src) {
+std::vector<InstToken> ity_tokenize(const std::string& src) {
 	const unsigned int src_len = src.size();
 	std::vector<InstToken> sequence;
 	std::string buffer;
@@ -263,7 +263,6 @@ ScopeState ity_exec(std::vector<InstToken>& sequence, ScopeState& state) {
 	InstTokenSeqStack.push_back(InstTokenSeq);
 	InstTokenSeq = sequence;
 	const unsigned int seq_len = InstTokenSeq.size();
-	unsigned int composite_nest = 0;
 	for (unsigned int i = 0; i < seq_len; i++) {
 		InstToken& item = InstTokenSeq.at(i);
 		current_line = item.ln;
@@ -310,7 +309,7 @@ int main(int argc, char *argv[]) {
 	std::vector<std::string> script_args;
 	std::vector<std::string> flags;
 	std::string source_script_path = "";
-	for (unsigned int i = 1; i < argc; i++) {
+	for (int i = 1; i < argc; i++) {
 		std::string arg_str (argv[i]);
 		if (arg_str.size() < 2) {continue;}
 		if (arg_str[0] == '-') {flags.push_back(arg_str);}

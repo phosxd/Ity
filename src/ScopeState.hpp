@@ -42,7 +42,7 @@ void scope_out(ScopeState& state) {
 // This does *not* account for the data inside the state's parent.
 unsigned int get_state_size(const ScopeState& state) {
 	unsigned int final_size = 0;
-	for (const auto& i:state.d) {
+	for (const auto& i : state.d) {
 		final_size += sizeof(i.first) + sizeof(i.second);
 	}
 	return final_size;
@@ -60,8 +60,7 @@ bool is_name_free(const ScopeState& state, const std::string& name) {
 bool is_name_globally_free(const ScopeState& state, const std::string& name) {
 	ScopeState p;
 	if (state.p != nullptr) {
-		p = *state.p;
-		return is_name_globally_free(p, name);
+		return is_name_globally_free(*state.p, name);
 	}
 	if (state.d.find(name) != state.d.end()) {return false;}
 	return true;
@@ -72,7 +71,7 @@ bool is_name_globally_free(const ScopeState& state, const std::string& name) {
 Variant get_data(ScopeState& state, const std::string& name) {
 	if (state.d.find(name) == state.d.end()) {
 		emit_error(ERR_unexpected, {"ScopeState.get_data", "cannot get non-existent data."});
-		return Variant{};
+		return VariantPresets.empty;
 	}
 	return state.d[name];
 }
@@ -88,7 +87,7 @@ Variant get_data_globally(ScopeState& state, const std::string& name) {
 	}
 	else {
 		emit_error(ERR_unexpected, {"ScopeState.get_data_globally", "cannot get non-existent data."});
-		return Variant{};
+		return VariantPresets.empty;
 	}
 }
 
@@ -97,20 +96,20 @@ Variant get_data_globally(ScopeState& state, const std::string& name) {
 // If mode is dynamic type, the set "type" & the actual type of "data" can be different.
 // If mode is constant, will throw an error when if the name is already taken in the current scope.
 // If mode is locked type, will throw an error if the data type does not match the given type.
-void set_data(ScopeState& state, const std::string& name, const VariantType type, const VariantData& data, const VariantMode mode) {
+void set_data(ScopeState& state, const std::string& name, const VariantType& type, const VariantData& data, const VariantMode& mode) {
 	// Output function call in debug mode...
 	if (debug_flags.data_assign) {
 		std::cout << ANSI::blue << "Data assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
 	}
 
-	if (is_name_free(state, name) == false) {
+	if (not is_name_free(state, name)) {
 		const Variant& var = get_data(state, name);
 		if (var.m == 1) {
 			emit_error(ERR_cannot_change_constant, {name});
 			return;
 		}
 	}
-	const VariantType data_type = get_variant_data_type(data);
+	const VariantType& data_type = get_variant_data_type(data);
 	if (mode != VariantMode_dynamic_type && type != data_type) {
 		emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data_type), get_variant_type_name(type)});
 		return;
@@ -120,8 +119,8 @@ void set_data(ScopeState& state, const std::string& name, const VariantType type
 }
 
 
-void set_data_globally(ScopeState& state, const std::string& name, const VariantType type, const VariantData& data, const VariantMode mode) {
-	if (is_name_free(state, name) == false) {
+void set_data_globally(ScopeState& state, const std::string& name, const VariantType& type, const VariantData& data, const VariantMode mode) {
+	if (not is_name_free(state, name)) {
 		set_data(state, name, type, data, mode);
 	}
 	else if (state.p != nullptr) {

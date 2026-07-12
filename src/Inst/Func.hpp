@@ -2,24 +2,22 @@
 
 
 void INST_Func_exec(const Instruction& inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
-	const unsigned int args_len = args.size();
-	const std::string& symbol = args[0];
 	const std::string& type_name = args[1];
 	const std::string& name = args[2];
 
-	if (is_valid_name(name) == false) {
+	if (not is_valid_name(name)) {
 		emit_error(ERR_name_must_not_contain_symbols, {name});
 		return;
 	}
 
 	// Give error if the var name is not free on the current scope.
-	if (is_name_free(state, name) == false) {
+	if (not is_name_free(state, name)) {
 		emit_error(ERR_name_is_taken, {name});
 		return;
 	}
 
 	// Give warning if the var name is shadowing another var name.
-	if (is_name_globally_free(state, name) == false) {
+	if (not is_name_globally_free(state, name)) {
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 

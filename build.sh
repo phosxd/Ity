@@ -6,13 +6,13 @@ GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
 
 BIN_SIZE_LIMIT=100000
-COMMON_BUILD_ARGS="-std=c++26 -flto=4 -fno-exceptions -fno-asynchronous-unwind-tables -fno-plt -fno-tree-vrp -Wl,--gc-sections -Wl,--build-id=none Main.cpp -o Ity.bin"
+COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-asynchronous-unwind-tables -fno-plt -fno-tree-vrp -Wl,--gc-sections -Wl,--build-id=none Main.cpp -o Ity.bin"
 
 DO_TEST=0
 DEBUG=0
 OPTIM="balanced"
-OPTIM_balanced="-O3 -finline-limit=5"
-OPTIM_speed="-O3"
+OPTIM_balanced="-O2 -finline-limit=5"
+OPTIM_speed="-Ofast"
 OPTIM_size="-Os -finline-limit=0"
 
 
@@ -111,7 +111,7 @@ echo "$bin_size" > .last_build_size
 # Print results...
 echo "Final size: ${ORANGE}${bin_size}${RESET} bytes. (${diff_text})"
 if (( $bin_size > $BIN_SIZE_LIMIT )); then
-	echo "${RED}Binary size is over the goal of \"${BIN_SIZE_LIMIT}\"."
+	echo "${RED}Binary size is over the goal of \"${BIN_SIZE_LIMIT}\".${RESET}"
 fi
 
 

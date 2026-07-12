@@ -6,9 +6,9 @@
 
 
 const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
-const std::string NUM = "0123456789";
-const std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
-const std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
+constexpr std::string NUM = "0123456789";
+constexpr std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
+constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
 std::unordered_map<std::string, Operation> OPERATIONS = {
 	{"+", OP_Arith},
 	{"-", OP_Arith},
@@ -321,7 +321,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 
 Variant resolve_variant(ScopeState& state, const Variant& item) {
 	if (item.t == REF) {
-		std::string name = std::any_cast<std::string>(item.d);
+		const std::string& name = std::any_cast<STR_t>(item.d);
 		if (is_name_globally_free(state, name) == true) {
 			emit_error(ERR_name_does_not_exist, {name});
 			return item;
@@ -364,7 +364,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 	Operation* op = nullptr;
 	std::string op_symbol;
 	for (unsigned int i = 0; i < seq_len; i++) {
-		const ExprToken& item = token.seq[i];
+		const ExprToken& item = token.seq.at(i);
 		current_line = ln_offset + token.ln + item.ln;
 		current_column = col_offset + token.col + (item.col-1);
 
@@ -385,7 +385,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 		else if (item.t == ExprTokenType_variant) {
 			// Get operator.
 			if (item.var.t == OP) {
-				op_symbol = std::any_cast<std::string>(item.var.d);
+				op_symbol = std::any_cast<STR_t>(item.var.d);
 				if (OPERATIONS.find(op_symbol) == OPERATIONS.end()) {
 					emit_error(ERR_invalid_op, {op_symbol});
 					return result;
