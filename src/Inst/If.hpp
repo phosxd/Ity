@@ -25,7 +25,7 @@ void INST_If_exec(const Instruction& _inst, InstToken& token, ScopeState& state,
 
 	bool previous_conditional_passed = true;
 	if (token.linked_inst == "if" || token.linked_inst == "elif") {
-		InstToken& linked_token = InstTokenSeq.at(token.i + token.linked_inst_pos);
+		const InstToken& linked_token = InstTokenSeq.at(token.i + token.linked_inst_pos);
 		if (linked_token.meta.size() == 0) {
 			emit_error(ERR_unexpected_else);
 			return;

@@ -12,6 +12,8 @@ void INST_Return_exec(const Instruction& _inst, InstToken& token, ScopeState& st
 	// Get value from expression & set return value.
 	const Variant& value = expr_run(state, expr);
 	set_data(state, "__RET__", value.t, value.d, VariantMode_dynamic_type);
+
+	exec_jump_out = true;
 }
 
 

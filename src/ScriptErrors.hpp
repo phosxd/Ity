@@ -18,6 +18,7 @@ enum ERR_CODE {
 	ERR_invalid_op,
 	ERR_invalid_assignment_op,
 	ERR_unexpected_else,
+	ERR_unexpected_return,
 
 	ERR_operand_type_mismatch,
 	ERR_assignment_type_mismatch,
@@ -138,6 +139,9 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 	}
 	else if (code == ERR_unexpected_else) {
 		return "Unexpected \"else\" or \"elif\" instruction. No previous conditional.";
+	}
+	else if (code == ERR_unexpected_return) {
+		return "Unexpected \"return\" instruction. Not inside a function.";
 	}
 
 	else if (code == ERR_operand_type_mismatch) {

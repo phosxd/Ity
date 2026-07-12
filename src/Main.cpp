@@ -183,7 +183,22 @@ std::vector<InstToken> ity_tokenize(std::string src) {
 								return sequence;
 							}
 							item.linked_inst = last_comp_item.token.args[0];
-							item.linked_inst_pos = -((int32_t)last_comp_item_dist);
+							item.linked_inst_pos = -(int32_t)last_comp_item_dist;
+						}
+
+						// Check if return has a parent function.
+						else if (inst_name == "return") {
+							bool found = false;
+							std::vector<CompositeItem> reverse_nest = composite_nest; std::reverse(reverse_nest.begin(), reverse_nest.end());
+							for (const CompositeItem& comp_item : reverse_nest) {
+								if (comp_item.token.args.at(0) != "func") {continue;}
+								found = true;
+								break;
+							}
+							if (not found) {
+								emit_error(ERR_unexpected_return, {}, ln,col);
+								return sequence;
+							}
 						}
 
 						// Start composite item...
@@ -271,6 +286,10 @@ ScopeState ity_exec(std::vector<InstToken>& sequence, ScopeState& state) {
 			if (exec_jump_value != 0) {
 				i += exec_jump_value;
 				exec_jump_value = 0;
+			}
+			if (exec_jump_out) {
+				exec_jump_out = false;
+				break;
 			}
 		}
 	}

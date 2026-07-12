@@ -722,5 +722,5 @@ const VariantPresets_struct VariantPresets;
 std::vector<std::vector<InstToken>> InstTokenSeqStack;
 std::vector<InstToken> InstTokenSeq;
 
-// This may be changed by the `jump` instruction during `exec`.
 int exec_jump_value = 0;
+bool exec_jump_out = false;

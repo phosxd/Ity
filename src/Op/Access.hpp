@@ -73,10 +73,10 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 				const unsigned int func_body_end = std::any_cast<unsigned int>(func_token.meta.at(0));
 				// Run function.
 				std::vector<InstToken> inst_token_seq (InstTokenSeq.begin()+func_body_start, InstTokenSeq.begin()+func_body_end);
-				scope_in(state);                                                     // Create new scope on top of the previous.
+				scope_in(state);                                                        // Create new scope on top of the previous.
 				set_data(state, "__ARGS__", ARR, second.d, VariantMode_constant);       // Make the passed arguments available in the scope.
 				set_data(state, "__RET__", ANY, std::any(), VariantMode_dynamic_type);  // Initialize return variable.
-				Ity.exec(inst_token_seq, state);                                     // Execute instructions in the function.
+				Ity.exec(inst_token_seq, state);                                        // Execute instructions in the function.
 
 				// Get result & check if return type matches.
 				Variant result = get_data(state, "__RET__");
