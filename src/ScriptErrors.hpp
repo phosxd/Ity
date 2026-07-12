@@ -32,6 +32,8 @@ enum ERR_CODE {
 	ERR_constant_type_not_explicit,
 	ERR_invalid_property_access,
 	ERR_index_out_of_range,
+	ERR_no_property_with_name,
+	ERR_invalid_func_call,
 
 	ERR_cannot_multiply_by_negative,
 
@@ -173,6 +175,12 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 	}
 	else if (code == ERR_index_out_of_range) {
 		return "Index \"" + args[0] + "\" out of range. Make sure the item you are accessing has the correct number of elements.";
+	}
+	else if (code == ERR_no_property_with_name) {
+		return "No property with name \"" + args[0] + "\" in this object.";
+	}
+	else if (code == ERR_invalid_func_call) {
+		return "Cannot call function with value of type \"" + args[0] + "\". Wrap function arguments in an \"ARR\" literal.";
 	}
 
 	else if (code == ERR_cannot_multiply_by_negative) {

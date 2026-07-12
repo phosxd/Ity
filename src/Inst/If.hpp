@@ -39,7 +39,7 @@ void INST_If_exec(const Instruction& _inst, InstToken& token, ScopeState& state,
 	else if (symbol == "else") {passed = not previous_conditional_passed;}
 
 	token.meta = {passed};
-	if (symbol == "elif" && not passed) {token.meta[0] = previous_conditional_passed;}
+	if (symbol == "elif" && not passed) {token.meta.at(0) = previous_conditional_passed;}
 	InstTokenSeq[token.i] = token;
 	// Jump past instructions in this composite if failed.
 	if (not passed) {exec_jump_value += token.composite_size;}

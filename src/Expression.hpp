@@ -152,7 +152,7 @@ ExprToken expr_tokenize(const std::string expr, unsigned int ln=0, unsigned int 
 
 		// Compile array of expressions into a Variant.
 		else if (is_array) {
-			if (expr_len <= i+1) {
+			if (expr_len <= i) {
 				emit_error(ERR_unexpected_char_at_expr_end, {"["});
 				return result_token;
 			}

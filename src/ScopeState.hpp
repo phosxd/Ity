@@ -40,7 +40,7 @@ void scope_out(ScopeState& state) {
 
 // Returns the cumulative size of all Variants in the state data.
 // This does *not* account for the data inside the state's parent.
-unsigned int get_state_size(ScopeState& state) {
+unsigned int get_state_size(const ScopeState& state) {
 	unsigned int final_size = 0;
 	for (const auto& i:state.d) {
 		final_size += sizeof(i.first) + sizeof(i.second);
@@ -50,14 +50,14 @@ unsigned int get_state_size(ScopeState& state) {
 
 
 // Checks if the name is available in this scope.
-bool is_name_free(ScopeState& state, std::string& name) {
+bool is_name_free(const ScopeState& state, const std::string& name) {
 	return (state.d.find(name) == state.d.end());
 }
 
 
 // Checks if the name is available in this scope & all scopes above it.
 // Use this to check if a name could be shadowed.
-bool is_name_globally_free(ScopeState& state, std::string& name) {
+bool is_name_globally_free(const ScopeState& state, const std::string& name) {
 	ScopeState p;
 	if (state.p != nullptr) {
 		p = *state.p;
@@ -69,7 +69,7 @@ bool is_name_globally_free(ScopeState& state, std::string& name) {
 
 
 // Gets the data for name in the current scope. Ensure the name exists in the current scope first.
-Variant get_data(ScopeState& state, std::string& name) {
+Variant get_data(ScopeState& state, const std::string& name) {
 	if (state.d.find(name) == state.d.end()) {
 		emit_error(ERR_unexpected, {"ScopeState.get_data", "cannot get non-existent data."});
 		return Variant{};
@@ -79,7 +79,7 @@ Variant get_data(ScopeState& state, std::string& name) {
 
 
 // Gets the data for name in this scope or any scope above it. Ensure the name exists in one of the scopes (use is_name_globally_free).
-Variant get_data_globally(ScopeState& state, std::string& name) {
+Variant get_data_globally(ScopeState& state, const std::string& name) {
 	if (is_name_free(state, name) == false) {
 		return get_data(state, name);
 	}
@@ -97,7 +97,7 @@ Variant get_data_globally(ScopeState& state, std::string& name) {
 // If mode is dynamic type, the set "type" & the actual type of "data" can be different.
 // If mode is constant, will throw an error when if the name is already taken in the current scope.
 // If mode is locked type, will throw an error if the data type does not match the given type.
-void set_data(ScopeState& state, std::string& name, VariantType type, const VariantData& data, VariantMode mode) {
+void set_data(ScopeState& state, const std::string& name, const VariantType type, const VariantData& data, const VariantMode mode) {
 	// Output function call in debug mode...
 	if (debug_flags.data_assign) {
 		std::cout << ANSI::blue << "Data assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
@@ -120,7 +120,7 @@ void set_data(ScopeState& state, std::string& name, VariantType type, const Vari
 }
 
 
-void set_data_globally(ScopeState& state, std::string& name, VariantType type, const VariantData& data, VariantMode mode) {
+void set_data_globally(ScopeState& state, const std::string& name, const VariantType type, const VariantData& data, const VariantMode mode) {
 	if (is_name_free(state, name) == false) {
 		set_data(state, name, type, data, mode);
 	}

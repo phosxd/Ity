@@ -80,7 +80,6 @@ enum VariantType {
 	STR,
 	ARR,
 	MAP,
-	OBJ,
 };
 
 
@@ -99,7 +98,6 @@ std::string get_variant_type_name(VariantType type) {
 		case STR: return "STR";
 		case ARR: return "ARR";
 		case MAP: return "MAP";
-		case OBJ: return "OBJ";
 	}
 	return "NONE";
 }
@@ -119,7 +117,6 @@ VariantType get_variant_type_from_name(std::string name) {
 	else if (name == "STR") {return STR;}
 	else if (name == "ARR") {return ARR;}
 	else if (name == "MAP") {return MAP;}
-	else if (name == "OBJ") {return OBJ;}
 	return NONE;
 }
 
@@ -134,8 +131,6 @@ std::ostream& operator<<(std::ostream& os, const VariantType& s) {
 // VariantData.
 // ------------
 
-
-//struct Variant{};
 using VariantData = std::any;
 
 
@@ -164,7 +159,7 @@ VariantType get_variant_data_type(const VariantData& d) {
 	else if (t == typeid(float)) {return FLOAT;}
 	else if (t == typeid(std::string)) {return STR;}
 	else if (t == typeid(std::vector<Variant>)) {return ARR;}
-	//else if (t == typeid(std::unordered_map<Variant,Variant>)) {return MAP;}
+	else if (t == typeid(std::unordered_map<std::string,Variant>)) {return MAP;}
 	return NONE;
 }
 
@@ -189,9 +184,9 @@ std::ostream& operator<<(std::ostream& os, const std::any& s) {
 	else if (t == typeid(std::vector<Variant>)) {
 		os << std::any_cast<std::vector<Variant>>(s);
 	}
-	// else if (t == typeid(std::unordered_map<Variant,Variant>)) {
-	// 	os << std::any_cast<std::unordered_map<Variant,Variant>>(s);
-	// }
+	else if (t == typeid(std::unordered_map<std::string,Variant>)) {
+		os << std::any_cast<std::unordered_map<std::string,Variant>>(s);
+	}
 	return os;
 }
 
@@ -210,9 +205,9 @@ bool operator==(const VariantData& a, const VariantData& b) {
 		return std::any_cast<std::vector<Variant>>(a) == std::any_cast<std::vector<Variant>>(b);
 	}
 	// If a is map & b is map...
-	// else if (t1 == typeid(std::unordered_map<Variant,Variant>) && t2 == typeid(std::unordered_map<Variant,Variant>)) {
-	// 	return std::any_cast<std::unordered_map<Variant,Variant>>(a) == std::any_cast<std::unordered_map<Variant,Variant>>(b);
-	// }
+	else if (t1 == typeid(std::unordered_map<std::string,Variant>) && t2 == typeid(std::unordered_map<std::string,Variant>)) {
+		return std::any_cast<std::unordered_map<std::string,Variant>>(a) == std::any_cast<std::unordered_map<std::string,Variant>>(b);
+	}
 
 	// If a is bool & b is bool...
 	else if (t1 == typeid(bool) && t2 == typeid(bool)) {
@@ -658,6 +653,17 @@ bool exists_in_vec(const T& v, const T2& val) {
 
 
 
+// k
+
+struct ItyStruct {
+	std::vector<InstToken> (*tokenize)(std::string src) = nullptr;
+	ScopeState (*exec)(std::vector<InstToken>& sequence, ScopeState& state) = nullptr;
+};
+
+ItyStruct Ity;
+
+
+
 // Constants.
 // ----------
 
@@ -695,6 +701,7 @@ const std::string OSName =
 // Variables.
 // ----------
 
+std::vector<std::vector<InstToken>> InstTokenSeqStack;
 std::vector<InstToken> InstTokenSeq;
 
 // This may be changed by the `jump` instruction during `exec`.

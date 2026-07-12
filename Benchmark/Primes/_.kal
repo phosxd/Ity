@@ -1,0 +1,28 @@
+fn iSqrt -> n {
+	if n < 0 {
+		stderr "'n' cannot be negative.\n".
+		exit.}
+	var x = n as int.
+	var y = ((x+1) / 2) as int.
+	loop y < x {
+		x = y.
+		y = ((((n/x) + x) / 2) as int).
+	} <- x.}
+
+
+fn is_prime -> n {
+	if n%2 == 0 {<- n == 2.}
+	var r = $(:iSqrt n) as int.
+	loop i = 3 as int -- i <= r -- i = i+2 {
+		if n%i == 0 {<- 0.}
+	} <- 1.}
+
+
+var n = $(stdin "Count: ") as int.
+var start = $(time this ms) as int.
+
+loop p = 2 as int -- p <= n -- p = p+1 {
+	if $(:is_prime p) {
+		stdout p "\n".}}
+
+stdout "\nDone in " (($(time this ms)-start) / 1000.0) " seconds." "\n".

@@ -21,6 +21,7 @@
 #include "Inst/End.hpp"
 #include "Inst/If.hpp"
 #include "Inst/While.hpp"
+#include "Inst/Func.hpp"
 
 
 const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
@@ -34,6 +35,7 @@ const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
 	{"elif", INST_If},
 	{"else", INST_If},
 	{"while", INST_While},
+	{"func", INST_Func},
 };
 
 
@@ -49,7 +51,7 @@ struct CompositeItem {
 };
 
 
-std::vector<InstToken> tokenize(std::string src) {
+std::vector<InstToken> ity_tokenize(std::string src) {
 	const unsigned int src_len = src.size();
 	std::vector<InstToken> sequence;
 	std::string buffer;
@@ -182,6 +184,9 @@ std::vector<InstToken> tokenize(std::string src) {
 								composite_nest.pop_back();
 								// Apply updated token to sequence.
 								comp_item.token.composite_size = comp_item.size;
+								if (comp_item.token.args.at(0) == "func") {
+									comp_item.token.meta = {(unsigned int)sequence.size()};
+								}
 								sequence[comp_item.index] = comp_item.token;
 								item.linked_inst = comp_item.token.args[0];
 								item.linked_inst_pos = -comp_item.size;
@@ -225,12 +230,13 @@ std::vector<InstToken> tokenize(std::string src) {
 
 
 // Execute a sequence of instruction tokens.
-ScopeState exec(std::vector<InstToken>& sequence, ScopeState& state) {
+ScopeState ity_exec(std::vector<InstToken>& sequence, ScopeState& state) {
+	InstTokenSeqStack.push_back(InstTokenSeq);
 	InstTokenSeq = sequence;
 	const unsigned int seq_len = InstTokenSeq.size();
 	unsigned int composite_nest = 0;
 	for (unsigned int i = 0; i < seq_len; i++) {
-		InstToken item = InstTokenSeq[i];
+		InstToken& item = InstTokenSeq.at(i);
 		current_line = item.ln;
 		current_column = item.col;
 		const unsigned int arg_count = item.args.size();
@@ -254,6 +260,8 @@ ScopeState exec(std::vector<InstToken>& sequence, ScopeState& state) {
 			}
 		}
 	}
+	InstTokenSeq = InstTokenSeqStack.back();
+	InstTokenSeqStack.pop_back();
 	return state;
 }
 
@@ -261,6 +269,10 @@ ScopeState exec(std::vector<InstToken>& sequence, ScopeState& state) {
 
 
 int main(int argc, char *argv[]) {
+	// Initialize Ity.
+	Ity.tokenize = ity_tokenize;
+	Ity.exec = ity_exec;
+
 	// Get command line flags...
 	std::vector<std::string> script_args;
 	std::vector<std::string> flags;
@@ -353,11 +365,11 @@ int main(int argc, char *argv[]) {
 
 		// Tokenize the script.
 		timers[0] = Clock::now();
-		std::vector<InstToken> sequence = tokenize(script);
+		std::vector<InstToken> sequence = Ity.tokenize(script);
 		timers[1] = Clock::now();
 
 		// Execute tokens.
-		exec(sequence, state);
+		Ity.exec(sequence, state);
 	}
 
 
@@ -384,9 +396,9 @@ int main(int argc, char *argv[]) {
 				last_expr_result = Variant{};
 
 				// Tokenize the command.
-				std::vector<InstToken> sequence = tokenize(command);
+				std::vector<InstToken> sequence = Ity.tokenize(command);
 				// Execute tokens.
-				exec(sequence, state);
+				Ity.exec(sequence, state);
 
 				// Print expression result if there is one.
 				if (last_expr_result.t != NONE) {
