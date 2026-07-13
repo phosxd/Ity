@@ -7,7 +7,7 @@ func INT iSqrt; arg INT n;
 	var INT y = ((x+1) / 2);
 	while y < x;
 		set x = y;
-		set y = ( ((n/x) + x) / 2).
+		set y = ( ((n/x) + x) / 2);
 	/; return x;
 /;
 
@@ -25,7 +25,8 @@ func BOOL is_prime; arg INT n;
 /;
 
 
-const * n = INT:[in:[]];
+out:['Count: '];
+const * n = in:[] -> INT;
 
 
 var INT p = 2;

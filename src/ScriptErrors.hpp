@@ -17,6 +17,7 @@ enum ERR_CODE {
 	ERR_invalid_inst_arg_count,
 	ERR_invalid_op,
 	ERR_invalid_assignment_op,
+	ERR_invalid_cast,
 	ERR_unexpected_else,
 	ERR_unexpected_return,
 
@@ -137,6 +138,9 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 	else if (code == ERR_invalid_assignment_op) {
 		return "Invalid assignment operator \"" + args[0] + "\" for instruction \"" + args[1] + "\".";
 	}
+	else if (code == ERR_invalid_cast) {
+		return "Cannot type cast from \"" + args[0] + " to \"" + args[1] + "\".";
+	}
 	else if (code == ERR_unexpected_else) {
 		return "Unexpected \"else\" or \"elif\" instruction. No previous conditional.";
 	}
@@ -201,7 +205,7 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 		return "Cannot call function with value of type \"" + args[0] + "\". Wrap arguments in an array literal.";
 	}
 	else if (code == ERR_invalid_func_arg_count) {
-		return "Function expected a minimum of " + args[0] + " arguments. Not " + args[1] + ".";
+		return "Function expected " + args[0] + " arguments. Not " + args[1] + ".";
 	}
 	else if (code == ERR_invalid_func_arg_type) {
 		return "Function argument " + args[0] + " expected vaue of type \"" + args[1] + "\", not \"" + args[1] + "\"";

@@ -7,13 +7,28 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 			emit_error(ERR_invalid_property_access, {get_variant_type_name(first.t), get_variant_type_name(second.t)});
 			return first;
 		}
-		const std::vector<Variant>& array = std::any_cast<std::vector<Variant>>(first.d);
+		const ARR_t& array = std::any_cast<ARR_t>(first.d);
 		const long unsigned int& index = std::any_cast<int>(second.d);
 		if (index >= array.size()) {
 			emit_error(ERR_index_out_of_range, {std::to_string(index)});
 			return first;
 		}
 		return array.at(index);
+	}
+
+	// Access string character.
+	else if (first.t == STR) {
+		if (second.t != INT) {
+			emit_error(ERR_invalid_property_access, {get_variant_type_name(first.t), get_variant_type_name(second.t)});
+			return first;
+		}
+		const STR_t& str = std::any_cast<STR_t>(first.d);
+		const long unsigned int& index = std::any_cast<int>(second.d);
+		if (index >= str.size()) {
+			emit_error(ERR_index_out_of_range, {std::to_string(index)});
+			return first;
+		}
+		return Variant{STR, std::string(1,str.at(index))};
 	}
 
 

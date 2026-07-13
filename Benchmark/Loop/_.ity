@@ -1,10 +1,9 @@
-import INT; import STR;
 merge IO;
 merge TIME;
 
 out:['Count: '];
-var * n = INT:'from':[ in:[] ];
-var INT start = now:[];
+const * n = in:[] -> INT;
+var INT start = now:['ms'];
 
 var INT i = 0;
 while i < n;
@@ -12,5 +11,4 @@ while i < n;
 	print:[i];
 /;
 
-var * time = now:[] - start;
-print:['\nDone in ' + STR:'from':[time] + 's.'];
+print:[ ('\nDone in ' + (((now:['ms']-start) / 1000.0) -> STR) + 's.') ];

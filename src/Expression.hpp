@@ -3,6 +3,7 @@
 #include "Op/Arith.hpp"
 #include "Op/Compare.hpp"
 #include "Op/Access.hpp"
+#include "Op/TypeCast.hpp"
 
 
 const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
@@ -22,6 +23,7 @@ const std::unordered_map<std::string, const Operation*> OPERATIONS = {
 	{"<", &OP_Compare},
 	{"<=", &OP_Compare},
 	{":", &OP_Access},
+	{"->", &OP_TypeCast}
 };
 
 std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
@@ -54,21 +56,6 @@ bool check_ahead(const std::string& text, const unsigned int& start_idx, const s
 		if (text[start_idx+i] != substr[i]) {return false;}
 	}
 	return true;
-}
-
-
-VariantData get_literal_from_str(const VariantType& type, const std::string& str_val) {
-	if (type == OP || type == REF || type == STR) {return str_val;}
-	else if (type == BOOL) {return (str_val == "true");}
-	else if (type == INT) {
-		if (not is_int_str_32_in_range(str_val)) {
-			emit_error(ERR_cannot_initialize_value, {str_val, "Number too large"});
-			return std::any();
-		}
-		return std::stoi(str_val);
-	}
-	else if (type == FLOAT) {return std::stof(str_val);}
-	else {return std::any();}
 }
 
 

@@ -41,12 +41,7 @@ void INST_Import_exec(const Instruction* _inst, InstToken& _token, ScopeState& s
 	//std::any_cast<NativeFunc_t>(lib_map.at("__init").d) (state, {}); // Call init function.
 	// Merge all public members of the library into the scope.
 	if (symbol == "merge") {
-		for (const auto& i : lib_map) {
-			const std::string& prop_name = i.first;
-			if (prop_name.starts_with("__")) {continue;} // Skip private members.
-			const Variant& var = i.second;
-			set_data(state, prop_name, var.t, var.d, var.m);
-		}
+		merge_module(state, lib_map);
 	}
 	// Add library to scope with the given name.
 	else {set_data(state, applied_name, MAP, lib_map, VariantMode_constant);}

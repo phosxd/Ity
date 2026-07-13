@@ -15,9 +15,11 @@
 #include "Expression.hpp"
 
 // Lib imports...
+#include "Lib/MiscBuiltin.hpp"
 #include "Lib/IO.hpp"
 #include "Lib/TIME.hpp"
 const Variant LIBS[] = {
+	LIB_MISCBI,
 	LIB_IO,
 	LIB_TIME
 };
@@ -370,6 +372,9 @@ int main(int argc, char *argv[]) {
 			VariantMode_constant
 		}},
 	});
+	// Merge MiscBuiltin module.
+	LIB_MISCBI_init_exec(state, (std::vector<Variant>){});
+	merge_module(state, std::any_cast<MAP_t>(LIB_MISCBI.d));
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 

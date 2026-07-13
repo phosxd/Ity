@@ -129,3 +129,14 @@ void set_data_globally(ScopeState& state, const std::string& name, const Variant
 }
 
 
+// Merge all public members of the `map` into the scope `state`.
+void merge_module(ScopeState& state, const MAP_t& map) {
+	for (const auto& i : map) {
+		const std::string& prop_name = i.first;
+		if (prop_name.starts_with("__")) {continue;} // Skip private members.
+		const Variant& var = i.second;
+		set_data(state, prop_name, var.t, var.d, var.m);
+	}
+}
+
+

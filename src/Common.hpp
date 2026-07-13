@@ -237,7 +237,7 @@ bool operator==(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"compare(==)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_error(ERR_operand_type_mismatch, {"Compare(==)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return false;
 }
 
@@ -261,7 +261,7 @@ bool operator>(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"compare(>)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_error(ERR_operand_type_mismatch, {"Compare(>)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return false;
 }
 
@@ -285,7 +285,7 @@ bool operator<(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"compare(<)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_error(ERR_operand_type_mismatch, {"Compare(<)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return false;
 }
 
@@ -332,7 +332,7 @@ VariantData operator+(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"arith(+)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_error(ERR_operand_type_mismatch, {"Arith(+)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return a;
 }
 
@@ -356,7 +356,7 @@ VariantData operator-(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"arith(-)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_error(ERR_operand_type_mismatch, {"Arith(-)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return a;
 }
 
@@ -404,7 +404,7 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"arith(*)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_error(ERR_operand_type_mismatch, {"Arith(*)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return a;
 }
 
@@ -428,7 +428,7 @@ VariantData operator/(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"arith(/)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_error(ERR_operand_type_mismatch, {"Arith(/)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return a;
 }
 
@@ -442,7 +442,7 @@ VariantData operator%(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"arith(%)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_error(ERR_operand_type_mismatch, {"Arith(%)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
 	return a;
 }
 
@@ -710,7 +710,9 @@ struct VariantPresets_struct {
 	const Variant obj_type_m {STR, (STR_t)"f", VariantMode_constant};
 	const Variant obj_type_f {STR, (STR_t)"f", VariantMode_constant};
 	const Variant none_type_str {STR, (STR_t)"NONE", VariantMode_constant};
+	const Variant bool_type_str {STR, (STR_t)"BOOL", VariantMode_constant};
 	const Variant int_type_str {STR, (STR_t)"INT", VariantMode_constant};
+	const Variant float_type_str {STR, (STR_t)"FLOAT", VariantMode_constant};
 	const Variant str_type_str {STR, (STR_t)"STR", VariantMode_constant};
 };
 const VariantPresets_struct VariantPresets;
