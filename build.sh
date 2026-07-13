@@ -86,7 +86,7 @@ if [[ $DEBUG == 1 ]]; then
 	result=$?
 fi
 
-if (( result != 0 )); then
+if (( $result != 0 )); then
 	echo "${RED}Build failed... Resolve errors then try again.${RESET}"
 	exit
 fi

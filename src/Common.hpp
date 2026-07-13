@@ -709,11 +709,14 @@ struct VariantPresets_struct {
 	const Variant empty {NONE, std::any(), VariantMode_constant};
 	const Variant obj_type_m {STR, (STR_t)"f", VariantMode_constant};
 	const Variant obj_type_f {STR, (STR_t)"f", VariantMode_constant};
+
 	const Variant none_type_str {STR, (STR_t)"NONE", VariantMode_constant};
 	const Variant bool_type_str {STR, (STR_t)"BOOL", VariantMode_constant};
 	const Variant int_type_str {STR, (STR_t)"INT", VariantMode_constant};
 	const Variant float_type_str {STR, (STR_t)"FLOAT", VariantMode_constant};
 	const Variant str_type_str {STR, (STR_t)"STR", VariantMode_constant};
+	const Variant arr_type_str {STR, (STR_t)"ARR", VariantMode_constant};
+	const Variant map_type_str {STR, (STR_t)"MAP", VariantMode_constant};
 };
 const VariantPresets_struct VariantPresets;
 

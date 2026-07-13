@@ -1,6 +1,10 @@
 install_path="/usr/local/bin/ity"
 
 bash build.sh
+code=$?
+if (( $code != 0 )); then
+	exit
+fi
 
 echo
 echo $'\033[1mInstalling production build to "'$install_path$'"...\033[0m'

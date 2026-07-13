@@ -208,7 +208,7 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 		return "Function expected " + args[0] + " arguments. Not " + args[1] + ".";
 	}
 	else if (code == ERR_invalid_func_arg_type) {
-		return "Function argument " + args[0] + " expected vaue of type \"" + args[1] + "\", not \"" + args[1] + "\"";
+		return "Function argument " + args[0] + " expected vaue of type \"" + args[1] + "\", not \"" + args[2] + "\"";
 	}
 
 	else if (code == ERR_cannot_multiply_by_negative) {

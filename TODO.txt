@@ -1,4 +1,5 @@
 - Fix function scope deriving from caller scope instead of definition scope.
+- Fix expressions that resolve to "NONE" not returning a variant of type "NONE" but instead returning an empty sequence.
 
 - Add ability to define arguments in functions which can be used like any other variable.
 - Resolve references with `.` characters preceeding into string `MAP` accessors. Using `.` is a more convenient way to access object members (no string literal accessor needed).
