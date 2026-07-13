@@ -34,7 +34,7 @@ std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
 	unsigned int idx = 0;
 	for (auto i:s) {
 		if (idx != 0) {os << ", ";}
-		os << i.first << '=' << i.second;
+		os << "\"" << i.first << "\"" << ": " << i.second;
 		idx++;
 	}
 	return os << '}';
@@ -177,7 +177,8 @@ std::ostream& operator<<(std::ostream& os, const std::any& s) {
 		os << "none";
 	}
 	else if (t == typeid(bool)) {
-		os << std::any_cast<bool>(s);
+		if (std::any_cast<bool>(s)) os << "true";
+		else os << "false";
 	}
 	else if (t == typeid(int)) {
 		os << std::any_cast<int>(s);
@@ -449,7 +450,7 @@ VariantData operator%(const VariantData& a, const VariantData& b) {
 // VARIANT OVERLOADS.
 
 std::ostream& operator<<(std::ostream& os, const Variant& s) {
-	return os << "{t=" << s.t << ", d=" << s.d << ", m=" << s.m << '}';
+	return os << s.d;
 }
 
 

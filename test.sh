@@ -80,35 +80,90 @@ set _j = 'abc';
 # ---
 
 "
-# Mathematical expression;
+# Complex Data Assignment;
 # -----------------------;
 
-0 + 0;
-1 + 1;
-1+1;
-1    +   1;
-1.0 + 1.0;
+var ARR _a = [1,2,3];
+set _a *= 2;
 
-0 - 0;
-1 - 1;
+var MAP _b = {'a',1, 'b',2, 'c',3};
 
-2 * 4;
-2 * 2.5;
-
-8 / 2;
-8 / 1.5;
-
-10 % 4; # Should be 2;
-
-
-# String addition & multiplication;
-
-'Hello' + ' World';
-'Hello' + ' ' + 'World' + '!';
-'a' * 100;
+merge IO;
+print:[_a, _b];
 "
 
-""
+"[1, 2, 3, 1, 2, 3]
+{\"c\": 3, \"b\": 2, \"a\": 1}"
+
+# ---
+
+"
+# Accessor Operator;
+# -----------------;
+
+merge IO;
+print:[ ([10,20,30]:2) ];
+print:[ ( { 'a',([10,20,30]) } : 'a' : 0 ) ];
+"
+
+"30
+10"
+
+# ---
+
+"
+# Mathematical Expression;
+# -----------------------;
+
+merge IO;
+
+print:[ (0 + 0) ];
+print:[ (1 + 1) ];
+print:[ (1+1) ];
+print:[ (1    +   1) ];
+print:[ (1.0 + 1.0) ];
+
+print:[ (0 - 0) ];
+print:[ (1 - 1) ];
+
+print:[ (2 * 4) ];
+print:[ (2 * 2.5) ];
+
+print:[ (8 / 2) ];
+print:[ (8 / 1.5) ];
+
+print:[ (10 % 4) ];
+"
+
+"0
+2
+2
+2
+2
+0
+0
+8
+5
+4
+5.3333335
+2"
+
+# ---
+
+"
+# String Operations;
+# -----------------;
+
+merge IO;
+
+print:[ ('Hello' + ' World')];
+print:[ ('Hello' + ' ' + 'World' + '!') ];
+print:[ ('abc ' * 3) ];
+"
+
+"Hello World
+Hello World!
+abc abc abc "
 
 # ---
 
@@ -116,23 +171,46 @@ set _j = 'abc';
 # Comparison expression;
 # ---------------------;
 
-true == true;
-true == false;
-true != true;
-1 == 1;
-0 == 1;
-1.3 == 1.4;
-2 > 1;
-2 < 1;
-2 >= 2;
-2 >= 1;
-2 <= 2;
-2 <= 1;
-'Hello' == 'World';
-'Hello' != 'World';
+merge IO;
+
+print:[ (true == true) ];
+print:[ (true == false) ];
+print:[ (true != true) ];
+print:[];
+print:[ (1 == 1) ];
+print:[ (0 == 1) ];
+print:[ (1.3 == 1.4) ];
+print:[];
+print:[ (2 > 1) ];
+print:[ (2 < 1) ];
+print:[ (2 >= 2) ];
+print:[];
+print:[ (2 >= 1) ];
+print:[ (2 <= 2) ];
+print:[ (2 <= 1) ];
+print:[];
+print:[ ('Hello' == 'World') ];
+print:[ ('Hello' != 'World') ];
 "
 
-""
+"true
+false
+false
+
+true
+false
+false
+
+true
+false
+true
+
+true
+true
+false
+
+false
+true"
 
 # ---
 

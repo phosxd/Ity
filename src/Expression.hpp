@@ -137,7 +137,8 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			// End escaped.
 			if (is_escaped_char == true) {
 				is_escaped_char = false;
-				buffer.push_back(ch);
+				if (ch == 'n') buffer.push_back('\n');
+				else buffer.push_back(ch);
 				continue;
 			}
 			// Start escaped.
@@ -163,7 +164,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 				result_token.seq.push_back(item);
 				// Skip over characters inside the sub-expression.
 				skip_to_ln = ln_offset + final_ln_offset;
-				skip_to_col = col_offset + (final_col_offset) + 1;
+				skip_to_col = col_offset + (final_col_offset);
 			}
 			if (is_array) is_array = false;
 			if (is_map) is_map = false;
@@ -385,6 +386,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 				return VariantPresets.empty;
 			}
 			if (is_key) {
+				// Throw error if key is not a string.
 				if (subtoken.var.t != STR) {
 					emit_error(ERR_invalid_syntax, {"Map key must be a string"});
 					return VariantPresets.empty;
@@ -393,6 +395,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 				is_key = false;
 			}
 			else {
+				// Apply value.
 				if (subtoken.t == ExprTokenType_sequence) map[key] = expr_exec(state, subtoken, current_line, current_column);
 				else map[key] = resolve_variant(state, subtoken.var);
 				is_key = true;

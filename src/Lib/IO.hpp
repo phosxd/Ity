@@ -24,6 +24,7 @@ Variant LIB_IO_out_exec(ScopeState& state, const std::vector<Variant>& args) {
 
 
 Variant LIB_IO_print_exec(ScopeState& state, const std::vector<Variant>& args) {
+	if (args.size() == 0) std::cout << '\n';
 	for (const Variant& var : args) {
 		std::cout << var.d << '\n';
 	}
