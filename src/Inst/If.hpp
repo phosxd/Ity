@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_If_exec(const Instruction& _inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
+void INST_If_exec(const Instruction* _inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	const std::string& symbol = args[0];
 	std::string expr;

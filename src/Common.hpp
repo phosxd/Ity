@@ -540,7 +540,7 @@ std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
 struct Instruction {
 	uint8_t REQUIRED; // Required argument count,
 	int8_t OPTIONAL; // Optional argument count.
-	void (*exec)(const Instruction&, InstToken&, ScopeState&, const std::vector<std::string>&) = nullptr;
+	void (*exec)(const Instruction*, InstToken&, ScopeState&, const std::vector<std::string>&) = nullptr;
 	bool is_composite;
 };
 
@@ -713,6 +713,8 @@ struct VariantPresets_struct {
 	const Variant str_type_str {STR, (STR_t)"STR", VariantMode_constant};
 };
 const VariantPresets_struct VariantPresets;
+
+constexpr unsigned int uint16_max = 65535;
 
 
 

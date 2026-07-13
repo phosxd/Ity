@@ -1,5 +1,4 @@
 - Fix function scope deriving from caller scope instead of definition scope.
-- Add ability to define MAP literals in expressions.
 
 - Add ability to define arguments in functions which can be used like any other variable.
 - Resolve references with `.` characters preceeding into string `MAP` accessors. Using `.` is a more convenient way to access object members (no string literal accessor needed).

@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Jump_exec(const Instruction& inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
+void INST_Jump_exec(const Instruction* _inst, InstToken& _token, ScopeState& _state, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	int jump_count = 0;
 	for (unsigned int i = 1; i < args_len; i++) {

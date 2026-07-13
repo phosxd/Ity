@@ -1,13 +1,13 @@
 #pragma once
 
 
-void INST_Set_exec(const Instruction& inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
+void INST_Set_exec(const Instruction* inst, InstToken& _token, ScopeState& state, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	const std::string& symbol = args[0];
 	const std::string& name = args[1];
 	const std::string& op = args[2];
 	std::string expr = "";
-	expr.reserve(args_len-inst.REQUIRED);
+	expr.reserve(args_len-inst->REQUIRED);
 	for (unsigned int i = 3; i < args_len; i++) {
 		expr += ' '+args[i];
 	}

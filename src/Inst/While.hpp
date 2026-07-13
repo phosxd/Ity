@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_While_exec(const Instruction& inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
+void INST_While_exec(const Instruction* _inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	std::string expr;
 	expr.reserve(args_len);

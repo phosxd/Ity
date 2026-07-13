@@ -6,12 +6,12 @@ GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
 
 BIN_SIZE_LIMIT=100000
-COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-asynchronous-unwind-tables -fno-plt -fno-tree-vrp -Wl,--gc-sections -Wl,--build-id=none Main.cpp -o Ity.bin"
+COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt -fno-tree-vrp -Wl,--gc-sections -Wl,--build-id=none Main.cpp -o Ity.bin"
 
 DO_TEST=0
 DEBUG=0
 OPTIM="balanced"
-OPTIM_balanced="-O2 -finline-limit=5"
+OPTIM_balanced="-O2 -finline-limit=6"
 OPTIM_speed="-Ofast"
 OPTIM_size="-Os -finline-limit=0"
 
@@ -70,11 +70,15 @@ if [[ $DEBUG == 0 ]]; then
 	result=$?
 	strip Ity.bin # Better results than "-s" flag for gcc.
 	objcopy \
+		--remove-section=.gnu.version \
 		--remove-section=.note.ABI-tag \
 		--remove-section=.note.gnu.property \
+		--remove-section=.note.stapsdt \
 		--remove-section=.comment \
 		--remove-section=.annobin.notes \
 		--remove-section=.gnu.build.attributes \
+		--remove-section=.eh_frame_hdr \
+		--remove-section=.eh_frame \
 		Ity.bin Ity.bin
 fi
 if [[ $DEBUG == 1 ]]; then

@@ -35,21 +35,21 @@ const Variant LIBS[] = {
 #include "Inst/Return.hpp"
 
 
-const std::unordered_map<std::string, Instruction> INSTRUCTIONS = {
-	{"import", INST_Import},
-	{"merge", INST_Import},
-	{"throw", INST_Throw},
-	{"var", INST_Var},
-	{"const", INST_Var},
-	{"set", INST_Set},
-	{"jump", INST_Jump},
-	{"/", INST_End},
-	{"if", INST_If},
-	{"elif", INST_If},
-	{"else", INST_If},
-	{"while", INST_While},
-	{"func", INST_Func},
-	{"return", INST_Return},
+const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
+	{"import", &INST_Import},
+	{"merge", &INST_Import},
+	{"throw", &INST_Throw},
+	{"var", &INST_Var},
+	{"const", &INST_Var},
+	{"set", &INST_Set},
+	{"jump", &INST_Jump},
+	{"/", &INST_End},
+	{"if", &INST_If},
+	{"elif", &INST_If},
+	{"else", &INST_If},
+	{"while", &INST_While},
+	{"func", &INST_Func},
+	{"return", &INST_Return},
 };
 
 
@@ -87,24 +87,25 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 	uint16_t last_comp_item_dist = 0;
 
 	for (unsigned int i = 0; i < src_len; i++) {
+		const char& ch = src.at(i);
 		// Advance column or line number.
 		col++;
-		if(src[i] == '\n') {
+		if(ch == '\n') {
 			ln++;
 			col = 0;
 		}
 
 		// End comment.
 		if (is_comment) {
-			if (src[i] == ';') {is_comment = false;}
+			if (ch == ';') {is_comment = false;}
 			continue;
 		}
 
 		// Skip over spaces & tabs at the start of the item.
 		if (is_start) {
-			if (src[i] == ' ' || src[i] == '\n' || src[i] == '\t') {continue;}
+			if (ch == ' ' || ch == '\n' || ch == '\t') {continue;}
 			// Start comment.
-			if (src[i] == '#') {
+			if (ch == '#') {
 				is_comment = true;
 				continue;
 			}
@@ -114,38 +115,38 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 
 		if (is_string) {
 			// End escaped.
-			if (is_escaped_char == true) {
+			if (is_escaped_char) {
 				is_escaped_char = false;
-				buffer.push_back(src[i]);
+				buffer.push_back(ch);
 				continue;
 			}
 			// Start escaped.
-			if (src[i] == '\\') {
+			if (ch == '\\') {
 				is_escaped_char = true;
-				buffer.push_back(src[i]); // Keep backslash, in case it is needed for an expression.
+				buffer.push_back(ch); // Keep backslash, in case it is needed for an expression.
 				continue;
 			}
 			// End string.
-			if (src[i] == string_type) {
+			if (ch == string_type) {
 				is_string = false;
-				buffer.push_back(src[i]);
+				buffer.push_back(ch);
 				continue;
 			}
 		}
 
 		else {
 			// Start string.
-			if (src[i] == '\'' || src[i] == '"') {
+			if (ch == '\'' || ch == '"') {
 				is_string = true;
-				string_type = src[i];
+				string_type = ch;
 				str_start_ln = ln;
 				str_start_col = col;
-				buffer.push_back(src[i]);
+				buffer.push_back(ch);
 				continue;
 			}
 
 			// Add argument to args.
-			if (src[i] == ' ' || src[i] == '\n') {
+			if (ch == ' ' || ch == '\n') {
 				if (buffer.size() > 0) {
 					item.args.push_back(buffer);
 					buffer = "";
@@ -154,7 +155,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 			}
 
 			// If is instruction end, append item to sequence & reset state.
-			if (src[i] == ';') {
+			if (ch == ';') {
 				last_comp_item_dist += 1;
 
 				// Append remaining argument to args.
@@ -165,7 +166,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 				// Handle composite instructions.
 				for (CompositeItem& comp_item:composite_nest) {
 					// Throw error if composite size is about to go over the max for a 16-bit unsigned integer.
-					if (comp_item.size == 65535) {
+					if (comp_item.size == uint16_max) {
 						emit_error(ERR_max_composite_size, {}, ln,col);
 						return sequence;
 					}
@@ -174,8 +175,6 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 				if (item.args.size() > 0) {
 					const std::string& inst_name = item.args[0];
 					if (INSTRUCTIONS.find(inst_name) != INSTRUCTIONS.end()) {
-						const Instruction& inst = INSTRUCTIONS.at(inst_name);
-
 						// Link elif / else.
 						if (inst_name == "elif" || inst_name == "else") {
 							if (last_comp_item.token.args[0] != "if" && last_comp_item.token.args[0] != "elif") {
@@ -202,7 +201,8 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 						}
 
 						// Start composite item...
-						if (inst.is_composite) {
+						const Instruction* inst = INSTRUCTIONS.at(inst_name);
+						if (inst->is_composite) {
 							composite_nest.push_back(CompositeItem{item, (unsigned int)sequence.size(), 0, ln, col});
 						}
 						// End composite item...
@@ -237,7 +237,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 			}
 		}
 
-		buffer.push_back(src[i]);
+		buffer.push_back(ch);
 	}
 
 	// Throw error if unterminated string.
@@ -276,12 +276,12 @@ ScopeState ity_exec(std::vector<InstToken>& sequence, ScopeState& state) {
 		}
 		// Execute instruction.
 		else {
-			Instruction inst = INSTRUCTIONS.at(item.args[0]);
-			if (arg_count < inst.REQUIRED) {
-				emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst.REQUIRED)});
+			const Instruction* inst = INSTRUCTIONS.at(item.args[0]);
+			if (arg_count < inst->REQUIRED) {
+				emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst->REQUIRED)});
 				return state;
 			}
-			if (inst.exec != nullptr) {inst.exec(inst, item, state, item.args);}
+			inst->exec(inst, item, state, item.args);
 			if (exec_jump_value != 0) {
 				i += exec_jump_value;
 				exec_jump_value = 0;
@@ -339,14 +339,14 @@ int main(int argc, char *argv[]) {
 	emit_just_codes = exists_in_vec(flags, "-codes");
 
 	std::vector<std::string> split_source_script = {""};
-	for (std::string& i : (split_str(source_script_path, '/')) ) {split_source_script.push_back(i);}
+	for (const std::string& i : (split_str(source_script_path, '/')) ) {split_source_script.push_back(i);}
 
 
 	// Initialize state.
 	ScopeState state = create_new_scope_state({
 		{"__VERSION__", Variant{
 			ARR,
-			(std::vector<Variant>){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}},
+			(ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}},
 			VariantMode_constant
 		}},
 		{"__VERSION_STRING__", Variant{
@@ -371,8 +371,7 @@ int main(int argc, char *argv[]) {
 		}},
 	});
 
-	std::vector<Clock_t> timers;
-	for (unsigned int i = 0; i < 2; i++) {timers.push_back(Clock::now());}
+	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 
 
 	// Parse & execute script file...
@@ -388,7 +387,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Read file.
-		std::string script = (std::ostringstream() << f.rdbuf()).str();
+		const std::string& script = (std::ostringstream() << f.rdbuf()).str();
 		f.close();
 
 		current_line = 1;
@@ -416,16 +415,16 @@ int main(int argc, char *argv[]) {
 		clock_start = Clock::now();
 
 		// Input loop...
+		std::string command;
 		while (true) {
 			std::cout << ANSI::purple << "\n>> " << ANSI::reset;
-			std::string command;
 			std::getline(std::cin, command);
 			if (command == "quit" || command == "q") {
 				break;
 			}
 			else {
 				command += ';';
-				last_expr_result = Variant{};
+				last_expr_result = VariantPresets.empty;
 
 				// Tokenize the command.
 				std::vector<InstToken> sequence = Ity.tokenize(command);
@@ -445,17 +444,18 @@ int main(int argc, char *argv[]) {
 
 	// Output program results in debug mode.
 	if (debug_flags.result) {
-		auto total_end = std::chrono::high_resolution_clock::now();
-		std::vector<std::vector<long int>> times = {
+		const auto total_end = std::chrono::high_resolution_clock::now();
+		const std::vector<std::vector<long int>> times = {
 			{std::chrono::duration_cast<std::chrono::microseconds>(total_end-clock_start).count(), std::chrono::duration_cast<std::chrono::milliseconds>(total_end-clock_start).count()},
 			{std::chrono::duration_cast<std::chrono::microseconds>(timers[1]-timers[0]).count(), std::chrono::duration_cast<std::chrono::milliseconds>(timers[1]-timers[0]).count()},
 		};
 		std::cout << "\n\n" << "Program results...\n------------------\n";
-		if (source_script_path.empty() == false) {std::cout << "TIME (Inst-Tokenization): " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
+		if (not source_script_path.empty()) {std::cout << "TIME (Inst-Tokenization): " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
 		std::cout <<                                           "TIME (total):             " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
 		std::cout <<                                           "STATE SIZE:               " << get_state_size(state) << " bytes." << '\n';
 		std::cout << '\n';
 	}
+
 
 	return 0;
 }

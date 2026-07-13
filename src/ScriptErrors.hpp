@@ -195,7 +195,7 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 		return "Index \"" + args[0] + "\" out of range. Make sure the item you are accessing has the correct number of elements.";
 	}
 	else if (code == ERR_no_property_with_name) {
-		return "No property with name \"" + args[0] + "\" in this object.";
+		return "No property named \"" + args[0] + "\" in this object.";
 	}
 	else if (code == ERR_invalid_func_call) {
 		return "Cannot call function with value of type \"" + args[0] + "\". Wrap arguments in an array literal.";

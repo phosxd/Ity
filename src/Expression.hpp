@@ -9,28 +9,28 @@ const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
 constexpr std::string NUM = "0123456789";
 constexpr std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
 constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
-std::unordered_map<std::string, Operation> OPERATIONS = {
-	{"+", OP_Arith},
-	{"-", OP_Arith},
-	{"*", OP_Arith},
-	{"/", OP_Arith},
-	{"%", OP_Arith},
-	{"==", OP_Compare},
-	{"!=", OP_Compare},
-	{">", OP_Compare},
-	{">=", OP_Compare},
-	{"<", OP_Compare},
-	{"<=", OP_Compare},
-	{":", OP_Access},
+const std::unordered_map<std::string, const Operation*> OPERATIONS = {
+	{"+", &OP_Arith},
+	{"-", &OP_Arith},
+	{"*", &OP_Arith},
+	{"/", &OP_Arith},
+	{"%", &OP_Arith},
+	{"==", &OP_Compare},
+	{"!=", &OP_Compare},
+	{">", &OP_Compare},
+	{">=", &OP_Compare},
+	{"<", &OP_Compare},
+	{"<=", &OP_Compare},
+	{":", &OP_Access},
 };
 
 std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
 
 
 bool is_valid_name(const std::string& name) {
-	unsigned int name_len = name.size();
+	const unsigned int name_len = name.size();
 	for(unsigned int i = 0; i < name_len; i++) {
-		bool is_digit = (NUM.find(name[i]) != std::string::npos);
+		const bool is_digit = (NUM.find(name[i]) != std::string::npos);
 		if (i == 0 && is_digit) {return false;}
 		if ((ALPHA.find(name[i]) == std::string::npos && not is_digit) && name[i] != '_') {return false;}
 	}
@@ -47,8 +47,8 @@ bool is_special_symbol(const char& ch) {
 }
 
 
-bool check_ahead(const std::string& text, const unsigned int& start_idx, const std::string substr) {
-	unsigned int substr_len = substr.size();
+bool check_ahead(const std::string& text, const unsigned int& start_idx, const std::string& substr) {
+	const unsigned int substr_len = substr.size();
 	if (text.size() < start_idx+substr_len) {return false;}
 	for (unsigned int i = 0; i < substr_len; i++) {
 		if (text[start_idx+i] != substr[i]) {return false;}
@@ -111,11 +111,13 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 	bool is_string = false;
 	bool is_escaped_char = false;
 	bool is_array = false;
+	bool is_map = false;
 
 	for (unsigned int i = 0; i < expr_len; i++) {
+		const char& ch = expr.at(i);
 		// Advance column or line number.
 		col_offset++;
-		if(expr[i] == '\n') {
+		if(ch == '\n') {
 			ln_offset++;
 			col_offset = 0;
 		}
@@ -135,28 +137,24 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			// End escaped.
 			if (is_escaped_char == true) {
 				is_escaped_char = false;
-				buffer.push_back(expr[i]);
+				buffer.push_back(ch);
 				continue;
 			}
 			// Start escaped.
-			if (expr[i] == '\\') {
+			if (ch == '\\') {
 				is_escaped_char = true;
 				continue;
 			}
 			// End string.
-			if (std::string(1,expr[i]) == secondary_buffer) {
+			if (std::string(1,ch) == secondary_buffer) {
 				is_string = false;
 				continue;
 			}
 		}
 
 		// Compile array of expressions into a Variant.
-		else if (is_array) {
-			if (expr_len <= i) {
-				emit_error(ERR_unexpected_char_at_expr_end, {"["});
-				return result_token;
-			}
-			std::string subexpr = expr.substr(i);
+		else if (is_array || is_map) {
+			const std::string& subexpr = expr.substr(i);
 			if (not subexpr.empty()) {
 				clean_up_buffer(result_token, item, buffer);
 				// Tokenize sub-expression & add to sequence.
@@ -167,21 +165,22 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 				skip_to_ln = ln_offset + final_ln_offset;
 				skip_to_col = col_offset + (final_col_offset) + 1;
 			}
-			is_array = false;
+			if (is_array) is_array = false;
+			if (is_map) is_map = false;
 			continue;
 		}
 
 		else {
 			// Ignore spaces.
-			if (expr[i] == ' ' || expr[i] == '\n' || expr[i] == '\t') {continue;}
+			if (ch == ' ' || ch == '\n' || ch == '\t') {continue;}
 
 			// Start sub-expression.
-			if (expr[i] == '(') {
+			if (ch == '(') {
 				if (expr_len <= i+1) {
-					emit_error(ERR_unexpected_char_at_expr_end, {"["});
+					emit_error(ERR_unexpected_char_at_expr_end, {"("});
 					return result_token;
 				}
-				std::string subexpr = expr.substr(i+1);
+				const std::string& subexpr = expr.substr(i+1);
 				if (not subexpr.empty()) {
 					clean_up_buffer(result_token, item, buffer);
 					// Tokenize sub-expression.
@@ -200,20 +199,20 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			}
 
 			// End expression.
-			if (expr[i] == ')' || expr[i] == ']' || expr[i] == '}') {
+			if (ch == ')' || ch == ']' || ch == '}') {
 				break;
 			}
 
 			if (is_start) {
 				item = ExprToken{ln_offset, col_offset};
 				// Set type integer.
-				if (NUM.find(expr[i]) != std::string::npos) {
+				if (NUM.find(ch) != std::string::npos) {
 					item.var.t = INT;
 				}
 				// Start string.
-				else if (STRING_SYMBOLS.find(expr[i]) != std::string::npos) {
+				else if (STRING_SYMBOLS.find(ch) != std::string::npos) {
 					item.var.t = STR;
-					secondary_buffer = expr[i];
+					secondary_buffer = ch;
 					is_string = true;
 					is_start = false;
 					continue;
@@ -233,14 +232,22 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 					item.var.t = NONE;
 				}
 				// Set type reference.
-				else if (is_valid_name(std::string(1,expr[i]))) {
+				else if (is_valid_name(std::string(1,ch))) {
 					item.var.t = REF;
 				}
 				// Set type array.
-				else if (expr[i] == '[') {
+				else if (ch == '[') {
 					item.t = ExprTokenType_sequence;
 					item.var.t = ARR;
 					is_array = true;
+					is_start = false;
+					continue;
+				}
+				// Set type map.
+				else if (ch == '{') {
+					item.t = ExprTokenType_sequence;
+					item.var.t = MAP;
+					is_map = true;
 					is_start = false;
 					continue;
 				}
@@ -249,7 +256,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 
 			if (is_operator == false) {
 				// Separate expression.
-				if (expr[i] == ',') {
+				if (ch == ',') {
 					clean_up_buffer(result_token, item, buffer);
 					item.var.t = NONE;
 					is_start = true;
@@ -257,32 +264,32 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 				}
 
 				// Start operator.
-				else if (is_special_symbol(expr[i]) == true) {
+				else if (is_special_symbol(ch) == true) {
 					clean_up_buffer(result_token, item, buffer);
 					item.var.t = NONE;
 					is_operator = true;
 				}
 
 				// Skip over underscore in numbers.
-				else if ((item.var.t == INT || item.var.t == FLOAT) && expr[i] == '_') {
+				else if ((item.var.t == INT || item.var.t == FLOAT) && ch == '_') {
 					continue;
 				}
 
 				else if (item.var.t == INT) {
 					// If "." found in INT, convert to FLOAT.
-					if (expr[i] == '.') {
+					if (ch == '.') {
 						item.var.t = FLOAT;
 					}
 					// Throw error if invalid character found.
-					else if ((NUM.find(expr[i]) == std::string::npos)) {
-						emit_error(ERR_invalid_character_for_construct, {"number", std::string(1,expr[i])}, ln, col);
+					else if ((NUM.find(ch) == std::string::npos)) {
+						emit_error(ERR_invalid_character_for_construct, {"number", std::string(1,ch)}, ln, col);
 						return result_token;
 					}
 				}
 
 				else if (item.var.t == BOOL || item.var.t == NONE) {
 					// If no longer matches the bool or none token, switch to a reference.
-					if ((buffer+expr[i]).size() >= secondary_buffer.size() && (buffer+expr[i]) != secondary_buffer) {
+					if ((buffer+ch).size() >= secondary_buffer.size() && (buffer+ch) != secondary_buffer) {
 						item.var.t = REF;
 						secondary_buffer = "";
 					}
@@ -296,7 +303,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 					ExprTokenType_variant,
 					{
 						OP,
-						buffer+expr[i],
+						buffer+ch,
 					},
 				});
 				buffer = "";
@@ -306,7 +313,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			}
 		}
 
-		buffer.push_back(expr[i]);
+		buffer.push_back(ch);
 	}
 
 	clean_up_buffer(result_token, item, buffer);
@@ -345,6 +352,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 		std::vector<Variant> array;
 		array.reserve(token.seq.size());
 		for (const ExprToken& subtoken : token.seq) {
+			// Throw error if operator token found.
 			if (subtoken.var.t == OP) {
 				emit_error(ERR_operators_not_allowed, {"ARR", "( YES: [1, (1+1), 3]  |  NO: [1, 1+1, 3] )"});
 				return VariantPresets.empty;
@@ -359,9 +367,47 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 		};
 	}
 
+	// Resolve map.
+	if (token.var.t == MAP) {
+		// Throw error if there are an odd number of elements.
+		if (token.seq.size() % 2 != 0) {
+			emit_error(ERR_invalid_syntax, {"Map literal expects key-value pairs. ( {'a', 1, 'b', 2} )"});
+			return VariantPresets.empty;
+		}
+		MAP_t map;
+		map.reserve(token.seq.size()/2);
+		bool is_key = true;
+		std::string key;
+		for (const ExprToken& subtoken : token.seq) {
+			// Throw error if operator token found.
+			if (subtoken.var.t == OP) {
+				emit_error(ERR_operators_not_allowed, {"MAP", "( YES: {'a', (1+1)}  |  NO: {'a', 1+1} )"});
+				return VariantPresets.empty;
+			}
+			if (is_key) {
+				if (subtoken.var.t != STR) {
+					emit_error(ERR_invalid_syntax, {"Map key must be a string"});
+					return VariantPresets.empty;
+				}
+				key = std::any_cast<STR_t>(subtoken.var.d);
+				is_key = false;
+			}
+			else {
+				if (subtoken.t == ExprTokenType_sequence) map[key] = expr_exec(state, subtoken, current_line, current_column);
+				else map[key] = resolve_variant(state, subtoken.var);
+				is_key = true;
+			}
+		}
+
+		return Variant{
+			MAP,
+			map,
+		};
+	}
+
 	const unsigned int seq_len = token.seq.size();
 	Variant result;
-	Operation* op = nullptr;
+	const Operation* op = nullptr;
 	std::string op_symbol;
 	for (unsigned int i = 0; i < seq_len; i++) {
 		const ExprToken& item = token.seq.at(i);
@@ -390,7 +436,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 					emit_error(ERR_invalid_op, {op_symbol});
 					return result;
 				}
-				op = &OPERATIONS.at(op_symbol);
+				op = OPERATIONS.at(op_symbol);
 				continue;
 			}
 			// Get variant.
