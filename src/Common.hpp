@@ -579,12 +579,12 @@ bool str_ends_with(const std::string& text, const std::string& suffix) {
 
 // Returns the string with all instances of `ch` removed from the start of it.
 std::string trim_left(const std::string& text, const char ch) {
-	const unsigned int text_len = text.size();
-	if (text_len == 0) {return text;}
-	if (text.at(0) != ch) {return text;}
+	const size_t& text_len = text.size();
+	if (text_len == 0) return text;
+	if (text.at(0) != ch) return text;
 	bool ended = false;
 	std::string result; result.reserve(text_len);
-	for (unsigned int i = 0; i < text_len; i++) {
+	for (size_t i = 0; i < text_len; i++) {
 		if (text.at(i) != ch) ended = true;
 		if (ended) result.push_back(text.at(i));
 	}
@@ -594,10 +594,10 @@ std::string trim_left(const std::string& text, const char ch) {
 
 // Joins all elements in the vector into a new string, with each element separated by the given `sep`.
 std::string join_str(const std::vector<std::string>& vec, const std::string& sep) {
-	const unsigned int vec_len = vec.size();
+	const size_t& vec_len = vec.size();
 	std::string result = vec.front();
-	result.reserve(sep.size() * (vec.size()-1));
-	for (unsigned int i = 1; i < vec_len; i++) {
+	result.reserve(sep.size() * (vec_len-1));
+	for (size_t i = 1; i < vec_len; i++) {
 		result += sep + vec.at(i);
 	}
 	return result;
@@ -618,12 +618,10 @@ std::vector<std::string> split_str(const std::string& text, const char sep) {
 
 // Returns the number of strings that are empty inside the given vector.
 unsigned int count_non_empty_strings(const std::vector<std::string>& items) {
-	const size_t items_len = items.size();
+	const size_t& items_len = items.size();
 	unsigned int count = 0;
 	for (size_t i = 0; i < items_len; i++) {
-		if (items.at(i).empty() == false) {
-			count++;
-		}
+		if (not std::move(items.at(i)).empty()) count++;
 	}
 	return count;
 }
@@ -751,7 +749,7 @@ bool exec_jump_out = false;
 // Modified by "Var" instruction & "Access" operation.
 unsigned int func_arg_index = 0;
 
-// Modified by "While" & "Return" instructions.
-std::vector<InstToken*> scoped_loop_tokens;
+// Modified by "While", "If", & "End" instructions.
+std::vector<InstToken*> scoped_tokens;
 // Managed by `ScopeState*_ongoing_scopes` functions.
-std::vector<std::vector<InstToken*>> scoped_loop_tokens_stack;
+std::vector<std::vector<InstToken*>> scoped_tokens_stack;

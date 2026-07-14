@@ -30,7 +30,6 @@ const Variant LIBS[] = {
 #include "Inst/Throw.hpp"
 #include "Inst/Var.hpp"
 #include "Inst/Set.hpp"
-#include "Inst/Jump.hpp"
 #include "Inst/End.hpp"
 #include "Inst/If.hpp"
 #include "Inst/While.hpp"
@@ -46,7 +45,6 @@ const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
 	{"const", &INST_Var},
 	{"arg", &INST_Var},
 	{"set", &INST_Set},
-	{"jump", &INST_Jump},
 	{"/", &INST_End},
 	{"if", &INST_If},
 	{"elif", &INST_If},

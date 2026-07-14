@@ -2,14 +2,14 @@
 
 
 void INST_Set_exec(const Instruction* inst, InstToken& _token, const std::vector<std::string>& args) {
-	const unsigned int args_len = args.size();
-	const std::string& symbol = args[0];
-	const std::string& name = args[1];
-	const std::string& op = args[2];
+	const size_t& args_len = args.size();
+	const std::string& symbol = args.at(0);
+	const std::string& name = args.at(1);
+	const std::string& op = args.at(2);
 	std::string expr = "";
 	expr.reserve(args_len-inst->REQUIRED);
-	for (unsigned int i = 3; i < args_len; i++) {
-		expr += ' '+args[i];
+	for (size_t i = 3; i < args_len; i++) {
+		expr += ' '+args.at(i);
 	}
 
 	if (is_valid_name(name) == false) {

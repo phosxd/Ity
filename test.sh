@@ -315,20 +315,19 @@ else;
 "
 merge IO;
 
-# Code jump
-# ---------
+# Scoped conditional blocks
+# -------------------------
 
-# Simple loop that counts to 50;
-var INT jump_counter = 0;
-set jump_counter += 1;
-if jump_counter == 50;
-	jump 3;
+if true;
+	var INT x = 1;
+	print:[x];
 /;
-jump -4;
-print:[jump_counter];
+
+x; # Should throw error
 "
 
-"50"
+"1
+ERROR: 26"
 
 # 13
 
@@ -357,6 +356,28 @@ while false;
 # 14
 
 "
+merge IO;
+
+# Nested while loop
+# -----------------
+
+var INT i = 0;
+while i < 10;
+	var INT j = 0;
+	while j < 10;
+		set j += 1;
+	/;
+	set i += 1;
+/;
+
+print:[i];
+"
+
+"10"
+
+# 15
+
+"
 # Variable in while loop should be destroyed after each iteration
 var INT i = 0;
 while i < 4;
@@ -369,7 +390,7 @@ test; # Should throw an error
 
 "ERROR: 26"
 
-# 15
+# 16
 
 "
 func NONE test;
@@ -388,7 +409,7 @@ var INT i = 0; while i < 5;
 
 ""
 
-# 16
+# 17
 
 "
 merge IO;
@@ -415,13 +436,6 @@ print:[ (add:[4,5]) ];
 "Hello there!
 9"
 
-# 17
-
-"
-"
-
-""
-
 # 18
 
 "
@@ -430,6 +444,13 @@ print:[ (add:[4,5]) ];
 ""
 
 # 19
+
+"
+"
+
+""
+
+# 20
 
 "
 "

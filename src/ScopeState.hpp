@@ -64,27 +64,27 @@ inline void scope_flush(ScopeState& state) {
 }
 
 
-// Scope out of all ongoing scopes & reset token metadata.
+// Scope out of all ongoing scopes & reset token metadata (if needed).
 void exit_ongoing_scopes() {
-	for (InstToken* token : scoped_loop_tokens) {
-		token->meta.clear();
+	for (InstToken* token : scoped_tokens) {
+		if (token->args.at(0) == "while") token->meta.clear();
 		scope_out(ST);
 	}
-	scoped_loop_tokens.clear();
+	scoped_tokens.clear();
 }
 
 
 // Save ongoing scopes for later.
 void push_back_ongoing_scopes() {
-	scoped_loop_tokens_stack.push_back(scoped_loop_tokens);
-	scoped_loop_tokens = {};
+	scoped_tokens_stack.push_back(scoped_tokens);
+	scoped_tokens = {};
 }
 
 
 // Restore last saved ongoing scopes.
 void restore_ongoing_scopes() {
-	scoped_loop_tokens = scoped_loop_tokens_stack.back();
-	scoped_loop_tokens_stack.pop_back();
+	scoped_tokens = scoped_tokens_stack.back();
+	scoped_tokens_stack.pop_back();
 }
 
 
@@ -173,7 +173,7 @@ void set_data_globally(ScopeState& state, const std::string& name, const Variant
 void merge_module(ScopeState& state, const MAP_t& map) {
 	for (const auto& i : map) {
 		const std::string& prop_name = i.first;
-		if (prop_name.starts_with("__")) {continue;} // Skip private members.
+		if (prop_name.starts_with("__")) continue; // Skip private members.
 		const Variant& var = i.second;
 		set_data(state, prop_name, var.t, var.d, var.m);
 	}

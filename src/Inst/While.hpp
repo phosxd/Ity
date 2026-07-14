@@ -2,11 +2,11 @@
 
 
 void INST_While_exec(const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
-	const unsigned int args_len = args.size();
+	const size_t& args_len = args.size();
 	std::string expr;
-	expr.reserve(args_len);
-	for (unsigned int i = 1; i < args_len; i++) {
-		expr += ' '+args[i];
+	expr.reserve(args_len-1);
+	for (size_t i = 1; i < args_len; i++) {
+		expr += ' '+args.at(i);
 	}
 
 	// Get value from expression.
@@ -26,14 +26,14 @@ void INST_While_exec(const Instruction* _inst, InstToken& token, const std::vect
 		if (token.meta.size() > 0) {
 			scope_out(ST);
 			token.meta.clear();
-			scoped_loop_tokens.pop_back();
+			scoped_tokens.pop_back();
 		}
 	}
 	// If entering loop for first time, scope in.
 	else if (token.meta.size() == 0) {
 		token.meta = {true};
 		scope_in(ST);
-		scoped_loop_tokens.push_back(&token);
+		scoped_tokens.push_back(&token);
 	}
 }
 

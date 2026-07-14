@@ -9,6 +9,10 @@ void INST_End_exec(const Instruction* _inst, InstToken& token, const std::vector
 		exec_jump_value += token.linked_inst_pos-1;
 		scope_flush(ST); // Flush scope for next loop iteration.
 	}
+	else if (token.linked_inst == "if" || token.linked_inst == "elif" || token.linked_inst == "else") {
+		scope_out(ST); // Scope out of conditional block.
+		scoped_tokens.pop_back();
+	}
 }
 
 

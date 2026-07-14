@@ -62,7 +62,7 @@ Variant OP_Access_exec(Variant& first, Variant& second, const std::string& _symb
 				return first;
 			}
 			// Return Variant at the key.
-			return map.at(key);
+			return std::move(map.at(key));
 		}
 
 		// Access function.
@@ -74,7 +74,7 @@ Variant OP_Access_exec(Variant& first, Variant& second, const std::string& _symb
 			}
 			// Call native function...
 			if (map.find("__ncall") != map.end()) {
-				const NativeFunc_t& n_func = std::any_cast<NativeFunc_t>(map.at("__ncall").d);
+				const NativeFunc_t& n_func = std::any_cast<NativeFunc_t>( map.at("__ncall").d );
 				const ARR_t& n_args = std::any_cast<ARR_t>(second.d);
 				return n_func(ST, n_args);
 			}
@@ -88,10 +88,10 @@ Variant OP_Access_exec(Variant& first, Variant& second, const std::string& _symb
 				}
 				func_arg_index = 0;
 				const int& func_token_index = std::any_cast<int>(map.at("__idx").d);
-				const VariantType& func_return_type = get_variant_type_from_name(std::any_cast<STR_t>(map.at("__ret_t").d));
+				const VariantType& func_return_type = get_variant_type_from_name(std::any_cast<STR_t>( map.at("__ret_t").d ));
 				const InstToken& func_token = InstTokenSeq.at(func_token_index);
 				const unsigned int func_body_start = func_token.i+1;
-				const unsigned int& func_body_end = std::any_cast<unsigned int>(func_token.meta.at(0));
+				const unsigned int& func_body_end = std::any_cast<unsigned int>( func_token.meta.at(0) );
 				// Run function.
 				push_back_ongoing_scopes();
 				scope_in(ST);                                                        // Create new scope on top of the previous.
@@ -107,7 +107,7 @@ Variant OP_Access_exec(Variant& first, Variant& second, const std::string& _symb
 				}
 				// Restore previous scope, then return result.
 				scope_out(ST);
-				return result;
+				return std::move(result);
 			}
 		}
 

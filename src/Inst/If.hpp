@@ -2,12 +2,12 @@
 
 
 void INST_If_exec(const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
-	const unsigned int args_len = args.size();
-	const std::string& symbol = args[0];
+	const size_t& args_len = args.size();
+	const std::string& symbol = args.at(0);
 	std::string expr;
-	expr.reserve(args_len);
-	for (unsigned int i = 1; i < args_len; i++) {
-		expr += ' '+args[i];
+	expr.reserve(args_len-1);
+	for (size_t i = 1; i < args_len; i++) {
+		expr += ' '+args.at(i);
 	}
 
 	// Get value from expression.
@@ -42,7 +42,12 @@ void INST_If_exec(const Instruction* _inst, InstToken& token, const std::vector<
 	if (symbol == "elif" && not passed) {token.meta.at(0) = previous_conditional_passed;}
 	InstTokenSeq[token.i] = token;
 	// Jump past instructions in this composite if failed.
-	if (not passed) {exec_jump_value += token.composite_size;}
+	if (not passed) exec_jump_value += token.composite_size;
+	// Scope in.
+	else {
+		scope_in(ST);
+		scoped_tokens.push_back(&token);
+	}
 }
 
 
