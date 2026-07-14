@@ -101,7 +101,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 
 		// End comment.
 		if (is_comment) {
-			if (ch == ';') {is_comment = false;}
+			if (ch == '\n') {is_comment = false;}
 			continue;
 		}
 
@@ -328,12 +328,14 @@ int main(int argc, char *argv[]) {
 	debug_flags.expr_seq = exists_in_vec(flags, "-d-expr-seq");
 	debug_flags.expr_result = exists_in_vec(flags, "-d-expr-result");
 	debug_flags.data_assign = exists_in_vec(flags, "-d-data-assign");
+	debug_flags.scoping = exists_in_vec(flags, "-d-scoping");
 	if (exists_in_vec(flags, "-d-full")) {
 		debug_flags.result = true;
 		debug_flags.inst_seq = true;
 		debug_flags.expr_seq = true;
 		debug_flags.expr_result = true;
 		debug_flags.data_assign = true;
+		debug_flags.scoping = true;
 	}
 
 	// Set other flags.

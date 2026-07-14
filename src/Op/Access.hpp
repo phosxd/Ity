@@ -93,10 +93,12 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 				const unsigned int func_body_start = func_token.i+1;
 				const unsigned int& func_body_end = std::any_cast<unsigned int>(func_token.meta.at(0));
 				// Run function.
+				push_back_ongoing_scopes(state);
 				scope_in(state);                                                        // Create new scope on top of the previous.
 				set_data(state, "__ARGS__", ARR, second.d, VariantMode_constant);       // Make the passed arguments available in the scope.
 				set_data(state, "__RET__", ANY, std::any(), VariantMode_dynamic_type);  // Initialize return variable.
 				Ity.exec(InstTokenSeq, state, func_body_start, func_body_end);
+				restore_ongoing_scopes(state);
 
 				// Get result & check if return type matches.
 				const Variant& result = get_data(state, "__RET__");

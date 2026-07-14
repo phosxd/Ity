@@ -73,6 +73,7 @@ struct debug_flags_struct {
 	bool expr_seq = false;      // Print ExprToken sequences directly after tokenization.
 	bool expr_result = false;   // Print result of ExprToken directly after execution.
 	bool data_assign = false;   // Print data being assigned to the current state.
+	bool scoping = false;       // Print scope in/out/flush calls.
 };
 
 debug_flags_struct debug_flags;

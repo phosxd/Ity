@@ -8,10 +8,22 @@
 #include "ScriptErrors.hpp"
 
 
+unsigned int get_scope_depth(const ScopeState& state) {
+	unsigned int depth = 1;
+	ScopeState* current = state.p;
+	while (true) {
+		if (current == nullptr) break;
+		current = current->p;
+		depth += 1;
+	}
+	return depth;
+}
+
+
 // Create a new blank scope state.
-ScopeState create_new_scope_state(MAP_t data, ScopeState* parent = nullptr) {
+ScopeState create_new_scope_state(const MAP_t& data, ScopeState* parent = nullptr) {
 	ScopeState result;
-	if (parent != nullptr) {result.p = parent;}
+	if (parent != nullptr) result.p = parent;
 	result.d = data;
 	return result;
 }
@@ -21,20 +33,54 @@ ScopeState create_new_scope_state(MAP_t data, ScopeState* parent = nullptr) {
 // This will effectively change the depth of the current scope while preserving the state reference.
 void scope_in(ScopeState& state) {
 	state.p = new ScopeState(create_new_scope_state(state.d, state.p));
-	state.d = MAP_t();
+	state.d.clear();
+	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope In (" + std::to_string(get_scope_depth(state)) + ")\n" << ANSI::reset;
 }
 
 
 // Transforms "state" into a copy of it's parent state, deleting all data on the current state.
 void scope_out(ScopeState& state) {
-	ScopeState p;
-	if (state.p != nullptr) {p = *state.p;}
+	ScopeState* p = nullptr;
+	if (state.p != nullptr) p = state.p;
 	else {
 		emit_error(ERR_unexpected, {"ScopeState.scope_out", "minimum depth reached, unable to scope out."});
 		return;
 	}
-	state.p = p.p;
-	state.d = p.d;
+	state.p = p->p;
+	state.d.clear();
+	state.d = std::move(p->d);
+	delete p;
+	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope Out (" + std::to_string(get_scope_depth(state)) + ")\n" << ANSI::reset;
+}
+
+
+// Clears all data in the scope. Useful for loops that reuse the same scope.
+inline void scope_flush(ScopeState& state) {
+	state.d.clear();
+}
+
+
+// Scope out of all ongoing scopes & reset token metadata.
+void exit_ongoing_scopes(ScopeState& state) {
+	for (InstToken* token : scoped_loop_tokens) {
+		token->meta.clear();
+		scope_out(state);
+	}
+	scoped_loop_tokens.clear();
+}
+
+
+// Save ongoing scopes for later.
+void push_back_ongoing_scopes(ScopeState& state) {
+	scoped_loop_tokens_stack.push_back(scoped_loop_tokens);
+	scoped_loop_tokens = {};
+}
+
+
+// Restore last saved ongoing scopes.
+void restore_ongoing_scopes(ScopeState& state) {
+	scoped_loop_tokens = scoped_loop_tokens_stack.back();
+	scoped_loop_tokens_stack.pop_back();
 }
 
 
@@ -55,8 +101,7 @@ bool is_name_free(const ScopeState& state, const std::string& name) {
 }
 
 
-// Checks if the name is available in this scope & all scopes above it.
-// Use this to check if a name could be shadowed.
+// Checks if the name is available in this scope or any scopes above it.
 bool is_name_globally_free(const ScopeState& state, const std::string& name) {
 	if (state.d.find(name) == state.d.end()) {
 		if (state.p != nullptr) return is_name_globally_free(*state.p, name);

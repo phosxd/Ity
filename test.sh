@@ -7,21 +7,23 @@ ORANGE=$'\x1B[33m'
 
 
 tests=(
-"
-# comment;
-#
-comment
-;
-###;
-"
-
-""
-
-# ---
+# 1
 
 "
-# Assignment;
-# ----------;
+# comment
+###
+# com;ment;
+
+throw 'all good';
+"
+
+"ERROR: 0"
+
+# 2
+
+"
+# Assignment
+# ----------
 
 var * none_ = 'a';
 none_; none;
@@ -77,11 +79,11 @@ set _j = 'abc';
 
 ""
 
-# ---
+# 3
 
 "
-# Complex Data Assignment;
-# -----------------------;
+# Complex Data Assignment
+# -----------------------
 
 var ARR _a = [1,2,3];
 set _a *= 2;
@@ -95,11 +97,11 @@ print:[_a, _b];
 "[1, 2, 3, 1, 2, 3]
 {\"c\": 3, \"b\": 2, \"a\": 1}"
 
-# ---
+# 4
 
 "
-# Accessor Operator;
-# -----------------;
+# Accessor Operator
+# -----------------
 
 merge IO;
 print:[ ([10,20,30]:2) ];
@@ -109,11 +111,11 @@ print:[ ( { 'a',([10,20,30]) } : 'a' : 0 ) ];
 "30
 10"
 
-# ---
+# 5
 
 "
-# Mathematical Expression;
-# -----------------------;
+# Mathematical Expression
+# -----------------------
 
 merge IO;
 
@@ -148,11 +150,11 @@ print:[ (10 % 4) ];
 5.3333335
 2"
 
-# ---
+# 6
 
 "
-# String Operations;
-# -----------------;
+# String Operations
+# -----------------
 
 merge IO;
 
@@ -165,11 +167,11 @@ print:[ ('abc ' * 3) ];
 Hello World!
 abc abc abc "
 
-# ---
+# 7
 
 "
-# Comparison expression;
-# ---------------------;
+# Comparison expression
+# ---------------------
 
 merge IO;
 
@@ -212,11 +214,11 @@ false
 false
 true"
 
-# ---
+# 8
 
 "
-# Expression syntax;
-# -----------------;
+# Expression syntax
+# -----------------
 
 'early') + 'exit';
 
@@ -229,13 +231,13 @@ true"
 
 ""
 
-# ---
+# 9
 
 "
 merge IO;
 
-# Conditional code block;
-# ----------------------;
+# Conditional code block
+# ----------------------
 
 if true == true;
 	print:['true is true'];
@@ -247,12 +249,12 @@ if true == false;
 
 "true is true"
 
-# ---
+# 10
 
 "
 merge IO;
 
-# Nested conditionals;
+# Nested conditionals
 
 if true == true;
 	if false == false;
@@ -270,10 +272,10 @@ if true == true;
 
 "passed"
 
-# ---
+# 11
 
 "
-# Chaining conditionals;
+# Chaining conditionals
 
 if true;
 	'Yes';
@@ -308,13 +310,13 @@ else;
 
 ""
 
-# ---
+# 12
 
 "
 merge IO;
 
-# Code jump;
-# ---------;
+# Code jump
+# ---------
 
 # Simple loop that counts to 50;
 var INT jump_counter = 0;
@@ -328,13 +330,13 @@ print:[jump_counter];
 
 "50"
 
-# ---
+# 13
 
 "
 merge IO;
 
-# While loop;
-# ----------;
+# While loop
+# ----------
 
 var INT i = 0;
 while i < 10;
@@ -342,17 +344,57 @@ while i < 10;
 /;
 
 print:[i];
+
+
+# Should not run
+while false;
+	throw 'That\'s not right.';
+/;
 "
 
 "10"
 
-# ---
+# 14
+
+"
+# Variable in while loop should be destroyed after each iteration
+var INT i = 0;
+while i < 4;
+	var INT test = 512;
+	set i += 1;
+/;
+
+test; # Should throw an error
+"
+
+"ERROR: 26"
+
+# 15
+
+"
+func NONE test;
+	var INT j = 0; while j < 5;
+		if j == 2; return; /;
+		set j += 1;
+	/;
+/;
+
+
+var INT i = 0; while i < 5;
+	test:[];
+	set i += 1;
+/;
+"
+
+""
+
+# 16
 
 "
 merge IO;
 
-# Function definition;
-# -------------------;
+# Function definition
+# -------------------
 
 func NONE say_hi;
 	print:['Hello there!'];
@@ -361,7 +403,7 @@ func NONE say_hi;
 say_hi:[];
 
 
-# With arguments;
+# With arguments
 
 func INT add; arg INT a; arg INT b;
 	return a+b;
@@ -373,47 +415,66 @@ print:[ (add:[4,5]) ];
 "Hello there!
 9"
 
-# ---
+# 17
 
 "
 "
 
 ""
 
-# ---
+# 18
 
 "
 "
 
 ""
 
-# ---
+# 19
 
 "
 "
 
 ""
-
-# ---
 )
 
+
+starting_idx=0
+if [[ "$1" != "" ]]; then
+	starting_idx=$1
+fi
 
 for (( idx=0; idx<${#tests[@]}; idx+=2 )); do
 	i="${tests[$idx]}"
 	case_num=$(( (idx/2)+1 ))
+	if (( $case_num < $starting_idx ));then
+		continue
+	fi
 	echo "[${case_num}]"
 	echo "$i" > .test.ity
 	./Ity.bin -codes .test.ity > .test_result.txt
 
 	# If results do not match up, test failed.
+	expected=${tests[(($idx+1))]}
 	result=$(cat .test_result.txt)
-	if [[ "${result}" != "${tests[(($idx+1))]}" ]]; then
-		echo "${RED}Case ${case_num} failed!${RESET}"
+	if [[ "${result}" != "${expected}" ]]; then
+		echo
 		echo "${BOLD}Test case source code:${RESET}"
 		echo "${i}"
 		echo "${BOLD}Test case debug results:${RESET}"
 		echo
 		echo "$(./Ity.bin -d-full .test.ity)"
+		echo
+		echo "- - - - - - - - - - - - - - - - - - - -"
+		echo
+		echo "${RED}Case ${case_num} failed!${RESET}"
+		echo
+		echo "${ORANGE}EXPECTED:${RESET}"
+		echo "${expected}" | sed "s/^/  /"
+		echo "."
+		echo "${ORANGE}RECEIVED:${RESET}"
+		echo "${result}" | sed "s/^/  /"
+		echo "."
+		echo
 		exit
 	fi
 done

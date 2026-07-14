@@ -8,6 +8,18 @@ Variant LIB_MISCBI_init(ScopeState& state, const std::vector<Variant>& args) {
 }
 
 
+// Return the type of the given Variant, in string form.
+Variant LIB_MISCBI_get_state(ScopeState& state, const std::vector<Variant>& args) {
+	const unsigned int& args_len = args.size();
+	if (args_len != 0) {
+		emit_error(ERR_invalid_func_arg_count, {"0", std::to_string(args_len)});
+		return VariantPresets.empty;
+	}
+
+	return Variant{MAP, state.d};
+}
+
+
 // Pause thread execution for the given number of seconds.
 Variant LIB_MISCBI_sleep(ScopeState& state, const std::vector<Variant>& args) {
 	const unsigned int& args_len = args.size();
@@ -101,6 +113,7 @@ const Variant LIB_MISCBI {
 		}},
 
 		// Utility functions.
+		{"get_state",      NativeFuncTrans(VariantPresets.map_type_str,  (NativeFunc_t)LIB_MISCBI_get_state)},
 		{"sleep",      NativeFuncTrans(VariantPresets.none_type_str,  (NativeFunc_t)LIB_MISCBI_sleep)},
 		{"type_name",  NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_MISCBI_type_name)},
 		{"length",     NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_MISCBI_length)}

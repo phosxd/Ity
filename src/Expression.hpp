@@ -317,7 +317,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 Variant resolve_variant(ScopeState& state, const Variant& item) {
 	if (item.t == REF) {
 		const std::string& name = std::any_cast<STR_t>(item.d);
-		if (is_name_globally_free(state, name) == true) {
+		if (is_name_globally_free(state, name)) {
 			emit_error(ERR_name_does_not_exist, {name});
 			return item;
 		}

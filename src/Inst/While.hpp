@@ -20,7 +20,21 @@ void INST_While_exec(const Instruction* _inst, InstToken& token, ScopeState& sta
 	bool expr_passed = std::any_cast<bool>(value.d);
 
 	// Jump past instructions in this composite if failed.
-	if (not expr_passed) {exec_jump_value += token.composite_size;} // Add 1 to skip the end instruction, which for loops will jump back to it's corresponding composite instruction.
+	if (not expr_passed) {
+		exec_jump_value += token.composite_size; // Add 1 to skip the end instruction, otherwise will jump back to this instruction.
+		// Scope out if previously scoped in.
+		if (token.meta.size() > 0) {
+			scope_out(state);
+			token.meta.clear();
+			scoped_loop_tokens.pop_back();
+		}
+	}
+	// If entering loop for first time, scope in.
+	else if (token.meta.size() == 0) {
+		token.meta = {true};
+		scope_in(state);
+		scoped_loop_tokens.push_back(&token);
+	}
 }
 
 

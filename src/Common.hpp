@@ -750,3 +750,8 @@ bool exec_jump_out = false;
 
 // Modified by "Var" instruction & "Access" operation.
 unsigned int func_arg_index = 0;
+
+// Modified by "While" & "Return" instructions.
+std::vector<InstToken*> scoped_loop_tokens;
+// Managed by `ScopeState*_ongoing_scopes` functions.
+std::vector<std::vector<InstToken*>> scoped_loop_tokens_stack;
