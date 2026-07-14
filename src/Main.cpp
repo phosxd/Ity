@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <chrono>
+#include <thread>
 
 #include "ScriptErrors.hpp"
 #include "Common.hpp"
@@ -315,14 +316,10 @@ int main(int argc, char *argv[]) {
 	std::string source_script_path = "";
 	for (int i = 1; i < argc; i++) {
 		std::string arg_str (argv[i]);
-		if (arg_str.size() < 2) {continue;}
-		if (arg_str[0] == '-') {flags.push_back(arg_str);}
-		else if (source_script_path.empty()) {
-			source_script_path = arg_str;
-		}
-		else {
-			script_args.push_back(arg_str);
-		}
+		if (arg_str.size() < 2) continue;
+		if (arg_str[0] == '-') flags.push_back(arg_str);
+		else if (source_script_path.empty()) source_script_path = arg_str;
+		else script_args.push_back(arg_str);
 	}
 
 	// Set debug flags
@@ -383,13 +380,13 @@ int main(int argc, char *argv[]) {
 
 
 	// Parse & execute script file...
-	if (source_script_path.empty() == false) {
-		if (str_ends_with(source_script_path,".ity") == false) {
+	if (not source_script_path.empty()) {
+		if (not str_ends_with(source_script_path,".ity")) {
 			emit_error(ERR_expected_ity_extension);
 			return 0;
 		}
 		std::ifstream f (source_script_path, std::ios::in | std::ios::binary);
-		if (f.is_open() == false) {
+		if (not f.is_open()) {
 			emit_error(ERR_unable_to_open_script, {source_script_path});
 			return 0;
 		}
@@ -415,7 +412,7 @@ int main(int argc, char *argv[]) {
 	// Run interactive interpreter...
 	else {
 		std::cout << "* " << ANSI::yellow << "Ity (" << ItyVersionString << ")" << ANSI::reset << '\n'
-			      << "* " << ANSI::purple << "Runing interactive mode interpreter." << ANSI::reset << '\n'
+			      << "* " << ANSI::purple << "Running interactive mode interpreter." << ANSI::reset << '\n'
 			      << "* " << ANSI::purple << "Type \"quit\" or \"q\" to stop." << ANSI::reset << '\n';
 
 		current_line = 1;

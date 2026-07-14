@@ -359,9 +359,19 @@ func NONE say_hi;
 /;
 
 say_hi:[];
+
+
+# With arguments;
+
+func INT add; arg INT a; arg INT b;
+	return a+b;
+/;
+
+print:[ (add:[4,5]) ];
 "
 
-"Hello there!"
+"Hello there!
+9"
 
 # ---
 
