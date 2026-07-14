@@ -99,6 +99,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 	bool is_escaped_char = false;
 	bool is_array = false;
 	bool is_map = false;
+	bool next_ref_is_str = false;
 
 	for (unsigned int i = 0; i < expr_len; i++) {
 		const char& ch = expr.at(i);
@@ -192,6 +193,8 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			}
 
 			if (is_start) {
+				bool next_ref_is_str_ = next_ref_is_str;
+				next_ref_is_str = false;
 				item = ExprToken{ln_offset, col_offset};
 				// Set type integer.
 				if (NUM.find(ch) != std::string::npos) {
@@ -221,7 +224,8 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 				}
 				// Set type reference.
 				else if (is_valid_name(std::string(1,ch))) {
-					item.var.t = REF;
+					if (next_ref_is_str_) item.var.t = STR; // Set type as string but don't set `is_string` so it's not treated as a string.
+					else item.var.t = REF;
 				}
 				// Set type array.
 				else if (ch == '[') {
@@ -282,17 +286,37 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 						secondary_buffer = "";
 					}
 				}
+
+				else if (item.var.t == REF || (item.var.t == STR && not is_string)) {
+					// Convert reference dot accessor to proper accessor.
+					if (ch == '.') {
+						result_token.seq.push_back(ExprToken{
+							ln_offset, col_offset,
+							ExprTokenType_variant,
+							{
+								(item.var.t == STR) ? STR : REF,
+								buffer,
+							}
+						});
+						result_token.seq.push_back(ExprToken{
+							ln_offset, col_offset,
+							ExprTokenType_variant,
+							{OP, (STR_t)":"},
+						});
+						buffer = "";
+						next_ref_is_str = true;
+						is_start = true;
+						continue;
+					}
+				}
 			}
 
 			// End operator.
-			if (is_operator == true && expr_len > i+1 && (expr[i+1] == ' ' or not is_special_symbol(expr[i+1])) ) {
+			if (is_operator == true && expr_len > i+1 && (expr.at(i+1) == ' ' or not is_special_symbol(expr.at(i+1))) ) {
 				result_token.seq.push_back(ExprToken{
 					ln_offset, col_offset,
 					ExprTokenType_variant,
-					{
-						OP,
-						buffer+ch,
-					},
+					{OP, buffer+ch},
 				});
 				buffer = "";
 				is_operator = false;
@@ -351,7 +375,7 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 
 		return Variant{
 			ARR,
-			array,
+			std::move(array),
 		};
 	}
 
@@ -408,11 +432,11 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 		if (op != nullptr) {
 			Variant resolved_var;
 			// Get variant.
-			if (item.t == ExprTokenType_variant) {resolved_var = resolve_variant(item.var);}
+			if (item.t == ExprTokenType_variant) resolved_var = std::move(resolve_variant(item.var));
 			// Get variant from sub-expression.
-			else if (item.t == ExprTokenType_sequence) {resolved_var = expr_exec(item, true, current_line, current_column);}
+			else if (item.t == ExprTokenType_sequence) resolved_var = std::move(expr_exec(item, true, current_line, current_column));
 			// Execute...
-			result = op->exec(result, resolved_var, op_symbol);
+			result = std::move(op->exec(result, resolved_var, op_symbol));
 			op = nullptr;
 			op_symbol = "";
 			continue;
@@ -438,7 +462,7 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 
 		// Get value from sub-sequence
 		else if (item.t == ExprTokenType_sequence) {
-			result = expr_exec(item, current_line, current_column);
+			result = std::move(expr_exec(item, current_line, current_column));
 		}
 	}
 

@@ -112,6 +112,7 @@ Variant OP_Access_exec(Variant& first, Variant& second, const std::string& _symb
 		}
 
 	}
+	emit_error(ERR_invalid_property_access, {get_variant_type_name(first.t), get_variant_type_name(second.t)});
 	return first;
 }
 

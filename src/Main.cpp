@@ -68,7 +68,7 @@ struct CompositeItem {
 
 
 std::vector<InstToken> ity_tokenize(const std::string& src) {
-	const unsigned int src_len = src.size();
+	const size_t& src_len = src.size();
 	std::vector<InstToken> sequence;
 	std::string buffer;
 	buffer.reserve(src_len);
@@ -88,7 +88,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 	CompositeItem last_comp_item;
 	uint16_t last_comp_item_dist = 0;
 
-	for (unsigned int i = 0; i < src_len; i++) {
+	for (size_t i = 0; i < src_len; i++) {
 		const char& ch = src.at(i);
 		// Advance column or line number.
 		col++;

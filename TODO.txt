@@ -1,10 +1,6 @@
 - Fix function scope deriving from caller scope instead of definition scope.
 - Fix expressions that resolve to "NONE" not returning a variant of type "NONE" but instead returning an empty sequence.
 
-- Resolve references with `.` characters preceeding into string `MAP` accessors. Using `.` is a more convenient way to access object members (no string literal accessor needed).
-	For example, currently `IO:'print':['Hello World']` is the only member access syntax.
-	But `IO.print:['Hello World']` should be valid too.
-
 
 - Add standard library which can be compiled to pick & choose what you will actually use. It should include modules for:
 	- Pipe IO
