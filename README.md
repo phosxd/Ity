@@ -34,6 +34,8 @@ You can pass flags to the build script.
 
 Flags:
 
+- `-s` or `--static`:
+	Statically link final binary.
 - `-d` or `--debug`:
 	Build with debug symbols in-tact.
 - `-t` or `--test`:
@@ -84,6 +86,8 @@ Flags:
 	Print results from expressions as soon as they are executed.
 - `-d-assign-data`:
 	Print "set_data" calls on the current state.
+- `-d-scoping`:
+- 	Print scope in/out calls.
 
 
 # Language usage
