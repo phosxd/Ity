@@ -84,6 +84,8 @@ unsigned int current_column = 0;
 
 // If true, no fancy messages are displayed, just "ERROR: <code>" or "WARN: <code>".
 bool emit_just_codes = false;
+// If false, warning messages will not be displayed.
+bool emit_warnings = true;
 
 
 
@@ -235,6 +237,7 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 
 
 void emit_warn(ERR_CODE code, std::vector<std::string> args={}) {
+	if (not emit_warnings) return;
 	if (emit_just_codes) {
 		std::cout << "WARN: " << std::to_string(code) << '\n';
 		return;

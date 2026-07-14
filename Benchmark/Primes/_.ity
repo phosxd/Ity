@@ -1,4 +1,4 @@
-merge IO;
+merge IO; merge TIME;
 
 
 func INT iSqrt; arg INT n;
@@ -25,9 +25,13 @@ func BOOL is_prime; arg INT n;;
 
 out:['Count: '];
 const * n = in:[] -> INT;
+const INT start = now:['ms'];
 
 
 var INT p = 2; while p <= n;
 	if is_prime:[p]; print:[p]; /;
 	set p += 1;
 /;
+
+
+print:[ ('\nDone in ' + (((now:['ms']-start) / 1000.0) -> STR) + 's.') ];
