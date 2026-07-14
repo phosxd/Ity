@@ -1,7 +1,7 @@
 #pragma once
 
 
-Variant LIB_TIME_init_exec(ScopeState& state, const std::vector<Variant>& args) {
+Variant LIB_TIME_init(ScopeState& state, const std::vector<Variant>& args) {
 	return VariantPresets.empty;
 }
 
@@ -58,55 +58,27 @@ Variant LIB_TIME_get_time(ScopeState& state, const std::vector<Variant>& args, c
 }
 
 
-Variant LIB_TIME_system_now_exec(ScopeState& state, const std::vector<Variant>& args) {
+Variant LIB_TIME_system_now(ScopeState& state, const std::vector<Variant>& args) {
 	return LIB_TIME_get_time(state, args, 0);
 }
 
 
-Variant LIB_TIME_now_exec(ScopeState& state, const std::vector<Variant>& args) {
+Variant LIB_TIME_now(ScopeState& state, const std::vector<Variant>& args) {
 	return LIB_TIME_get_time(state, args, 1);
 }
 
 
-// Define translations.
-// --------------------
 
 
-const Variant LIB_TIME_init {
-	MAP,
-	(MAP_t){
-		{"__t", VariantPresets.obj_type_f},
-		{"__ret_t", VariantPresets.none_type_str},
-		{"__ncall", Variant{FUNC, (NativeFunc_t)LIB_TIME_init_exec}}
-	},
-	VariantMode_constant
-};
-const Variant LIB_TIME_system_now {
-	MAP,
-	(MAP_t){
-		{"__t", VariantPresets.obj_type_f},
-		{"__ret_t", VariantPresets.int_type_str},
-		{"__ncall", Variant{FUNC, (NativeFunc_t)LIB_TIME_system_now_exec}}
-	},
-	VariantMode_constant
-};
-const Variant LIB_TIME_now {
-	MAP,
-	(MAP_t){
-		{"__t", VariantPresets.obj_type_f},
-		{"__ret_t", VariantPresets.int_type_str},
-		{"__ncall", Variant{FUNC, (NativeFunc_t)LIB_TIME_now_exec}}
-	},
-	VariantMode_constant
-};
-
+// DEFINE MAPPINGS
+// ---------------
 
 const Variant LIB_TIME {
 	MAP,
 	(MAP_t){
 		{"__name", Variant{STR, (STR_t)"TIME", VariantMode_constant}},
-		{"__init__", LIB_TIME_init},
-		{"system_now", LIB_TIME_system_now},
-		{"now", LIB_TIME_now},
+		{"__init__", NativeFuncTrans(VariantPresets.none_type_str, (NativeFunc_t)LIB_TIME_init)},
+		{"system_now", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_TIME_system_now)},
+		{"now", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_TIME_now)},
 	}
 };

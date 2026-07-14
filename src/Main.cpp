@@ -43,6 +43,7 @@ const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
 	{"throw", &INST_Throw},
 	{"var", &INST_Var},
 	{"const", &INST_Var},
+	{"arg", &INST_Var},
 	{"set", &INST_Set},
 	{"jump", &INST_Jump},
 	{"/", &INST_End},
@@ -261,16 +262,18 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 
 
 // Execute a sequence of instruction tokens.
-ScopeState ity_exec(std::vector<InstToken>& sequence, ScopeState& state) {
-	InstTokenSeqStack.push_back(InstTokenSeq);
+ScopeState ity_exec(std::vector<InstToken>& sequence, ScopeState& state, const int start_idx, const int end_idx) {
 	InstTokenSeq = sequence;
-	const unsigned int seq_len = InstTokenSeq.size();
-	for (unsigned int i = 0; i < seq_len; i++) {
+	execution_depth += 1;
+	const int seq_len = InstTokenSeq.size();
+	for (int i = start_idx; i < seq_len; i++) {
+		if (i == end_idx) break;
+
 		InstToken& item = InstTokenSeq.at(i);
 		current_line = item.ln;
 		current_column = item.col;
 		const unsigned int arg_count = item.args.size();
-		if (arg_count == 0) {continue;}
+		if (arg_count == 0) continue;
 
 		// If not matched any instruction, run as expression.
 		if (INSTRUCTIONS.find(item.args[0]) == INSTRUCTIONS.end()) {
@@ -294,8 +297,7 @@ ScopeState ity_exec(std::vector<InstToken>& sequence, ScopeState& state) {
 			}
 		}
 	}
-	InstTokenSeq = InstTokenSeqStack.back();
-	InstTokenSeqStack.pop_back();
+	execution_depth -= 1;
 	return state;
 }
 
@@ -373,7 +375,7 @@ int main(int argc, char *argv[]) {
 		}},
 	});
 	// Merge MiscBuiltin module.
-	LIB_MISCBI_init_exec(state, (std::vector<Variant>){});
+	LIB_MISCBI_init(state, (std::vector<Variant>){});
 	merge_module(state, std::any_cast<MAP_t>(LIB_MISCBI.d));
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
@@ -405,7 +407,7 @@ int main(int argc, char *argv[]) {
 		timers[1] = Clock::now();
 
 		// Execute tokens.
-		Ity.exec(sequence, state);
+		Ity.exec(sequence, state, 0,-1);
 	}
 
 
@@ -434,7 +436,7 @@ int main(int argc, char *argv[]) {
 				// Tokenize the command.
 				std::vector<InstToken> sequence = Ity.tokenize(command);
 				// Execute tokens.
-				Ity.exec(sequence, state);
+				Ity.exec(sequence, state, 0,-1);
 
 				// Print expression result if there is one.
 				if (last_expr_result.t != NONE) {

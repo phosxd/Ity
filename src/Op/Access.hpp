@@ -81,17 +81,22 @@ Variant OP_Access_exec(const Operation& op, ScopeState& state, Variant& first, V
 
 			// Call in-code function...
 			else {
+				// Throw error if maximum execution depth is reached.
+				if (execution_depth > execution_depth_max) {
+					emit_error(ERR_max_execution_depth, {std::to_string(execution_depth_max)});
+					return first;
+				}
+				func_arg_index = 0;
 				const int& func_token_index = std::any_cast<int>(map.at("__idx").d);
 				const VariantType& func_return_type = get_variant_type_from_name(std::any_cast<STR_t>(map.at("__ret_t").d));
 				const InstToken& func_token = InstTokenSeq.at(func_token_index);
 				const unsigned int func_body_start = func_token.i+1;
 				const unsigned int& func_body_end = std::any_cast<unsigned int>(func_token.meta.at(0));
 				// Run function.
-				std::vector<InstToken> inst_token_seq (InstTokenSeq.begin()+func_body_start, InstTokenSeq.begin()+func_body_end);
 				scope_in(state);                                                        // Create new scope on top of the previous.
 				set_data(state, "__ARGS__", ARR, second.d, VariantMode_constant);       // Make the passed arguments available in the scope.
 				set_data(state, "__RET__", ANY, std::any(), VariantMode_dynamic_type);  // Initialize return variable.
-				Ity.exec(inst_token_seq, state);                                        // Execute instructions in the function.
+				Ity.exec(InstTokenSeq, state, func_body_start, func_body_end);
 
 				// Get result & check if return type matches.
 				const Variant& result = get_data(state, "__RET__");

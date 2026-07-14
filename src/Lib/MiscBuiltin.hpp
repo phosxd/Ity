@@ -3,13 +3,13 @@
 
 // Called whenever the module is imported.
 // This can be called multiple times.
-Variant LIB_MISCBI_init_exec(ScopeState& state, const std::vector<Variant>& args) {
+Variant LIB_MISCBI_init(ScopeState& state, const std::vector<Variant>& args) {
 	return VariantPresets.empty;
 }
 
 
 // Return the length of the given array or string.
-Variant LIB_MISCBI_type_name_exec(ScopeState& state, const std::vector<Variant>& args) {
+Variant LIB_MISCBI_type_name(ScopeState& state, const std::vector<Variant>& args) {
 	const unsigned int& args_len = args.size();
 	if (args_len != 1) {
 		emit_error(ERR_invalid_func_arg_count, {"1", std::to_string(args_len)});
@@ -21,7 +21,7 @@ Variant LIB_MISCBI_type_name_exec(ScopeState& state, const std::vector<Variant>&
 
 
 // Return the length of the given array or string.
-Variant LIB_MISCBI_length_exec(ScopeState& state, const std::vector<Variant>& args) {
+Variant LIB_MISCBI_length(ScopeState& state, const std::vector<Variant>& args) {
 	const unsigned int& args_len = args.size();
 	if (args_len != 1) {
 		emit_error(ERR_invalid_func_arg_count, {"1", std::to_string(args_len)});
@@ -42,44 +42,16 @@ Variant LIB_MISCBI_length_exec(ScopeState& state, const std::vector<Variant>& ar
 }
 
 
-// Define translations.
-// --------------------
 
 
-const Variant LIB_MISCBI_init {
-	MAP,
-	(MAP_t){
-		{"__t", VariantPresets.obj_type_f},
-		{"__ret_t", VariantPresets.none_type_str},
-		{"__ncall", Variant{FUNC, (NativeFunc_t)LIB_MISCBI_init_exec}}
-	},
-	VariantMode_constant
-};
-const Variant LIB_MISCBI_type_name {
-	MAP,
-	(MAP_t){
-		{"__t", VariantPresets.obj_type_f},
-		{"__ret_t", VariantPresets.int_type_str},
-		{"__ncall", Variant{FUNC, (NativeFunc_t)LIB_MISCBI_type_name_exec}}
-	},
-	VariantMode_constant
-};
-const Variant LIB_MISCBI_length {
-	MAP,
-	(MAP_t){
-		{"__t", VariantPresets.obj_type_f},
-		{"__ret_t", VariantPresets.int_type_str},
-		{"__ncall", Variant{FUNC, (NativeFunc_t)LIB_MISCBI_length_exec}}
-	},
-	VariantMode_constant
-};
-
+// DEFINE MAPPINGS
+// ---------------
 
 const Variant LIB_MISCBI {
 	MAP,
 	(MAP_t){
 		{"__name", Variant{STR, (STR_t)"MISCBI", VariantMode_constant}},
-		{"__init", LIB_MISCBI_init},
+		{"__init", NativeFuncTrans(VariantPresets.none_type_str, (NativeFunc_t)LIB_MISCBI_init)},
 
 		// Type names.
 		{"NONE", VariantPresets.none_type_str},
@@ -90,8 +62,25 @@ const Variant LIB_MISCBI {
 		{"ARR", VariantPresets.arr_type_str},
 		{"MAP", VariantPresets.map_type_str},
 
+		// ANSI codes.
+		{"ANSI", Variant{
+			MAP,
+			(MAP_t){
+				{"reset", Variant{STR, ANSI::reset, VariantMode_constant}},
+				{"bold", Variant{STR, ANSI::bold, VariantMode_constant}},
+				{"black", Variant{STR, ANSI::black, VariantMode_constant}},
+				{"red", Variant{STR, ANSI::red, VariantMode_constant}},
+				{"green", Variant{STR, ANSI::green, VariantMode_constant}},
+				{"orange", Variant{STR, ANSI::orange, VariantMode_constant}},
+				{"blue", Variant{STR, ANSI::blue, VariantMode_constant}},
+				{"purple", Variant{STR, ANSI::purple, VariantMode_constant}},
+				{"white", Variant{STR, ANSI::white, VariantMode_constant}},
+				{"yellow", Variant{STR, ANSI::yellow, VariantMode_constant}},
+			},VariantMode_constant
+		}},
+
 		// Utility functions.
-		{"type_name", LIB_MISCBI_type_name},
-		{"length", LIB_MISCBI_length}
+		{"type_name", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_MISCBI_type_name)},
+		{"length", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_MISCBI_length)}
 	}
 };

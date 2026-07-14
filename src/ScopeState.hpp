@@ -51,19 +51,18 @@ unsigned int get_state_size(const ScopeState& state) {
 
 // Checks if the name is available in this scope.
 bool is_name_free(const ScopeState& state, const std::string& name) {
-	return (state.d.find(name) == state.d.end());
+	return state.d.find(name) == state.d.end();
 }
 
 
 // Checks if the name is available in this scope & all scopes above it.
 // Use this to check if a name could be shadowed.
 bool is_name_globally_free(const ScopeState& state, const std::string& name) {
-	ScopeState p;
-	if (state.p != nullptr) {
-		return is_name_globally_free(*state.p, name);
+	if (state.d.find(name) == state.d.end()) {
+		if (state.p != nullptr) return is_name_globally_free(*state.p, name);
+		return true;
 	}
-	if (state.d.find(name) != state.d.end()) {return false;}
-	return true;
+	return false;
 }
 
 
@@ -73,18 +72,14 @@ Variant get_data(ScopeState& state, const std::string& name) {
 		emit_error(ERR_unexpected, {"ScopeState.get_data", "cannot get non-existent data."});
 		return VariantPresets.empty;
 	}
-	return state.d[name];
+	return state.d.at(name);
 }
 
 
 // Gets the data for name in this scope or any scope above it. Ensure the name exists in one of the scopes (use is_name_globally_free).
 Variant get_data_globally(ScopeState& state, const std::string& name) {
-	if (is_name_free(state, name) == false) {
-		return get_data(state, name);
-	}
-	else if (state.p != nullptr) {
-		return get_data_globally(*state.p, name);
-	}
+	if (not is_name_free(state, name)) return get_data(state, name);
+	else if (state.p != nullptr) return get_data_globally(*state.p, name);
 	else {
 		emit_error(ERR_unexpected, {"ScopeState.get_data_globally", "cannot get non-existent data."});
 		return VariantPresets.empty;
@@ -120,12 +115,8 @@ void set_data(ScopeState& state, const std::string& name, const VariantType& typ
 
 
 void set_data_globally(ScopeState& state, const std::string& name, const VariantType& type, const VariantData& data, const VariantMode mode) {
-	if (not is_name_free(state, name)) {
-		set_data(state, name, type, data, mode);
-	}
-	else if (state.p != nullptr) {
-		return set_data_globally(*state.p, name, type, data, mode);
-	}
+	if (not is_name_free(state, name)) set_data(state, name, type, data, mode);
+	else if (state.p != nullptr) return set_data_globally(*state.p, name, type, data, mode);
 }
 
 

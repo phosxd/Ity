@@ -18,7 +18,7 @@ void INST_Set_exec(const Instruction* inst, InstToken& _token, ScopeState& state
 	}
 
 	// Give error if the var name is not available on the current scope.
-	if (is_name_free(state, name) == true) {
+	if (is_name_globally_free(state, name)) {
 		emit_error(ERR_name_does_not_exist, {name});
 		return;
 	}
@@ -30,26 +30,19 @@ void INST_Set_exec(const Instruction* inst, InstToken& _token, ScopeState& state
 	const Variant& value = expr_run(state, expr);
 
 	// Set variable data.
-	if (op == "=" || op == "") {
-		set_data(state, name, var.t, value.d, var.m);
-	}
-	else if (op == "+=") {
-		set_data(state, name, var.t, (var.d+value.d), var.m);
-	}
-	else if (op == "-=") {
-		set_data(state, name, var.t, (var.d-value.d), var.m);
-	}
-	else if (op == "*=") {
-		set_data(state, name, var.t, (var.d*value.d), var.m);
-	}
-	else if (op == "/=") {
-		set_data(state, name, var.t, (var.d/value.d), var.m);
-	}
+	VariantData data;
+	if (op == "=" || op == "") data = value.d;
+	else if (op == "+=") data = var.d+value.d;
+	else if (op == "-=") data = var.d-value.d;
+	else if (op == "*=") data = var.d*value.d;
+	else if (op == "/=") data = var.d/value.d;
 	// Throw error if invalid operator.
 	else {
-		emit_error(ERR_invalid_assignment_op, {symbol, op});
+		emit_error(ERR_invalid_assignment_op, {op, symbol});
 		return;
 	}
+
+	set_data_globally(state, name, var.t, data, var.m);
 }
 
 

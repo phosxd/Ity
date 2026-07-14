@@ -46,7 +46,7 @@ void INST_Var_exec(const Instruction* inst, InstToken& token, ScopeState& state,
 
 	// Get value from expression.
 	current_column += count_non_empty_strings({symbol,type_name,name,op}) + symbol.size() + type_name.size() + name.size() + op.size();
-	const Variant& value = expr_run(state, expr);
+	Variant value = expr_run(state, expr);
 
 	// Infer the variable's type as expression return type.
 	if (type == INFERRED) {
@@ -55,11 +55,24 @@ void INST_Var_exec(const Instruction* inst, InstToken& token, ScopeState& state,
 
 	// Set variable data.
 	if (op == "=" || op == "") {
+		if (symbol == "arg") {
+			// Throw error if this scope holds no arguments.
+			if (is_name_free(state, "__ARGS__")) {
+				emit_error(ERR_no_args_available);
+				return;
+			}
+			// Replace value if argument is available.
+			const ARR_t& scope_args = std::any_cast<ARR_t>(get_data(state, "__ARGS__").d);
+			if (func_arg_index < scope_args.size()) {
+				value = scope_args.at(func_arg_index);
+				func_arg_index += 1;
+			}
+		}
 		set_data(state, name, type, value.d, mode);
 	}
 	// Throw error if invalid operator.
 	else {
-		emit_error(ERR_invalid_assignment_op, {symbol, op});
+		emit_error(ERR_invalid_assignment_op, {op, symbol});
 		return;
 	}
 }

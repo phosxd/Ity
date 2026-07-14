@@ -12,6 +12,7 @@ enum ERR_CODE {
 	ERR_no_composite_requiring_end,
 	ERR_no_composite_end,
 	ERR_no_string_end,
+	ERR_max_execution_depth,
 
 	ERR_invalid_syntax,
 	ERR_invalid_inst_arg_count,
@@ -41,6 +42,7 @@ enum ERR_CODE {
 	ERR_invalid_func_call,
 	ERR_invalid_func_arg_count,
 	ERR_invalid_func_arg_type,
+	ERR_no_args_available,
 
 	ERR_cannot_multiply_by_negative,
 
@@ -121,6 +123,9 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 	else if (code == ERR_no_string_end) {
 		return "String literal has no end.";
 	}
+	else if (code == ERR_max_execution_depth) {
+		return "Maximum execution depth reached (" + args[0] + "). Use the `set_max_depth` function to increase the limit.";
+	}
 
 	else if (code == ERR_invalid_syntax) {
 		return "Invalid syntax: " + args[0] + ".";
@@ -175,7 +180,7 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 		return "Name \"" + args[0] + "\" is already taken within this scope. Use another name for this variable.";
 	}
 	else if (code == ERR_name_is_shadowed) {
-		return "Name \"" + args[0] + "\" is shadowing another variable with the same name, you will not be able to access the shadowed variable unless you change the name.";
+		return "Name \"" + args[0] + "\" is shadowing another variable with the same name.";
 	}
 	else if (code == ERR_name_must_not_contain_symbols) {
 		return "Name must not contain any symbols. Underscores are allowed.";
@@ -209,6 +214,9 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 	}
 	else if (code == ERR_invalid_func_arg_type) {
 		return "Function argument " + args[0] + " expected vaue of type \"" + args[1] + "\", not \"" + args[2] + "\"";
+	}
+	else if (code == ERR_no_args_available) {
+		return "No arguments available in this scope.";
 	}
 
 	else if (code == ERR_cannot_multiply_by_negative) {

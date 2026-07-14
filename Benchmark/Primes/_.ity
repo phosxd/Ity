@@ -4,20 +4,18 @@ merge IO;
 func INT iSqrt; arg INT n;
 	if n < 0; throw "'n' cannot be negative."; /;
 	var INT x = n;
-	var INT y = ((x+1) / 2);
-	while y < x;
+	var INT y = ((x+1) / 2); while y < x;
 		set x = y;
 		set y = ( ((n/x) + x) / 2);
 	/; return x;
 /;
 
 
-func BOOL is_prime; arg INT n;
+func BOOL is_prime; arg INT n;;
 	if n%2 == 0; return n == 2; /;
 	var INT r = iSqrt:[n];
 
-	var INT i = 3;
-	while i <= r;
+	var INT i = 3; while i <= r;
 		if n%i == 0; return false; /;
 		set i += 2;
 	/;
@@ -29,8 +27,7 @@ out:['Count: '];
 const * n = in:[] -> INT;
 
 
-var INT p = 2;
-while p <= n;
+var INT p = 2; while p <= n;
 	if is_prime:[p]; print:[p]; /;
 	set p += 1;
 /;

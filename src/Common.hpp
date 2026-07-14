@@ -659,12 +659,42 @@ bool exists_in_vec(const std::vector<T>& v, const T2& val) {
 
 
 
+using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
+struct VariantPresets_struct {
+	const Variant empty {NONE, std::any(), VariantMode_constant};
+	const Variant obj_type_m {STR, (STR_t)"f", VariantMode_constant};
+	const Variant obj_type_f {STR, (STR_t)"f", VariantMode_constant};
+
+	const Variant none_type_str {STR, (STR_t)"NONE", VariantMode_constant};
+	const Variant bool_type_str {STR, (STR_t)"BOOL", VariantMode_constant};
+	const Variant int_type_str {STR, (STR_t)"INT", VariantMode_constant};
+	const Variant float_type_str {STR, (STR_t)"FLOAT", VariantMode_constant};
+	const Variant str_type_str {STR, (STR_t)"STR", VariantMode_constant};
+	const Variant arr_type_str {STR, (STR_t)"ARR", VariantMode_constant};
+	const Variant map_type_str {STR, (STR_t)"MAP", VariantMode_constant};
+};
+const VariantPresets_struct VariantPresets;
+
+Variant NativeFuncTrans(const Variant& return_type, NativeFunc_t native_func) {
+	return Variant{
+		MAP,
+		(MAP_t){
+			{"__t", VariantPresets.obj_type_f},
+			{"__ret_t", return_type},
+			{"__ncall", Variant{FUNC, native_func}}
+		},
+		VariantMode_constant,
+	};
+}
+
+
+
 
 // Ity global structure.
 
 struct ItyStruct {
 	std::vector<InstToken> (*tokenize)(const std::string& src) = nullptr;
-	ScopeState (*exec)(std::vector<InstToken>& sequence, ScopeState& state) = nullptr;
+	ScopeState (*exec)(std::vector<InstToken>& sequence, ScopeState& state, const int start_idx, const int end_idx) = nullptr;
 };
 
 ItyStruct Ity;
@@ -703,23 +733,6 @@ constexpr std::string OSName =
 ;
 
 
-using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
-
-struct VariantPresets_struct {
-	const Variant empty {NONE, std::any(), VariantMode_constant};
-	const Variant obj_type_m {STR, (STR_t)"f", VariantMode_constant};
-	const Variant obj_type_f {STR, (STR_t)"f", VariantMode_constant};
-
-	const Variant none_type_str {STR, (STR_t)"NONE", VariantMode_constant};
-	const Variant bool_type_str {STR, (STR_t)"BOOL", VariantMode_constant};
-	const Variant int_type_str {STR, (STR_t)"INT", VariantMode_constant};
-	const Variant float_type_str {STR, (STR_t)"FLOAT", VariantMode_constant};
-	const Variant str_type_str {STR, (STR_t)"STR", VariantMode_constant};
-	const Variant arr_type_str {STR, (STR_t)"ARR", VariantMode_constant};
-	const Variant map_type_str {STR, (STR_t)"MAP", VariantMode_constant};
-};
-const VariantPresets_struct VariantPresets;
-
 constexpr unsigned int uint16_max = 65535;
 
 
@@ -728,8 +741,12 @@ constexpr unsigned int uint16_max = 65535;
 // Variables.
 // ----------
 
-std::vector<std::vector<InstToken>> InstTokenSeqStack;
 std::vector<InstToken> InstTokenSeq;
+unsigned int execution_depth_max = 5000;
+unsigned int execution_depth = 0;
 
 int exec_jump_value = 0;
 bool exec_jump_out = false;
+
+// Modified by "Var" instruction & "Access" operation.
+unsigned int func_arg_index = 0;
