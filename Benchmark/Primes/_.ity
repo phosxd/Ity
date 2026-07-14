@@ -14,7 +14,6 @@ func INT iSqrt; arg INT n;
 func BOOL is_prime; arg INT n;
 	if n%2 == 0; return n == 2; /;
 	var INT r = iSqrt:[n];
-
 	var INT i = 3; while i <= r;
 		if n%i == 0; return false; /;
 		set i += 2;
@@ -33,4 +32,4 @@ var INT p = 2; while p <= n;
 /;
 
 
-print:[ ('\nDone in ' + (((now:['ms']-start) / 1000.0) -> STR) + 's.') ];
+print:['\nDone in ', (now:['ms']-start / 1000.0), 's.'];

@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Return_exec(const Instruction* _inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
+void INST_Return_exec(const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	std::string expr;
 	expr.reserve(args_len);
@@ -10,11 +10,11 @@ void INST_Return_exec(const Instruction* _inst, InstToken& token, ScopeState& st
 	}
 
 	// Cleanly exit all scopes in the function.
-	exit_ongoing_scopes(state);
+	exit_ongoing_scopes();
 
 	// Get value from expression & set return value.
-	const Variant& value = expr_run(state, expr);
-	set_data(state, "__RET__", value.t, value.d, VariantMode_dynamic_type);
+	const Variant& value = expr_run(expr);
+	set_data(ST, "__RET__", value.t, value.d, VariantMode_dynamic_type);
 
 	exec_jump_out = true;
 }

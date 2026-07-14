@@ -24,6 +24,9 @@ for i in "$@"; do
 		-d|--debug)
 			DEBUG=1
 		;;
+		-s|--static*)
+			COMMON_BUILD_ARGS="-static ${COMMON_BUILD_ARGS}"
+		;;
 		-op=*|--optimize=*)
 			OPTIM="${i#*=}"
 		;;

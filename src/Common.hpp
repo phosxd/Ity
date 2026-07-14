@@ -541,7 +541,7 @@ std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
 struct Instruction {
 	uint8_t REQUIRED; // Required argument count,
 	int8_t OPTIONAL; // Optional argument count.
-	void (*exec)(const Instruction*, InstToken&, ScopeState&, const std::vector<std::string>&) = nullptr;
+	void (*exec)(const Instruction*, InstToken&, const std::vector<std::string>&) = nullptr;
 	bool is_composite;
 };
 
@@ -557,7 +557,7 @@ std::ostream& operator<<(std::ostream& os, const Instruction& s) {
 // ----------
 
 struct Operation {
-	Variant (*exec)(const Operation& op, ScopeState& state, Variant& first, Variant& second, const std::string& symbol) = nullptr;
+	Variant (*exec)(Variant& first, Variant& second, const std::string& symbol) = nullptr;
 };
 
 
@@ -578,27 +578,27 @@ bool str_ends_with(const std::string& text, const std::string& suffix) {
 
 
 // Returns the string with all instances of `ch` removed from the start of it.
-std::string trim_left(const std::string& text, char ch) {
+std::string trim_left(const std::string& text, const char ch) {
 	const unsigned int text_len = text.size();
 	if (text_len == 0) {return text;}
 	if (text.at(0) != ch) {return text;}
 	bool ended = false;
 	std::string result; result.reserve(text_len);
 	for (unsigned int i = 0; i < text_len; i++) {
-		if (text.at(i) != ch) {ended = true;}
-		if (ended == true) {result.push_back(text.at(i));}
+		if (text.at(i) != ch) ended = true;
+		if (ended) result.push_back(text.at(i));
 	}
 	return result;
 }
 
 
 // Joins all elements in the vector into a new string, with each element separated by the given `sep`.
-std::string join_str(std::vector<std::string>& vec, std::string sep) {
+std::string join_str(const std::vector<std::string>& vec, const std::string& sep) {
 	const unsigned int vec_len = vec.size();
 	std::string result = vec.front();
 	result.reserve(sep.size() * (vec.size()-1));
 	for (unsigned int i = 1; i < vec_len; i++) {
-		result += sep + vec[i];
+		result += sep + vec.at(i);
 	}
 	return result;
 }
@@ -617,10 +617,10 @@ std::vector<std::string> split_str(const std::string& text, const char sep) {
 
 
 // Returns the number of strings that are empty inside the given vector.
-unsigned int count_non_empty_strings(std::vector<std::string> items) {
-	const unsigned int items_len = items.size();
+unsigned int count_non_empty_strings(const std::vector<std::string>& items) {
+	const size_t items_len = items.size();
 	unsigned int count = 0;
-	for (unsigned int i = 0; i < items_len; i++) {
+	for (size_t i = 0; i < items_len; i++) {
 		if (items.at(i).empty() == false) {
 			count++;
 		}
@@ -633,18 +633,18 @@ unsigned int count_non_empty_strings(std::vector<std::string> items) {
 // NOTE: This is not an accurate check, it stops at 2,000,000,000 instead of the actual maximum.
 bool is_int_str_32_in_range(std::string int_str) {
 	int_str = trim_left(int_str, '0');
-	if (int_str.size() == 0) {return true;}
+	if (int_str.size() == 0) return true;
 
-	bool negative = (int_str.at(0) == '-');
-	unsigned int digits = int_str.size();
-	if (negative) {digits--;}
+	const bool negative = (int_str.at(0) == '-');
+	size_t digits = int_str.size();
+	if (negative) digits--;
 	// If too many or not enough digits, return false.
-	if (digits > 10) {return false;}
-	else if (digits < 10) {return true;}
+	if (digits > 10) return false;
+	else if (digits < 10) return true;
 
 	uint8_t i = 0;
-	if (negative) {i++;}
-	if (int_str.at(i) == '1') {return true;}
+	if (negative) i++;
+	if (int_str.at(i) == '1') return true;
 	return false;
 }
 
@@ -675,7 +675,7 @@ struct VariantPresets_struct {
 };
 const VariantPresets_struct VariantPresets;
 
-Variant NativeFuncTrans(const Variant& return_type, NativeFunc_t native_func) {
+Variant NativeFuncTrans(const Variant& return_type, const NativeFunc_t& native_func) {
 	return Variant{
 		MAP,
 		(MAP_t){
@@ -694,7 +694,7 @@ Variant NativeFuncTrans(const Variant& return_type, NativeFunc_t native_func) {
 
 struct ItyStruct {
 	std::vector<InstToken> (*tokenize)(const std::string& src) = nullptr;
-	ScopeState (*exec)(std::vector<InstToken>& sequence, ScopeState& state, const int start_idx, const int end_idx) = nullptr;
+	void (*exec)(std::vector<InstToken>& sequence, const size_t start_idx, const int end_idx) = nullptr;
 };
 
 ItyStruct Ity;

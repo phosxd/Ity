@@ -263,12 +263,12 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 
 
 // Execute a sequence of instruction tokens.
-ScopeState ity_exec(std::vector<InstToken>& sequence, ScopeState& state, const int start_idx, const int end_idx) {
+void ity_exec(std::vector<InstToken>& sequence, const size_t start_idx, const int end_idx) {
 	InstTokenSeq = sequence;
 	execution_depth += 1;
-	const int seq_len = InstTokenSeq.size();
-	for (int i = start_idx; i < seq_len; i++) {
-		if (i == end_idx) break;
+	const size_t seq_len = InstTokenSeq.size();
+	for (size_t i = start_idx; i < seq_len; i++) {
+		if ((int)i == end_idx) break;
 
 		InstToken& item = InstTokenSeq.at(i);
 		current_line = item.ln;
@@ -278,16 +278,16 @@ ScopeState ity_exec(std::vector<InstToken>& sequence, ScopeState& state, const i
 
 		// If not matched any instruction, run as expression.
 		if (INSTRUCTIONS.find(item.args[0]) == INSTRUCTIONS.end()) {
-			last_expr_result = expr_run(state, join_str(item.args, " "));
+			last_expr_result = expr_run(join_str(item.args, " "));
 		}
 		// Execute instruction.
 		else {
 			const Instruction* inst = INSTRUCTIONS.at(item.args[0]);
 			if (arg_count < inst->REQUIRED) {
 				emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst->REQUIRED)});
-				return state;
+				return;
 			}
-			inst->exec(inst, item, state, item.args);
+			inst->exec(inst, item, item.args);
 			if (exec_jump_value != 0) {
 				i += exec_jump_value;
 				exec_jump_value = 0;
@@ -299,7 +299,6 @@ ScopeState ity_exec(std::vector<InstToken>& sequence, ScopeState& state, const i
 		}
 	}
 	execution_depth -= 1;
-	return state;
 }
 
 
@@ -347,7 +346,7 @@ int main(int argc, char *argv[]) {
 
 
 	// Initialize state.
-	ScopeState state = create_new_scope_state({
+	ST = create_new_scope_state({
 		{"__VERSION__", Variant{
 			ARR,
 			(ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}},
@@ -375,8 +374,8 @@ int main(int argc, char *argv[]) {
 		}},
 	});
 	// Merge MiscBuiltin module.
-	LIB_MISCBI_init(state, (std::vector<Variant>){});
-	merge_module(state, std::any_cast<MAP_t>(LIB_MISCBI.d));
+	LIB_MISCBI_init(ST, (std::vector<Variant>){});
+	merge_module(ST, std::any_cast<MAP_t>(LIB_MISCBI.d));
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 
@@ -407,7 +406,7 @@ int main(int argc, char *argv[]) {
 		timers[1] = Clock::now();
 
 		// Execute tokens.
-		Ity.exec(sequence, state, 0,-1);
+		Ity.exec(sequence, 0,-1);
 	}
 
 
@@ -436,7 +435,7 @@ int main(int argc, char *argv[]) {
 				// Tokenize the command.
 				std::vector<InstToken> sequence = Ity.tokenize(command);
 				// Execute tokens.
-				Ity.exec(sequence, state, 0,-1);
+				Ity.exec(sequence, 0,-1);
 
 				// Print expression result if there is one.
 				if (last_expr_result.t != NONE) {
@@ -459,7 +458,7 @@ int main(int argc, char *argv[]) {
 		std::cout << "\n\n" << "Program results...\n------------------\n";
 		if (not source_script_path.empty()) {std::cout << "TIME (Inst-Tokenization): " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
 		std::cout <<                                           "TIME (total):             " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
-		std::cout <<                                           "STATE SIZE:               " << get_state_size(state) << " bytes." << '\n';
+		std::cout <<                                           "STATE SIZE:               " << get_state_size(ST) << " bytes." << '\n';
 		std::cout << '\n';
 	}
 

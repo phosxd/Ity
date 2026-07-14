@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Var_exec(const Instruction* inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
+void INST_Var_exec(const Instruction* inst, InstToken& token, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	const std::string& symbol = args[0];
 	const std::string& type_name = args[1];
@@ -22,13 +22,13 @@ void INST_Var_exec(const Instruction* inst, InstToken& token, ScopeState& state,
 	}
 
 	// Give error if the var name is not free on the current scope.
-	if (not is_name_free(state, name)) {
+	if (not is_name_free(ST, name)) {
 		emit_error(ERR_name_is_taken, {name});
 		return;
 	}
 
 	// Give warning if the var name is shadowing another var name.
-	if (not is_name_globally_free(state, name)) {
+	if (not is_name_globally_free(ST, name)) {
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
@@ -46,7 +46,7 @@ void INST_Var_exec(const Instruction* inst, InstToken& token, ScopeState& state,
 
 	// Get value from expression.
 	current_column += count_non_empty_strings({symbol,type_name,name,op}) + symbol.size() + type_name.size() + name.size() + op.size();
-	Variant value = expr_run(state, expr);
+	Variant value = expr_run(expr);
 
 	// Infer the variable's type as expression return type.
 	if (type == INFERRED) {
@@ -57,18 +57,18 @@ void INST_Var_exec(const Instruction* inst, InstToken& token, ScopeState& state,
 	if (op == "=" || op == "") {
 		if (symbol == "arg") {
 			// Throw error if this scope holds no arguments.
-			if (is_name_free(state, "__ARGS__")) {
+			if (is_name_free(ST, "__ARGS__")) {
 				emit_error(ERR_no_args_available);
 				return;
 			}
 			// Replace value if argument is available.
-			const ARR_t& scope_args = std::any_cast<ARR_t>(get_data(state, "__ARGS__").d);
+			const ARR_t& scope_args = std::any_cast<ARR_t>(get_data(ST, "__ARGS__").d);
 			if (func_arg_index < scope_args.size()) {
 				value = scope_args.at(func_arg_index);
 				func_arg_index += 1;
 			}
 		}
-		set_data(state, name, type, value.d, mode);
+		set_data(ST, name, type, value.d, mode);
 	}
 	// Throw error if invalid operator.
 	else {

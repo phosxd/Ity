@@ -16,7 +16,7 @@ VariantData get_literal_from_str(const VariantType& type, const std::string& str
 }
 
 
-Variant OP_TypeCast_exec(const Operation& op, ScopeState& state, Variant& first, Variant& second, const std::string& _symbol) {
+Variant OP_TypeCast_exec(Variant& first, Variant& second, const std::string& _symbol) {
 	if (second.t != STR) {
 		emit_error(ERR_operand_type_mismatch, {"TypeCast", get_variant_type_name(first.t), get_variant_type_name(second.t)});
 		return first;

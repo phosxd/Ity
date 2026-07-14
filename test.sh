@@ -91,7 +91,7 @@ set _a *= 2;
 var MAP _b = {'a',1, 'b',2, 'c',3};
 
 merge IO;
-print:[_a, _b];
+print:[_a, '\n', _b];
 "
 
 "[1, 2, 3, 1, 2, 3]

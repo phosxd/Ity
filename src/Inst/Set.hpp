@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Set_exec(const Instruction* inst, InstToken& _token, ScopeState& state, const std::vector<std::string>& args) {
+void INST_Set_exec(const Instruction* inst, InstToken& _token, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	const std::string& symbol = args[0];
 	const std::string& name = args[1];
@@ -18,16 +18,16 @@ void INST_Set_exec(const Instruction* inst, InstToken& _token, ScopeState& state
 	}
 
 	// Give error if the var name is not available on the current scope.
-	if (is_name_globally_free(state, name)) {
+	if (is_name_globally_free(ST, name)) {
 		emit_error(ERR_name_does_not_exist, {name});
 		return;
 	}
 
 	// Get current var.
-	const Variant& var = get_data_globally(state, name);
+	const Variant& var = get_data_globally(ST, name);
 	// Get value from expression.
 	current_column += count_non_empty_strings({symbol,name,op}) + symbol.size() + name.size() + op.size();
-	const Variant& value = expr_run(state, expr);
+	const Variant& value = expr_run(expr);
 
 	// Set variable data.
 	VariantData data;
@@ -42,7 +42,7 @@ void INST_Set_exec(const Instruction* inst, InstToken& _token, ScopeState& state
 		return;
 	}
 
-	set_data_globally(state, name, var.t, data, var.m);
+	set_data_globally(ST, name, var.t, data, var.m);
 }
 
 

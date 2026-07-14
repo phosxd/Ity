@@ -8,6 +8,10 @@
 #include "ScriptErrors.hpp"
 
 
+// Global current state variable.
+ScopeState ST;
+
+
 unsigned int get_scope_depth(const ScopeState& state) {
 	unsigned int depth = 1;
 	ScopeState* current = state.p;
@@ -61,24 +65,24 @@ inline void scope_flush(ScopeState& state) {
 
 
 // Scope out of all ongoing scopes & reset token metadata.
-void exit_ongoing_scopes(ScopeState& state) {
+void exit_ongoing_scopes() {
 	for (InstToken* token : scoped_loop_tokens) {
 		token->meta.clear();
-		scope_out(state);
+		scope_out(ST);
 	}
 	scoped_loop_tokens.clear();
 }
 
 
 // Save ongoing scopes for later.
-void push_back_ongoing_scopes(ScopeState& state) {
+void push_back_ongoing_scopes() {
 	scoped_loop_tokens_stack.push_back(scoped_loop_tokens);
 	scoped_loop_tokens = {};
 }
 
 
 // Restore last saved ongoing scopes.
-void restore_ongoing_scopes(ScopeState& state) {
+void restore_ongoing_scopes() {
 	scoped_loop_tokens = scoped_loop_tokens_stack.back();
 	scoped_loop_tokens_stack.pop_back();
 }
@@ -139,7 +143,7 @@ Variant get_data_globally(ScopeState& state, const std::string& name) {
 void set_data(ScopeState& state, const std::string& name, const VariantType& type, const VariantData& data, const VariantMode& mode) {
 	// Output function call in debug mode...
 	if (debug_flags.data_assign) {
-		std::cout << ANSI::blue << "Data assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
+		std::cout << ANSI::blue << "Data Assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
 	}
 
 	if (not is_name_free(state, name)) {
@@ -155,7 +159,7 @@ void set_data(ScopeState& state, const std::string& name, const VariantType& typ
 		return;
 	}
 
-	state.d[name] = Variant {data_type, data, mode};
+	state.d[name] = Variant{data_type, data, mode};
 }
 
 

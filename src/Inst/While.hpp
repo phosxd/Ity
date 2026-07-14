@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_While_exec(const Instruction* _inst, InstToken& token, ScopeState& state, const std::vector<std::string>& args) {
+void INST_While_exec(const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	std::string expr;
 	expr.reserve(args_len);
@@ -10,7 +10,7 @@ void INST_While_exec(const Instruction* _inst, InstToken& token, ScopeState& sta
 	}
 
 	// Get value from expression.
-	const Variant& value = expr_run(state, expr);
+	const Variant& value = expr_run(expr);
 
 	// Throw error if not boolean.
 	if (value.t != BOOL) {
@@ -24,7 +24,7 @@ void INST_While_exec(const Instruction* _inst, InstToken& token, ScopeState& sta
 		exec_jump_value += token.composite_size; // Add 1 to skip the end instruction, otherwise will jump back to this instruction.
 		// Scope out if previously scoped in.
 		if (token.meta.size() > 0) {
-			scope_out(state);
+			scope_out(ST);
 			token.meta.clear();
 			scoped_loop_tokens.pop_back();
 		}
@@ -32,7 +32,7 @@ void INST_While_exec(const Instruction* _inst, InstToken& token, ScopeState& sta
 	// If entering loop for first time, scope in.
 	else if (token.meta.size() == 0) {
 		token.meta = {true};
-		scope_in(state);
+		scope_in(ST);
 		scoped_loop_tokens.push_back(&token);
 	}
 }
