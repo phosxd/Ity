@@ -19,10 +19,12 @@
 #include "Lib/MiscBuiltin.hpp"
 #include "Lib/IO.hpp"
 #include "Lib/TIME.hpp"
+#include "Lib/MATH.hpp"
 const Variant LIBS[] = {
 	LIB_MISCBI,
 	LIB_IO,
-	LIB_TIME
+	LIB_TIME,
+	LIB_MATH
 };
 
 // Instruction imports...
@@ -372,7 +374,7 @@ int main(int argc, char *argv[]) {
 		}},
 	});
 	// Merge MiscBuiltin module.
-	LIB_MISCBI_init(ST, (std::vector<Variant>){});
+	LIB_MISCBI_init((std::vector<Variant>){});
 	merge_module(ST, std::any_cast<MAP_t>(LIB_MISCBI.d));
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};

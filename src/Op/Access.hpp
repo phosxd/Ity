@@ -76,7 +76,7 @@ Variant OP_Access_exec(Variant& first, Variant& second, const std::string& _symb
 			if (map.find("__ncall") != map.end()) {
 				const NativeFunc_t& n_func = std::any_cast<NativeFunc_t>( map.at("__ncall").d );
 				const ARR_t& n_args = std::any_cast<ARR_t>(second.d);
-				return n_func(ST, n_args);
+				return n_func(n_args);
 			}
 
 			// Call in-code function...
@@ -102,7 +102,7 @@ Variant OP_Access_exec(Variant& first, Variant& second, const std::string& _symb
 
 				// Get result & check if return type matches.
 				const Variant& result = get_data(ST, "__RET__");
-				if (result.t != func_return_type) {
+				if (result.t != func_return_type && func_return_type != ANY) {
 					emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_return_type), get_variant_type_name(result.t)});
 				}
 				// Restore previous scope, then return result.

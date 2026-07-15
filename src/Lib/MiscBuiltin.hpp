@@ -3,36 +3,29 @@
 
 // Called whenever the module is imported.
 // This can be called multiple times.
-Variant LIB_MISCBI_init(ScopeState& state, const std::vector<Variant>& args) {
+Variant LIB_MISCBI_init(const ARR_t& args) {
 	return VariantPresets.empty;
 }
 
 
 // Return the type of the given Variant, in string form.
-Variant LIB_MISCBI_get_state(ScopeState& state, const std::vector<Variant>& args) {
-	const unsigned int& args_len = args.size();
-	if (args_len != 0) {
-		emit_error(ERR_invalid_func_arg_count, {"0", std::to_string(args_len)});
-		return VariantPresets.empty;
-	}
+Variant LIB_MISCBI_get_state(const ARR_t& args) {
+	if (not expect_arg_count(args, 0)) return VariantPresets.empty;
 
-	return Variant{MAP, state.d};
+	return Variant{MAP, ST.d};
 }
 
 
 // Pause thread execution for the given number of seconds.
-Variant LIB_MISCBI_sleep(ScopeState& state, const std::vector<Variant>& args) {
-	const unsigned int& args_len = args.size();
-	if (args_len != 1) {
-		emit_error(ERR_invalid_func_arg_count, {"1", std::to_string(args_len)});
-		return VariantPresets.empty;
-	}
+Variant LIB_MISCBI_sleep(const ARR_t& args) {
+	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
+	const Variant& var = std::move(args[0]);
 
 	float sleep_time;
-	if (args[0].t == INT) sleep_time = std::any_cast<int>(args[0].d);
-	else if (args[0].t == FLOAT) sleep_time = std::any_cast<float>(args[0].d);
+	if (var.t == INT) sleep_time = std::any_cast<int>(var.d);
+	else if (var.t == FLOAT) sleep_time = std::any_cast<float>(var.d);
 	else {
-		emit_error(ERR_invalid_func_arg_type, {"0", "INT or FLOAT", get_variant_type_name(args[0].t)});
+		emit_error(ERR_invalid_func_arg_type, {"0", "INT or FLOAT", get_variant_type_name(var.t)});
 		return VariantPresets.empty;
 	}
 
@@ -42,35 +35,27 @@ Variant LIB_MISCBI_sleep(ScopeState& state, const std::vector<Variant>& args) {
 
 
 // Return the type of the given Variant, in string form.
-Variant LIB_MISCBI_type_name(ScopeState& state, const std::vector<Variant>& args) {
-	const unsigned int& args_len = args.size();
-	if (args_len != 1) {
-		emit_error(ERR_invalid_func_arg_count, {"1", std::to_string(args_len)});
-		return VariantPresets.empty;
-	}
-
+Variant LIB_MISCBI_type_name(const ARR_t& args) {
+	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
 	return Variant{STR, get_variant_type_name(args[0].t)};
 }
 
 
 // Return the length of the given array or string.
-Variant LIB_MISCBI_length(ScopeState& state, const std::vector<Variant>& args) {
-	const unsigned int& args_len = args.size();
-	if (args_len != 1) {
-		emit_error(ERR_invalid_func_arg_count, {"1", std::to_string(args_len)});
-		return VariantPresets.empty;
-	}
+Variant LIB_MISCBI_length(const ARR_t& args) {
+	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
+	const Variant& var = std::move(args[0]);
 
-	if (args[0].t == ARR) {
-		const ARR_t& data = std::any_cast<ARR_t>(args[0].d);
+	if (var.t == ARR) {
+		const ARR_t& data = std::any_cast<ARR_t>(var.d);
 		return Variant{INT, (int)data.size()};
 	}
-	else if (args[0].t == STR) {
-		const STR_t& data = std::any_cast<STR_t>(args[0].d);
+	else if (var.t == STR) {
+		const STR_t& data = std::any_cast<STR_t>(var.d);
 		return Variant(INT, (int)data.size());
 	}
 
-	emit_error(ERR_invalid_func_arg_type, {"0", "STR or ARR", get_variant_type_name(args[0].t)});
+	emit_error(ERR_invalid_func_arg_type, {"0", "STR or ARR", get_variant_type_name(var.t)});
 	return VariantPresets.empty;
 }
 
@@ -117,5 +102,6 @@ const Variant LIB_MISCBI {
 		{"sleep",      NativeFuncTrans(VariantPresets.none_type_str,  (NativeFunc_t)LIB_MISCBI_sleep)},
 		{"type_name",  NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_MISCBI_type_name)},
 		{"length",     NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_MISCBI_length)}
-	}
+	},
+	VariantMode_constant
 };

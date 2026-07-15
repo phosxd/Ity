@@ -30,11 +30,11 @@ std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
 
 
 bool is_valid_name(const std::string& name) {
-	const unsigned int name_len = name.size();
-	for(unsigned int i = 0; i < name_len; i++) {
+	const size_t& name_len = name.size();
+	for(size_t i = 0; i < name_len; i++) {
 		const bool is_digit = (NUM.find(name[i]) != std::string::npos);
-		if (i == 0 && is_digit) {return false;}
-		if ((ALPHA.find(name[i]) == std::string::npos && not is_digit) && name[i] != '_') {return false;}
+		if (i == 0 && is_digit) return false;
+		if ((ALPHA.find(name[i]) == std::string::npos && not is_digit) && name[i] != '_') return false;
 	}
 	return true;
 }
@@ -50,10 +50,10 @@ bool is_special_symbol(const char& ch) {
 
 
 bool check_ahead(const std::string& text, const unsigned int& start_idx, const std::string& substr) {
-	const unsigned int substr_len = substr.size();
+	const size_t& substr_len = substr.size();
 	if (text.size() < start_idx+substr_len) {return false;}
-	for (unsigned int i = 0; i < substr_len; i++) {
-		if (text[start_idx+i] != substr[i]) {return false;}
+	for (size_t i = 0; i < substr_len; i++) {
+		if (text.at(start_idx+i) != substr.at(i)) {return false;}
 	}
 	return true;
 }
@@ -78,12 +78,12 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 	result_token.t = ExprTokenType_sequence;
 
 	// Return cached token if available.
-	if (auto it = expr_cache.find(expr); it != expr_cache.end()) {
+	if (const auto& it = expr_cache.find(expr); it != expr_cache.end()) {
 		result_token.seq = it->second;
 		return result_token;
 	}
 
-	const unsigned int expr_len = expr.size();
+	const size_t& expr_len = expr.size();
 	std::string buffer;
 	std::string secondary_buffer;;
 	buffer.reserve(expr_len);
@@ -101,7 +101,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 	bool is_map = false;
 	bool next_ref_is_str = false;
 
-	for (unsigned int i = 0; i < expr_len; i++) {
+	for (size_t i = 0; i < expr_len; i++) {
 		const char& ch = expr.at(i);
 		// Advance column or line number.
 		col_offset++;
@@ -147,7 +147,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			if (not subexpr.empty()) {
 				clean_up_buffer(result_token, item, buffer);
 				// Tokenize sub-expression & add to sequence.
-				ExprToken token = expr_tokenize(subexpr, ln_offset, col_offset);
+				const ExprToken& token = expr_tokenize(subexpr, ln_offset, col_offset);
 				item.seq = token.seq;
 				result_token.seq.push_back(item);
 				// Skip over characters inside the sub-expression.
@@ -419,7 +419,7 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 		};
 	}
 
-	const size_t seq_len = token.seq.size();
+	const size_t& seq_len = token.seq.size();
 	Variant result;
 	const Operation* op = nullptr;
 	std::string op_symbol;

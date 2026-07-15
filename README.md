@@ -10,6 +10,13 @@ Ity is a light-weight interpreted programming language built with C++.
 ---
 
 
+# Overview
+- Tiny & portable. < 100kb executable.
+- Platform agnostic. No platform dependant code.
+- No build setup. Requires no third-party libraries.
+- Practical. I/O, file management, time, & math modules all built-in.
+
+
 # Build interpreter
 The build process for the Ity interpreter is very straight-forward. After cloning this repository you should notice a `build.sh` bash script inside the root directory.
 Run the build script by typing `./build.sh` in your terminal, doing so will build the source code using the GCC compiler on your system.

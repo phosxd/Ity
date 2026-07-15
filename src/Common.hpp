@@ -657,12 +657,13 @@ bool exists_in_vec(const std::vector<T>& v, const T2& val) {
 
 
 
-using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
+using NativeFunc_t = Variant(*)(const ARR_t& args);
 struct VariantPresets_struct {
 	const Variant empty {NONE, std::any(), VariantMode_constant};
 	const Variant obj_type_m {STR, (STR_t)"f", VariantMode_constant};
 	const Variant obj_type_f {STR, (STR_t)"f", VariantMode_constant};
 
+	const Variant any_type_str {STR, (STR_t)"ANY", VariantMode_constant};
 	const Variant none_type_str {STR, (STR_t)"NONE", VariantMode_constant};
 	const Variant bool_type_str {STR, (STR_t)"BOOL", VariantMode_constant};
 	const Variant int_type_str {STR, (STR_t)"INT", VariantMode_constant};
@@ -683,6 +684,16 @@ Variant NativeFuncTrans(const Variant& return_type, const NativeFunc_t& native_f
 		},
 		VariantMode_constant,
 	};
+}
+
+
+bool expect_arg_count(const ARR_t& args, const size_t& count) {
+	const size_t& args_len = args.size();
+	if (args_len != count) {
+		emit_error(ERR_invalid_func_arg_count, {std::to_string(count), std::to_string(args_len)});
+		return false;
+	}
+	return true;
 }
 
 

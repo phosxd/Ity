@@ -1,17 +1,13 @@
 #pragma once
 
 
-Variant LIB_TIME_init(ScopeState& state, const std::vector<Variant>& args) {
+Variant LIB_TIME_init(const ARR_t& args) {
 	return VariantPresets.empty;
 }
 
 
-Variant LIB_TIME_get_time(ScopeState& state, const std::vector<Variant>& args, const unsigned int mode) {
-	const unsigned int& args_len = args.size();
-	if (args_len != 1) {
-		emit_error(ERR_invalid_func_arg_count, {"1", std::to_string(args_len)});
-		return VariantPresets.empty;
-	}
+Variant LIB_TIME_get_time(const ARR_t& args, const unsigned int mode) {
+	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
 
 	if (args[0].t != STR) {
 		emit_error(ERR_invalid_func_arg_type, {"0", "STR", get_variant_type_name(args[0].t)});
@@ -58,13 +54,13 @@ Variant LIB_TIME_get_time(ScopeState& state, const std::vector<Variant>& args, c
 }
 
 
-Variant LIB_TIME_system_now(ScopeState& state, const std::vector<Variant>& args) {
-	return LIB_TIME_get_time(state, args, 0);
+Variant LIB_TIME_system_now(const ARR_t& args) {
+	return LIB_TIME_get_time(args, 0);
 }
 
 
-Variant LIB_TIME_now(ScopeState& state, const std::vector<Variant>& args) {
-	return LIB_TIME_get_time(state, args, 1);
+Variant LIB_TIME_now(const ARR_t& args) {
+	return LIB_TIME_get_time(args, 1);
 }
 
 
@@ -80,5 +76,6 @@ const Variant LIB_TIME {
 		{"__init__", NativeFuncTrans(VariantPresets.none_type_str, (NativeFunc_t)LIB_TIME_init)},
 		{"system_now", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_TIME_system_now)},
 		{"now", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_TIME_now)},
-	}
+	},
+	VariantMode_constant
 };
