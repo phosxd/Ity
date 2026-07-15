@@ -11,7 +11,6 @@ Variant LIB_MISCBI_init(const ARR_t& args) {
 // Return the type of the given Variant, in string form.
 Variant LIB_MISCBI_get_state(const ARR_t& args) {
 	if (not expect_arg_count(args, 0)) return VariantPresets.empty;
-
 	return Variant{MAP, ST.d};
 }
 
@@ -98,7 +97,7 @@ const Variant LIB_MISCBI {
 		}},
 
 		// Utility functions.
-		{"get_state",      NativeFuncTrans(VariantPresets.map_type_str,  (NativeFunc_t)LIB_MISCBI_get_state)},
+		{"get_state",  NativeFuncTrans(VariantPresets.map_type_str,   (NativeFunc_t)LIB_MISCBI_get_state)},
 		{"sleep",      NativeFuncTrans(VariantPresets.none_type_str,  (NativeFunc_t)LIB_MISCBI_sleep)},
 		{"type_name",  NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_MISCBI_type_name)},
 		{"length",     NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_MISCBI_length)}

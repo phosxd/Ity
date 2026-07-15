@@ -13,7 +13,7 @@ DEBUG=0
 OPTIM="balanced"
 OPTIM_balanced="-O2 -finline-limit=6"
 OPTIM_speed="-Ofast"
-OPTIM_size="-Os -finline-limit=0"
+OPTIM_size="-Os -finline-limit=1"
 
 
 for i in "$@"; do

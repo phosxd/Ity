@@ -16,16 +16,20 @@ Variant LIB_MATH_math(const ARR_t& args, const std::string& func) {
 	VariantData data;
 	if (var.t == INT) {
 		const int& d = std::any_cast<int>(var.d);
+		type = INT;
 		if (func == "abs") data = std::abs(d);
 		else if (func == "floor") data = std::floor(d);
 		else if (func == "ceil") data = std::ceil(d);
+		else if (func == "log") data = (int)std::log(d);
 		else if (func == "sqrt") data = (int)std::sqrt((double)d);
 	}
 	else if (var.t == FLOAT) {
 		const float& d = std::any_cast<float>(var.d);
+		type = FLOAT;
 		if (func == "abs") data = std::abs(d);
 		else if (func == "floor") data = std::floor(d);
 		else if (func == "ceil") data = std::ceil(d);
+		else if (func == "log") data = (float)std::log(d);
 		else if (func == "sqrt") data = std::sqrtf(d);
 	}
 	else {
@@ -37,17 +41,21 @@ Variant LIB_MATH_math(const ARR_t& args, const std::string& func) {
 }
 
 
-Variant LIB_MATH_abs(const ARR_t& args) {
-	return LIB_MATH_math(args, "abs");
-}
-Variant LIB_MATH_floor(const ARR_t& args) {
-	return LIB_MATH_math(args, "floor");
-}
-Variant LIB_MATH_ceil(const ARR_t& args) {
-	return LIB_MATH_math(args, "ceil");
-}
-Variant LIB_MATH_sqrt(const ARR_t& args) {
-	return LIB_MATH_math(args, "sqrt");
+Variant LIB_MATH_abs(const ARR_t& args) {return LIB_MATH_math(args, "abs");}
+Variant LIB_MATH_floor(const ARR_t& args) {return LIB_MATH_math(args, "floor");}
+Variant LIB_MATH_ceil(const ARR_t& args) {return LIB_MATH_math(args, "ceil");}
+Variant LIB_MATH_log(const ARR_t& args) {return LIB_MATH_math(args, "log");}
+Variant LIB_MATH_sqrt(const ARR_t& args) {return LIB_MATH_math(args, "sqrt");}
+
+
+Variant LIB_MATH_pow(const ARR_t& args) {
+	if (not expect_arg_count(args, 2)) return VariantPresets.empty;
+	const std::vector<VariantType> valid_types = {INT, FLOAT};
+	if (not expect_arg_types(args[0], valid_types, 0) || not expect_arg_types(args[1], valid_types, 1)) return VariantPresets.empty;
+
+	const float& base = var_to_float(std::move(args[0]));
+	const float& exponent = var_to_float(std::move(args[1]));
+	return Variant{FLOAT, (float)std::pow(base, exponent)};
 }
 
 
@@ -63,8 +71,10 @@ const Variant LIB_MATH {
 		{"__init__",   NativeFuncTrans(VariantPresets.none_type_str,   (NativeFunc_t)LIB_MATH_init)},
 		{"abs",        NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_MATH_abs)},
 		{"floor",      NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_MATH_floor)},
-		{"ceil",      NativeFuncTrans(VariantPresets.any_type_str,     (NativeFunc_t)LIB_MATH_ceil)},
+		{"ceil",       NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_MATH_ceil)},
+		{"log",        NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_MATH_log)},
 		{"sqrt",       NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_MATH_sqrt)},
+		{"pow",        NativeFuncTrans(VariantPresets.float_type_str,  (NativeFunc_t)LIB_MATH_pow)},
 	},
 	VariantMode_constant
 };

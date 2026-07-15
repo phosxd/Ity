@@ -54,6 +54,7 @@ void scope_out(ScopeState& state) {
 	state.d.clear();
 	state.d = std::move(p->d);
 	delete p;
+
 	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope Out (" + std::to_string(get_scope_depth(state)) + ")\n" << ANSI::reset;
 }
 

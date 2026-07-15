@@ -93,6 +93,7 @@ Variant OP_Access_exec(Variant& first, Variant& second, const std::string& _symb
 				const unsigned int func_body_start = func_token.i+1;
 				const unsigned int& func_body_end = std::any_cast<unsigned int>( func_token.meta.at(0) );
 				// Run function.
+				call_trace.push_back(current_line); call_trace.push_back(current_column);
 				push_back_ongoing_scopes();
 				scope_in(ST);                                                        // Create new scope on top of the previous.
 				set_data(ST, "__ARGS__", ARR, second.d, VariantMode_constant);       // Make the passed arguments available in the scope.
@@ -107,6 +108,7 @@ Variant OP_Access_exec(Variant& first, Variant& second, const std::string& _symb
 				}
 				// Restore previous scope, then return result.
 				scope_out(ST);
+				call_trace.pop_back(); call_trace.pop_back();
 				return std::move(result);
 			}
 		}

@@ -7,12 +7,8 @@ Variant LIB_TIME_init(const ARR_t& args) {
 
 
 Variant LIB_TIME_get_time(const ARR_t& args, const unsigned int mode) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.empty;
 
-	if (args[0].t != STR) {
-		emit_error(ERR_invalid_func_arg_type, {"0", "STR", get_variant_type_name(args[0].t)});
-		return VariantPresets.empty;
-	}
 	const STR_t& precision = std::any_cast<STR_t>(args[0].d);
 
 	// Initialize clocks.

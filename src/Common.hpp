@@ -146,6 +146,7 @@ enum VariantMode {
 	VariantMode_locked_type,
 };
 
+#pragma pack(1)
 struct Variant {
 	VariantType t = NONE;
 	VariantData d = std::any();
@@ -372,9 +373,7 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 			return a;
 		}
 		STR_t a_val = std::any_cast<STR_t>(a);
-		STR_t sum; sum.reserve(a_val.size()*b_val);
-		for (int i = 0; i < b_val; i++) {sum += a_val;}
-		return sum;
+		return a_val * b_val;
 	}
 	// If a is array & b is int.
 	else if (t1 == typeid(ARR_t) && t2 == typeid(int)) {
@@ -459,6 +458,7 @@ std::ostream& operator<<(std::ostream& os, const Variant& s) {
 // ----------
 
 
+#pragma pack(1)
 struct InstToken {
 	unsigned int i = 0;
 	unsigned int ln = 0;
@@ -498,6 +498,7 @@ enum ExprTokenType {
 };
 
 
+#pragma pack(1)
 struct ExprToken {
 	unsigned int ln = 0;
 	unsigned int col = 0;
@@ -521,6 +522,7 @@ std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 // Scope State.
 // ------------
 
+#pragma pack(1)
 struct ScopeState {
 	ScopeState* p = nullptr;  // Parent scope state.
 	MAP_t d;                  // Scope data.
@@ -538,6 +540,7 @@ std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
 // Instruction.
 // ------------
 
+#pragma pack(1)
 struct Instruction {
 	uint8_t REQUIRED; // Required argument count,
 	int8_t OPTIONAL; // Optional argument count.
@@ -567,92 +570,32 @@ std::ostream& operator<<(std::ostream& os, const Operation& s) {
 
 
 
+// Variant conversion functions.
+// -----------------------------
 
-// Misc utility functions.
-// -----------------------
-
-
-bool str_ends_with(const std::string& text, const std::string& suffix) {
-	return text.size() >= suffix.size() && (text.compare(text.size()-suffix.size(), suffix.size(), suffix) == 0);
-}
-
-
-// Returns the string with all instances of `ch` removed from the start of it.
-std::string trim_left(const std::string& text, const char ch) {
-	const size_t& text_len = text.size();
-	if (text_len == 0) return text;
-	if (text.at(0) != ch) return text;
-	bool ended = false;
-	std::string result; result.reserve(text_len);
-	for (size_t i = 0; i < text_len; i++) {
-		if (text.at(i) != ch) ended = true;
-		if (ended) result.push_back(text.at(i));
+std::string multiple_types_str(const std::vector<VariantType>& types) {
+	std::string result;
+	unsigned int i = 0;
+	for (const VariantType& type : types) {
+		if (i != 0) {result += " or ";}
+		result += get_variant_type_name(type);
+		i++;
 	}
 	return result;
 }
 
 
-// Joins all elements in the vector into a new string, with each element separated by the given `sep`.
-std::string join_str(const std::vector<std::string>& vec, const std::string& sep) {
-	const size_t& vec_len = vec.size();
-	std::string result = vec.front();
-	result.reserve(sep.size() * (vec_len-1));
-	for (size_t i = 1; i < vec_len; i++) {
-		result += sep + vec.at(i);
-	}
-	return result;
+float var_to_float(const Variant& var) {
+	if (var.t == INT) return (float)std::any_cast<int>(var.d);
+	else if (var.t == FLOAT) return std::any_cast<float>(var.d);
+	else return 0.0;
 }
 
 
-// Splits the `text` into a vector of strings, with each element separated by the given `sep`.
-std::vector<std::string> split_str(const std::string& text, const char sep) {
-	std::stringstream ss (text);
-	std::vector<std::string> result;
-	std::string item;
-	while (std::getline(ss, item, sep)) {
-		result.push_back(item);
-	}
-	return result;
-}
-
-
-// Returns the number of strings that are empty inside the given vector.
-unsigned int count_non_empty_strings(const std::vector<std::string>& items) {
-	const size_t& items_len = items.size();
-	unsigned int count = 0;
-	for (size_t i = 0; i < items_len; i++) {
-		if (not std::move(items.at(i)).empty()) count++;
-	}
-	return count;
-}
-
-
-// Returns `false` if the string representation falls out of the 32-bit range for integers.
-// NOTE: This is not an accurate check, it stops at 2,000,000,000 instead of the actual maximum.
-bool is_int_str_32_in_range(std::string int_str) {
-	int_str = trim_left(int_str, '0');
-	if (int_str.size() == 0) return true;
-
-	const bool negative = (int_str.at(0) == '-');
-	size_t digits = int_str.size();
-	if (negative) digits--;
-	// If too many or not enough digits, return false.
-	if (digits > 10) return false;
-	else if (digits < 10) return true;
-
-	uint8_t i = 0;
-	if (negative) i++;
-	if (int_str.at(i) == '1') return true;
-	return false;
-}
-
-
-template<class T, class T2>
-bool exists_in_vec(const std::vector<T>& v, const T2& val) {
-	for (auto i:v) {
-		if (i == val) {return true;}
-	}
-	return false;
+int var_to_int(const Variant& var) {
+	if (var.t == INT) return std::any_cast<int>(var.d);
+	else if (var.t == FLOAT) return (int)std::any_cast<float>(var.d);
+	else return 0;
 }
 
 
@@ -674,6 +617,8 @@ struct VariantPresets_struct {
 };
 const VariantPresets_struct VariantPresets;
 
+
+// Translate a native function to a usable function object.
 Variant NativeFuncTrans(const Variant& return_type, const NativeFunc_t& native_func) {
 	return Variant{
 		MAP,
@@ -687,10 +632,22 @@ Variant NativeFuncTrans(const Variant& return_type, const NativeFunc_t& native_f
 }
 
 
+// NativeFunc helper functions.
+// ----------------------------
+
 bool expect_arg_count(const ARR_t& args, const size_t& count) {
 	const size_t& args_len = args.size();
 	if (args_len != count) {
 		emit_error(ERR_invalid_func_arg_count, {std::to_string(count), std::to_string(args_len)});
+		return false;
+	}
+	return true;
+}
+
+
+bool expect_arg_types(const Variant& arg, const std::vector<VariantType>& types, const unsigned int arg_idx) {
+	if (not exists_in_vec(types, arg.t)) {
+		emit_error(ERR_invalid_func_arg_type, {std::to_string(arg_idx), multiple_types_str(types), get_variant_type_name(arg.t)});
 		return false;
 	}
 	return true;

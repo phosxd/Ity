@@ -10,6 +10,7 @@
 #include <chrono>
 #include <thread>
 
+#include "Util.hpp"
 #include "ScriptErrors.hpp"
 #include "Common.hpp"
 #include "ScopeState.hpp"
@@ -273,6 +274,8 @@ void ity_exec(std::vector<InstToken>& sequence, const size_t start_idx, const in
 		InstToken& item = InstTokenSeq.at(i);
 		current_line = item.ln;
 		current_column = item.col;
+		current_inst_token_col = item.col;
+		current_inst_token_args = item.args;
 		const unsigned int arg_count = item.args.size();
 		if (arg_count == 0) continue;
 
@@ -392,17 +395,14 @@ int main(int argc, char *argv[]) {
 			return 0;
 		}
 
-		// Read file.
-		const std::string& script = (std::ostringstream() << f.rdbuf()).str();
-		f.close();
-
 		current_line = 1;
 		current_column = 1;
 		clock_start = Clock::now();
 
 		// Tokenize the script.
 		timers[0] = Clock::now();
-		std::vector<InstToken> sequence = Ity.tokenize(script);
+		std::vector<InstToken> sequence = Ity.tokenize((std::ostringstream() << f.rdbuf()).str());
+		f.close();
 		timers[1] = Clock::now();
 
 		// Execute tokens.
