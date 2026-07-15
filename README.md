@@ -98,4 +98,4 @@ Flags:
 
 
 # Language usage
-The full documentation is available [here](). This explains the syntax of the language in great detail. It also goes over all built-in types & how to use them.
+The full documentation is available [here](Docs/main.md). This explains the syntax of the language in great detail. It also goes over all built-in types & how to use them.
