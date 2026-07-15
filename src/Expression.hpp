@@ -2,6 +2,7 @@
 
 #include "Op/Arith.hpp"
 #include "Op/Compare.hpp"
+#include "Op/ConditionalEval.hpp"
 #include "Op/Access.hpp"
 #include "Op/TypeCast.hpp"
 
@@ -22,6 +23,8 @@ const std::unordered_map<std::string, const Operation*> OPERATIONS = {
 	{">=", &OP_Compare},
 	{"<", &OP_Compare},
 	{"<=", &OP_Compare},
+	{"&&", &OP_ConditionalEval},
+	{"||", &OP_ConditionalEval},
 	{":", &OP_Access},
 	{"->", &OP_TypeCast}
 };
@@ -175,7 +178,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 					// Tokenize sub-expression.
 					ExprToken token = expr_tokenize(subexpr, ln_offset, col_offset);
 					// Create expression sequence token.
-					item = ExprToken{token.ln, token.col};
+					item = ExprToken{token.ln+1, token.col+1};
 					item.t = ExprTokenType_sequence;
 					item.seq = token.seq;
 					// Add to sequence.
@@ -419,6 +422,7 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 		};
 	}
 
+
 	const size_t& seq_len = token.seq.size();
 	Variant result;
 	const Operation* op = nullptr;
@@ -431,6 +435,17 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 		// Execute operator.
 		if (op != nullptr) {
 			Variant resolved_var;
+			if (op->pre_exec != nullptr) {
+				// Skip evaluation of second Variant if pre_exec says so...
+				eval_second_operand = true;
+				Variant pre_exec_result = op->pre_exec(result, op_symbol);
+				if (not eval_second_operand) {
+					result = std::move(pre_exec_result);
+					op = nullptr;
+					op_symbol = "";
+					continue;
+				}
+			}
 			// Get variant.
 			if (item.t == ExprTokenType_variant) resolved_var = std::move(resolve_variant(item.var));
 			// Get variant from sub-expression.

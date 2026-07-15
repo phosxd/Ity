@@ -4,6 +4,7 @@
 // Overloads.
 // ----------
 
+
 // String multiplication.
 std::string operator*(const std::string& a, const int& b) {
 	std::string sum; sum.reserve(a.size()*b);
@@ -13,8 +14,55 @@ std::string operator*(const std::string& a, const int& b) {
 
 
 
+// LShift uint8_t.
+std::ostream& operator<<(std::ostream& os, const uint8_t& s) {
+	return os << std::to_string(s); // Convert to string, otherwie displays as empty.
+}
+
+
+// LShift vector.
+template<class T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& s) {
+	os << '[';
+	const unsigned int len = s.size();
+	for (unsigned int i = 0; i < len; i++) {
+		if (i != 0) {os << ", ";}
+		os << s[i];
+	}
+	return os << ']';
+}
+
+
+// LShift unordered_map.
+template<class T, class T2>
+std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
+	os << '{';
+	unsigned int idx = 0;
+	for (auto i:s) {
+		if (idx != 0) {os << ", ";}
+		os << "\"" << i.first << "\"" << ": " << i.second;
+		idx++;
+	}
+	return os << '}';
+}
+
+
+
+
 // Utility Functions.
 // ------------------
+
+
+template<class T, class T2>
+bool is_vec_equal(const std::vector<T>& a, const std::vector<T2>& b) {
+	const size_t& a_len = a.size();
+	const size_t& b_len = b.size();
+	if (a_len != b_len) {return false;}
+	for (size_t i = 0; i < a_len; i++) {
+		if (not (a[i] == b[i])) {return false;}
+	}
+	return true;
+}
 
 
 bool str_ends_with(const std::string& text, const std::string& suffix) {

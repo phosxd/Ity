@@ -17,7 +17,7 @@ tests=(
 throw 'all good';
 "
 
-"ERROR: 0"
+"Error: 0"
 
 # 2
 
@@ -327,7 +327,7 @@ x; # Should throw error
 "
 
 "1
-ERROR: 26"
+Error: 26"
 
 # 13
 
@@ -388,7 +388,7 @@ while i < 4;
 test; # Should throw an error
 "
 
-"ERROR: 26"
+"Error: 26"
 
 # 16
 
@@ -439,9 +439,30 @@ print:[ (add:[4,5]) ];
 # 18
 
 "
+# Early exit conditional check
+# ----------------------------
+
+func BOOL test;
+	throw 'This should not run';
+/;
+
+func BOOL test2;
+	return true;
+/;
+
+
+merge IO;
+
+print:[( (1 == 0) && (test:[]) )];
+print:[( (1 == 1) && (test2:[]) )];
+print:[( (1 == 0) || (test2:[]) )];
+print:[( (1 == 1) || (test:[]) )];
 "
 
-""
+"false
+true
+true
+true"
 
 # 19
 
