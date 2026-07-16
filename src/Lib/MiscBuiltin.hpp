@@ -18,14 +18,15 @@ Variant LIB_MISCBI_get_state(const ARR_t& args) {
 // Pause thread execution for the given number of seconds.
 Variant LIB_MISCBI_sleep(const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
-	const Variant& var = std::move(args[0]);
+	const Variant& var = args[0];
 
 	float sleep_time;
-	if (var.t == INT) sleep_time = std::any_cast<int>(var.d);
-	else if (var.t == FLOAT) sleep_time = std::any_cast<float>(var.d);
-	else {
-		emit_error(ERR_invalid_func_arg_type, {"0", "INT or FLOAT", get_variant_type_name(var.t)});
-		return VariantPresets.empty;
+	switch (var.t) {
+		case INT: sleep_time = std::any_cast<int>(var.d);
+		case FLOAT: sleep_time = std::any_cast<float>(var.d);
+		default:
+			emit_error(ERR_invalid_func_arg_type, {"0", "INT or FLOAT", get_variant_type_name(var.t)});
+			return VariantPresets.empty;
 	}
 
 	std::this_thread::sleep_for(std::chrono::milliseconds( (int)(sleep_time*1000) ));
@@ -43,19 +44,15 @@ Variant LIB_MISCBI_type_name(const ARR_t& args) {
 // Return the length of the given array or string.
 Variant LIB_MISCBI_length(const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
-	const Variant& var = std::move(args[0]);
+	const Variant& var = args[0];
 
-	if (var.t == ARR) {
-		const ARR_t& data = std::any_cast<ARR_t>(var.d);
-		return Variant{INT, (int)data.size()};
+	switch (var.t) {
+		case ARR: return Variant{INT, (int)(std::any_cast<ARR_t>(var.d).size()) };
+		case STR: return Variant(INT, (int)(std::any_cast<STR_t>(var.d).size()) );
+		default:
+			emit_error(ERR_invalid_func_arg_type, {"0", "STR or ARR", get_variant_type_name(var.t)});
+			return VariantPresets.empty;
 	}
-	else if (var.t == STR) {
-		const STR_t& data = std::any_cast<STR_t>(var.d);
-		return Variant(INT, (int)data.size());
-	}
-
-	emit_error(ERR_invalid_func_arg_type, {"0", "STR or ARR", get_variant_type_name(var.t)});
-	return VariantPresets.empty;
 }
 
 

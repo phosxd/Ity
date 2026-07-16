@@ -146,6 +146,11 @@ std::ostream& operator<<(std::ostream& os, const std::any& s) {
 
 // COMPARISON OPERATORS
 
+inline void emit_operator_overload_error(const std::string& operation, const VariantData& a, const VariantData& b) {
+	emit_error(ERR_operand_type_mismatch, {operation, get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+}
+
+
 bool operator==(const VariantData& a, const VariantData& b) {
 	const std::type_info& t1 = a.type();
 	const std::type_info& t2 = b.type();
@@ -182,7 +187,7 @@ bool operator==(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"Compare(==)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_operator_overload_error("Compare(==)", a,b);
 	return false;
 }
 
@@ -206,7 +211,7 @@ bool operator>(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"Compare(>)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_operator_overload_error("Compare(>)", a,b);
 	return false;
 }
 
@@ -230,7 +235,7 @@ bool operator<(const VariantData& a, const VariantData& b) {
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"Compare(<)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_operator_overload_error("Compare(<)", a,b);
 	return false;
 }
 
@@ -252,32 +257,26 @@ VariantData operator+(const VariantData& a, const VariantData& b) {
 	const std::type_info& t1 = a.type();
 	const std::type_info& t2 = b.type();
 	// If a is string & b is string...
-	if (t1 == typeid(STR_t) && t2 == typeid(STR_t)) {
-		return std::any_cast<STR_t>(a) + std::any_cast<STR_t>(b);
-	}
+	if (t1 == typeid(STR_t) && t2 == typeid(STR_t)) return std::any_cast<STR_t>(a) + std::any_cast<STR_t>(b);
 	// If a is array & b is array...
-	else if (t1 == typeid(ARR_t) && t2 == typeid(ARR_t)) {
-		ARR_t a_val = std::any_cast<ARR_t>(a);
-		ARR_t b_val = std::any_cast<ARR_t>(b);
-		return a_val + b_val;
-	}
+	else if (t1 == typeid(ARR_t) && t2 == typeid(ARR_t)) return std::any_cast<ARR_t>(a) + std::any_cast<ARR_t>(b);
 	// If a is int...
 	else if (t1 == typeid(int)) {
 		// If b is int...
-		if (t2 == typeid(int)) {return std::any_cast<int>(a) + std::any_cast<int>(b);}
+		if (t2 == typeid(int)) return std::any_cast<int>(a) + std::any_cast<int>(b);
 		// If b is float...
-		else if (t2 == typeid(float)) {return std::any_cast<int>(a) + std::any_cast<float>(b);}
+		else if (t2 == typeid(float)) return std::any_cast<int>(a) + std::any_cast<float>(b);
 	}
 	// If a is float...
 	else if (t1 == typeid(float)) {;
 		// If b is int...
-		if (t2 == typeid(int)) {return std::any_cast<float>(a) + std::any_cast<int>(b);}
+		if (t2 == typeid(int)) return std::any_cast<float>(a) + std::any_cast<int>(b);
 		// If b is float...
-		else if (t2 == typeid(float)) {return std::any_cast<float>(a) + std::any_cast<float>(b);}
+		else if (t2 == typeid(float)) return std::any_cast<float>(a) + std::any_cast<float>(b);
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"Arith(+)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_operator_overload_error("Arith(+)", a,b);
 	return a;
 }
 
@@ -288,20 +287,20 @@ VariantData operator-(const VariantData& a, const VariantData& b) {
 	// If a is int...
 	if (t1 == typeid(int)) {
 		// If b is int...
-		if (t2 == typeid(int)) {return std::any_cast<int>(a) - std::any_cast<int>(b);}
+		if (t2 == typeid(int)) return std::any_cast<int>(a) - std::any_cast<int>(b);
 		// If b is float...
-		else if (t2 == typeid(float)) {return std::any_cast<int>(a) - std::any_cast<float>(b);}
+		else if (t2 == typeid(float)) return std::any_cast<int>(a) - std::any_cast<float>(b);
 	}
 	// If a is float...
 	else if (t1 == typeid(float)) {;
 		// If b is int...
-		if (t2 == typeid(int)) {return std::any_cast<float>(a) - std::any_cast<int>(b);}
+		if (t2 == typeid(int)) return std::any_cast<float>(a) - std::any_cast<int>(b);
 		// If b is float...
-		else if (t2 == typeid(float)) {return std::any_cast<float>(a) - std::any_cast<float>(b);}
+		else if (t2 == typeid(float)) return std::any_cast<float>(a) - std::any_cast<float>(b);
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"Arith(-)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_operator_overload_error("Arith(-)", a,b);
 	return a;
 }
 
@@ -311,43 +310,42 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 	const std::type_info& t2 = b.type();
 	// If a is string & b is int.
 	if (t1 == typeid(STR_t) && t2 == typeid(int)) {
-		int b_val = std::any_cast<int>(b);
+		const int& b_val = std::any_cast<const int&>(b);
 		if (b_val < 0) {
 			emit_error(ERR_cannot_multiply_by_negative, {"STR"});
 			return a;
 		}
-		STR_t a_val = std::any_cast<STR_t>(a);
-		return a_val * b_val;
+		return std::any_cast<STR_t>(a) * b_val;
 	}
 	// If a is array & b is int.
 	else if (t1 == typeid(ARR_t) && t2 == typeid(int)) {
-		int b_val = std::any_cast<int>(b);
+		const int& b_val = std::any_cast<const int&>(b);
 		if (b_val < 0) {
 			emit_error(ERR_cannot_multiply_by_negative, {"ARR"});
 			return a;
 		}
 		ARR_t a_val = std::any_cast<ARR_t>(a);
 		ARR_t sum; sum.reserve(a_val.size()*b_val);
-		for (int i = 0; i < b_val; i++) {sum = sum+a_val;}
+		for (int i = 0; i < b_val; i++) sum = sum+a_val;
 		return sum;
 	}
 	// If a is int...
 	else if (t1 == typeid(int)) {
 		// If b is int...
-		if (t2 == typeid(int)) {return std::any_cast<int>(a) * std::any_cast<int>(b);}
+		if (t2 == typeid(int)) return std::any_cast<int>(a) * std::any_cast<int>(b);
 		// If b is float...
-		else if (t2 == typeid(float)) {return std::any_cast<int>(a) * std::any_cast<float>(b);}
+		else if (t2 == typeid(float)) return std::any_cast<int>(a) * std::any_cast<float>(b);
 	}
 	// If a is float...
 	else if (t1 == typeid(float)) {;
 		// If b is int...
-		if (t2 == typeid(int)) {return std::any_cast<float>(a) * std::any_cast<int>(b);}
+		if (t2 == typeid(int)) return std::any_cast<float>(a) * std::any_cast<int>(b);
 		// If b is float...
-		else if (t2 == typeid(float)) {return std::any_cast<float>(a) * std::any_cast<float>(b);}
+		else if (t2 == typeid(float)) return std::any_cast<float>(a) * std::any_cast<float>(b);
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"Arith(*)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_operator_overload_error("Arith(*)", a,b);
 	return a;
 }
 
@@ -358,20 +356,20 @@ VariantData operator/(const VariantData& a, const VariantData& b) {
 	// If a is int...
 	if (t1 == typeid(int)) {
 		// If b is int...
-		if (t2 == typeid(int)) {return std::any_cast<int>(a) / std::any_cast<int>(b);}
+		if (t2 == typeid(int)) return std::any_cast<int>(a) / std::any_cast<int>(b);
 		// If b is float...
-		else if (t2 == typeid(float)) {return std::any_cast<int>(a) / std::any_cast<float>(b);}
+		else if (t2 == typeid(float)) return std::any_cast<int>(a) / std::any_cast<float>(b);
 	}
 	// If a is float...
 	else if (t1 == typeid(float)) {;
 		// If b is int...
-		if (t2 == typeid(int)) {return std::any_cast<float>(a) / std::any_cast<int>(b);}
+		if (t2 == typeid(int)) return std::any_cast<float>(a) / std::any_cast<int>(b);
 		// If b is float...
-		else if (t2 == typeid(float)) {return std::any_cast<float>(a) / std::any_cast<float>(b);}
+		else if (t2 == typeid(float)) return std::any_cast<float>(a) / std::any_cast<float>(b);
 	}
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"Arith(/)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_operator_overload_error("Arith(/)", a,b);
 	return a;
 }
 
@@ -380,12 +378,10 @@ VariantData operator%(const VariantData& a, const VariantData& b) {
 	const std::type_info& t1 = a.type();
 	const std::type_info& t2 = b.type();
 	// If a is int & b is int...
-	if (t1 == typeid(int) && t2 == typeid(int)) {
-		return std::any_cast<int>(a) % std::any_cast<int>(b);
-	}
+	if (t1 == typeid(int) && t2 == typeid(int)) return std::any_cast<int>(a) % std::any_cast<int>(b);
 
 	// Throw error is none matched.
-	emit_error(ERR_operand_type_mismatch, {"Arith(%)", get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
+	emit_operator_overload_error("Arith(%)", a,b);
 	return a;
 }
 
@@ -505,7 +501,7 @@ std::ostream& operator<<(std::ostream& os, const Instruction& s) {
 
 struct Operation {
 	Variant (*exec)(Variant& first, Variant& second, const std::string& symbol) = nullptr;
-	Variant (*pre_exec)(Variant& first, const std::string& symbol) = nullptr;
+	Variant (*pre_exec)(Variant& first, const std::string& symbol, bool& eval_second_operand) = nullptr;
 };
 
 
@@ -522,7 +518,7 @@ std::string multiple_types_str(const std::vector<VariantType>& types) {
 	std::string result;
 	unsigned int i = 0;
 	for (const VariantType& type : types) {
-		if (i != 0) {result += " or ";}
+		if (i != 0) result += " or ";
 		result += get_variant_type_name(type);
 		i++;
 	}
@@ -530,38 +526,42 @@ std::string multiple_types_str(const std::vector<VariantType>& types) {
 }
 
 
-float var_to_float(const Variant& var) {
-	if (var.t == INT) return (float)std::any_cast<int>(var.d);
-	else if (var.t == FLOAT) return std::any_cast<float>(var.d);
-	else return 0.0;
+inline float var_to_float(const Variant& var) {
+	switch (var.t) {
+		case INT: return (float)std::any_cast<int>(var.d);
+		case FLOAT: return std::any_cast<float>(var.d);
+		default: return 0.0;
+	}
 }
 
 
-int var_to_int(const Variant& var) {
-	if (var.t == INT) return std::any_cast<int>(var.d);
-	else if (var.t == FLOAT) return (int)std::any_cast<float>(var.d);
-	else return 0;
+inline int var_to_int(const Variant& var) {
+	switch (var.t) {
+		case INT: return std::any_cast<int>(var.d);
+		case FLOAT: return (int)std::any_cast<float>(var.d);
+		default: return 0;
+	}
 }
 
 
 
 using NativeFunc_t = Variant(*)(const ARR_t& args);
 struct VariantPresets_struct {
-	const Variant empty {NONE, std::any(), VariantMode_constant};
-	const Variant obj_type_m {STR, (STR_t)"f", VariantMode_constant};
-	const Variant obj_type_f {STR, (STR_t)"f", VariantMode_constant};
+	const Variant empty       {NONE, std::any(), VariantMode_constant};
+	const Variant obj_type_m  {STR, (STR_t)"m", VariantMode_constant};
+	const Variant obj_type_f  {STR, (STR_t)"f", VariantMode_constant};
 
-	const Variant any_type_str {STR, (STR_t)"ANY", VariantMode_constant};
-	const Variant none_type_str {STR, (STR_t)"NONE", VariantMode_constant};
-	const Variant bool_type_str {STR, (STR_t)"BOOL", VariantMode_constant};
-	const Variant int_type_str {STR, (STR_t)"INT", VariantMode_constant};
-	const Variant float_type_str {STR, (STR_t)"FLOAT", VariantMode_constant};
-	const Variant str_type_str {STR, (STR_t)"STR", VariantMode_constant};
-	const Variant arr_type_str {STR, (STR_t)"ARR", VariantMode_constant};
-	const Variant map_type_str {STR, (STR_t)"MAP", VariantMode_constant};
+	const Variant any_type_str    {STR, (STR_t)"ANY", VariantMode_constant};
+	const Variant none_type_str   {STR, (STR_t)"NONE", VariantMode_constant};
+	const Variant bool_type_str   {STR, (STR_t)"BOOL", VariantMode_constant};
+	const Variant int_type_str    {STR, (STR_t)"INT", VariantMode_constant};
+	const Variant float_type_str  {STR, (STR_t)"FLOAT", VariantMode_constant};
+	const Variant str_type_str    {STR, (STR_t)"STR", VariantMode_constant};
+	const Variant arr_type_str    {STR, (STR_t)"ARR", VariantMode_constant};
+	const Variant map_type_str    {STR, (STR_t)"MAP", VariantMode_constant};
 
-	const Variant bool_true {BOOL, true, VariantMode_constant};
-	const Variant bool_false {BOOL, false, VariantMode_constant};
+	const Variant bool_true   {BOOL, true, VariantMode_constant};
+	const Variant bool_false  {BOOL, false, VariantMode_constant};
 };
 const VariantPresets_struct VariantPresets;
 
@@ -584,9 +584,8 @@ Variant NativeFuncTrans(const Variant& return_type, const NativeFunc_t& native_f
 // ----------------------------
 
 bool expect_arg_count(const ARR_t& args, const size_t& count) {
-	const size_t& args_len = args.size();
-	if (args_len != count) {
-		emit_error(ERR_invalid_func_arg_count, {std::to_string(count), std::to_string(args_len)});
+	if (args.size() != count) {
+		emit_error(ERR_invalid_func_arg_count, {std::to_string(count), std::to_string(args.size())});
 		return false;
 	}
 	return true;
@@ -669,6 +668,3 @@ unsigned int func_arg_index = 0;
 std::vector<InstToken*> scoped_tokens;
 // Managed by `ScopeState*_ongoing_scopes` functions.
 std::vector<std::vector<InstToken*>> scoped_tokens_stack;
-
-
-bool eval_second_operand = true;

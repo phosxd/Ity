@@ -7,4 +7,4 @@ var INT i = 0; while i < n; set i += 1;
 	print:[i];
 /;
 
-print:[ ('\nDone in ' + (((now:['ms']-start) / 1000.0) -> STR) + 's.') ];
+print:['\nDone in ', ((now:['ms']-start) / 1000.0), 's.'];

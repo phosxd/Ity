@@ -10,7 +10,7 @@ Variant LIB_MATH_init(const ARR_t& args) {
 
 Variant LIB_MATH_math(const ARR_t& args, const std::string& func) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
-	const Variant& var = std::move(args[0]);
+	const Variant& var = args[0];
 
 	VariantType type;
 	VariantData data;
@@ -37,7 +37,7 @@ Variant LIB_MATH_math(const ARR_t& args, const std::string& func) {
 		return VariantPresets.empty;
 	}
 
-	return Variant{type, data};
+	return Variant{type, std::move(data)};
 }
 
 
@@ -53,9 +53,13 @@ Variant LIB_MATH_pow(const ARR_t& args) {
 	const std::vector<VariantType> valid_types = {INT, FLOAT};
 	if (not expect_arg_types(args[0], valid_types, 0) || not expect_arg_types(args[1], valid_types, 1)) return VariantPresets.empty;
 
-	const float& base = var_to_float(std::move(args[0]));
-	const float& exponent = var_to_float(std::move(args[1]));
-	return Variant{FLOAT, (float)std::pow(base, exponent)};
+	return Variant{
+		FLOAT,
+		(float)std::pow(
+			var_to_float(args[0]),
+			var_to_float(args[1])
+		)
+	};
 }
 
 

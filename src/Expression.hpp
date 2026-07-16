@@ -68,7 +68,7 @@ void clean_up_buffer(ExprToken& result_token, ExprToken& item, std::string& buff
 	if (item.var.t != NONE && buffer.size() > 0) {
 		item.var.d = get_literal_from_str(item.var.t, buffer);
 		result_token.seq.push_back(item);
-		buffer = "";
+		buffer.clear();
 	}
 }
 
@@ -105,7 +105,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 	bool next_ref_is_str = false;
 
 	for (size_t i = 0; i < expr_len; i++) {
-		const char& ch = expr.at(i);
+		const char& ch = expr[i];
 		// Advance column or line number.
 		col_offset++;
 		if(ch == '\n') {
@@ -176,7 +176,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 				if (not subexpr.empty()) {
 					clean_up_buffer(result_token, item, buffer);
 					// Tokenize sub-expression.
-					ExprToken token = expr_tokenize(subexpr, ln_offset, col_offset);
+					const ExprToken& token = expr_tokenize(subexpr, ln_offset, col_offset);
 					// Create expression sequence token.
 					item = ExprToken{token.ln+1, token.col+1};
 					item.t = ExprTokenType_sequence;
@@ -306,7 +306,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 							ExprTokenType_variant,
 							{OP, (STR_t)":"},
 						});
-						buffer = "";
+						buffer.clear();
 						next_ref_is_str = true;
 						is_start = true;
 						continue;
@@ -321,7 +321,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 					ExprTokenType_variant,
 					{OP, buffer+ch},
 				});
-				buffer = "";
+				buffer.clear();
 				is_operator = false;
 				is_start = true;
 				continue;
@@ -343,7 +343,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 
 Variant resolve_variant(const Variant& item) {
 	if (item.t == REF) {
-		const std::string& name = std::any_cast<STR_t>(item.d);
+		const std::string& name = std::any_cast<const STR_t&>(item.d);
 		if (is_name_globally_free(ST, name)) {
 			emit_error(ERR_name_does_not_exist, {name});
 			return item;
@@ -423,37 +423,39 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 	}
 
 
+	const unsigned int line_ = ln_offset + token.ln;
+	const unsigned int col_ = col_offset + token.col;
 	const size_t& seq_len = token.seq.size();
 	Variant result;
 	const Operation* op = nullptr;
 	std::string op_symbol;
 	for (size_t i = 0; i < seq_len; i++) {
-		const ExprToken& item = token.seq.at(i);
-		current_line = ln_offset + token.ln + item.ln;
-		current_column = col_offset + token.col + (item.col-1);
+		const ExprToken& item = token.seq[i];
+		current_line = line_ + item.ln;
+		current_column = col_ + (item.col-1);
 
 		// Execute operator.
-		if (op != nullptr) {
-			Variant resolved_var;
-			if (op->pre_exec != nullptr) {
+		if (op) {
+			if (op->pre_exec) {
 				// Skip evaluation of second Variant if pre_exec says so...
-				eval_second_operand = true;
-				Variant pre_exec_result = op->pre_exec(result, op_symbol);
+				bool eval_second_operand = true;
+				Variant pre_exec_result = op->pre_exec(result, op_symbol, eval_second_operand);
 				if (not eval_second_operand) {
 					result = std::move(pre_exec_result);
 					op = nullptr;
-					op_symbol = "";
+					op_symbol.clear();
 					continue;
 				}
 			}
 			// Get variant.
-			if (item.t == ExprTokenType_variant) resolved_var = std::move(resolve_variant(item.var));
-			// Get variant from sub-expression.
-			else if (item.t == ExprTokenType_sequence) resolved_var = std::move(expr_exec(item, true, current_line, current_column));
+			Variant resolved_var = (item.t == ExprTokenType_sequence)
+				? expr_exec(item, true, current_line, current_column)
+				: resolve_variant(item.var)
+			;
 			// Execute...
 			result = std::move(op->exec(result, resolved_var, op_symbol));
 			op = nullptr;
-			op_symbol = "";
+			op_symbol.clear();
 			continue;
 		}
 
@@ -461,11 +463,11 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 			// Get operator.
 			if (item.var.t == OP) {
 				op_symbol = std::any_cast<STR_t>(item.var.d);
-				if (OPERATIONS.find(op_symbol) == OPERATIONS.end()) {
+				if (const auto& it = OPERATIONS.find(op_symbol); it != OPERATIONS.end()) op = it->second;
+				else {
 					emit_error(ERR_invalid_op, {op_symbol});
 					return result;
 				}
-				op = OPERATIONS.at(op_symbol);
 				continue;
 			}
 			// Get variant.

@@ -40,19 +40,23 @@ You can use parenthesis to evaluate an expression inside of another expression.
 
 `(1+1) + 2; # Equals 4;`
 
-Evaluating a named variable resolves into a copy of the original value. To get a reference to the original value instead of copying it, use the built-in `ref` function.
+Evaluating a named variable resolves into a copy of the original value. To get a pointer to the original value instead of copying it, start your expression with the "$" character.
+You must be careful when using pointers, if the original variable name gets deleted then the pointer will just return a "NONE" type value.
+
+When setting the value of a pointer variable, you should use the "set" *method* (`a.set:['value']`) instead of the "set" *instruction* (`set a = 'value'`). The instruction will overwrite the pointer itself, while the method will set the actual value of the pointer.
+The reason it works like this is because the "set" instruction acts on named variables in the scope data, not on the actual value of the variant.
 
 ```python
 # "a" is affected, "a" & "b" are linked;
 var INT a = 5;
-var INT b = ref:['a'];
-set b = 1;
+var PTR b = $a;
+b.set:[1];
 a; # Resolves to 1;
 
 # "c" is unaffected;
 var INT c = 5;
 var INT d = a;
-set d = 1;
+d.set:[1];
 c; # Resolves to 5;
 ```
 
@@ -287,7 +291,8 @@ const * inferred_constant = true;
 Because constants cannot be modified, it would be useless to assign it the "ANY" type, doing so will throw an error.
 
 ### Set
-To actually change the value of a variable you need to use the `set` instruction.
+To change the value of a named variable you need to use the `set` instruction. This will overwrite the variable at the specified name with a new variant, discarding the old one.
+If you want to preserve the variant itself while just changing the value (useful for preserving pointers references), then you should use the `set` *method* on the variable.
 
 `set <varName> <assignemntOperator> <expression>`
 

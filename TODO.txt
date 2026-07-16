@@ -1,5 +1,6 @@
 - Fix function scope deriving from caller scope instead of definition scope.
 - Fix expressions that resolve to "NONE" not returning a variant of type "NONE" but instead returning an empty sequence.
+- Add pointer type which resolves to the original variable instance, instead of being a copy.
 
 
 - Add standard library which can be compiled to pick & choose what you will actually use. It should include modules for:

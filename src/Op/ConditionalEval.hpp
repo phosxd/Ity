@@ -1,7 +1,7 @@
 #pragma once
 
 
-Variant OP_ConditionalEval_pre_exec(Variant& first, const std::string& symbol) {
+Variant OP_ConditionalEval_pre_exec(Variant& first, const std::string& symbol, bool& eval_second_operand) {
 	if (symbol == "&&") {
 		eval_second_operand = first.d == true;
 		return VariantPresets.bool_false;

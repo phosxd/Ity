@@ -12,41 +12,25 @@ Variant LIB_TIME_get_time(const ARR_t& args, const unsigned int mode) {
 	const STR_t& precision = std::any_cast<STR_t>(args[0].d);
 
 	// Initialize clocks.
-	auto clock_1 = Clock::now();
+	const Clock_t& clock_1 = Clock::now();
 	std::chrono::time_point<std::chrono::high_resolution_clock> clock_2;
-	if (mode == 1) {clock_2 = clock_start;}
+	if (mode == 1) clock_2 = clock_start;
 
 	// Get value.
 	int result = 0;
 	if (precision == "us") {
 		result = std::chrono::duration_cast<std::chrono::microseconds>(clock_1-clock_2).count();
 	}
-	else if (precision == "ms") {
-		result = std::chrono::duration_cast<std::chrono::milliseconds>(clock_1-clock_2).count();
-	}
-	else if (precision == "s") {
-		result = std::chrono::duration_cast<std::chrono::seconds>(clock_1-clock_2).count();
-	}
-	else if (precision == "m") {
-		result = std::chrono::duration_cast<std::chrono::minutes>(clock_1-clock_2).count();
-	}
-	else if (precision == "h") {
-		result = std::chrono::duration_cast<std::chrono::hours>(clock_1-clock_2).count();
-	}
-	else if (precision == "d") {
-		result = std::chrono::duration_cast<std::chrono::days>(clock_1-clock_2).count();
-	}
-	else if (precision == "w") {
-		result = std::chrono::duration_cast<std::chrono::weeks>(clock_1-clock_2).count();
-	}
-	else if (precision == "M") {
-		result = std::chrono::duration_cast<std::chrono::months>(clock_1-clock_2).count();
-	}
-	else if (precision == "y") {
-		result = std::chrono::duration_cast<std::chrono::years>(clock_1-clock_2).count();
-	}
+	else if (precision == "ms") result = std::chrono::duration_cast<std::chrono::milliseconds>(clock_1-clock_2).count();
+	else if (precision == "s") result = std::chrono::duration_cast<std::chrono::seconds>(clock_1-clock_2).count();
+	else if (precision == "m") result = std::chrono::duration_cast<std::chrono::minutes>(clock_1-clock_2).count();
+	else if (precision == "h") result = std::chrono::duration_cast<std::chrono::hours>(clock_1-clock_2).count();
+	else if (precision == "d") result = std::chrono::duration_cast<std::chrono::days>(clock_1-clock_2).count();
+	else if (precision == "w") result = std::chrono::duration_cast<std::chrono::weeks>(clock_1-clock_2).count();
+	else if (precision == "M") result = std::chrono::duration_cast<std::chrono::months>(clock_1-clock_2).count();
+	else if (precision == "y") result = std::chrono::duration_cast<std::chrono::years>(clock_1-clock_2).count();
 
-	return Variant{INT, result};
+	return Variant{INT, std::move(result)};
 }
 
 

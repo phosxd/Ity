@@ -491,7 +491,6 @@ for (( idx=0; idx<${#tests[@]}; idx+=2 )); do
 	if (( $case_num < $starting_idx ));then
 		continue
 	fi
-	echo "[${case_num}]"
 	echo "$i" > .test.ity
 	./Ity.bin -codes .test.ity > .test_result.txt
 

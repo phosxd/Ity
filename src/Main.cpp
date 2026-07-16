@@ -92,7 +92,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 	uint16_t last_comp_item_dist = 0;
 
 	for (size_t i = 0; i < src_len; i++) {
-		const char& ch = src.at(i);
+		const char& ch = src[i];
 		// Advance column or line number.
 		col++;
 		if(ch == '\n') {
@@ -102,13 +102,13 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 
 		// End comment.
 		if (is_comment) {
-			if (ch == '\n') {is_comment = false;}
+			if (ch == '\n') is_comment = false;
 			continue;
 		}
 
 		// Skip over spaces & tabs at the start of the item.
 		if (is_start) {
-			if (ch == ' ' || ch == '\n' || ch == '\t') {continue;}
+			if (ch == ' ' || ch == '\n' || ch == '\t') continue;
 			// Start comment.
 			if (ch == '#') {
 				is_comment = true;
@@ -195,7 +195,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 							bool found = false;
 							std::vector<CompositeItem> reverse_nest = composite_nest; std::reverse(reverse_nest.begin(), reverse_nest.end());
 							for (const CompositeItem& comp_item : reverse_nest) {
-								if (comp_item.token.args.at(0) != "func") {continue;}
+								if (comp_item.token.args[0] != "func") {continue;}
 								found = true;
 								break;
 							}
@@ -218,7 +218,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 								composite_nest.pop_back();
 								// Apply updated token to sequence.
 								comp_item.token.composite_size = comp_item.size;
-								if (comp_item.token.args.at(0) == "func") {
+								if (comp_item.token.args[0] == "func") {
 									comp_item.token.meta = {(unsigned int)sequence.size()};
 								}
 								sequence[comp_item.index] = comp_item.token;
@@ -271,13 +271,13 @@ void ity_exec(std::vector<InstToken>& sequence, const size_t start_idx, const in
 	for (size_t i = start_idx; i < seq_len; i++) {
 		if ((int)i == end_idx) break;
 
-		InstToken& item = InstTokenSeq.at(i);
+		InstToken& item = InstTokenSeq[i];
 		current_line = item.ln;
 		current_column = item.col;
 		current_inst_token_col = item.col;
 		current_inst_token_args = item.args;
-		const unsigned int arg_count = item.args.size();
-		if (arg_count == 0) continue;
+		const int args_len = item.args.size();
+		if (args_len == 0) continue;
 
 		// If not matched any instruction, run as expression.
 		if (INSTRUCTIONS.find(item.args[0]) == INSTRUCTIONS.end()) {
@@ -286,7 +286,7 @@ void ity_exec(std::vector<InstToken>& sequence, const size_t start_idx, const in
 		// Execute instruction.
 		else {
 			const Instruction* inst = INSTRUCTIONS.at(item.args[0]);
-			if (arg_count < inst->REQUIRED) {
+			if (args_len < inst->REQUIRED) {
 				emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst->REQUIRED)});
 				return;
 			}

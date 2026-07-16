@@ -37,19 +37,17 @@ void INST_Import_exec(const Instruction* _inst, InstToken& _token, const std::ve
 		return;
 	}
 
-	const MAP_t& lib_map = std::any_cast<MAP_t>(lib->d);
+	const MAP_t& lib_map = std::any_cast<const MAP_t&>(lib->d);
 	//std::any_cast<NativeFunc_t>(lib_map.at("__init").d) (ST, {}); // Call init function.
 	// Merge all public members of the library into the scope.
-	if (symbol == "merge") {
-		merge_module(ST, lib_map);
-	}
+	if (symbol == "merge") merge_module(ST, lib_map);
 	// Add library to scope with the given name.
-	else {set_data(ST, applied_name, MAP, lib_map, VariantMode_constant);}
+	else set_data(ST, applied_name, MAP, lib_map, VariantMode_constant);
 }
 
 
 const Instruction INST_Import {
-	1,                 // Required arg count.
+	2,                 // Required arg count.
 	2,                 // Optional arg count.
 	INST_Import_exec,  // Function.
 	false,             // Is composite.
