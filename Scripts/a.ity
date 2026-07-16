@@ -1,0 +1,7 @@
+merge IO;
+
+var INT i = 0; while i < 100 000; set i += 1;
+	print:[i];
+/;
+
+print:['\nDone.'];

@@ -116,30 +116,43 @@ VariantType get_variant_data_type(const VariantData& d) {
 }
 
 
-std::ostream& operator<<(std::ostream& os, const std::any& s) {
+// Return the number of bytes that VariantData takes up.
+size_t get_variant_data_size(const VariantData& s) {
 	const std::type_info& t = s.type();
-	if (s.has_value() == false) {
-		os << "none";
+	if (t == typeid(int)) return sizeof(std::any_cast<int>(s));
+	else if (t == typeid(float)) return sizeof(std::any_cast<float>(s));
+	else if (t == typeid(STR_t)) return std::any_cast<STR_t>(s).size();
+	else if (t == typeid(ARR_t)) {
+		size_t sum;
+		for (const Variant& var : std::any_cast<ARR_t>(s)) {
+			sum += sizeof(var.t) + sizeof(var.m) + get_variant_data_size(var.d);
+		}
+		return sum;
 	}
+	else if (t == typeid(MAP_t)) {
+		size_t sum;
+		for (const auto& it : std::any_cast<MAP_t>(s)) {
+			sum += it.first.size() + sizeof(it.second.t) + sizeof(it.second.m) + get_variant_data_size(it.second.d);
+		}
+		return sum;
+	}
+
+	return 0;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const VariantData& s) {
+	const std::type_info& t = s.type();
+	if (not s.has_value()) os << "none";
 	else if (t == typeid(bool)) {
 		if (std::any_cast<bool>(s)) os << "true";
 		else os << "false";
 	}
-	else if (t == typeid(int)) {
-		os << std::any_cast<int>(s);
-	}
-	else if (t == typeid(float)) {
-		os << std::to_string(std::any_cast<float>(s)); // `std::cout` wont show the full precision by default, so we convert to string.
-	}
-	else if (t == typeid(std::string)) {
-		os << std::any_cast<std::string>(s);
-	}
-	else if (t == typeid(ARR_t)) {
-		os << std::any_cast<ARR_t>(s);
-	}
-	else if (t == typeid(MAP_t)) {
-		os << std::any_cast<MAP_t>(s);
-	}
+	else if (t == typeid(int)) os << std::any_cast<int>(s);
+	else if (t == typeid(float)) os << std::to_string(std::any_cast<float>(s)); // `std::cout` wont show the full precision by default, so we convert to string.
+	else if (t == typeid(STR_t)) os << std::any_cast<STR_t>(s);
+	else if (t == typeid(ARR_t)) os << std::any_cast<ARR_t>(s);
+	else if (t == typeid(MAP_t)) os << std::any_cast<MAP_t>(s);
 	return os;
 }
 
@@ -155,22 +168,14 @@ bool operator==(const VariantData& a, const VariantData& b) {
 	const std::type_info& t1 = a.type();
 	const std::type_info& t2 = b.type();
 	// If a is string & b is string...
-	if (t1 == typeid(STR_t) && t2 == typeid(STR_t)) {
-		return std::any_cast<STR_t>(a) == std::any_cast<STR_t>(b);
-	}
+	if (t1 == typeid(STR_t) && t2 == typeid(STR_t)) return std::any_cast<STR_t>(a) == std::any_cast<STR_t>(b);
 	// If a is array & b is array...
-	else if (t1 == typeid(ARR_t) && t2 == typeid(ARR_t)) {
-		return std::any_cast<ARR_t>(a) == std::any_cast<ARR_t>(b);
-	}
+	else if (t1 == typeid(ARR_t) && t2 == typeid(ARR_t)) return std::any_cast<ARR_t>(a) == std::any_cast<ARR_t>(b);
 	// If a is map & b is map...
-	else if (t1 == typeid(MAP_t) && t2 == typeid(MAP_t)) {
-		return std::any_cast<MAP_t>(a) == std::any_cast<MAP_t>(b);
-	}
+	else if (t1 == typeid(MAP_t) && t2 == typeid(MAP_t)) return std::any_cast<MAP_t>(a) == std::any_cast<MAP_t>(b);
 
 	// If a is bool & b is bool...
-	else if (t1 == typeid(bool) && t2 == typeid(bool)) {
-		return std::any_cast<bool>(a) == std::any_cast<bool>(b);
-	}
+	else if (t1 == typeid(bool) && t2 == typeid(bool)) return std::any_cast<bool>(a) == std::any_cast<bool>(b);
 	// If a is int...
 	else if (t1 == typeid(int)) {
 		// If b is int...
@@ -244,9 +249,8 @@ bool operator<(const VariantData& a, const VariantData& b) {
 
 
 ARR_t operator+(const ARR_t& a, const ARR_t& b) {
-	ARR_t result = a;
-	result.reserve(b.size());
-	for (unsigned int i = 0; i < b.size(); i++) {
+	ARR_t result = a; result.reserve(b.size());
+	for (size_t i = 0; i < b.size(); i++) {
 		result.push_back(b[i]);
 	}
 	return result;
@@ -410,7 +414,7 @@ struct InstToken {
 	std::string linked_inst = "";
 	int32_t linked_inst_pos = 0;
 
-	std::vector<std::any> meta;
+	std::vector<VariantData> meta;
 };
 
 
@@ -484,7 +488,7 @@ std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
 struct Instruction {
 	uint8_t REQUIRED; // Required argument count,
 	int8_t OPTIONAL; // Optional argument count.
-	void (*exec)(const Instruction*, InstToken&, const std::vector<std::string>&) = nullptr;
+	void (*exec)(ScopeState& state, const Instruction*, InstToken&, const std::vector<std::string>&) = nullptr;
 	bool is_composite;
 };
 
@@ -500,8 +504,8 @@ std::ostream& operator<<(std::ostream& os, const Instruction& s) {
 // ----------
 
 struct Operation {
-	Variant (*exec)(Variant& first, Variant& second, const std::string& symbol) = nullptr;
-	Variant (*pre_exec)(Variant& first, const std::string& symbol, bool& eval_second_operand) = nullptr;
+	Variant (*exec)(ScopeState& state, Variant& first, Variant& second, const std::string& symbol) = nullptr;
+	Variant (*pre_exec)(ScopeState& state, Variant& first, const std::string& symbol, bool& eval_second_operand) = nullptr;
 };
 
 
@@ -526,26 +530,79 @@ std::string multiple_types_str(const std::vector<VariantType>& types) {
 }
 
 
-inline float var_to_float(const Variant& var) {
+VariantData get_literal_from_str(const VariantType& type, const std::string& str_val) {
+	if (type == OP || type == REF || type == STR) {return str_val;}
+	else if (type == BOOL) return str_val == "true";
+	else if (type == INT) {
+		if (not is_int_str_32_in_range(str_val)) {
+			emit_error(ERR_cannot_initialize_value, {str_val, "Number too large"});
+			return std::any();
+		}
+		return std::stoi(str_val);
+	}
+	else if (type == FLOAT) return std::stof(str_val);
+	else return std::any();
+}
+
+
+bool var_to_bool(const Variant& var) {
 	switch (var.t) {
-		case INT: return (float)std::any_cast<int>(var.d);
-		case FLOAT: return std::any_cast<float>(var.d);
+		case BOOL:   return std::any_cast<bool>(var.d);
+		case INT:    return (bool)std::any_cast<int>(var.d);
+		case FLOAT:  return (bool)std::any_cast<float>(var.d);
+		case STR:    return std::any_cast<STR_t>(var.d) == "true";
+
+		default: return false;
+	}
+}
+
+
+float var_to_float(const Variant& var) {
+	switch (var.t) {
+		case BOOL:   return (float)std::any_cast<bool>(var.d);
+		case INT:    return (float)std::any_cast<int>(var.d);
+		case FLOAT:  return std::any_cast<float>(var.d);
+		case STR: {
+			const STR_t& d = std::any_cast<STR_t>(var.d);
+			if (d.size() == 0 || NUM.find(d[0]) == std::string::npos) return 0.0;
+			return std::stof(d);
+		}
+
 		default: return 0.0;
 	}
 }
 
 
-inline int var_to_int(const Variant& var) {
+int var_to_int(const Variant& var) {
 	switch (var.t) {
-		case INT: return std::any_cast<int>(var.d);
-		case FLOAT: return (int)std::any_cast<float>(var.d);
+		case BOOL:   return (int)std::any_cast<bool>(var.d);
+		case INT:    return std::any_cast<int>(var.d);
+		case FLOAT:  return (int)std::any_cast<float>(var.d);
+		case STR: {
+			const STR_t& d = std::any_cast<STR_t>(var.d);
+			if (d.size() == 0 || NUM.find(d[0]) == std::string::npos) return 0;
+			return std::stoi(d);
+		}
+
 		default: return 0;
 	}
 }
 
 
+STR_t var_to_str(const Variant& var) {
+	switch (var.t) {
+		case BOOL:   return std::to_string(std::any_cast<bool>(var.d));
+		case INT:    return std::to_string(std::any_cast<int>(var.d));
+		case FLOAT:  return std::to_string(std::any_cast<float>(var.d));
+		case STR:    return std::any_cast<STR_t>(var.d);
 
-using NativeFunc_t = Variant(*)(const ARR_t& args);
+		default: return "";
+	}
+}
+
+
+
+using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
 struct VariantPresets_struct {
 	const Variant empty       {NONE, std::any(), VariantMode_constant};
 	const Variant obj_type_m  {STR, (STR_t)"m", VariantMode_constant};
@@ -572,8 +629,8 @@ Variant NativeFuncTrans(const Variant& return_type, const NativeFunc_t& native_f
 		MAP,
 		(MAP_t){
 			{"__t", VariantPresets.obj_type_f},
-			{"__ret_t", return_type},
-			{"__ncall", Variant{FUNC, native_func}}
+			{"__rt", return_type},
+			{"__nc", Variant{FUNC, native_func}}
 		},
 		VariantMode_constant,
 	};
@@ -607,7 +664,7 @@ bool expect_arg_types(const Variant& arg, const std::vector<VariantType>& types,
 
 struct ItyStruct {
 	std::vector<InstToken> (*tokenize)(const std::string& src) = nullptr;
-	void (*exec)(std::vector<InstToken>& sequence, const size_t start_idx, const int end_idx) = nullptr;
+	void (*exec)(ScopeState& state, std::vector<InstToken>& sequence, const size_t start_idx, const int end_idx) = nullptr;
 };
 
 ItyStruct Ity;

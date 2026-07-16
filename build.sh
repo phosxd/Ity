@@ -6,14 +6,14 @@ GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
 
 BIN_SIZE_LIMIT=100000
-COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt -fno-tree-vrp -Wl,--gc-sections -Wl,--build-id=none Main.cpp -o Ity.bin"
+COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt -Wl,--gc-sections -Wl,--build-id=none Main.cpp -o Ity.bin"
 
 DO_TEST=0
 DEBUG=0
 OPTIM="balanced"
-OPTIM_balanced="-O2 -finline-limit=6"
+OPTIM_balanced="-O2 -finline-limit=4"
 OPTIM_speed="-Ofast"
-OPTIM_size="-Os -finline-limit=1"
+OPTIM_size="-Os -finline-limit=0"
 
 
 for i in "$@"; do
@@ -27,7 +27,7 @@ for i in "$@"; do
 		-s|--static*)
 			COMMON_BUILD_ARGS="-static ${COMMON_BUILD_ARGS}"
 		;;
-		-op=*|--optimize=*)
+		-o=*|--optimize=*)
 			OPTIM="${i#*=}"
 		;;
 		*)

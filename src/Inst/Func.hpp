@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Func_exec(const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
+void INST_Func_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
 	const std::string& type_name = args[1];
 	const std::string& name = args[2];
 
@@ -11,22 +11,23 @@ void INST_Func_exec(const Instruction* _inst, InstToken& token, const std::vecto
 	}
 
 	// Give error if the var name is not free on the current scope.
-	if (not is_name_free(ST, name)) {
+	if (not is_name_free(state, name)) {
 		emit_error(ERR_name_is_taken, {name});
 		return;
 	}
 
 	// Give warning if the var name is shadowing another var name.
-	if (not is_name_globally_free(ST, name)) {
+	if (not is_name_globally_free(state, name)) {
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
 	MAP_t func_data = {
 		{"__t", VariantPresets.obj_type_f},
-		{"__idx", Variant{INT, (int)token.i}},
-		{"__ret_t", Variant{STR, type_name}}
+		{"__i", Variant{INT, (int)token.i}},
+		{"__si", Variant{INT, (int)get_state_depth(state)}},
+		{"__rt", Variant{STR, type_name}}
 	};
-	set_data(ST, name, MAP, func_data, VariantMode_constant);
+	set_data(state, name, MAP, func_data, VariantMode_constant);
 	exec_jump_value += token.composite_size;
 }
 

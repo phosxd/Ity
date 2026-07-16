@@ -1,17 +1,17 @@
 #pragma once
 
 
-void INST_If_exec(const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
+void INST_If_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
 	const size_t& args_len = args.size();
 	const std::string& symbol = args.at(0);
 	std::string expr;
 	expr.reserve(args_len-1);
 	for (size_t i = 1; i < args_len; i++) {
-		expr += ' '+args.at(i);
+		expr += ' '+args[i];
 	}
 
 	// Get value from expression.
-	const Variant& value = expr_run(expr);
+	const Variant& value = expr_run(state, expr);
 
 	// Throw error for "if" & "elif" if not boolean.
 	bool expr_passed = false;
@@ -45,7 +45,7 @@ void INST_If_exec(const Instruction* _inst, InstToken& token, const std::vector<
 	if (not passed) exec_jump_value += token.composite_size;
 	// Scope in.
 	else {
-		scope_in(ST);
+		scope_in(state);
 		scoped_tokens.push_back(&token);
 	}
 }

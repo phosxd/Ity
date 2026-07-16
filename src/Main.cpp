@@ -154,7 +154,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 			if (ch == ' ' || ch == '\n') {
 				if (buffer.size() > 0) {
 					item.args.push_back(buffer);
-					buffer = "";
+					buffer.clear();
 				}
 				continue;
 			}
@@ -166,7 +166,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 				// Append remaining argument to args.
 				if (buffer.size() > 0) {
 					item.args.push_back(buffer);
-					buffer = "";
+					buffer.clear();
 				}
 				// Handle composite instructions.
 				for (CompositeItem& comp_item:composite_nest) {
@@ -264,7 +264,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 
 
 // Execute a sequence of instruction tokens.
-void ity_exec(std::vector<InstToken>& sequence, const size_t start_idx, const int end_idx) {
+void ity_exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t start_idx, const int end_idx) {
 	InstTokenSeq = sequence;
 	execution_depth += 1;
 	const size_t seq_len = InstTokenSeq.size();
@@ -281,7 +281,7 @@ void ity_exec(std::vector<InstToken>& sequence, const size_t start_idx, const in
 
 		// If not matched any instruction, run as expression.
 		if (INSTRUCTIONS.find(item.args[0]) == INSTRUCTIONS.end()) {
-			last_expr_result = expr_run(join_str(item.args, " "));
+			last_expr_result = expr_run(state, join_str(item.args, " "));
 		}
 		// Execute instruction.
 		else {
@@ -290,7 +290,7 @@ void ity_exec(std::vector<InstToken>& sequence, const size_t start_idx, const in
 				emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst->REQUIRED)});
 				return;
 			}
-			inst->exec(inst, item, item.args);
+			inst->exec(state, inst, item, item.args);
 			if (exec_jump_value != 0) {
 				i += exec_jump_value;
 				exec_jump_value = 0;
@@ -312,16 +312,15 @@ int main(int argc, char *argv[]) {
 	Ity.tokenize = ity_tokenize;
 	Ity.exec = ity_exec;
 
-	// Get command line flags...
-	std::vector<std::string> script_args;
+	// Get command line arguments & interpreter flags...
+	ARR_t script_args;
 	std::vector<std::string> flags;
 	std::string source_script_path = "";
 	for (int i = 1; i < argc; i++) {
-		std::string arg_str (argv[i]);
-		if (arg_str.size() < 2) continue;
+		const std::string& arg_str (argv[i]);
 		if (arg_str[0] == '-') flags.push_back(arg_str);
 		else if (source_script_path.empty()) source_script_path = arg_str;
-		else script_args.push_back(arg_str);
+		else script_args.push_back(Variant{STR, arg_str, VariantMode_constant});
 	}
 
 	// Set debug flags
@@ -349,36 +348,17 @@ int main(int argc, char *argv[]) {
 
 
 	// Initialize state.
-	ST = create_new_scope_state({
-		{"__VERSION__", Variant{
-			ARR,
-			(ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}},
-			VariantMode_constant
-		}},
-		{"__VERSION_STRING__", Variant{
-			STR,
-			ItyVersionString,
-			VariantMode_constant
-		}},
-		{"__OS_NAME__", Variant{
-			STR,
-			OSName,
-			VariantMode_constant
-		}},
-		{"__SCRIPT_FILE_NAME__", Variant{
-			STR,
-			split_source_script.back(),
-			VariantMode_constant
-		}},
-		{"__SCRIPT_START_TIME_MS__", Variant{
-			INT,
-			(int)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count(),
-			VariantMode_constant
-		}},
+	ScopeState state = create_new_scope_state({
+		{"__VERSION__",                Variant{ARR, (ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}}, VariantMode_constant}},
+		{"__VERSION_STRING__",         Variant{STR, ItyVersionString, VariantMode_constant}},
+		{"__OS_NAME__",                Variant{STR, OSName, VariantMode_constant}},
+		{"__SCRIPT_FILE_NAME__",       Variant{STR, split_source_script.back(), VariantMode_constant}},
+		{"__SCRIPT_START_TIME_MS__",   Variant{INT, (int)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
+		{"__CMD_ARGS__",               Variant{ARR, script_args, VariantMode_constant}}
 	});
 	// Merge MiscBuiltin module.
-	LIB_MISCBI_init((std::vector<Variant>){});
-	merge_module(ST, std::any_cast<MAP_t>(LIB_MISCBI.d));
+	LIB_MISCBI_init(state, (ARR_t){});
+	merge_module(state, std::any_cast<MAP_t>(LIB_MISCBI.d));
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 
@@ -406,7 +386,7 @@ int main(int argc, char *argv[]) {
 		timers[1] = Clock::now();
 
 		// Execute tokens.
-		Ity.exec(sequence, 0,-1);
+		Ity.exec(state, sequence, 0,-1);
 	}
 
 
@@ -435,7 +415,7 @@ int main(int argc, char *argv[]) {
 				// Tokenize the command.
 				std::vector<InstToken> sequence = Ity.tokenize(command);
 				// Execute tokens.
-				Ity.exec(sequence, 0,-1);
+				Ity.exec(state, sequence, 0,-1);
 
 				// Print expression result if there is one.
 				if (last_expr_result.t != NONE) {
@@ -457,8 +437,8 @@ int main(int argc, char *argv[]) {
 		};
 		std::cout << "\n\n" << "Program results...\n------------------\n";
 		if (not source_script_path.empty()) {std::cout << "TIME (Inst-Tokenization): " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
-		std::cout <<                                           "TIME (total):             " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
-		std::cout <<                                           "STATE SIZE:               " << get_state_size(ST) << " bytes." << '\n';
+		std::cout <<                                      "TIME (total):             " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
+		std::cout <<                                      "STATE SIZE:               " << get_state_size(state) << " bytes." << '\n';
 		std::cout << '\n';
 	}
 

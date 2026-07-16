@@ -1,7 +1,7 @@
 #pragma once
 
 
-Variant OP_Compare_exec(Variant& first, Variant& second, const std::string& symbol) {
+Variant OP_Compare_exec(ScopeState& _state, Variant& first, Variant& second, const std::string& symbol) {
 	bool test_result = false;
 	if (symbol == "==")        test_result = (first.d == second.d);
 	else if (symbol == "!=")   test_result = not (first.d == second.d);

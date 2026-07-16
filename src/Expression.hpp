@@ -7,8 +7,6 @@
 #include "Op/TypeCast.hpp"
 
 
-const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
-constexpr std::string NUM = "0123456789";
 constexpr std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
 constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
 const std::unordered_map<std::string, const Operation*> OPERATIONS = {
@@ -341,14 +339,14 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 
 
 
-Variant resolve_variant(const Variant& item) {
+Variant resolve_variant(ScopeState& state, const Variant& item) {
 	if (item.t == REF) {
 		const std::string& name = std::any_cast<const STR_t&>(item.d);
-		if (is_name_globally_free(ST, name)) {
+		if (is_name_globally_free(state, name)) {
 			emit_error(ERR_name_does_not_exist, {name});
 			return item;
 		}
-		return get_data_globally(ST, name);
+		return get_data_globally(state, name);
 	}
 
 	return item;
@@ -356,7 +354,7 @@ Variant resolve_variant(const Variant& item) {
 
 
 // Execute a sequence of ExprTokens. `token` itself is an ExprToken which should contain a sequence in `ExprToken.seq`.
-Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int ln_offset=0, unsigned int col_offset=0) {
+Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=false, unsigned int ln_offset=0, unsigned int col_offset=0) {
 	// Output sequence in debug mode.
 	if (debug_flags.expr_seq && not subexpr) {
 		std::cout << ANSI::purple << "ExprToken Sequence: " << ANSI::reset << token.seq << "\n";
@@ -372,8 +370,8 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 				emit_error(ERR_operators_not_allowed, {"ARR", "( YES: [1, (1+1), 3]  |  NO: [1, 1+1, 3] )"});
 				return VariantPresets.empty;
 			}
-			else if (subtoken.t == ExprTokenType_sequence) {array.push_back(expr_exec(subtoken, current_line, current_column));}
-			else {array.push_back(resolve_variant(subtoken.var));}
+			else if (subtoken.t == ExprTokenType_sequence) {array.push_back(expr_exec(state, subtoken, current_line, current_column));}
+			else {array.push_back(resolve_variant(state, subtoken.var));}
 		}
 
 		return Variant{
@@ -410,8 +408,8 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 			}
 			else {
 				// Apply value.
-				if (subtoken.t == ExprTokenType_sequence) map[key] = expr_exec(subtoken, current_line, current_column);
-				else map[key] = resolve_variant(subtoken.var);
+				if (subtoken.t == ExprTokenType_sequence) map[key] = expr_exec(state, subtoken, current_line, current_column);
+				else map[key] = resolve_variant(state, subtoken.var);
 				is_key = true;
 			}
 		}
@@ -439,7 +437,7 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 			if (op->pre_exec) {
 				// Skip evaluation of second Variant if pre_exec says so...
 				bool eval_second_operand = true;
-				Variant pre_exec_result = op->pre_exec(result, op_symbol, eval_second_operand);
+				Variant pre_exec_result = op->pre_exec(state, result, op_symbol, eval_second_operand);
 				if (not eval_second_operand) {
 					result = std::move(pre_exec_result);
 					op = nullptr;
@@ -449,11 +447,11 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 			}
 			// Get variant.
 			Variant resolved_var = (item.t == ExprTokenType_sequence)
-				? expr_exec(item, true, current_line, current_column)
-				: resolve_variant(item.var)
+				? expr_exec(state, item, true, current_line, current_column)
+				: resolve_variant(state, item.var)
 			;
 			// Execute...
-			result = std::move(op->exec(result, resolved_var, op_symbol));
+			result = std::move(op->exec(state, result, resolved_var, op_symbol));
 			op = nullptr;
 			op_symbol.clear();
 			continue;
@@ -472,14 +470,14 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 			}
 			// Get variant.
 			else {
-				result = resolve_variant(item.var);
+				result = resolve_variant(state, item.var);
 				continue;
 			}
 		}
 
 		// Get value from sub-sequence
 		else if (item.t == ExprTokenType_sequence) {
-			result = std::move(expr_exec(item, current_line, current_column));
+			result = std::move(expr_exec(state, item, current_line, current_column));
 		}
 	}
 
@@ -495,6 +493,6 @@ Variant expr_exec(const ExprToken& token, const bool subexpr=false, unsigned int
 
 
 // Tokenize then execute an expression.
-Variant expr_run(const std::string& expr) {
-	return expr_exec(expr_tokenize(expr, current_line, current_column));
+Variant expr_run(ScopeState& state, const std::string& expr) {
+	return expr_exec(state, expr_tokenize(expr, current_line, current_column));
 }

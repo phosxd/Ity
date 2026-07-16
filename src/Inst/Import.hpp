@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Import_exec(const Instruction* _inst, InstToken& _token, const std::vector<std::string>& args) {
+void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& _token, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	const std::string& symbol = args[0];
 	const std::string& lib_name = args[1];
@@ -17,7 +17,7 @@ void INST_Import_exec(const Instruction* _inst, InstToken& _token, const std::ve
 	}
 
 	// Throw error if the name is already declared in this scope.
-	if (not is_name_free(ST, applied_name)) {
+	if (not is_name_free(state, applied_name)) {
 		emit_error(ERR_name_is_taken, {applied_name});
 		return;
 	}
@@ -38,11 +38,11 @@ void INST_Import_exec(const Instruction* _inst, InstToken& _token, const std::ve
 	}
 
 	const MAP_t& lib_map = std::any_cast<const MAP_t&>(lib->d);
-	//std::any_cast<NativeFunc_t>(lib_map.at("__init").d) (ST, {}); // Call init function.
+	//std::any_cast<NativeFunc_t>(lib_map.at("__init").d) (state, {}); // Call init function.
 	// Merge all public members of the library into the scope.
-	if (symbol == "merge") merge_module(ST, lib_map);
+	if (symbol == "merge") merge_module(state, lib_map);
 	// Add library to scope with the given name.
-	else set_data(ST, applied_name, MAP, lib_map, VariantMode_constant);
+	else set_data(state, applied_name, MAP, lib_map, VariantMode_constant);
 }
 
 

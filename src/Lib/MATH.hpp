@@ -3,12 +3,12 @@
 #include <cmath>
 
 
-Variant LIB_MATH_init(const ARR_t& args) {
+Variant LIB_MATH_init(ScopeState& _state, const ARR_t& args) {
 	return VariantPresets.empty;
 }
 
 
-Variant LIB_MATH_math(const ARR_t& args, const std::string& func) {
+Variant LIB_MATH_math(ScopeState& _state, const ARR_t& args, const std::string& func) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
 	const Variant& var = args[0];
 
@@ -41,14 +41,14 @@ Variant LIB_MATH_math(const ARR_t& args, const std::string& func) {
 }
 
 
-Variant LIB_MATH_abs(const ARR_t& args) {return LIB_MATH_math(args, "abs");}
-Variant LIB_MATH_floor(const ARR_t& args) {return LIB_MATH_math(args, "floor");}
-Variant LIB_MATH_ceil(const ARR_t& args) {return LIB_MATH_math(args, "ceil");}
-Variant LIB_MATH_log(const ARR_t& args) {return LIB_MATH_math(args, "log");}
-Variant LIB_MATH_sqrt(const ARR_t& args) {return LIB_MATH_math(args, "sqrt");}
+Variant LIB_MATH_abs(ScopeState& state, const ARR_t& args) {return LIB_MATH_math(state, args, "abs");}
+Variant LIB_MATH_floor(ScopeState& state, const ARR_t& args) {return LIB_MATH_math(state, args, "floor");}
+Variant LIB_MATH_ceil(ScopeState& state, const ARR_t& args) {return LIB_MATH_math(state, args, "ceil");}
+Variant LIB_MATH_log(ScopeState& state, const ARR_t& args) {return LIB_MATH_math(state, args, "log");}
+Variant LIB_MATH_sqrt(ScopeState& state, const ARR_t& args) {return LIB_MATH_math(state, args, "sqrt");}
 
 
-Variant LIB_MATH_pow(const ARR_t& args) {
+Variant LIB_MATH_pow(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.empty;
 	const std::vector<VariantType> valid_types = {INT, FLOAT};
 	if (not expect_arg_types(args[0], valid_types, 0) || not expect_arg_types(args[1], valid_types, 1)) return VariantPresets.empty;

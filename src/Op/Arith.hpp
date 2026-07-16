@@ -1,7 +1,7 @@
 #pragma once
 
 
-Variant OP_Arith_exec(Variant& first, Variant& second, const std::string& symbol) {
+Variant OP_Arith_exec(ScopeState& _state, Variant& first, Variant& second, const std::string& symbol) {
 	// Fixer for negative numbers.
 	if (first.t == NONE && (second.t == INT || second.t == FLOAT)) {
 		second.d = second.d-(second.d*2);

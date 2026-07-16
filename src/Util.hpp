@@ -1,6 +1,12 @@
 #pragma once
 
 
+const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
+constexpr std::string NUM = "0123456789";
+
+
+
+
 // Overloads.
 // ----------
 
@@ -127,7 +133,7 @@ unsigned int count_non_empty_strings(const std::vector<std::string>& items) {
 	const size_t& items_len = items.size();
 	unsigned int count = 0;
 	for (size_t i = 0; i < items_len; i++) {
-		if (not std::move(items.at(i)).empty()) count++;
+		if (not std::move(items[i]).empty()) count++;
 	}
 	return count;
 }
@@ -139,7 +145,7 @@ bool is_int_str_32_in_range(std::string int_str) {
 	int_str = trim_left(int_str, '0');
 	if (int_str.size() == 0) return true;
 
-	const bool negative = (int_str.at(0) == '-');
+	const bool negative = (int_str[0] == '-');
 	size_t digits = int_str.size();
 	if (negative) digits--;
 	// If too many or not enough digits, return false.
@@ -148,7 +154,7 @@ bool is_int_str_32_in_range(std::string int_str) {
 
 	uint8_t i = 0;
 	if (negative) i++;
-	if (int_str.at(i) == '1') return true;
+	if (int_str[i] == '1') return true;
 	return false;
 }
 

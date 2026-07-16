@@ -8,11 +8,7 @@
 #include "ScriptErrors.hpp"
 
 
-// Global current state variable.
-ScopeState ST;
-
-
-unsigned int get_scope_depth(const ScopeState& state) {
+unsigned int get_state_depth(const ScopeState& state) {
 	unsigned int depth = 1;
 	ScopeState* current = state.p;
 	while (true) {
@@ -24,11 +20,27 @@ unsigned int get_scope_depth(const ScopeState& state) {
 }
 
 
+ScopeState* get_state_at_depth(ScopeState& state, const unsigned int target_depth) {
+	unsigned int depth = get_state_depth(state);
+	if (target_depth == depth) return &state;
+	ScopeState* current = state.p;
+	while (true) {
+		if (current == nullptr) break;
+		depth -= 1;
+		if (depth == target_depth) return current;
+		current = current->p;
+	}
+
+	emit_error(ERR_unexpected, {"ScopeState.get_state_at_depth", "no state at depth "+std::to_string(target_depth)});
+	return &state;
+}
+
+
 // Create a new blank scope state.
-ScopeState create_new_scope_state(const MAP_t& data, ScopeState* parent = nullptr) {
+ScopeState create_new_scope_state(const MAP_t data, ScopeState* parent = nullptr) {
 	ScopeState result;
 	if (parent != nullptr) result.p = parent;
-	result.d = data;
+	result.d = std::move(data);
 	return result;
 }
 
@@ -38,7 +50,7 @@ ScopeState create_new_scope_state(const MAP_t& data, ScopeState* parent = nullpt
 void scope_in(ScopeState& state) {
 	state.p = new ScopeState(create_new_scope_state(state.d, state.p));
 	state.d.clear();
-	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope In (" + std::to_string(get_scope_depth(state)) + ")\n" << ANSI::reset;
+	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope In (" + std::to_string(get_state_depth(state)) + ")\n" << ANSI::reset;
 }
 
 
@@ -47,15 +59,15 @@ void scope_out(ScopeState& state) {
 	ScopeState* p = nullptr;
 	if (state.p != nullptr) p = state.p;
 	else {
-		emit_error(ERR_unexpected, {"ScopeState.scope_out", "minimum depth reached, unable to scope out."});
+		emit_error(ERR_unexpected, {"ScopeState.scope_out", "Minimum depth reached, unable to scope out."});
 		return;
 	}
-	state.p = p->p;
+	state.p = std::move(p->p);
 	state.d.clear();
 	state.d = std::move(p->d);
 	delete p;
 
-	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope Out (" + std::to_string(get_scope_depth(state)) + ")\n" << ANSI::reset;
+	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope Out (" + std::to_string(get_state_depth(state)) + ")\n" << ANSI::reset;
 }
 
 
@@ -66,10 +78,10 @@ inline void scope_flush(ScopeState& state) {
 
 
 // Scope out of all ongoing scopes & reset token metadata (if needed).
-void exit_ongoing_scopes() {
+void exit_ongoing_scopes(ScopeState& state) {
 	for (InstToken* token : scoped_tokens) {
 		if (token->args.at(0) == "while") token->meta.clear();
-		scope_out(ST);
+		scope_out(state);
 	}
 	scoped_tokens.clear();
 }
@@ -94,7 +106,7 @@ void restore_ongoing_scopes() {
 unsigned int get_state_size(const ScopeState& state) {
 	unsigned int final_size = 0;
 	for (const auto& i : state.d) {
-		final_size += sizeof(i.first) + sizeof(i.second);
+		final_size += i.first.size() + sizeof(i.second.t) + sizeof(i.second.m) + get_variant_data_size(i.second.d);
 	}
 	return final_size;
 }
@@ -119,7 +131,7 @@ bool is_name_globally_free(const ScopeState& state, const std::string& name) {
 // Gets the data for name in the current scope. Ensure the name exists in the current scope first.
 Variant get_data(ScopeState& state, const std::string& name) {
 	if (state.d.find(name) == state.d.end()) {
-		emit_error(ERR_unexpected, {"ScopeState.get_data", "cannot get non-existent data."});
+		emit_error(ERR_unexpected, {"ScopeState.get_data", "Cannot get data."});
 		return VariantPresets.empty;
 	}
 	return state.d.at(name);
@@ -131,7 +143,7 @@ Variant get_data_globally(ScopeState& state, const std::string& name) {
 	if (not is_name_free(state, name)) return get_data(state, name);
 	else if (state.p != nullptr) return get_data_globally(*state.p, name);
 	else {
-		emit_error(ERR_unexpected, {"ScopeState.get_data_globally", "cannot get non-existent data."});
+		emit_error(ERR_unexpected, {"ScopeState.get_data_globally", "Cannot get data."});
 		return VariantPresets.empty;
 	}
 }
@@ -164,7 +176,7 @@ void set_data(ScopeState& state, const std::string& name, const VariantType& typ
 }
 
 
-void set_data_globally(ScopeState& state, const std::string& name, const VariantType& type, const VariantData& data, const VariantMode mode) {
+void set_data_globally(ScopeState& state, const std::string& name, const VariantType& type, const VariantData& data, const VariantMode& mode) {
 	if (not is_name_free(state, name)) set_data(state, name, type, data, mode);
 	else if (state.p != nullptr) return set_data_globally(*state.p, name, type, data, mode);
 }
@@ -175,8 +187,7 @@ void merge_module(ScopeState& state, const MAP_t& map) {
 	for (const auto& i : map) {
 		const std::string& prop_name = i.first;
 		if (prop_name.starts_with("__")) continue; // Skip private members.
-		const Variant& var = i.second;
-		set_data(state, prop_name, var.t, var.d, var.m);
+		set_data(state, prop_name, i.second.t, i.second.d, i.second.m);
 	}
 }
 

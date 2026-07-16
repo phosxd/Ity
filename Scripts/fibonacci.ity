@@ -1,0 +1,18 @@
+import IO;
+
+
+const * n = IO.prompt:['Number: '] -> INT;
+
+
+var INT a = 0;
+var INT b = 1;
+
+var INT i = 0; while i < n;
+	var INT c = a;
+	set a = b;
+	set b = c + b;
+
+	IO.print:[a];
+
+	set i += 1;
+/;

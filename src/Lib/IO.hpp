@@ -3,41 +3,41 @@
 
 // Called whenever the module is imported.
 // This can be called multiple times.
-Variant LIB_IO_init(const ARR_t& args) {
+Variant LIB_IO_init(ScopeState& _state, const ARR_t& args) {
 	return VariantPresets.empty;
 }
 
 
-Variant LIB_IO_in(const ARR_t& args) {
+Variant LIB_IO_in(ScopeState& _state, const ARR_t& args) {
 	std::string input_line;
 	std::getline(std::cin, input_line);
 	return Variant{STR, input_line};
 }
 
 
-Variant LIB_IO_out(const ARR_t& args) {
+Variant LIB_IO_out(ScopeState& _state, const ARR_t& args) {
 	for (const Variant& var : args) std::cout << var.d;
 	return VariantPresets.empty;
 }
 
 
-Variant LIB_IO_print(const ARR_t& args) {
-	LIB_IO_out(args);
+Variant LIB_IO_print(ScopeState& state, const ARR_t& args) {
+	LIB_IO_out(state, args);
 	std::cout << '\n';
 	return VariantPresets.empty;
 }
 
 
-Variant LIB_IO_print_err(const ARR_t& args) {
+Variant LIB_IO_print_err(ScopeState& _state, const ARR_t& args) {
 	for (const Variant& var : args) std::cerr << var.d;
 	std::cerr << '\n';
 	return VariantPresets.empty;
 }
 
 
-Variant LIB_IO_prompt(const ARR_t& args) {
-	LIB_IO_out(args);
-	return LIB_IO_in({});
+Variant LIB_IO_prompt(ScopeState& state, const ARR_t& args) {
+	LIB_IO_out(state, args);
+	return LIB_IO_in(state, {});
 }
 
 

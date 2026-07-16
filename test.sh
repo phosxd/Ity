@@ -439,6 +439,41 @@ print:[ (add:[4,5]) ];
 # 18
 
 "
+merge IO;
+
+# Function scope correctness.
+# ---------------------------
+
+# Should throw a shadowed name warning, because 'a' is defined in the same scope as the function declaration.
+func NONE test; arg ANY a;
+	print:[a];
+/;
+
+
+var INT a = 1;
+test:[a];
+
+
+
+# Does not throw a warning, because outer var 'b' is not in the same scope as the function declaration
+func NONE test_2; arg ANY b;
+	print:[b];
+/;
+
+
+if true;
+	var INT b = 5;
+	test_2:[b];
+/;
+"
+
+"Warning: 24
+1
+5"
+
+# 19
+
+"
 # Early exit conditional check
 # ----------------------------
 
@@ -463,13 +498,6 @@ print:[( (1 == 1) || (test:[]) )];
 true
 true
 true"
-
-# 19
-
-"
-"
-
-""
 
 # 20
 

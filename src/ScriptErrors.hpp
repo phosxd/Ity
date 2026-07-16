@@ -94,7 +94,7 @@ bool emit_just_codes = false;
 bool emit_warnings = true;
 
 
-std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
+std::string make_err_message(const ERR_CODE code, const std::vector<std::string> args) {
 	if (code == ERR_custom)                                 return args[0];
 	else if (code == ERR_unexpected)                        return "Unexpected (" + args[0] + "): " + args[1] + " Please report bug.";
 	else if (code == ERR_expected_ity_extension)            return "Expected file with \".ity\" extension.";
@@ -158,7 +158,7 @@ std::string make_err_message(ERR_CODE code, std::vector<std::string> args) {
 }
 
 
-std::string get_script_pos(const unsigned int& ln, const unsigned int& col, const bool pointer=true) {
+std::string get_script_pos(const unsigned int ln, const unsigned int col, const bool pointer=true) {
 	const std::string& ln_col = "Ln/Col " + std::to_string(ln) + ':' + std::to_string(col);
 	if (not pointer) return ln_col;
 
@@ -168,18 +168,20 @@ std::string get_script_pos(const unsigned int& ln, const unsigned int& col, cons
 }
 
 
-void emit_warn(ERR_CODE code, std::vector<std::string> args={}) {
+void emit_warn(const ERR_CODE code, std::vector<std::string> args={}) {
 	if (not emit_warnings) return;
 	if (emit_just_codes) {
 		std::cout << "Warning: " << std::to_string(code) << '\n';
 		return;
 	}
+
+	// Print pretty warning message.
 	std::cout << ANSI::yellow << "Warning " << std::to_string(code) << ": " << ANSI::white << make_err_message(code,args) << ANSI::reset << '\n';
-	std::cout << indent(get_script_pos(current_line, current_column)) << '\n';
+	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(current_line, current_column)) << '\n';
 }
 
 
-void emit_error(ERR_CODE code, std::vector<std::string> args={}, unsigned int ln_override=0, unsigned int col_override=0) {
+void emit_error(const ERR_CODE code, std::vector<std::string> args={}, unsigned int ln_override=0, unsigned int col_override=0) {
 	if (emit_just_codes) {
 		std::cout << "Error: " << std::to_string(code) << '\n';
 		exit(1);
@@ -188,8 +190,9 @@ void emit_error(ERR_CODE code, std::vector<std::string> args={}, unsigned int ln
 	if (ln_override == 0) ln_override = current_line;
 	if (col_override == 0) col_override = current_column;
 
+	// Print pretty error message.
 	std::cout << ANSI::red << "Error " << std::to_string(code) << ": " << ANSI::white << make_err_message(code,args) << ANSI::reset << '\n';
-	std::cout << indent(get_script_pos(ln_override, col_override)) << '\n';
+	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(ln_override, col_override)) << '\n';
 
 	// Kill program.
 	exit(1);

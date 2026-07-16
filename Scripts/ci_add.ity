@@ -1,0 +1,14 @@
+merge IO;
+
+
+const ARR args = __CMD_ARGS__;
+var FLOAT sum = 0.0;
+print:[args];
+
+var INT i = 0; while i < (length:[args]);
+	set sum += args:i -> FLOAT;
+	set i += 1;
+/;
+
+
+print:[(ANSI.yellow), 'Sum: ', sum];

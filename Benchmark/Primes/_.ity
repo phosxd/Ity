@@ -22,11 +22,11 @@ func BOOL is_prime; arg INT n;
 /;
 
 
-const * n = prompt:['Count: '] -> INT;
+const * count = prompt:['Count: '] -> INT;
 const INT start = now:['ms'];
 
 
-var INT p = 2; while p <= n;
+var INT p = 2; while p <= count;
 	if is_prime:[p]; print:[p]; /;
 	set p += 1;
 /;

@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Throw_exec(const Instruction* _inst, InstToken& _token, const std::vector<std::string>& args) {
+void INST_Throw_exec(ScopeState& state, const Instruction* _inst, InstToken& _token, const std::vector<std::string>& args) {
 	const unsigned int args_len = args.size();
 	std::string expr;
 	expr.reserve(args.size());
@@ -14,7 +14,7 @@ void INST_Throw_exec(const Instruction* _inst, InstToken& _token, const std::vec
 		return;
 	}
 
-	const Variant& var = expr_run(expr);
+	const Variant& var = expr_run(state, expr);
 	if (var.t != STR) {
 		emit_error(ERR_expected_string_expression);
 		return;

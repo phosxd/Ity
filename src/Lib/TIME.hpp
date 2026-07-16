@@ -1,12 +1,12 @@
 #pragma once
 
 
-Variant LIB_TIME_init(const ARR_t& args) {
+Variant LIB_TIME_init(ScopeState& _state, const ARR_t& args) {
 	return VariantPresets.empty;
 }
 
 
-Variant LIB_TIME_get_time(const ARR_t& args, const unsigned int mode) {
+Variant LIB_TIME_get_time(ScopeState& _state, const ARR_t& args, const unsigned int mode) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.empty;
 
 	const STR_t& precision = std::any_cast<STR_t>(args[0].d);
@@ -34,13 +34,13 @@ Variant LIB_TIME_get_time(const ARR_t& args, const unsigned int mode) {
 }
 
 
-Variant LIB_TIME_system_now(const ARR_t& args) {
-	return LIB_TIME_get_time(args, 0);
+Variant LIB_TIME_system_now(ScopeState& state, const ARR_t& args) {
+	return LIB_TIME_get_time(state, args, 0);
 }
 
 
-Variant LIB_TIME_now(const ARR_t& args) {
-	return LIB_TIME_get_time(args, 1);
+Variant LIB_TIME_now(ScopeState& state, const ARR_t& args) {
+	return LIB_TIME_get_time(state, args, 1);
 }
 
 

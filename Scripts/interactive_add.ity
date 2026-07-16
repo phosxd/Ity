@@ -1,0 +1,14 @@
+merge IO;
+
+
+func FLOAT add; arg FLOAT first; arg FLOAT second;
+	return a+b;
+/;
+
+
+print:[( (ANSI:'bold') + 'Add 2 numbers...' + (ANSI:'reset') )];
+
+const * a = prompt:['Value 1: '] -> FLOAT;
+const * b = prompt:['Value 2: '] -> FLOAT;
+
+print:[(ANSI.yellow), 'Sum: ', (add:[a,b])];
