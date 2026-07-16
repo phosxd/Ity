@@ -502,9 +502,29 @@ true"
 # 20
 
 "
+merge IO;
+
+# Type casting
+# ------------
+
+print:[( 'true' -> BOOL )];
+print:[( 'false' -> BOOL )];
+print:[( 'invalid representation' -> BOOL )];
+print:[( '12.76' -> INT )];
+print:[( '12.78' -> FLOAT )];
+print:[( 'invalid representation' -> FLOAT )];
+print:[( (100 -> STR) + '.' )];
+print:[( (10.8760 -> STR) + '.' )];
 "
 
-""
+"true
+false
+false
+12
+12.78
+0
+100.
+10.876."
 )
 
 

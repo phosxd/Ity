@@ -94,6 +94,7 @@ std::string trim_left(const std::string& text, const char ch) {
 // Joins all elements in the vector into a new string, with each element separated by the given `sep`.
 std::string join_str(const std::vector<std::string>& vec, const std::string& sep) {
 	const size_t& vec_len = vec.size();
+	if (vec_len == 0) return "";
 	std::string result = vec.front();
 	result.reserve(sep.size() * (vec_len-1));
 	for (size_t i = 1; i < vec_len; i++) {
