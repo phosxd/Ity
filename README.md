@@ -11,10 +11,10 @@ Ity is a light-weight interpreted programming language built with C++.
 
 
 # Overview
-- Tiny & portable. < 100kb executable.
-- Platform agnostic. No platform dependant code.
-- No build setup. Requires no third-party libraries.
-- Practical. I/O, file management, time, & math modules all built-in.
+- **Tiny & portable.** < 100kb executable.
+- **Platform agnostic.** No platform dependant code.
+- **No build setup.** Requires no third-party libraries.
+- **Practical.** I/O, file management, time, & math modules all built-in.
 
 
 # Build interpreter
@@ -27,7 +27,7 @@ After compilation has finished, the build script will display the time it took t
 (Optimization: balanced)
 Building prodution binary...
 Done in 2s.
-Final size: 93288 bytes. (+0)
+Final size: 96512 bytes. (+0)
 ```
 
 If the final build size is larger than 100,000 bytes it will give you a warning message.
@@ -39,8 +39,9 @@ Binary size is over the goal of 100000.
 ## Flags
 You can pass flags to the build script.
 
-Flags:
-
+- `-o=` or `--optimize=`:
+	Set optimization level.
+	"balanced", "speed", or "size".
 - `-s` or `--static`:
 	Statically link final binary.
 - `-d` or `--debug`:
@@ -48,6 +49,12 @@ Flags:
 - `-t` or `--test`:
 	Run tests after compilation.
 
+## Optimization profiles
+As mentioned in the flags section, you can choose from 3 optimization profiles. Balanced is the default & is what is used for benchmarks, but it is not the most performant.
+If you're looking to get the most speed out of Ity, use the "speed" profile which increases overall speed by about 23% but comes at the cost of a slightly larger binary (still under 200kb).
+On the other hand, if you are *really* constrained with file size & are willing to deal with an about 19% slower runtime then you can use the "size" profile, which decreases the final binary size to somehwere around 82-85kb.
+
+The overall differences between each profile is largely insignificant in most real-word cases, so unless you are working with tight constraints I wouldn't worry about changing the optimization profile.
 
 # Interpreter usage
 After building the interpreter, you should see a file called `Ity.bin` which is the standalone interpreter executable.
@@ -94,7 +101,7 @@ Flags:
 - `-d-assign-data`:
 	Print "set_data" calls on the current state.
 - `-d-scoping`:
-- 	Print scope in/out calls.
+	Print scope in/out calls.
 
 
 # Language usage
