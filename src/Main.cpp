@@ -17,15 +17,15 @@
 #include "Expression.hpp"
 
 // Lib imports...
-#include "Lib/MiscBuiltin.hpp"
+#include "Lib/BuiltIn.hpp"
 #include "Lib/IO.hpp"
-#include "Lib/TIME.hpp"
-#include "Lib/MATH.hpp"
+#include "Lib/Time.hpp"
+#include "Lib/Math.hpp"
 const Variant LIBS[] = {
-	LIB_MISCBI,
+	LIB_BI,
 	LIB_IO,
-	LIB_TIME,
-	LIB_MATH
+	LIB_Time,
+	LIB_Math
 };
 
 // Instruction imports...
@@ -171,7 +171,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 					buffer.clear();
 				}
 				// Handle composite instructions.
-				for (CompositeItem& comp_item:composite_nest) {
+				for (CompositeItem& comp_item : composite_nest) {
 					// Throw error if composite size is about to go over the max for a 16-bit unsigned integer.
 					if (comp_item.size == uint16_max) {
 						emit_error(ERR_max_composite_size, {}, ln,col);
@@ -199,7 +199,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 							bool found = false;
 							std::vector<CompositeItem> reverse_nest = composite_nest; std::reverse(reverse_nest.begin(), reverse_nest.end());
 							for (const CompositeItem& comp_item : reverse_nest) {
-								if (comp_item.token.args[0] != "func") {continue;}
+								if (comp_item.token.args[0] != "func") continue;
 								found = true;
 								break;
 							}
@@ -263,6 +263,7 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 	if (debug_flags.inst_seq) {
 		std::cout << ANSI::purple << "Instruction Sequence: " << ANSI::reset << sequence << '\n';
 	}
+
 	return sequence;
 }
 
@@ -363,8 +364,8 @@ int main(int argc, char *argv[]) {
 		{"__CMD_ARGS__",               Variant{ARR, script_args, VariantMode_constant}}
 	});
 	// Merge MiscBuiltin module.
-	LIB_MISCBI_init(state, (ARR_t){});
-	merge_module(state, std::any_cast<MAP_t>(LIB_MISCBI.d));
+	LIB_BI_init(state, (ARR_t){});
+	merge_module(state, std::any_cast<MAP_t>(LIB_BI.d));
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 

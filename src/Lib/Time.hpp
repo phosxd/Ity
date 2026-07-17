@@ -1,12 +1,12 @@
 #pragma once
 
 
-Variant LIB_TIME_init(ScopeState& _state, const ARR_t& args) {
+Variant LIB_Time_init(ScopeState& _state, const ARR_t& args) {
 	return VariantPresets.empty;
 }
 
 
-Variant LIB_TIME_get_time(ScopeState& _state, const ARR_t& args, const unsigned int mode) {
+Variant LIB_Time_get_time(ScopeState& _state, const ARR_t& args, const unsigned int mode) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.empty;
 
 	const STR_t& precision = std::any_cast<STR_t>(args[0].d);
@@ -34,13 +34,13 @@ Variant LIB_TIME_get_time(ScopeState& _state, const ARR_t& args, const unsigned 
 }
 
 
-Variant LIB_TIME_system_now(ScopeState& state, const ARR_t& args) {
-	return LIB_TIME_get_time(state, args, 0);
+Variant LIB_Time_system_now(ScopeState& state, const ARR_t& args) {
+	return LIB_Time_get_time(state, args, 0);
 }
 
 
-Variant LIB_TIME_now(ScopeState& state, const ARR_t& args) {
-	return LIB_TIME_get_time(state, args, 1);
+Variant LIB_Time_now(ScopeState& state, const ARR_t& args) {
+	return LIB_Time_get_time(state, args, 1);
 }
 
 
@@ -49,13 +49,13 @@ Variant LIB_TIME_now(ScopeState& state, const ARR_t& args) {
 // DEFINE MAPPINGS
 // ---------------
 
-const Variant LIB_TIME {
+const Variant LIB_Time {
 	MAP,
 	(MAP_t){
-		{"__name", Variant{STR, (STR_t)"TIME", VariantMode_constant}},
-		{"__init__", NativeFuncTrans(VariantPresets.none_type_str, (NativeFunc_t)LIB_TIME_init)},
-		{"system_now", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_TIME_system_now)},
-		{"now", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_TIME_now)},
+		{"__name", Variant{STR, (STR_t)"Time", VariantMode_constant}},
+		{"__init__", NativeFuncTrans(VariantPresets.none_type_str, (NativeFunc_t)LIB_Time_init)},
+		{"system_now", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_Time_system_now)},
+		{"now", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_Time_now)},
 	},
 	VariantMode_constant
 };

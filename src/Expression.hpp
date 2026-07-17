@@ -127,6 +127,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			if (is_escaped_char == true) {
 				is_escaped_char = false;
 				if (ch == 'n') buffer.push_back('\n');
+				else if (ch == 't') buffer.push_back('\t');
 				else buffer.push_back(ch);
 				continue;
 			}
@@ -162,7 +163,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 
 		else {
 			// Ignore spaces.
-			if (ch == ' ' || ch == '\n' || ch == '\t') {continue;}
+			if (ch == ' ' || ch == '\n' || ch == '\t') continue;
 
 			// Start sub-expression.
 			if (ch == '(') {

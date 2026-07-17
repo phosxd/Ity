@@ -679,7 +679,7 @@ constexpr std::string ItyVersionString = "0.0.1";
 // Last number indicates release type:
 //	0 = release.
 //	1 = beta / pre-release.
-//	2 = experimental.
+//	2 = experimental / custom.
 const std::vector<int> ItyVersion = {0,0,1, 0};
 
 constexpr std::string OSName =

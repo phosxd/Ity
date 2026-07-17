@@ -3,12 +3,12 @@
 #include <cmath>
 
 
-Variant LIB_MATH_init(ScopeState& _state, const ARR_t& args) {
+Variant LIB_Math_init(ScopeState& _state, const ARR_t& args) {
 	return VariantPresets.empty;
 }
 
 
-Variant LIB_MATH_math(ScopeState& _state, const ARR_t& args, const std::string& func) {
+Variant LIB_Math_math(ScopeState& _state, const ARR_t& args, const std::string& func) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
 	const Variant& var = args[0];
 
@@ -41,14 +41,14 @@ Variant LIB_MATH_math(ScopeState& _state, const ARR_t& args, const std::string& 
 }
 
 
-Variant LIB_MATH_abs(ScopeState& state, const ARR_t& args) {return LIB_MATH_math(state, args, "abs");}
-Variant LIB_MATH_floor(ScopeState& state, const ARR_t& args) {return LIB_MATH_math(state, args, "floor");}
-Variant LIB_MATH_ceil(ScopeState& state, const ARR_t& args) {return LIB_MATH_math(state, args, "ceil");}
-Variant LIB_MATH_log(ScopeState& state, const ARR_t& args) {return LIB_MATH_math(state, args, "log");}
-Variant LIB_MATH_sqrt(ScopeState& state, const ARR_t& args) {return LIB_MATH_math(state, args, "sqrt");}
+Variant LIB_Math_abs(ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "abs");}
+Variant LIB_Math_floor(ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "floor");}
+Variant LIB_Math_ceil(ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "ceil");}
+Variant LIB_Math_log(ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "log");}
+Variant LIB_Math_sqrt(ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "sqrt");}
 
 
-Variant LIB_MATH_pow(ScopeState& _state, const ARR_t& args) {
+Variant LIB_Math_pow(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.empty;
 	const std::vector<VariantType> valid_types = {INT, FLOAT};
 	if (not expect_arg_types(args[0], valid_types, 0) || not expect_arg_types(args[1], valid_types, 1)) return VariantPresets.empty;
@@ -68,17 +68,17 @@ Variant LIB_MATH_pow(ScopeState& _state, const ARR_t& args) {
 // DEFINE MAPPINGS
 // ---------------
 
-const Variant LIB_MATH {
+const Variant LIB_Math {
 	MAP,
 	(MAP_t){
-		{"__name",     Variant{STR, (STR_t)"MATH", VariantMode_constant}},
-		{"__init__",   NativeFuncTrans(VariantPresets.none_type_str,   (NativeFunc_t)LIB_MATH_init)},
-		{"abs",        NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_MATH_abs)},
-		{"floor",      NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_MATH_floor)},
-		{"ceil",       NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_MATH_ceil)},
-		{"log",        NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_MATH_log)},
-		{"sqrt",       NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_MATH_sqrt)},
-		{"pow",        NativeFuncTrans(VariantPresets.float_type_str,  (NativeFunc_t)LIB_MATH_pow)},
+		{"__name",     Variant{STR, (STR_t)"Math", VariantMode_constant}},
+		{"__init__",   NativeFuncTrans(VariantPresets.none_type_str,   (NativeFunc_t)LIB_Math_init)},
+		{"abs",        NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_Math_abs)},
+		{"floor",      NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_Math_floor)},
+		{"ceil",       NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_Math_ceil)},
+		{"log",        NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_Math_log)},
+		{"sqrt",       NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_Math_sqrt)},
+		{"pow",        NativeFuncTrans(VariantPresets.float_type_str,  (NativeFunc_t)LIB_Math_pow)},
 	},
 	VariantMode_constant
 };

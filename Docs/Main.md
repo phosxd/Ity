@@ -371,3 +371,12 @@ while i < 100_000;
 	set i += 1;
 /;
 ```
+
+
+# Libraries & Globals
+A list of global variables & functions can be found [here](Docs/Globals.md).
+Libraries enable you to actually do more complex things with relative ease, here are all the built-in libraries:
+- [IO](Docs/Lib/IO.md)
+- [Time](Docs/Lib/Time.md)
+- [Math](Docs/Lib/Math.md)
+- [FileAccess](Docs/Lib/FileAccess.md)

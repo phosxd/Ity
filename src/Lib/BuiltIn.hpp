@@ -3,20 +3,20 @@
 
 // Called whenever the module is imported.
 // This can be called multiple times.
-Variant LIB_MISCBI_init(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_init(ScopeState& _state, const ARR_t& args) {
 	return VariantPresets.empty;
 }
 
 
 // Return the type of the given Variant, in string form.
-Variant LIB_MISCBI_get_state(ScopeState& state, const ARR_t& args) {
+Variant LIB_BI_get_state(ScopeState& state, const ARR_t& args) {
 	if (not expect_arg_count(args, 0)) return VariantPresets.empty;
 	return Variant{MAP, state.d};
 }
 
 
 // Pause thread execution for the given number of seconds.
-Variant LIB_MISCBI_sleep(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_sleep(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
 	const Variant& var = args[0];
 
@@ -35,14 +35,14 @@ Variant LIB_MISCBI_sleep(ScopeState& _state, const ARR_t& args) {
 
 
 // Return the type of the given Variant, in string form.
-Variant LIB_MISCBI_type_name(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_type_name(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
 	return Variant{STR, get_variant_type_name(args[0].t)};
 }
 
 
 // Return the length of the given array or string.
-Variant LIB_MISCBI_length(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_length(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
 	const Variant& var = args[0];
 
@@ -57,7 +57,7 @@ Variant LIB_MISCBI_length(ScopeState& _state, const ARR_t& args) {
 
 
 // Return the number of bytes taken by the given variant.
-Variant LIB_MISCBI_size(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_size(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
 	return Variant{INT, (int)get_variant_data_size(args[0].d)};
 }
@@ -68,11 +68,11 @@ Variant LIB_MISCBI_size(ScopeState& _state, const ARR_t& args) {
 // DEFINE MAPPINGS
 // ---------------
 
-const Variant LIB_MISCBI {
+const Variant LIB_BI {
 	MAP,
 	(MAP_t){
-		{"__name", Variant{STR, (STR_t)"MISCBI", VariantMode_constant}},
-		{"__init", NativeFuncTrans(VariantPresets.none_type_str, (NativeFunc_t)LIB_MISCBI_init)},
+		{"__name", Variant{STR, (STR_t)"BI", VariantMode_constant}},
+		{"__init", NativeFuncTrans(VariantPresets.none_type_str, (NativeFunc_t)LIB_BI_init)},
 
 		// Type names.
 		{"NONE",   VariantPresets.none_type_str},
@@ -101,11 +101,11 @@ const Variant LIB_MISCBI {
 		}},
 
 		// Utility functions.
-		{"get_state",  NativeFuncTrans(VariantPresets.map_type_str,   (NativeFunc_t)LIB_MISCBI_get_state)},
-		{"sleep",      NativeFuncTrans(VariantPresets.none_type_str,  (NativeFunc_t)LIB_MISCBI_sleep)},
-		{"type_name",  NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_MISCBI_type_name)},
-		{"length",     NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_MISCBI_length)},
-		{"size",       NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_MISCBI_size)}
+		{"get_state",  NativeFuncTrans(VariantPresets.map_type_str,   (NativeFunc_t)LIB_BI_get_state)},
+		{"sleep",      NativeFuncTrans(VariantPresets.none_type_str,  (NativeFunc_t)LIB_BI_sleep)},
+		{"type_name",  NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_BI_type_name)},
+		{"length",     NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_BI_length)},
+		{"size",       NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_BI_size)}
 	},
 	VariantMode_constant
 };
