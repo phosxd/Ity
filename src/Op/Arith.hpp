@@ -18,11 +18,12 @@ Variant OP_Arith_exec(ScopeState& _state, Variant& first, Variant& second, const
 	}
 
 	VariantData result;
-	if (symbol == "+") {result = first.d + second.d;}
-	else if (symbol == "-") {result = first.d - second.d;}
-	else if (symbol == "*") {result = first.d * second.d;}
-	else if (symbol == "/") {result = first.d / second.d;}
-	else if (symbol == "%") {result = first.d % second.d;}
+	if (symbol == "+") result = first.d + second.d;
+	else if (symbol == "-") result = first.d - second.d;
+	else if (symbol == "*") result = first.d * second.d;
+	else if (symbol == "/") result = first.d / second.d;
+	else if (symbol == "%") result = first.d % second.d;
+
 	return Variant {
 		type,
 		result,

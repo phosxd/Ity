@@ -45,7 +45,7 @@ Variant OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const
 				emit_error(ERR_unexpected, {"OP_Access.exec", "Improper type of \"__t\" property."});
 				return first;
 			}
-			obj_type = std::any_cast<STR_t>(obj_type_var.d);
+			obj_type = std::move(std::any_cast<STR_t>(obj_type_var.d));
 		}
 
 		// Access map.

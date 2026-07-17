@@ -264,9 +264,9 @@ If you need to declare a name that holds a value that can be changed after decla
 
 ```python
 var ANY this_can_be_anything_but_has_no_value_right_now;
-var NONE this_also_has_no_value;
+var NONE this_has_no_value;
 
-var NONE this_has_no_value = none;
+var NONE this_also_has_no_value = none;
 var BOOL is_true = true;
 var INT the_number_one = 1;
 var FLOAT a_very_specific_number = 125.98765;
@@ -275,7 +275,7 @@ var * my_inferred_var = "This can be any value at declaration";
 ```
 
 ### Const
-If you need to declare a name that has a value that **cannot** be modified or overwritten after declaration, use the `const` instruction. It has the same syntax as the `var` instruction.
+If you need to declare a name that has a value which **cannot** be modified or overwritten after declaration, use the `const` instruction. It has the same syntax as the `var` instruction.
 
 **Examples**:
 ```python

@@ -2,10 +2,9 @@
 
 
 void INST_Return_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
-	const unsigned int args_len = args.size();
-	std::string expr;
-	expr.reserve(args_len);
-	for (unsigned int i = 1; i < args_len; i++) {
+	const size_t args_len = args.size();
+	std::string expr; expr.reserve(args_len);
+	for (size_t i = 1; i < args_len; i++) {
 		expr += ' '+args[i];
 	}
 

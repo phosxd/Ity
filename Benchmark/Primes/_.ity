@@ -1,4 +1,4 @@
-merge IO; merge TIME;
+merge IO; merge Time;
 
 
 func INT iSqrt; arg INT n;

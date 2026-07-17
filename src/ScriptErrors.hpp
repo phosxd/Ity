@@ -130,7 +130,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 	}
 	else if (code == ERR_assignment_type_mismatch)          return "Cannot assign value of type \"" + args[0] + "\" to variable of type \"" + args[1] + "\".";
 	else if (code == ERR_return_type_mismatch)              return "Cannot return value of type \"" + args[0] + "\" in a function that returns type \"" + args[1] + "\".";
-	else if (code == ERR_operators_not_allowed)             return "Operators not allowed inside \"" + args[0] + "\". Use sub-expressions instead: " + args[1] + ".";
+	else if (code == ERR_operators_not_allowed)             return "Operators not allowed here. Wrap in grouping instead.";
 	else if (code == ERR_expected_boolean_expression)       return "Expected a boolean result in expression.";
 	else if (code == ERR_expected_string_expression)        return "Expected a string result in expression.";
 

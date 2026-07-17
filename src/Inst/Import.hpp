@@ -2,13 +2,12 @@
 
 
 void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& _token, const std::vector<std::string>& args) {
-	const unsigned int args_len = args.size();
 	const std::string& symbol = args[0];
 	const std::string& lib_name = args[1];
 	std::string applied_name = lib_name;
 
 	// Get alias.
-	if (args_len == 4) {
+	if (args.size() == 4) {
 		if (args[2] != "as") {
 			emit_error(ERR_invalid_syntax, {"Expected keyword \"as\""});
 			return;

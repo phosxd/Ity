@@ -150,8 +150,15 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 				clean_up_buffer(result_token, item, buffer);
 				// Tokenize sub-expression & add to sequence.
 				const ExprToken& token = expr_tokenize(subexpr, ln_offset, col_offset);
-				item.seq = token.seq;
+				item.seq = std::move(token.seq);
 				result_token.seq.push_back(item);
+				// Throw error if operator token found.
+				for (const ExprToken& subtoken : item.seq) {
+					if (subtoken.var.t == OP) {
+						emit_error(ERR_operators_not_allowed);
+						return result_token;
+					}
+				}
 				// Skip over characters inside the sub-expression.
 				skip_to_ln = ln_offset + final_ln_offset;
 				skip_to_col = col_offset + (final_col_offset);
@@ -172,20 +179,18 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 					return result_token;
 				}
 				const std::string& subexpr = expr.substr(i+1);
-				if (not subexpr.empty()) {
-					clean_up_buffer(result_token, item, buffer);
-					// Tokenize sub-expression.
-					const ExprToken& token = expr_tokenize(subexpr, ln_offset, col_offset);
-					// Create expression sequence token.
-					item = ExprToken{token.ln+1, token.col+1};
-					item.t = ExprTokenType_sequence;
-					item.seq = token.seq;
-					// Add to sequence.
-					result_token.seq.push_back(item);
-					// Skip over characters inside the sub-expression.
-					skip_to_ln = ln_offset + final_ln_offset;
-					skip_to_col = col_offset + (final_col_offset) + 1;
-				}
+				clean_up_buffer(result_token, item, buffer);
+				// Tokenize sub-expression.
+				const ExprToken& token = expr_tokenize(subexpr, ln_offset+1, col_offset+1);
+				// Create expression sequence token.
+				item = ExprToken{token.ln+1, token.col+1};
+				item.t = ExprTokenType_sequence;
+				item.seq = std::move(token.seq);
+				// Add to sequence.
+				result_token.seq.push_back(item);
+				// Skip over characters inside the sub-expression.
+				skip_to_ln = ln_offset + final_ln_offset;
+				skip_to_col = col_offset + (final_col_offset) + 1;
 				continue;
 			}
 
@@ -195,7 +200,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			}
 
 			if (is_start) {
-				bool next_ref_is_str_ = next_ref_is_str;
+				const bool next_ref_is_str_ = next_ref_is_str;
 				next_ref_is_str = false;
 				item = ExprToken{ln_offset, col_offset};
 				// Set type integer.
@@ -271,12 +276,10 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 
 				else if (item.var.t == INT) {
 					// If "." found in INT, convert to FLOAT.
-					if (ch == '.') {
-						item.var.t = FLOAT;
-					}
+					if (ch == '.') item.var.t = FLOAT;
 					// Throw error if invalid character found.
 					else if ((NUM.find(ch) == std::string::npos)) {
-						emit_error(ERR_invalid_character_for_construct, {"number", std::string(1,ch)}, ln, col);
+						emit_error(ERR_invalid_character_for_construct, {"number", std::string(1,ch)}, ln_offset, col_offset);
 						return result_token;
 					}
 				}
@@ -285,7 +288,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 					// If no longer matches the bool or none token, switch to a reference.
 					if ((buffer+ch).size() >= secondary_buffer.size() && (buffer+ch) != secondary_buffer) {
 						item.var.t = REF;
-						secondary_buffer = "";
+						secondary_buffer.clear();
 					}
 				}
 
@@ -314,7 +317,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			}
 
 			// End operator.
-			if (is_operator == true && expr_len > i+1 && (expr.at(i+1) == ' ' or not is_special_symbol(expr.at(i+1))) ) {
+			if (is_operator == true && expr_len > i+1 && (expr[i+1] == ' ' or not is_special_symbol(expr[i+1])) ) {
 				result_token.seq.push_back(ExprToken{
 					ln_offset, col_offset,
 					ExprTokenType_variant,
@@ -363,15 +366,9 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 
 	// Resolve array.
 	if (token.var.t == ARR) {
-		std::vector<Variant> array;
-		array.reserve(token.seq.size());
+		std::vector<Variant> array; array.reserve(token.seq.size());
 		for (const ExprToken& subtoken : token.seq) {
-			// Throw error if operator token found.
-			if (subtoken.var.t == OP) {
-				emit_error(ERR_operators_not_allowed, {"ARR", "( YES: [1, (1+1), 3]  |  NO: [1, 1+1, 3] )"});
-				return VariantPresets.empty;
-			}
-			else if (subtoken.t == ExprTokenType_sequence) {array.push_back(expr_exec(state, subtoken, current_line, current_column));}
+			if (subtoken.t == ExprTokenType_sequence) {array.push_back(expr_exec(state, subtoken, current_line, current_column));}
 			else {array.push_back(resolve_variant(state, subtoken.var));}
 		}
 
@@ -382,7 +379,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 	}
 
 	// Resolve map.
-	if (token.var.t == MAP) {
+	else if (token.var.t == MAP) {
 		// Throw error if there are an odd number of elements.
 		if (token.seq.size() % 2 != 0) {
 			emit_error(ERR_invalid_syntax, {"Map literal expects key-value pairs. ( {'a', 1, 'b', 2} )"});
@@ -393,11 +390,6 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 		bool is_key = true;
 		std::string key;
 		for (const ExprToken& subtoken : token.seq) {
-			// Throw error if operator token found.
-			if (subtoken.var.t == OP) {
-				emit_error(ERR_operators_not_allowed, {"MAP", "( YES: {'a', (1+1)}  |  NO: {'a', 1+1} )"});
-				return VariantPresets.empty;
-			}
 			if (is_key) {
 				// Throw error if key is not a string.
 				if (subtoken.var.t != STR) {
@@ -461,7 +453,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 		else if (item.t == ExprTokenType_variant) {
 			// Get operator.
 			if (item.var.t == OP) {
-				op_symbol = std::any_cast<STR_t>(item.var.d);
+				op_symbol = std::move(std::any_cast<STR_t>(item.var.d));
 				if (const auto& it = OPERATIONS.find(op_symbol); it != OPERATIONS.end()) op = it->second;
 				else {
 					emit_error(ERR_invalid_op, {op_symbol});

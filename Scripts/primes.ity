@@ -1,4 +1,4 @@
-import IO; import TIME;
+import IO; import Time;
 
 
 func INT int_square_root; arg INT n;
@@ -37,7 +37,7 @@ func BOOL is_prime; arg INT n;
 
 
 const * n = IO.prompt:['Count: '] -> INT;
-const INT start = TIME.now:['ms'];
+const INT start = Time.now:['ms'];
 
 
 var INT p = 2; while p <= n;
@@ -48,4 +48,4 @@ var INT p = 2; while p <= n;
 /;
 
 
-IO.print:['\nDone in ', ((TIME.now:['ms']-start) / 1000.0), 's.'];
+IO.print:['\nDone in ', ((Time.now:['ms']-start) / 1000.0), 's.'];
