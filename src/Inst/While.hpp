@@ -3,7 +3,7 @@
 
 void INST_While_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
 	// Get value from expression.
-	const Variant& value = expr_run(state, token.expr);
+	const Variant& value = expr_exec(state, token.expr);
 
 	// Throw error if not boolean.
 	if (value.t != BOOL) {

@@ -21,7 +21,7 @@ void INST_Set_exec(ScopeState& state, const Instruction* inst, InstToken& token,
 	const Variant& var = get_data_globally(state, name);
 	// Get value from expression.
 	current_column += count_non_empty_strings({symbol,name,op}) + symbol.size() + name.size() + op.size();
-	const Variant& value = expr_run(state, token.expr);
+	const Variant& value = expr_exec(state, token.expr);
 
 	// Set variable data.
 	VariantData data;

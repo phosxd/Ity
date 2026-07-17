@@ -5,7 +5,7 @@ void INST_If_exec(ScopeState& state, const Instruction* _inst, InstToken& token,
 	const std::string& symbol = args[0];
 
 	// Get value from expression.
-	const Variant& value = expr_run(state, token.expr);
+	const Variant& value = expr_exec(state, token.expr);
 
 	// Throw error for "if" & "elif" if not boolean.
 	bool expr_passed = false;

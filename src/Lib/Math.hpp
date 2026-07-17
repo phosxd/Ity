@@ -15,22 +15,22 @@ Variant LIB_Math_math(ScopeState& _state, const ARR_t& args, const std::string& 
 	VariantType type;
 	VariantData data;
 	if (var.t == INT) {
-		const int& d = std::any_cast<int>(var.d);
+		const INT_t& d = std::any_cast<const INT_t&>(var.d);
 		type = INT;
 		if (func == "abs") data = std::abs(d);
-		else if (func == "floor") data = std::floor(d);
-		else if (func == "ceil") data = std::ceil(d);
-		else if (func == "log") data = (int)std::log(d);
-		else if (func == "sqrt") data = (int)std::sqrt((double)d);
+		else if (func == "floor")  data = (INT_t)std::floor(d);
+		else if (func == "ceil")   data = (INT_t)std::ceil(d);
+		else if (func == "log")    data = (INT_t)std::log(d);
+		else if (func == "sqrt")   data = (INT_t)std::sqrt((double)d);
 	}
 	else if (var.t == FLOAT) {
-		const float& d = std::any_cast<float>(var.d);
+		const FLOAT_t& d = std::any_cast<const FLOAT_t&>(var.d);
 		type = FLOAT;
-		if (func == "abs") data = std::abs(d);
-		else if (func == "floor") data = std::floor(d);
-		else if (func == "ceil") data = std::ceil(d);
-		else if (func == "log") data = (float)std::log(d);
-		else if (func == "sqrt") data = std::sqrtf(d);
+		if (func == "abs")         data = (FLOAT_t)std::abs(d);
+		else if (func == "floor")  data = (FLOAT_t)std::floor(d);
+		else if (func == "ceil")   data = (FLOAT_t)std::ceil(d);
+		else if (func == "log")    data = (FLOAT_t)std::log(d);
+		else if (func == "sqrt")   data = (FLOAT_t)std::sqrtf(d);
 	}
 	else {
 		emit_error(ERR_invalid_func_arg_type, {"0", "INT or FLOAT", get_variant_type_name(var.t)});

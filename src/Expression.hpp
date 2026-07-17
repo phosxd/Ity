@@ -407,10 +407,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 			}
 		}
 
-		return Variant{
-			MAP,
-			map,
-		};
+		return Variant{MAP, map};
 	}
 
 

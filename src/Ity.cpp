@@ -190,6 +190,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 				}
 				if (item.args.size() > 0) {
 					const std::string& inst_name = item.args[0];
+					// Is a valid instruction.
 					if (INSTRUCTIONS.find(inst_name) != INSTRUCTIONS.end()) {
 						// Link elif / else.
 						if (inst_name == "elif" || inst_name == "else") {
@@ -217,15 +218,17 @@ std::vector<InstToken> tokenize(const std::string& src) {
 						}
 
 						const Instruction* inst = INSTRUCTIONS.at(inst_name);
-						// Tokenize expression...
+						// Tokenize expression if possible...
 						if (inst->has_expr) {
 							std::vector<std::string> new_args; new_args.reserve(inst->REQUIRED);
+							std::string expr_string;
 							unsigned int i_ = 0;
 							for (const std::string& arg : item.args) {
 								if (i_ < inst->REQUIRED) new_args.push_back(arg);
-								else item.expr += ' '+item.args[i_];
+								else expr_string += ' '+item.args[i_];
 								i_++;
 							}
+							item.expr = expr_tokenize(expr_string, item.ln, item.col);
 							item.args = new_args;
 						}
 
@@ -259,6 +262,15 @@ std::vector<InstToken> tokenize(const std::string& src) {
 								return sequence;
 							}
 						}
+					}
+					// Instruction is a standalone expression.
+					else {
+						std::string expr_string;
+						for (const std::string& arg : item.args) {
+							expr_string += ' '+arg;
+						}
+						item.expr = expr_tokenize(expr_string, item.ln, item.col);
+						item.args.clear();
 					}
 				}
 				sequence.push_back(item);
@@ -303,28 +315,26 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 		current_inst_token_col = item.col;
 		current_inst_token_args = item.args;
 		const int args_len = item.args.size();
-		if (args_len == 0) continue;
-
-		// If not matched any instruction, run as expression.
-		if (INSTRUCTIONS.find(item.args[0]) == INSTRUCTIONS.end()) {
-			last_expr_result = expr_run(state, join_str(item.args, " "));
+		// If has an expression but no args, run as expression.
+		if (args_len == 0) {
+			if (not item.expr.seq.empty()) last_expr_result = expr_exec(state, item.expr);
+			continue;
 		}
+
 		// Execute instruction.
-		else {
-			const Instruction* inst = INSTRUCTIONS.at(item.args[0]);
-			if (args_len < inst->REQUIRED) {
-				emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst->REQUIRED)});
-				return;
-			}
-			inst->exec(state, inst, item, item.args);
-			if (exec_jump_value != 0) {
-				i += exec_jump_value;
-				exec_jump_value = 0;
-			}
-			if (exec_jump_out) {
-				exec_jump_out = false;
-				break;
-			}
+		const Instruction* inst = INSTRUCTIONS.at(item.args[0]);
+		if (args_len < inst->REQUIRED) {
+			emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst->REQUIRED)});
+			return;
+		}
+		inst->exec(state, inst, item, item.args);
+		if (exec_jump_value != 0) {
+			i += exec_jump_value;
+			exec_jump_value = 0;
+		}
+		if (exec_jump_out) {
+			exec_jump_out = false;
+			break;
 		}
 	}
 	execution_depth -= 1;

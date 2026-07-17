@@ -2,12 +2,12 @@
 
 
 void INST_Throw_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
-	if (token.expr.empty()) {
+	if (token.expr.seq.empty()) {
 		emit_error(ERR_custom, {"Exception thrown."});
 		return;
 	}
 
-	const Variant& var = expr_run(state, token.expr);
+	const Variant& var = expr_exec(state, token.expr);
 	if (var.t != STR) {
 		emit_error(ERR_expected_string_expression);
 		return;

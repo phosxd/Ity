@@ -8,8 +8,8 @@ Variant OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const
 			return first;
 		}
 		const ARR_t& array = std::any_cast<const ARR_t&>(first.d);
-		const size_t index = std::any_cast<int>(second.d);
-		if (index >= array.size()) {
+		const INT_t& index = std::any_cast<const INT_t&>(second.d);
+		if (index >= (INT_t)array.size()) {
 			emit_error(ERR_index_out_of_range, {std::to_string(index)});
 			return first;
 		}
@@ -23,8 +23,8 @@ Variant OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const
 			return first;
 		}
 		const STR_t& str = std::any_cast<const STR_t&>(first.d);
-		const size_t index = std::any_cast<int>(second.d);
-		if (index >= str.size()) {
+		const INT_t& index = std::any_cast<const INT_t&>(second.d);
+		if (index >= (INT_t)str.size()) {
 			emit_error(ERR_index_out_of_range, {std::to_string(index)});
 			return first;
 		}
@@ -88,9 +88,9 @@ Variant OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const
 					return first;
 				}
 				func_arg_index = 0;
-				const int& func_token_index = std::any_cast<int>(map.at("__i").d);
+				const INT_t& func_token_index = std::any_cast<const INT_t&>(map.at("__i").d);
 				const VariantType func_return_type = get_variant_type_from_name(std::any_cast<STR_t>( map.at("__rt").d ));
-				const int& func_scope_depth = std::any_cast<int>(map.at("__si").d);
+				const INT_t& func_scope_depth = std::any_cast<const INT_t&>(map.at("__si").d);
 				const InstToken& func_token = InstTokenSeq.at(func_token_index);
 
 				// Throw error if token is not a function token.
