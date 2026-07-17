@@ -43,8 +43,9 @@ void INST_If_exec(ScopeState& state, const Instruction* _inst, InstToken& token,
 	InstTokenSeq[token.i] = token;
 	// Jump past instructions in this composite if failed.
 	if (not passed) exec_jump_value += token.composite_size;
-	// Scope in.
-	else {
+
+	// Scope in, if declarative.
+	else if (token.declarative_composite){
 		scope_in(state);
 		scoped_tokens.push_back(&token);
 	}

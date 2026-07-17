@@ -410,6 +410,7 @@ struct InstToken {
 	std::vector<std::string> args;
 
 	uint16_t composite_size = 0; // How large the composite instruction is. If `0`, is not a composite instruction.
+	bool declarative_composite = false; // If true, the composite instruction contains variable declarations. This info is used to optimize scoping.
 
 	std::string linked_inst = "";
 	int32_t linked_inst_pos = 0;

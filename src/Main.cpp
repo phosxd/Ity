@@ -41,21 +41,22 @@ const Variant LIBS[] = {
 
 
 const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
-	{"import", &INST_Import},
-	{"merge", &INST_Import},
-	{"throw", &INST_Throw},
-	{"var", &INST_Var},
-	{"const", &INST_Var},
-	{"arg", &INST_Var},
-	{"set", &INST_Set},
-	{"/", &INST_End},
-	{"if", &INST_If},
-	{"elif", &INST_If},
-	{"else", &INST_If},
-	{"while", &INST_While},
-	{"func", &INST_Func},
-	{"return", &INST_Return},
+	{"import",   &INST_Import},
+	{"merge",    &INST_Import},
+	{"throw",    &INST_Throw},
+	{"var",      &INST_Var},
+	{"const",    &INST_Var},
+	{"arg",      &INST_Var},
+	{"set",      &INST_Set},
+	{"/",        &INST_End},
+	{"if",       &INST_If},
+	{"elif",     &INST_If},
+	{"else",     &INST_If},
+	{"while",    &INST_While},
+	{"func",     &INST_Func},
+	{"return",   &INST_Return},
 };
+const std::vector<std::string> declarative_instructions = {"var","const","func"};
 
 
 Variant last_expr_result;
@@ -67,6 +68,7 @@ struct CompositeItem {
 	uint16_t size = 0;
 	unsigned int ln = 0;
 	unsigned int col = 0;
+	bool declarative = false;
 };
 
 
@@ -176,6 +178,8 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 						return sequence;
 					}
 					comp_item.size += 1;
+					// Flag composite as declarative, if a declarative instruction is found inside it.
+					if (&comp_item == &composite_nest.back() && item.args.size() > 0 && exists_in_vec(declarative_instructions, item.args[0])) comp_item.declarative = true;
 				}
 				if (item.args.size() > 0) {
 					const std::string& inst_name = item.args[0];
@@ -218,12 +222,14 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 								composite_nest.pop_back();
 								// Apply updated token to sequence.
 								comp_item.token.composite_size = comp_item.size;
+								comp_item.token.declarative_composite = comp_item.declarative;
 								if (comp_item.token.args[0] == "func") {
 									comp_item.token.meta = {(unsigned int)sequence.size()};
 								}
 								sequence[comp_item.index] = comp_item.token;
 								item.linked_inst = comp_item.token.args[0];
 								item.linked_inst_pos = -comp_item.size;
+								item.declarative_composite = comp_item.declarative; // End instruction should also easily know if the composite is declarative.
 								// Save composite item for later.
 								last_comp_item = comp_item;
 								last_comp_item_dist = -item.linked_inst_pos;

@@ -23,14 +23,14 @@ void INST_While_exec(ScopeState& state, const Instruction* _inst, InstToken& tok
 	if (not expr_passed) {
 		exec_jump_value += token.composite_size; // Add 1 to skip the end instruction, otherwise will jump back to this instruction.
 		// Scope out if previously scoped in.
-		if (token.meta.size() > 0) {
+		if (token.declarative_composite && token.meta.size() > 0) {
 			scope_out(state);
 			token.meta.clear();
 			scoped_tokens.pop_back();
 		}
 	}
-	// If entering loop for first time, scope in.
-	else if (token.meta.size() == 0) {
+	// If entering loop for first time & the composite is declarative, then scope in.
+	else if (token.declarative_composite && token.meta.size() == 0) {
 		token.meta = {true};
 		scope_in(state);
 		scoped_tokens.push_back(&token);
