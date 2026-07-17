@@ -2,7 +2,7 @@
 
 
 void INST_End_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
-	if (token.linked_inst.empty()) {return;}
+	if (token.linked_inst.empty()) return;
 
 	if (token.linked_inst == "while") {
 		// Jump back to the while instruction. If it's condition failed, it should jump past this end instruction.
@@ -17,8 +17,8 @@ void INST_End_exec(ScopeState& state, const Instruction* _inst, InstToken& token
 
 
 const Instruction INST_End {
-	0,              // Required arg count.
-	0,              // Optional arg count.
+	1,              // Required arg count.
 	INST_End_exec,  // Function.
 	false,          // Is composite.
+	false,          // Has expression.
 };

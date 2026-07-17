@@ -30,7 +30,7 @@ These results were recordered using the following specs:
 |
 |	1. C++		(GCC) 15.2.1 20260123 (Red Hat 15.2.1-7)		0.014s AVG
 |	2. Python	3.14.5											0.105s AVG
-|	3. Ity		0.0.1											3.779s AVG
+|	3. Ity		0.0.1											3.428s AVG
 |	4. Kal		0.1.0											24.46s AVG
 |	5. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		63.72s AVG
 [---------------------------------------------------------------------------]

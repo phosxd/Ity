@@ -209,8 +209,20 @@ std::vector<InstToken> ity_tokenize(const std::string& src) {
 							}
 						}
 
-						// Start composite item...
 						const Instruction* inst = INSTRUCTIONS.at(inst_name);
+						// Tokenize expression...
+						if (inst->has_expr) {
+							std::vector<std::string> new_args; new_args.reserve(inst->REQUIRED);
+							unsigned int i_ = 0;
+							for (const std::string& arg : item.args) {
+								if (i_ < inst->REQUIRED) new_args.push_back(arg);
+								else item.expr += ' '+item.args[i_];
+								i_++;
+							}
+							item.args = new_args;
+						}
+
+						// Start composite item...
 						if (inst->is_composite) {
 							composite_nest.push_back(CompositeItem{item, (unsigned int)sequence.size(), 0, ln, col});
 						}

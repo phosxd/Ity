@@ -408,6 +408,7 @@ struct InstToken {
 	unsigned int ln = 0;
 	unsigned int col = 0;
 	std::vector<std::string> args;
+	std::string expr;
 
 	uint16_t composite_size = 0; // How large the composite instruction is. If `0`, is not a composite instruction.
 	bool declarative_composite = false; // If true, the composite instruction contains variable declarations. This info is used to optimize scoping.
@@ -488,9 +489,9 @@ std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
 #pragma pack(1)
 struct Instruction {
 	uint8_t REQUIRED; // Required argument count,
-	int8_t OPTIONAL; // Optional argument count.
 	void (*exec)(ScopeState& state, const Instruction*, InstToken&, const std::vector<std::string>&) = nullptr;
 	bool is_composite;
+	bool has_expr = false;
 };
 
 

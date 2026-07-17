@@ -1,20 +1,13 @@
 #pragma once
 
 
-void INST_Throw_exec(ScopeState& state, const Instruction* _inst, InstToken& _token, const std::vector<std::string>& args) {
-	const unsigned int args_len = args.size();
-	std::string expr;
-	expr.reserve(args.size());
-	for (unsigned int i = 1; i < args_len; i++) {
-		expr += ' '+args[i];
-	}
-
-	if (expr.empty()) {
+void INST_Throw_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
+	if (token.expr.empty()) {
 		emit_error(ERR_custom, {"Exception thrown."});
 		return;
 	}
 
-	const Variant& var = expr_run(state, expr);
+	const Variant& var = expr_run(state, token.expr);
 	if (var.t != STR) {
 		emit_error(ERR_expected_string_expression);
 		return;
@@ -25,8 +18,8 @@ void INST_Throw_exec(ScopeState& state, const Instruction* _inst, InstToken& _to
 
 
 const Instruction INST_Throw {
-	0,                // Required arg count.
-	-1,               // Optional arg count.
+	1,                // Required arg count.
 	INST_Throw_exec,  // Function.
 	false,            // Is composite.
+	true,             // Has expression.
 };

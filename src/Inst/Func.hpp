@@ -21,20 +21,23 @@ void INST_Func_exec(ScopeState& state, const Instruction* _inst, InstToken& toke
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
-	MAP_t func_data = {
-		{"__t", VariantPresets.obj_type_f},
-		{"__i", Variant{INT, (int)token.i}},
-		{"__si", Variant{INT, (int)get_state_depth(state)}},
-		{"__rt", Variant{STR, type_name}}
-	};
-	set_data(state, name, MAP, func_data, VariantMode_constant);
+	set_data(
+		state, name, MAP,
+		(MAP_t){
+			{"__t", VariantPresets.obj_type_f},
+			{"__i", Variant{INT, (int)token.i}},
+			{"__si", Variant{INT, (int)get_state_depth(state)}},
+			{"__rt", Variant{STR, type_name}}
+		},
+		VariantMode_constant
+	);
 	exec_jump_value += token.composite_size;
 }
 
 
 const Instruction INST_Func {
 	3,               // Required arg count.
-	0,               // Optional arg count.
 	INST_Func_exec,  // Function.
 	true,            // Is composite.
+	false,           // Has expression.
 };

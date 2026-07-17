@@ -2,18 +2,14 @@
 
 
 void INST_Var_exec(ScopeState& state, const Instruction* inst, InstToken& token, const std::vector<std::string>& args) {
-	const unsigned int args_len = args.size();
+	const size_t& args_len = args.size();
 	const std::string& symbol = args[0];
 	const std::string& type_name = args[1];
 	const std::string& name = args[2];
-	std::string op;
-	std::string expr;
-	expr.reserve(args_len-inst->REQUIRED);
-	for (unsigned int i = 3; i < args_len; i++) {
-		if (i == 3) {op = args[i];}
-		else {
-			expr += ' '+args[i];
-		}
+	const std::string& op = (args_len>3) ? args[3] : "";
+	std::string expr; expr.reserve(args_len-inst->REQUIRED);
+	for (size_t i = 4; i < args_len; i++) {
+		expr += ' '+args[i];
 	}
 
 	if (not is_valid_name(name)) {
@@ -80,7 +76,7 @@ void INST_Var_exec(ScopeState& state, const Instruction* inst, InstToken& token,
 
 const Instruction INST_Var {
 	3,              // Required arg count.
-	-1,             // Optional arg count.
 	INST_Var_exec,  // Function.
 	false,          // Is composite.
+	false           // Has expression. (Manually handled for this Instruction).
 };

@@ -47,7 +47,7 @@ void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& _t
 
 const Instruction INST_Import {
 	2,                 // Required arg count.
-	2,                 // Optional arg count.
 	INST_Import_exec,  // Function.
 	false,             // Is composite.
+	false,             // Has expression.
 };

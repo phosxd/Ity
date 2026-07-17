@@ -2,16 +2,10 @@
 
 
 void INST_If_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
-	const size_t& args_len = args.size();
-	const std::string& symbol = args.at(0);
-	std::string expr;
-	expr.reserve(args_len-1);
-	for (size_t i = 1; i < args_len; i++) {
-		expr += ' '+args[i];
-	}
+	const std::string& symbol = args[0];
 
 	// Get value from expression.
-	const Variant& value = expr_run(state, expr);
+	const Variant& value = expr_run(state, token.expr);
 
 	// Throw error for "if" & "elif" if not boolean.
 	bool expr_passed = false;
@@ -53,8 +47,8 @@ void INST_If_exec(ScopeState& state, const Instruction* _inst, InstToken& token,
 
 
 const Instruction INST_If {
-	0,             // Required arg count.
-	-1,            // Optional arg count.
+	1,             // Required arg count.
 	INST_If_exec,  // Function.
 	true,          // Is composite.
+	true,          // Has expression.
 };

@@ -2,15 +2,8 @@
 
 
 void INST_While_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
-	const size_t& args_len = args.size();
-	std::string expr;
-	expr.reserve(args_len-1);
-	for (size_t i = 1; i < args_len; i++) {
-		expr += ' '+args[i];
-	}
-
 	// Get value from expression.
-	const Variant& value = expr_run(state, expr);
+	const Variant& value = expr_run(state, token.expr);
 
 	// Throw error if not boolean.
 	if (value.t != BOOL) {
@@ -39,8 +32,8 @@ void INST_While_exec(ScopeState& state, const Instruction* _inst, InstToken& tok
 
 
 const Instruction INST_While {
-	0,                // Required arg count.
-	-1,               // Optional arg count.
+	1,                // Required arg count.
 	INST_While_exec,  // Function.
 	true,             // Is composite.
+	true,             // Has expression.
 };
