@@ -84,7 +84,7 @@ Holds a 32-bit signed integer. It has a maximum value of 2,147,483,647 & will wr
 ```
 
 ## FLOAT
-Holds a 32-bit signed floating point number. 
+Holds a 64-bit signed floating point number.  It has a range of 1.7e−308 to 1.7e+308.
 
 ```python
 0.0; 1.34291;
@@ -372,6 +372,27 @@ while i < 100_000;
 /;
 ```
 
+## Throw / Exit
+You can terminate the program safely, or with an error, using `throw` or `exit`.
+
+This example throws an error once recursion depth reaches 1,000:
+
+```python
+func NONE recurse; arg INT n = 0;
+	if n == 1000;
+		throw "Okay, let's stop now: " + (n->STR); # Stop at 1000.
+	/;
+	recurse:[(n+1)];
+/;
+
+recurse:[];
+```
+
+Using `exit` will quit the program with exit code `0` & print nothing.
+
+```python
+exit;
+```
 
 # Libraries & Globals
 A list of global variables & functions can be found [here](Docs/Globals.md).

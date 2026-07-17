@@ -20,16 +20,16 @@ Variant LIB_BI_sleep(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
 	const Variant& var = args[0];
 
-	float sleep_time;
+	FLOAT_t sleep_time;
 	switch (var.t) {
-		case INT: sleep_time = std::any_cast<int>(var.d); break;
-		case FLOAT: sleep_time = std::any_cast<float>(var.d); break;
+		case INT: sleep_time = std::any_cast<INT_t>(var.d); break;
+		case FLOAT: sleep_time = std::any_cast<FLOAT_t>(var.d); break;
 		default:
 			emit_error(ERR_invalid_func_arg_type, {"0", "INT or FLOAT", get_variant_type_name(var.t)});
 			return VariantPresets.empty;
 	}
 
-	std::this_thread::sleep_for(std::chrono::milliseconds( (int)(sleep_time*1000) ));
+	std::this_thread::sleep_for(std::chrono::microseconds( (int)(sleep_time*1000000) ));
 	return VariantPresets.empty;
 }
 

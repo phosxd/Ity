@@ -99,7 +99,7 @@ struct Variant {
 
 
 using INT_t = int;
-using FLOAT_t = float;
+using FLOAT_t = double;
 using STR_t = std::string;
 using ARR_t = std::vector<Variant>;
 using MAP_t = std::unordered_map<std::string,Variant>;
@@ -236,7 +236,7 @@ bool operator<(const VariantData& a, const VariantData& b) {
 	// If a is float...
 	else if (t1 == typeid(FLOAT_t)) {;
 		// If b is int...
-		if (t2 == typeid(INT_t)) {return std::any_cast<float>(a) < std::any_cast<INT_t>(b);}
+		if (t2 == typeid(INT_t)) {return std::any_cast<FLOAT_t>(a) < std::any_cast<INT_t>(b);}
 		// If b is float...
 		else if (t2 == typeid(FLOAT_t)) {return std::any_cast<FLOAT_t>(a) < std::any_cast<FLOAT_t>(b);}
 	}
@@ -541,9 +541,9 @@ VariantData get_literal_from_str(const VariantType& type, const std::string& str
 			emit_error(ERR_cannot_initialize_value, {str_val, "Number too large"});
 			return std::any();
 		}
-		return std::stoi(str_val);
+		return (INT_t)std::stoi(str_val);
 	}
-	else if (type == FLOAT) return std::stof(str_val);
+	else if (type == FLOAT) return (FLOAT_t)std::stod(str_val);
 	else return std::any();
 }
 
@@ -551,8 +551,8 @@ VariantData get_literal_from_str(const VariantType& type, const std::string& str
 bool var_to_bool(const Variant& var) {
 	switch (var.t) {
 		case BOOL:   return std::any_cast<bool>(var.d);
-		case INT:    return (bool)std::any_cast<int>(var.d);
-		case FLOAT:  return (bool)std::any_cast<float>(var.d);
+		case INT:    return (bool)std::any_cast<INT_t>(var.d);
+		case FLOAT:  return (bool)std::any_cast<FLOAT_t>(var.d);
 		case STR:    return std::any_cast<STR_t>(var.d) == "true";
 
 		default: return false;
@@ -560,15 +560,15 @@ bool var_to_bool(const Variant& var) {
 }
 
 
-float var_to_float(const Variant& var) {
+FLOAT_t var_to_float(const Variant& var) {
 	switch (var.t) {
-		case BOOL:   return (float)std::any_cast<bool>(var.d);
-		case INT:    return (float)std::any_cast<int>(var.d);
-		case FLOAT:  return std::any_cast<float>(var.d);
+		case BOOL:   return (FLOAT_t)std::any_cast<bool>(var.d);
+		case INT:    return (FLOAT_t)std::any_cast<INT_t>(var.d);
+		case FLOAT:  return std::any_cast<FLOAT_t>(var.d);
 		case STR: {
 			const STR_t& d = std::any_cast<STR_t>(var.d);
 			if (d.size() == 0 || NUM.find(d[0]) == std::string::npos) return 0.0;
-			return std::stof(d);
+			return std::stod(d);
 		}
 
 		default: return 0.0;
@@ -576,11 +576,11 @@ float var_to_float(const Variant& var) {
 }
 
 
-int var_to_int(const Variant& var) {
+INT_t var_to_int(const Variant& var) {
 	switch (var.t) {
-		case BOOL:   return (int)std::any_cast<bool>(var.d);
-		case INT:    return std::any_cast<int>(var.d);
-		case FLOAT:  return (int)std::any_cast<float>(var.d);
+		case BOOL:   return (INT_t)std::any_cast<bool>(var.d);
+		case INT:    return std::any_cast<INT_t>(var.d);
+		case FLOAT:  return (INT_t)std::any_cast<FLOAT_t>(var.d);
 		case STR: {
 			const STR_t& d = std::any_cast<STR_t>(var.d);
 			if (d.size() == 0 || NUM.find(d[0]) == std::string::npos) return 0;
@@ -595,8 +595,8 @@ int var_to_int(const Variant& var) {
 STR_t var_to_str(const Variant& var) {
 	switch (var.t) {
 		case BOOL:   return std::to_string(std::any_cast<bool>(var.d));
-		case INT:    return std::to_string(std::any_cast<int>(var.d));
-		case FLOAT:  return std::to_string(std::any_cast<float>(var.d));
+		case INT:    return std::to_string(std::any_cast<INT_t>(var.d));
+		case FLOAT:  return std::to_string(std::any_cast<FLOAT_t>(var.d));
 		case STR:    return std::any_cast<STR_t>(var.d);
 
 		default: return "";
