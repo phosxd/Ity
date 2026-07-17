@@ -525,6 +525,25 @@ false
 0
 100.
 10.876."
+
+# 21
+
+"
+merge IO;
+
+# Early exit
+# ----------
+
+var INT i = 0; while i < 10;
+	if i == 4;
+		exit;
+	/;
+	out:[i];
+	set i += 1;
+/;
+"
+
+"0123"
 )
 
 

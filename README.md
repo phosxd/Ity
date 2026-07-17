@@ -63,6 +63,8 @@ You can run this in your terminal with `./Ity.bin`.
 ## Source mode
 If you run the interpreter with the path of an Ity script file, it will parse then execute it without printing anything (unless debug flags are set or manual print calls are executed inside the script).
 
+Passing a command line argument after the file path, without using the "-" prefix (indicating interpreter option), will make that argument available to the script under the `__CMD_ARGS__` global.
+
 ## Interactive mode
 Running the interpreter without passing a script file path will run it in "interactive" mode, similar to the Python interpreter's interactive mode, it allows you to immediately parse & execute the code you give it.
 
@@ -83,8 +85,6 @@ The last expression that gets executed in your line will be printed to the conso
 
 ## Flags
 You can pass flags to the interpreter to change how it behaves & select what information it will output.
-
-Note: all flags must be passed before the source file path (if any).
 
 Flags:
 

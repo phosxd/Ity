@@ -34,7 +34,7 @@ const Variant LIBS[] = {
 
 // Instruction imports...
 #include "Inst/Import.hpp"
-#include "Inst/Throw.hpp"
+#include "Inst/Exit.hpp"
 #include "Inst/Var.hpp"
 #include "Inst/Set.hpp"
 #include "Inst/End.hpp"
@@ -47,7 +47,8 @@ const Variant LIBS[] = {
 const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
 	{"import",   &INST_Import},
 	{"merge",    &INST_Import},
-	{"throw",    &INST_Throw},
+	{"exit",     &INST_Exit},
+	{"throw",    &INST_Exit},
 	{"var",      &INST_Var},
 	{"const",    &INST_Var},
 	{"arg",      &INST_Var},
@@ -265,10 +266,8 @@ std::vector<InstToken> tokenize(const std::string& src) {
 					}
 					// Instruction is a standalone expression.
 					else {
-						std::string expr_string;
-						for (const std::string& arg : item.args) {
-							expr_string += ' '+arg;
-						}
+						std::string expr_string; expr_string.reserve(item.args.size());
+						for (const std::string& arg : item.args) expr_string += ' '+arg;
 						item.expr = expr_tokenize(expr_string, item.ln, item.col);
 						item.args.clear();
 					}
