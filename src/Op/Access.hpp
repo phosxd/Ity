@@ -113,7 +113,7 @@ Variant OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const
 					get_state_at_depth(state, func_scope_depth)
 				);
 				if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;
-				Ity.exec(func_state, InstTokenSeq, func_body_start, func_body_end);
+				Ity::exec(func_state, InstTokenSeq, func_body_start, func_body_end);
 				restore_ongoing_scopes();
 
 				// Get result & check if return type matches.

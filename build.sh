@@ -6,7 +6,7 @@ GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
 
 BIN_SIZE_LIMIT=100000
-COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt -Wl,--gc-sections -Wl,--build-id=none Main.cpp -o Ity.bin"
+COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt -Wl,--gc-sections -Wl,--build-id=none Ity.cpp -o ity.o Main.cpp -o Ity.bin"
 
 DO_TEST=0
 DEBUG=0

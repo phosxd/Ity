@@ -661,18 +661,6 @@ bool expect_arg_types(const Variant& arg, const std::vector<VariantType>& types,
 
 
 
-
-// Ity global structure.
-
-struct ItyStruct {
-	std::vector<InstToken> (*tokenize)(const std::string& src) = nullptr;
-	void (*exec)(ScopeState& state, std::vector<InstToken>& sequence, const size_t start_idx, const int end_idx) = nullptr;
-};
-
-ItyStruct Ity;
-
-
-
 // Constants.
 // ----------
 
