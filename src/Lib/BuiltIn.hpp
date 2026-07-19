@@ -72,7 +72,7 @@ const Variant LIB_BI {
 	MAP,
 	(MAP_t){
 		{"__name", Variant{STR, (STR_t)"BI", VariantMode_constant}},
-		{"__init", NativeFuncTrans(VariantPresets.none_type_str, (NativeFunc_t)LIB_BI_init)},
+		{"__init", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_init)},
 
 		// Type names.
 		{"NONE",   VariantPresets.none_type_str},
@@ -101,11 +101,11 @@ const Variant LIB_BI {
 		}},
 
 		// Utility functions.
-		{"get_state",  NativeFuncTrans(VariantPresets.map_type_str,   (NativeFunc_t)LIB_BI_get_state)},
-		{"sleep",      NativeFuncTrans(VariantPresets.none_type_str,  (NativeFunc_t)LIB_BI_sleep)},
-		{"type_name",  NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_BI_type_name)},
-		{"length",     NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_BI_length)},
-		{"size",       NativeFuncTrans(VariantPresets.int_type_str,   (NativeFunc_t)LIB_BI_size)}
+		{"get_state",  NativeFuncTrans(MAP,   (NativeFunc_t)LIB_BI_get_state)},
+		{"sleep",      NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_sleep)},
+		{"type_name",  NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type_name)},
+		{"length",     NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_length)},
+		{"size",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)}
 	},
 	VariantMode_constant
 };

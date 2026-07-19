@@ -94,7 +94,7 @@ void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const st
 				}
 				func_arg_index = 0;
 				const INT_t& func_token_index = std::any_cast<const INT_t&>(map.at("__i").d);
-				const VariantType func_return_type = get_variant_type_from_name(std::any_cast<STR_t>( map.at("__rt").d ));
+				const VariantType& func_return_type = std::any_cast<const VariantType&>( map.at("__rt").d );
 				const INT_t& func_scope_depth = std::any_cast<const INT_t&>(map.at("__si").d);
 				const InstToken& func_token = InstTokenSeq.at(func_token_index);
 

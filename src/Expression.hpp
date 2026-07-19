@@ -473,7 +473,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 		else if (item.t == ExprTokenType_variant) {
 			// Get operator.
 			if (item.var.t == OP) {
-				op_symbol = std::move(std::any_cast<STR_t>(item.var.d));
+				op_symbol = std::any_cast<STR_t&>(item.var.d);
 				if (const auto& it = OPERATIONS.find(op_symbol); it != OPERATIONS.end()) {
 					op = it->second;
 					continue;

@@ -11,6 +11,7 @@
 enum VariantType {
 	// Meta types.
 	PLACEHOLDER,
+	INTERNAL,
 	INFERRED,
 	ANY,
 	OP,
@@ -33,6 +34,7 @@ std::string get_variant_type_name(const VariantType& type) {
 		case NONE: return "NONE";
 		// Meta types.
 		case PLACEHOLDER: return "NONE";
+		case INTERNAL: return "NONE";
 		case INFERRED: return "*";
 		case ANY: return "ANY";
 		case OP: return "OP";
@@ -640,12 +642,12 @@ const VariantPresets_struct VariantPresets;
 
 
 // Translate a native function to a usable function object.
-Variant NativeFuncTrans(const Variant& return_type, const NativeFunc_t& native_func) {
+Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t& native_func) {
 	return Variant{
 		MAP,
 		(MAP_t){
 			{"__t", VariantPresets.obj_type_f},
-			{"__rt", return_type},
+			{"__rt", Variant{INTERNAL, return_type, VariantMode_constant}},
 			{"__nc", Variant{FUNC, native_func}}
 		},
 		VariantMode_constant,
@@ -674,12 +676,12 @@ bool expect_arg_types(const Variant& arg, const std::vector<VariantType>& types,
 // Constants.
 // ----------
 
-constexpr STR_t ItyVersionString = "0.0.1";
+constexpr STR_t ItyVersionString = "0.0.2";
 // Last number indicates release type:
 //	0 = release.
 //	1 = beta / pre-release.
 //	2 = experimental / custom.
-const std::vector<INT_t> ItyVersion = {0,0,1, 0};
+const std::vector<INT_t> ItyVersion = {0,0,2, 0};
 
 constexpr STR_t OSName =
 #if _WIN32

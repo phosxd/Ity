@@ -72,13 +72,13 @@ const Variant LIB_Math {
 	MAP,
 	(MAP_t){
 		{"__name",     Variant{STR, (STR_t)"Math", VariantMode_constant}},
-		{"__init__",   NativeFuncTrans(VariantPresets.none_type_str,   (NativeFunc_t)LIB_Math_init)},
-		{"abs",        NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_Math_abs)},
-		{"floor",      NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_Math_floor)},
-		{"ceil",       NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_Math_ceil)},
-		{"log",        NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_Math_log)},
-		{"sqrt",       NativeFuncTrans(VariantPresets.any_type_str,    (NativeFunc_t)LIB_Math_sqrt)},
-		{"pow",        NativeFuncTrans(VariantPresets.float_type_str,  (NativeFunc_t)LIB_Math_pow)},
+		{"__init__",   NativeFuncTrans(NONE,   (NativeFunc_t)LIB_Math_init)},
+		{"abs",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_abs)},
+		{"floor",      NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_floor)},
+		{"ceil",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_ceil)},
+		{"log",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_log)},
+		{"sqrt",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_sqrt)},
+		{"pow",        NativeFuncTrans(FLOAT,  (NativeFunc_t)LIB_Math_pow)},
 	},
 	VariantMode_constant
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_While_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
+void INST_While_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& _args) {
 	// Get value from expression.
 	const Variant& value = expr_exec(state, token.expr);
 
@@ -10,10 +10,9 @@ void INST_While_exec(ScopeState& state, const Instruction* _inst, InstToken& tok
 		emit_error(ERR_expected_boolean_expression);
 		return;
 	}
-	bool expr_passed = std::any_cast<bool>(value.d);
 
 	// Jump past instructions in this composite if failed.
-	if (not expr_passed) {
+	if (not std::any_cast<const bool&>(value.d)) {
 		exec_jump_value += token.composite_size; // Add 1 to skip the end instruction, otherwise will jump back to this instruction.
 		// Scope out if previously scoped in.
 		if (token.declarative_composite && token.meta.size() > 0) {

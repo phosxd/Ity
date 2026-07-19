@@ -31,7 +31,7 @@ void INST_Var_exec(ScopeState& state, const Instruction* inst, InstToken& token,
 	// Set variable mode.
 	VariantType type = get_variant_type_from_name(type_name);
 	VariantMode mode = VariantMode_locked_type;
-	if (symbol == "const") {mode = VariantMode_constant;}
+	if (symbol == "const") mode = VariantMode_constant;
 	if (type == ANY) {
 		if (mode == 1) {
 			emit_error(ERR_constant_type_not_explicit);
@@ -45,9 +45,7 @@ void INST_Var_exec(ScopeState& state, const Instruction* inst, InstToken& token,
 	Variant value = expr_run(state, expr);
 
 	// Infer the variable's type as expression return type.
-	if (type == INFERRED) {
-		type = value.t;
-	}
+	if (type == INFERRED) type = value.t;
 
 	// Set variable data.
 	if (op == "=" || op == "") {
@@ -58,9 +56,9 @@ void INST_Var_exec(ScopeState& state, const Instruction* inst, InstToken& token,
 				return;
 			}
 			// Replace value if argument is available.
-			const ARR_t& scope_args = std::any_cast<ARR_t>(get_data(state, "__ARGS__")->d);
+			const ARR_t& scope_args = std::any_cast<const ARR_t&>(get_data(state, "__ARGS__")->d);
 			if (func_arg_index < scope_args.size()) {
-				value = scope_args.at(func_arg_index);
+				value = scope_args[func_arg_index];
 				func_arg_index += 1;
 			}
 		}

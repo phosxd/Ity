@@ -53,9 +53,10 @@ const Variant LIB_Time {
 	MAP,
 	(MAP_t){
 		{"__name", Variant{STR, (STR_t)"Time", VariantMode_constant}},
-		{"__init__", NativeFuncTrans(VariantPresets.none_type_str, (NativeFunc_t)LIB_Time_init)},
-		{"system_now", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_Time_system_now)},
-		{"now", NativeFuncTrans(VariantPresets.int_type_str, (NativeFunc_t)LIB_Time_now)},
+		{"__init__", NativeFuncTrans(NONE, (NativeFunc_t)LIB_Time_init)},
+
+		{"system_now",  NativeFuncTrans(INT, (NativeFunc_t)LIB_Time_system_now)},
+		{"now",         NativeFuncTrans(INT, (NativeFunc_t)LIB_Time_now)},
 	},
 	VariantMode_constant
 };
