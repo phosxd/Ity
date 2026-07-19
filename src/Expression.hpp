@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Op/Arith.hpp"
+#include "Op/Set.hpp"
 #include "Op/Compare.hpp"
 #include "Op/ConditionalEval.hpp"
 #include "Op/Access.hpp"
@@ -10,21 +11,29 @@
 constexpr std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
 constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
 const std::unordered_map<std::string, const Operation*> OPERATIONS = {
-	{"+", &OP_Arith},
-	{"-", &OP_Arith},
-	{"*", &OP_Arith},
-	{"/", &OP_Arith},
-	{"%", &OP_Arith},
-	{"==", &OP_Compare},
-	{"!=", &OP_Compare},
-	{">", &OP_Compare},
-	{">=", &OP_Compare},
-	{"<", &OP_Compare},
-	{"<=", &OP_Compare},
-	{"&&", &OP_ConditionalEval},
-	{"||", &OP_ConditionalEval},
-	{":", &OP_Access},
-	{"->", &OP_TypeCast}
+	{"+",  &OP_Arith},
+	{"-",  &OP_Arith},
+	{"*",  &OP_Arith},
+	{"/",  &OP_Arith},
+	{"%",  &OP_Arith},
+
+	{"=",   &OP_Set},
+	{"+=",  &OP_Set},
+	{"-=",  &OP_Set},
+	{"*=",  &OP_Set},
+	{"/=",  &OP_Set},
+	{"%=",  &OP_Set},
+
+	{"==",  &OP_Compare},
+	{"!=",  &OP_Compare},
+	{">",   &OP_Compare},
+	{">=",  &OP_Compare},
+	{"<",   &OP_Compare},
+	{"<=",  &OP_Compare},
+	{"&&",  &OP_ConditionalEval},
+	{"||",  &OP_ConditionalEval},
+	{":",   &OP_Access},
+	{"->",  &OP_TypeCast}
 };
 
 std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
@@ -343,22 +352,20 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 
 
 
-Variant resolve_variant(ScopeState& state, const Variant& item) {
+Variant* resolve_variant(ScopeState& state, Variant& item) {
 	if (item.t == REF) {
 		const std::string& name = std::any_cast<const STR_t&>(item.d);
-		if (is_name_globally_free(state, name)) {
-			emit_error(ERR_name_does_not_exist, {name});
-			return item;
-		}
-		return get_data_globally(state, name);
+		if (not is_name_globally_free(state, name)) return get_data_globally(state, name);
+		emit_error(ERR_name_does_not_exist, {name});
+		return &item;
 	}
 
-	return item;
+	return &item;
 }
 
 
 // Execute a sequence of ExprTokens. `token` itself is an ExprToken which should contain a sequence in `ExprToken.seq`.
-Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=false, unsigned int ln_offset=0, unsigned int col_offset=0) {
+Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false, unsigned int ln_offset=0, unsigned int col_offset=0) {
 	// Output sequence in debug mode.
 	if (debug_flags.expr_seq && not subexpr) {
 		std::cout << ANSI::purple << "ExprToken Sequence: " << ANSI::reset << token.seq << "\n";
@@ -367,15 +374,12 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 	// Resolve array.
 	if (token.var.t == ARR) {
 		std::vector<Variant> array; array.reserve(token.seq.size());
-		for (const ExprToken& subtoken : token.seq) {
-			if (subtoken.t == ExprTokenType_sequence) {array.push_back(expr_exec(state, subtoken, current_line, current_column));}
-			else {array.push_back(resolve_variant(state, subtoken.var));}
+		for (ExprToken& subtoken : token.seq) {
+			if (subtoken.t == ExprTokenType_sequence) array.push_back(expr_exec(state, subtoken, current_line, current_column));
+			else array.push_back(*resolve_variant(state, subtoken.var));
 		}
 
-		return Variant{
-			ARR,
-			std::move(array),
-		};
+		return Variant{ARR, std::move(array)};
 	}
 
 	// Resolve map.
@@ -389,7 +393,7 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 		map.reserve(token.seq.size()/2);
 		bool is_key = true;
 		std::string key;
-		for (const ExprToken& subtoken : token.seq) {
+		for (ExprToken& subtoken : token.seq) {
 			if (is_key) {
 				// Throw error if key is not a string.
 				if (subtoken.var.t != STR) {
@@ -402,23 +406,24 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 			else {
 				// Apply value.
 				if (subtoken.t == ExprTokenType_sequence) map[key] = expr_exec(state, subtoken, current_line, current_column);
-				else map[key] = resolve_variant(state, subtoken.var);
+				else map[key] = *resolve_variant(state, subtoken.var);
 				is_key = true;
 			}
 		}
 
-		return Variant{MAP, map};
+		return Variant{MAP, std::move(map)};
 	}
 
 
 	const unsigned int line_ = ln_offset + token.ln;
 	const unsigned int col_ = col_offset + token.col;
 	const size_t& seq_len = token.seq.size();
-	Variant result;
+	Variant* result = nullptr;
+	std::vector<Variant> temporaries;
 	const Operation* op = nullptr;
 	std::string op_symbol;
 	for (size_t i = 0; i < seq_len; i++) {
-		const ExprToken& item = token.seq[i];
+		ExprToken& item = token.seq[i];
 		current_line = line_ + item.ln;
 		current_column = col_ + (item.col-1);
 
@@ -427,23 +432,33 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 			if (op->pre_exec) {
 				// Skip evaluation of second Variant if pre_exec says so...
 				bool eval_second_operand = true;
-				Variant pre_exec_result = op->pre_exec(state, result, op_symbol, eval_second_operand);
+				Variant pre_exec_result = op->pre_exec(state, *result, op_symbol, eval_second_operand);
 				if (not eval_second_operand) {
-					result = std::move(pre_exec_result);
+					temporaries.push_back(pre_exec_result);
+					result = &temporaries.back();
 					op = nullptr;
-					op_symbol.clear();
 					continue;
 				}
 			}
-			// Get variant.
-			Variant resolved_var = (item.t == ExprTokenType_sequence)
-				? expr_exec(state, item, true, current_line, current_column)
-				: resolve_variant(state, item.var)
-			;
-			// Execute...
-			result = std::move(op->exec(state, result, resolved_var, op_symbol));
+			// Execute operator...
+			Variant* second;
+			Variant token;
+			if (item.t == ExprTokenType_sequence) {
+				token = expr_exec(state, item, true, current_line, current_column);
+				second = &token;
+			}
+			else second = resolve_variant(state, item.var);
+			Variant op_result = Variant{PLACEHOLDER};
+			if (result == nullptr) {
+				Variant empty;
+				op->exec(state, empty, *second, op_symbol, op_result, result);
+			}
+			else op->exec(state, *result, *second, op_symbol, op_result, result);
 			op = nullptr;
-			op_symbol.clear();
+			if (op_result.t != PLACEHOLDER) {
+				temporaries.push_back(op_result);
+				result = &temporaries.back();
+			}
 			continue;
 		}
 
@@ -451,12 +466,12 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 			// Get operator.
 			if (item.var.t == OP) {
 				op_symbol = std::move(std::any_cast<STR_t>(item.var.d));
-				if (const auto& it = OPERATIONS.find(op_symbol); it != OPERATIONS.end()) op = it->second;
-				else {
-					emit_error(ERR_invalid_op, {op_symbol});
-					return result;
+				if (const auto& it = OPERATIONS.find(op_symbol); it != OPERATIONS.end()) {
+					op = it->second;
+					continue;
 				}
-				continue;
+				emit_error(ERR_invalid_op, {op_symbol});
+				return *result;
 			}
 			// Get variant.
 			else {
@@ -467,16 +482,19 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 
 		// Get value from sub-sequence
 		else if (item.t == ExprTokenType_sequence) {
-			result = std::move(expr_exec(state, item, current_line, current_column));
+			temporaries.push_back(expr_exec(state, item, current_line, current_column));
+			result = &temporaries.back();
 		}
 	}
 
+	if (result == nullptr) return Variant{};
+
 	// Output result in debug mode.
 	if (debug_flags.expr_result && not subexpr) {
-		std::cout << ANSI::purple << "Expression Result: " << ANSI::reset << result << "\n";
+		std::cout << ANSI::purple << "Expression Result: " << ANSI::reset << *result << "\n";
 	};
 
-	return result;
+	return *result;
 }
 
 
@@ -484,5 +502,6 @@ Variant expr_exec(ScopeState& state, const ExprToken& token, const bool subexpr=
 
 // Tokenize then execute an expression.
 Variant expr_run(ScopeState& state, const std::string& expr) {
-	return expr_exec(state, expr_tokenize(expr, current_line, current_column));
+	ExprToken tokens = expr_tokenize(expr, current_line, current_column);
+	return expr_exec(state, tokens);
 }

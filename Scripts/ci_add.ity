@@ -6,8 +6,8 @@ var FLOAT sum = 0.0;
 print:[args];
 
 var INT i = 0; while i < (length:[args]);
-	set sum += args:i -> FLOAT;
-	set i += 1;
+	sum += (args:i -> FLOAT);
+	i += 1;
 /;
 
 

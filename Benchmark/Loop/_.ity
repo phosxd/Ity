@@ -3,7 +3,7 @@ merge IO; merge Time;
 const * n = prompt:['Count: '] -> INT;
 const INT start = now:['ms'];
 
-var INT i = 0; while i < n; set i += 1;
+var INT i = 0; while i < n; i += 1;
 	print:[i];
 /;
 

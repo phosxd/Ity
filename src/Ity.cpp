@@ -36,7 +36,6 @@ const Variant LIBS[] = {
 #include "Inst/Import.hpp"
 #include "Inst/Exit.hpp"
 #include "Inst/Var.hpp"
-#include "Inst/Set.hpp"
 #include "Inst/End.hpp"
 #include "Inst/If.hpp"
 #include "Inst/While.hpp"
@@ -52,7 +51,6 @@ const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
 	{"var",      &INST_Var},
 	{"const",    &INST_Var},
 	{"arg",      &INST_Var},
-	{"set",      &INST_Set},
 	{"/",        &INST_End},
 	{"if",       &INST_If},
 	{"elif",     &INST_If},
@@ -384,7 +382,7 @@ void start_shell(int argc, char* argv[]) {
 		{"__VERSION_STRING__",         Variant{STR, ItyVersionString, VariantMode_constant}},
 		{"__OS_NAME__",                Variant{STR, OSName, VariantMode_constant}},
 		{"__SCRIPT_FILE_NAME__",       Variant{STR, split_source_script.back(), VariantMode_constant}},
-		{"__SCRIPT_START_TIME_MS__",   Variant{INT, (int)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
+		{"__SCRIPT_START_TIME_MS__",   Variant{INT, (INT_t)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
 		{"__CMD_ARGS__",               Variant{ARR, script_args, VariantMode_constant}}
 	});
 	// Merge MiscBuiltin module.

@@ -9,10 +9,10 @@ var INT b = 1;
 
 var INT i = 0; while i < n;
 	var INT c = a;
-	set a = b;
-	set b = c + b;
+	a = b;
+	b = (c + b);
 
 	IO.print:[a];
 
-	set i += 1;
+	i += 1;
 /;

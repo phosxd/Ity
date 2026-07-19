@@ -10,6 +10,7 @@
 
 enum VariantType {
 	// Meta types.
+	PLACEHOLDER,
 	INFERRED,
 	ANY,
 	OP,
@@ -31,6 +32,7 @@ std::string get_variant_type_name(const VariantType& type) {
 	switch (type) {
 		case NONE: return "NONE";
 		// Meta types.
+		case PLACEHOLDER: return "NONE";
 		case INFERRED: return "*";
 		case ANY: return "ANY";
 		case OP: return "OP";
@@ -108,12 +110,12 @@ using MAP_t = std::unordered_map<std::string,Variant>;
 // Resolve VariantData to a real VariantType.
 VariantType get_variant_data_type(const VariantData& d) {
 	const std::type_info& t = d.type();
-	if (t == typeid(bool)) {return BOOL;}
-	else if (t == typeid(INT_t)) {return INT;}
-	else if (t == typeid(FLOAT_t)) {return FLOAT;}
-	else if (t == typeid(STR_t)) {return STR;}
-	else if (t == typeid(ARR_t)) {return ARR;}
-	else if (t == typeid(MAP_t)) {return MAP;}
+	if (t == typeid(bool))          return BOOL;
+	else if (t == typeid(INT_t))    return INT;
+	else if (t == typeid(FLOAT_t))  return FLOAT;
+	else if (t == typeid(STR_t))    return STR;
+	else if (t == typeid(ARR_t))    return ARR;
+	else if (t == typeid(MAP_t))    return MAP;
 	return NONE;
 }
 
@@ -121,9 +123,10 @@ VariantType get_variant_data_type(const VariantData& d) {
 // Return the number of bytes that VariantData takes up.
 size_t get_variant_data_size(const VariantData& s) {
 	const std::type_info& t = s.type();
-	if (t == typeid(INT_t)) return sizeof(std::any_cast<INT_t>(s));
-	else if (t == typeid(FLOAT_t)) return sizeof(std::any_cast<FLOAT_t>(s));
-	else if (t == typeid(STR_t)) return std::any_cast<STR_t>(s).size();
+	if (t == typeid(INT_t))         return sizeof(std::any_cast<INT_t>(s));
+	else if (t == typeid(FLOAT_t))  return sizeof(std::any_cast<FLOAT_t>(s));
+	else if (t == typeid(STR_t))    return std::any_cast<STR_t>(s).size();
+
 	else if (t == typeid(ARR_t)) {
 		size_t sum;
 		for (const Variant& var : std::any_cast<ARR_t>(s)) {
@@ -181,16 +184,16 @@ bool operator==(const VariantData& a, const VariantData& b) {
 	// If a is int...
 	else if (t1 == typeid(INT_t)) {
 		// If b is int...
-		if (t2 == typeid(INT_t)) {return std::any_cast<INT_t>(a) == std::any_cast<INT_t>(b);}
+		if (t2 == typeid(INT_t)) return std::any_cast<INT_t>(a) == std::any_cast<INT_t>(b);
 		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) {return std::any_cast<INT_t>(a) == std::any_cast<FLOAT_t>(b);}
+		else if (t2 == typeid(FLOAT_t)) return std::any_cast<INT_t>(a) == std::any_cast<FLOAT_t>(b);
 	}
 	// If a is float...
 	else if (t1 == typeid(FLOAT_t)) {;
 		// If b is int...
-		if (t2 == typeid(INT_t)) {return std::any_cast<FLOAT_t>(a) == std::any_cast<INT_t>(b);}
+		if (t2 == typeid(INT_t)) return std::any_cast<FLOAT_t>(a) == std::any_cast<INT_t>(b);
 		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) {return std::any_cast<FLOAT_t>(a) == std::any_cast<FLOAT_t>(b);}
+		else if (t2 == typeid(FLOAT_t)) return std::any_cast<FLOAT_t>(a) == std::any_cast<FLOAT_t>(b);
 	}
 
 	// Throw error is none matched.
@@ -205,16 +208,16 @@ bool operator>(const VariantData& a, const VariantData& b) {
 	// If a is int...
 	if (t1 == typeid(INT_t)) {
 		// If b is int...
-		if (t2 == typeid(INT_t)) {return std::any_cast<INT_t>(a) > std::any_cast<INT_t>(b);}
+		if (t2 == typeid(INT_t)) return std::any_cast<INT_t>(a) > std::any_cast<INT_t>(b);
 		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) {return std::any_cast<INT_t>(a) > std::any_cast<FLOAT_t>(b);}
+		else if (t2 == typeid(FLOAT_t)) return std::any_cast<INT_t>(a) > std::any_cast<FLOAT_t>(b);
 	}
 	// If a is float...
 	else if (t1 == typeid(FLOAT_t)) {;
 		// If b is int...
-		if (t2 == typeid(INT_t)) {return std::any_cast<FLOAT_t>(a) > std::any_cast<INT_t>(b);}
+		if (t2 == typeid(INT_t)) return std::any_cast<FLOAT_t>(a) > std::any_cast<INT_t>(b);
 		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) {return std::any_cast<FLOAT_t>(a) > std::any_cast<FLOAT_t>(b);}
+		else if (t2 == typeid(FLOAT_t)) return std::any_cast<FLOAT_t>(a) > std::any_cast<FLOAT_t>(b);
 	}
 
 	// Throw error is none matched.
@@ -229,16 +232,16 @@ bool operator<(const VariantData& a, const VariantData& b) {
 	// If a is int...
 	if (t1 == typeid(INT_t)) {
 		// If b is int...
-		if (t2 == typeid(INT_t)) {return std::any_cast<INT_t>(a) < std::any_cast<INT_t>(b);}
+		if (t2 == typeid(INT_t)) return std::any_cast<INT_t>(a) < std::any_cast<INT_t>(b);
 		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) {return std::any_cast<INT_t>(a) < std::any_cast<FLOAT_t>(b);}
+		else if (t2 == typeid(FLOAT_t)) return std::any_cast<INT_t>(a) < std::any_cast<FLOAT_t>(b);
 	}
 	// If a is float...
 	else if (t1 == typeid(FLOAT_t)) {;
 		// If b is int...
-		if (t2 == typeid(INT_t)) {return std::any_cast<FLOAT_t>(a) < std::any_cast<INT_t>(b);}
+		if (t2 == typeid(INT_t)) return std::any_cast<FLOAT_t>(a) < std::any_cast<INT_t>(b);
 		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) {return std::any_cast<FLOAT_t>(a) < std::any_cast<FLOAT_t>(b);}
+		else if (t2 == typeid(FLOAT_t)) return std::any_cast<FLOAT_t>(a) < std::any_cast<FLOAT_t>(b);
 	}
 
 	// Throw error is none matched.
@@ -454,9 +457,11 @@ struct InstToken {
 
 
 std::ostream& operator<<(std::ostream& os, const InstToken& s) {
-	os << "{ln=" << s.ln << ", col=" << s.col << ", args=" << s.args;
+	os << "{ln=" << s.ln << ", col=" << s.col;
+	if (not s.args.empty()) os << ", args=" << s.args;
+	if (not s.expr.seq.empty()) os << ", expr=" << s.expr;
 	if (s.composite_size > 0) {os << ", composite_size=" << s.composite_size;}
-	if (s.linked_inst.empty() == false) {
+	if (not s.linked_inst.empty()) {
 		os << ", linked_inst=" << s.linked_inst;
 		os << ", linked_inst_pos=" << s.linked_inst_pos;
 	}
@@ -490,7 +495,7 @@ std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
 #pragma pack(1)
 struct Instruction {
 	uint8_t REQUIRED; // Required argument count,
-	void (*exec)(ScopeState& state, const Instruction*, InstToken&, const std::vector<std::string>&) = nullptr;
+	void (*exec)(ScopeState&, const Instruction*, InstToken&, const std::vector<std::string>&) = nullptr;
 	bool is_composite;
 	bool has_expr = false;
 };
@@ -507,8 +512,8 @@ std::ostream& operator<<(std::ostream& os, const Instruction& s) {
 // ----------
 
 struct Operation {
-	Variant (*exec)(ScopeState& state, Variant& first, Variant& second, const std::string& symbol) = nullptr;
-	Variant (*pre_exec)(ScopeState& state, Variant& first, const std::string& symbol, bool& eval_second_operand) = nullptr;
+	void (*exec)(ScopeState&, Variant& first, Variant& second, const std::string& symbol, Variant& result, Variant*& result_ptr) = nullptr;
+	Variant (*pre_exec)(ScopeState&, Variant& first, const std::string& symbol, bool& eval_second_operand) = nullptr;
 };
 
 
@@ -518,8 +523,9 @@ std::ostream& operator<<(std::ostream& os, const Operation& s) {
 
 
 
-// Variant conversion functions.
-// -----------------------------
+// Variant conversion / creation functions.
+// ----------------------------------------
+
 
 std::string multiple_types_str(const std::vector<VariantType>& types) {
 	std::string result;
@@ -534,14 +540,12 @@ std::string multiple_types_str(const std::vector<VariantType>& types) {
 
 
 VariantData get_literal_from_str(const VariantType& type, const std::string& str_val) {
-	if (type == OP || type == REF || type == STR) {return str_val;}
+	if (type == OP || type == REF || type == STR) return str_val;
 	else if (type == BOOL) return str_val == "true";
 	else if (type == INT) {
-		if (not is_int_str_32_in_range(str_val)) {
-			emit_error(ERR_cannot_initialize_value, {str_val, "Number too large"});
-			return std::any();
-		}
-		return (INT_t)std::stoi(str_val);
+		if (is_int_str_32_in_range(str_val)) return (INT_t)std::stoi(str_val);
+		emit_error(ERR_cannot_initialize_value, {str_val, "Number too large"});
+		return std::any();
 	}
 	else if (type == FLOAT) return (FLOAT_t)std::stod(str_val);
 	else return std::any();
@@ -644,20 +648,16 @@ Variant NativeFuncTrans(const Variant& return_type, const NativeFunc_t& native_f
 // ----------------------------
 
 bool expect_arg_count(const ARR_t& args, const size_t& count) {
-	if (args.size() != count) {
-		emit_error(ERR_invalid_func_arg_count, {std::to_string(count), std::to_string(args.size())});
-		return false;
-	}
-	return true;
+	if (args.size() == count) return true;
+	emit_error(ERR_invalid_func_arg_count, {std::to_string(count), std::to_string(args.size())});
+	return false;
 }
 
 
 bool expect_arg_types(const Variant& arg, const std::vector<VariantType>& types, const unsigned int arg_idx) {
-	if (not exists_in_vec(types, arg.t)) {
-		emit_error(ERR_invalid_func_arg_type, {std::to_string(arg_idx), multiple_types_str(types), get_variant_type_name(arg.t)});
-		return false;
-	}
-	return true;
+	if (exists_in_vec(types, arg.t)) return true;
+	emit_error(ERR_invalid_func_arg_type, {std::to_string(arg_idx), multiple_types_str(types), get_variant_type_name(arg.t)});
+	return false;
 }
 
 
@@ -665,14 +665,14 @@ bool expect_arg_types(const Variant& arg, const std::vector<VariantType>& types,
 // Constants.
 // ----------
 
-constexpr std::string ItyVersionString = "0.0.1";
+constexpr STR_t ItyVersionString = "0.0.1";
 // Last number indicates release type:
 //	0 = release.
 //	1 = beta / pre-release.
 //	2 = experimental / custom.
-const std::vector<int> ItyVersion = {0,0,1, 0};
+const std::vector<INT_t> ItyVersion = {0,0,1, 0};
 
-constexpr std::string OSName =
+constexpr STR_t OSName =
 #if _WIN32
 	"windows"
 #elif __linux__

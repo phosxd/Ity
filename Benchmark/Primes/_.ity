@@ -5,8 +5,8 @@ func INT iSqrt; arg INT n;
 	if n < 0; throw "'n' cannot be negative."; /;
 	var INT x = n;
 	var INT y = ((x+1) / 2); while y < x;
-		set x = y;
-		set y = ( ((n/x) + x) / 2);
+		x = y;
+		y = ( ((n/x) + x) / 2);
 	/; return x;
 /;
 
@@ -16,7 +16,7 @@ func BOOL is_prime; arg INT n;
 	var INT r = iSqrt:[n];
 	var INT i = 3; while i <= r;
 		if n%i == 0; return false; /;
-		set i += 2;
+		i += 2;
 	/;
 	return true;
 /;
@@ -28,7 +28,7 @@ const INT start = now:['ms'];
 
 var INT p = 2; while p <= count;
 	if is_prime:[p]; print:[p]; /;
-	set p += 1;
+	p += 1;
 /;
 
 

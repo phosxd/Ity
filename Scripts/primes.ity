@@ -8,8 +8,8 @@ func INT int_square_root; arg INT n;
 
 	var INT x = n;
 	var INT y = ((x+1) / 2); while y < x;
-		set x = y;
-		set y = ( ((n/x) + x) / 2);
+		x = y;
+		y = ( ((n/x) + x) / 2);
 	/;
 
 	return x;
@@ -27,7 +27,7 @@ func BOOL is_prime; arg INT n;
 		if n % i == 0;
 			return false;
 		/;
-		set i += 2;
+		i += 2;
 	/;
 
 	return true;
@@ -36,15 +36,15 @@ func BOOL is_prime; arg INT n;
 
 
 
-const * n = IO.prompt:['Count: '] -> INT;
+const * count = IO.prompt:['Count: '] -> INT;
 const INT start = Time.now:['ms'];
 
 
-var INT p = 2; while p <= n;
+var INT p = 2; while p <= count;
 	if is_prime:[p];
 		IO.print:[p];
 	/;
-	set p += 1;
+	p += 1;
 /;
 
 

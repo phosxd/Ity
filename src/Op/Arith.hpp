@@ -1,14 +1,12 @@
 #pragma once
 
 
-Variant OP_Arith_exec(ScopeState& _state, Variant& first, Variant& second, const std::string& symbol) {
+void OP_Arith_exec(ScopeState& _state, Variant& first, Variant& second, const std::string& symbol, Variant& result, Variant*& _result_ptr) {
 	// Fixer for negative numbers.
 	if (first.t == NONE && (second.t == INT || second.t == FLOAT)) {
 		second.d = second.d-(second.d*2);
-		return Variant {
-			second.t,
-			second.d,
-		};
+		result = Variant {second.t, second.d};
+		return;
 	}
 
 	VariantType type = first.t;
@@ -17,17 +15,14 @@ Variant OP_Arith_exec(ScopeState& _state, Variant& first, Variant& second, const
 		type = FLOAT;
 	}
 
-	VariantData result;
-	if (symbol == "+") result = first.d + second.d;
-	else if (symbol == "-") result = first.d - second.d;
-	else if (symbol == "*") result = first.d * second.d;
-	else if (symbol == "/") result = first.d / second.d;
-	else if (symbol == "%") result = first.d % second.d;
+	VariantData data;
+	if (symbol == "+") data = first.d + second.d;
+	else if (symbol == "-") data = first.d - second.d;
+	else if (symbol == "*") data = first.d * second.d;
+	else if (symbol == "/") data = first.d / second.d;
+	else if (symbol == "%") data = first.d % second.d;
 
-	return Variant {
-		type,
-		result,
-	};
+	result = Variant {type, data};
 }
 
 

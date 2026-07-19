@@ -149,7 +149,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 	else if (code == ERR_invalid_func_arg_type)             return "Function argument " + args[0] + " expected vaue of type \"" + args[1] + "\", not \"" + args[2] + "\"";
 	else if (code == ERR_no_args_available)                 return "No arguments available in this scope.";
 
-	else if (code == ERR_cannot_multiply_by_negative)       return "Cannot multiply \"" + args[0] + "\"by a negative number.";
+	else if (code == ERR_cannot_multiply_by_negative)       return "Cannot multiply \"" + args[0] + "\" by a negative number.";
 
 	else if (code == ERR_unexpected_char_at_expr_end)       return "Unexpected character \"" + args[0] + "\" at end of expression.";
 	else if (code == ERR_invalid_character_for_construct)   return "Invalid character for " + args[0] + " construct: \"" + args[1] + "\".";

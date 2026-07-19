@@ -1,9 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <string>
-#include <unordered_map>
-
 #include "Common.hpp"
 #include "ScriptErrors.hpp"
 
@@ -129,23 +125,18 @@ bool is_name_globally_free(const ScopeState& state, const std::string& name) {
 
 
 // Gets the data for name in the current scope. Ensure the name exists in the current scope first.
-Variant get_data(ScopeState& state, const std::string& name) {
-	if (state.d.find(name) == state.d.end()) {
-		emit_error(ERR_unexpected, {"ScopeState.get_data", "Cannot get data."});
-		return VariantPresets.empty;
-	}
-	return state.d.at(name);
+Variant* get_data(ScopeState& state, const std::string& name) {
+	const auto& it = state.d.find(name);
+	if (it == state.d.end()) emit_error(ERR_unexpected, {"ScopeState.get_data", "Cannot get data."});
+	return &it->second;
 }
 
 
 // Gets the data for name in this scope or any scope above it. Ensure the name exists in one of the scopes (use is_name_globally_free).
-Variant get_data_globally(ScopeState& state, const std::string& name) {
+Variant* get_data_globally(ScopeState& state, const std::string& name) {
 	if (not is_name_free(state, name)) return get_data(state, name);
-	else if (state.p != nullptr) return get_data_globally(*state.p, name);
-	else {
-		emit_error(ERR_unexpected, {"ScopeState.get_data_globally", "Cannot get data."});
-		return VariantPresets.empty;
-	}
+	else if (state.p == nullptr) emit_error(ERR_unexpected, {"ScopeState.get_data_globally", "Cannot get data."});
+	return get_data_globally(*state.p, name);
 }
 
 
@@ -160,8 +151,8 @@ void set_data(ScopeState& state, const std::string& name, const VariantType& typ
 	}
 
 	if (not is_name_free(state, name)) {
-		const Variant& var = get_data(state, name);
-		if (var.m == 1) {
+		const Variant* var = get_data(state, name);
+		if (var->m == 1) {
 			emit_error(ERR_cannot_change_constant, {name});
 			return;
 		}
@@ -190,5 +181,3 @@ void merge_module(ScopeState& state, const MAP_t& map) {
 		set_data(state, prop_name, i.second.t, i.second.d, i.second.m);
 	}
 }
-
-

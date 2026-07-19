@@ -15,15 +15,12 @@ Variant OP_ConditionalEval_pre_exec(ScopeState& _state, Variant& first, const st
 }
 
 
-Variant OP_ConditionalEval_exec(ScopeState& _state, Variant& first, Variant& second, const std::string& symbol) {
+void OP_ConditionalEval_exec(ScopeState& _state, Variant& first, Variant& second, const std::string& symbol, Variant& result, Variant*& _result_ptr) {
 	bool test_result = false;
 	if (symbol == "&&") test_result = first.d == true && second.d == true;
 	else if (symbol == "||") test_result = first.d == true || second.d == true;
 
-	return Variant {
-		BOOL,
-		test_result,
-	};
+	result = Variant {BOOL, test_result};
 }
 
 

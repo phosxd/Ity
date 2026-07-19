@@ -31,50 +31,50 @@ var * true_ = 'a';
 true_; true;
 
 var NONE _a;
-set _a = none;
-set _a = none);
+_a = none;
+_a = none);
 var BOOL _b = true;
-set _b = false;
-set _b = false);
+_b = false;
+_b = false);
 
 var INT _c = 0;
-set _c = 00;
-set _c = 0_0;
-set _c = 0 0;
-set _c = 01;
-set _c = 00000000000000000001;
-set _c = -0;
-set _c = -1;
-set _c = - 10 0_0;
+_c = 00;
+_c = 0_0;
+_c = 0 0;
+_c = 01;
+_c = 00000000000000000001;
+_c = -0;
+_c = -1;
+_c = - 10 0_0;
 
 var FLOAT _d = 0.0;
-set _d = 0.00000000000001;
-set _d = 1.0;
-set _d = 100 000 000 . 500;
-set _d = -0.0;
-set _d = -1.0;
-set _d = -0.001;
-set _d = -100 000 000 . 500;
+_d = 0.00000000000001;
+_d = 1.0;
+_d = 100 000 000 . 500;
+_d = -0.0;
+_d = -1.0;
+_d = -0.001;
+_d = -100 000 000 . 500;
 
 var STR _e = 'a';
-set _e = 'a';
-set _e = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-set _e = '
+_e = 'a';
+_e = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+_e = '
 	multi
 	line
 	string
 ';
-set _e = '\;';
-set _e = '\'escape\'';
+_e = '\;';
+_e = '\'escape\'';
 
 var ANY _j = none;
-set _j = true;
-set _j = false;
-set _j = 0;
-set _j = 1;
-set _j = 1.123;
-set _j = 'a';
-set _j = 'abc';
+_j = true;
+_j = false;
+_j = 0;
+_j = 1;
+_j = 1.123;
+_j = 'a';
+_j = 'abc';
 "
 
 ""
@@ -86,7 +86,7 @@ set _j = 'abc';
 # -----------------------
 
 var ARR _a = [1,2,3];
-set _a *= 2;
+_a *= 2;
 
 var MAP _b = {'a',1, 'b',2, 'c',3};
 
@@ -339,7 +339,7 @@ merge IO;
 
 var INT i = 0;
 while i < 10;
-	set i += 1;
+	i += 1;
 /;
 
 print:[i];
@@ -365,9 +365,9 @@ var INT i = 0;
 while i < 10;
 	var INT j = 0;
 	while j < 10;
-		set j += 1;
+		j += 1;
 	/;
-	set i += 1;
+	i += 1;
 /;
 
 print:[i];
@@ -382,7 +382,7 @@ print:[i];
 var INT i = 0;
 while i < 4;
 	var INT test = 512;
-	set i += 1;
+	i += 1;
 /;
 
 test; # Should throw an error
@@ -396,14 +396,14 @@ test; # Should throw an error
 func NONE test;
 	var INT j = 0; while j < 5;
 		if j == 2; return; /;
-		set j += 1;
+		j += 1;
 	/;
 /;
 
 
 var INT i = 0; while i < 5;
 	test:[];
-	set i += 1;
+	i += 1;
 /;
 "
 
@@ -539,7 +539,7 @@ var INT i = 0; while i < 10;
 		exit;
 	/;
 	out:[i];
-	set i += 1;
+	i += 1;
 /;
 "
 
@@ -560,11 +560,12 @@ for (( idx=0; idx<${#tests[@]}; idx+=2 )); do
 	fi
 	echo "$i" > .test.ity
 	./Ity.bin -codes .test.ity > .test_result.txt
+	code=$?
 
 	# If results do not match up, test failed.
 	expected=${tests[(($idx+1))]}
 	result=$(cat .test_result.txt)
-	if [[ "${result}" != "${expected}" ]]; then
+	if [[ "${result}" != "${expected}" || ("$code" != "0" && "$code" != "1") ]]; then
 		echo
 		echo "${BOLD}Test case source code:${RESET}"
 		echo "${i}"
