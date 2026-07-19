@@ -3,7 +3,7 @@
 
 **Version:** 0.0.1
 
-Ity is a light-weight interpreted programming language built with C++.
+Ity is a work-in-progress, light-weight interpreted programming language built with C++.
 
 </div>
 
@@ -11,10 +11,12 @@ Ity is a light-weight interpreted programming language built with C++.
 
 
 # Overview
-- **Tiny & portable.** < 100kb executable.
+- **Tiny & portable.** < 150kb executable.
 - **Platform agnostic.** No platform dependant code.
 - **No build setup.** Requires no third-party libraries.
-- **Practical.** I/O, file management, time, & math modules all built-in.
+- **Practical.** I/O, ~~file management~~, time, & math modules all built-in.
+
+This is my first project in C++, I'm sure there are things that I have done wrong or have messed up, don't be afriad to open an issue to tell me!
 
 
 # Build interpreter
