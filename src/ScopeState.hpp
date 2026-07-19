@@ -153,11 +153,13 @@ void set_data(ScopeState& state, const std::string& name, const VariantType& typ
 	if (not is_name_free(state, name)) {
 		const Variant* var = get_data(state, name);
 		if (var->m == 1) {
-			emit_error(ERR_cannot_change_constant, {name});
+			emit_error(ERR_cannot_change_constant);
 			return;
 		}
 	}
 	const VariantType& data_type = get_variant_data_type(data);
+
+	// Throw error if data is not applicable.
 	if (mode != VariantMode_dynamic_type && type != data_type) {
 		emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data_type), get_variant_type_name(type)});
 		return;

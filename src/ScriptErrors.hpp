@@ -139,7 +139,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 	else if (code == ERR_name_must_not_contain_symbols)     return "Name must not contain any symbols. Underscores are allowed.";
 	else if (code == ERR_name_does_not_exist)               return "Name \"" + args[0] + "\" does not exist.";
 	else if (code == ERR_cannot_initialize_value)           return "Cannot initialize value \"" + args[0] + "\": " + args[1] + ".";
-	else if (code == ERR_cannot_change_constant)            return "Cannot change value of constant \"" + args[0] + "\" after declaration.";
+	else if (code == ERR_cannot_change_constant)            return "Cannot change value of constant after declaration.";
 	else if (code == ERR_constant_type_not_explicit)        return "Constant must have an explicit type, not \"ANY\".";
 	else if (code == ERR_invalid_property_access)           return "Invalid access to value (" + args[0] + ") using value of type \"" + args[1] + "\".";
 	else if (code == ERR_index_out_of_range)                return "Access index \"" + args[0] + "\" out of range.";

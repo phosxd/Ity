@@ -120,6 +120,15 @@ VariantType get_variant_data_type(const VariantData& d) {
 }
 
 
+// Return true if `data` is applicable to `var`.
+bool variant_data_type_matches(const VariantData& data, const Variant& var, const bool do_emit_error = true) {
+	const VariantType& data_type = get_variant_data_type(data);
+	if (var.m == VariantMode_dynamic_type || var.t == data_type) return true;
+	if (do_emit_error) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data_type), get_variant_type_name(var.t)});
+	return false;
+}
+
+
 // Return the number of bytes that VariantData takes up.
 size_t get_variant_data_size(const VariantData& s) {
 	const std::type_info& t = s.type();

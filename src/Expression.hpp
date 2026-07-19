@@ -23,6 +23,7 @@ const std::unordered_map<std::string, const Operation*> OPERATIONS = {
 	{"*=",  &OP_Set},
 	{"/=",  &OP_Set},
 	{"%=",  &OP_Set},
+	{"@=",  &OP_Set},
 
 	{"==",  &OP_Compare},
 	{"!=",  &OP_Compare},
@@ -441,13 +442,19 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 				}
 			}
 			// Execute operator...
-			Variant* second;
+			Variant* second = nullptr;
 			Variant token;
 			if (item.t == ExprTokenType_sequence) {
 				token = expr_exec(state, item, true, current_line, current_column);
 				second = &token;
 			}
 			else second = resolve_variant(state, item.var);
+			// Throw error if second is an operator.
+			if (second->t == OP) {
+				emit_error(ERR_invalid_syntax, {"Cannot operate on another operator"});
+				return *result;
+			}
+
 			Variant op_result = Variant{PLACEHOLDER};
 			if (result == nullptr) {
 				Variant empty;
@@ -461,6 +468,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 			}
 			continue;
 		}
+
 
 		else if (item.t == ExprTokenType_variant) {
 			// Get operator.
