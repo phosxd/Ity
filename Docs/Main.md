@@ -314,15 +314,6 @@ Although you need to be careful evaluating complex expressions after the assignm
 - Operator `+` adds the previous output to the next output.
 The result of this expression is `Hello World` but `a` only gets set to `'Hello '` because we added `World` to the *output* of `a = 'Hello '`. You can get around this by grouping multi-part expressions after your assignment operator like so: `a = ('Hello ' + 'World')`.
 
-What if you want to set an item or property of a variable, like an item in an array or map? Well this is broken because the accessor operator (`:`) returns a copy of the item at a given location, not a solid reference, this means overwriting the value of a copy will not affect the original.
-
-```python
-var ARR array = [1,2,3];
-array:0 = 100; # This does nothing
-```
-
-This is a bug & will be patched soon. The accessor operator *should* return a reference to the actual item in the data structure & it is the intended behavior.
-
 ### Const
 If you need to declare a name that has a value which **cannot** be modified or overwritten after declaration, use the `const` instruction. It has the same syntax as the `var` instruction.
 
