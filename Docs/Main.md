@@ -40,24 +40,15 @@ You can use parenthesis to evaluate an expression inside of another expression.
 
 `(1+1) + 2; # Equals 4;`
 
-Evaluating a named variable resolves into a copy of the original value. To get a pointer to the original value instead of copying it, start your expression with the "$" character.
-You must be careful when using pointers, if the original variable name gets deleted then the pointer will just return a "NONE" type value.
-
-When setting the value of a pointer variable, you should use the "set" *method* (`a.set:['value']`) instead of the "set" *instruction* (`set a = 'value'`). The instruction will overwrite the pointer itself, while the method will set the actual value of the pointer.
-The reason it works like this is because the "set" instruction acts on named variables in the scope data, not on the actual value of the variant.
+Evaluating a named variable resolves into a reference of the original value, allowing operators to modify it directly.
+However, setting a variable to a reference of another variable does not link the two, because the assignment operators do not set the target to the actual given variant, but instead copies the data from the given variant into the already existing variant inside the target.
 
 ```python
-# "a" is affected, "a" & "b" are linked;
+# "a" is unaffected
 var INT a = 5;
-var PTR b = $a;
-b.set:[1];
-a; # Resolves to 1;
-
-# "c" is unaffected;
-var INT c = 5;
-var INT d = a;
-d.set:[1];
-c; # Resolves to 5;
+var INT b = a; # 
+b = 10;
+a; # Resolves to 5
 ```
 
 ---
@@ -145,7 +136,7 @@ my_arr:(length:[my_arr]-1);
 ## MAP
 Holds an unordered hash table in which the keys are strings & the values are variants which can of any type. Maps can also represent complex objects like functions or interfaces, however it is discouraged to try to declare an object using map declaration syntax.
 
-Unlike dictionaries you would find in most other languages, maps are declared like so: `{'key', 'value'}` instead of the convention `{'key': 'value'}`. It is done this way for the sake of simplicity.
+Unlike dictionaries you would find in most other languages, maps are declared like so: `{'key', 'value'}` instead of the convention `{'key': 'value'}`.
 
 ```python
 {'a',1, 'b':2};
@@ -225,6 +216,11 @@ var INT i = 5;
 my_array:i; # Returns the fifth element of "my_array", as that's the value of "i"
 ```
 
+Are the returned variants from the access operator *copies* or *references*?
+The answer is, it depends. For complex types like `ARR` & `MAP` the returned item is always a reference, not a copy. Meaning if you were to modify it, the change would directly affect the item inside the data structure.
+
+The only other type that can be accessed is `STR`, & due to how strings are stored, the accessed character is always a copy of the one inside the string.
+
 ## TypeCast ( -> )
 The type-cast operator will attempt to translate the first value to the target type. This works for every built-in type except for `NONE`, `ARR` & `MAP`.
 
@@ -235,6 +231,34 @@ The type-cast operator will attempt to translate the first value to the target t
 
 9_350 -> STR;    # Gives "9350"
 '10250' -> INT;  # Gives 10_250
+```
+
+## Assignment
+Assignment operators allow you to modify the value of a variant. This is useful for setting the value of named variables after declaration.
+### =
+Overwrite the data of the variant.
+### +=
+Add to the variant.
+### -=
+Subtract from the variant.
+### \*=
+Multiply the variant.
+### /=
+Divide the variant.
+### %=
+Modulo the variant.
+
+
+```python
+var INT number = 1;
+number += 1;       # "number" is now 2
+number -= 2;       # "number" is now 0
+number = (100/2);  # "number" is now 50
+number /= 2;       # "number" is now 25
+
+var INT number_2 = 10;
+number = number_2;  # "number" copies the value of "number_2" (10)
+number_2 = 20;      # "number" is unchanged.
 ```
 
 ---
@@ -274,6 +298,31 @@ var STR some_text = "Hello World!";
 var * my_inferred_var = "This can be any value at declaration";
 ```
 
+To modify the value of a variable, you can use the assignment operators in an expression.
+
+```python
+var ANY a = 100;
+a *= 2; # "a" is now 200
+a = 0; # "a" is now 0
+a = ('Hello ' + 'World');
+```
+
+Although you need to be careful evaluating complex expressions after the assignment operator. In the example `a = 'Hello ' + 'World'`, execution happens in this order:
+- Get reference to "a".
+- Set reference "a" to the next item in the expression (`'Hello '`) through the `=` operator.
+- Operator `+` is taking the output of everything before it `a = 'Hello '`
+- Operator `+` adds the previous output to the next output.
+The result of this expression is `Hello World` but `a` only gets set to `'Hello '` because we added `World` to the *output* of `a = 'Hello '`. You can get around this by grouping multi-part expressions after your assignment operator like so: `a = ('Hello ' + 'World')`.
+
+What if you want to set an item or property of a variable, like an item in an array or map? Well this is broken because the accessor operator (`:`) returns a copy of the item at a given location, not a solid reference, this means overwriting the value of a copy will not affect the original.
+
+```python
+var ARR array = [1,2,3];
+array:0 = 100; # This does nothing
+```
+
+This is a bug & will be patched soon. The accessor operator *should* return a reference to the actual item in the data structure & it is the intended behavior.
+
 ### Const
 If you need to declare a name that has a value which **cannot** be modified or overwritten after declaration, use the `const` instruction. It has the same syntax as the `var` instruction.
 
@@ -289,35 +338,6 @@ const * inferred_constant = true;
 ```
 
 Because constants cannot be modified, it would be useless to assign it the "ANY" type, doing so will throw an error.
-
-### Set
-To change the value of a named variable you need to use the `set` instruction. This will overwrite the variable at the specified name with a new variant, discarding the old one.
-If you want to preserve the variant itself while just changing the value (useful for preserving pointers references), then you should use the `set` *method* on the variable.
-
-`set <varName> <assignemntOperator> <expression>`
-
-**Arguments**:
-- "varName":
-	Required argument. The name of the variable you are trying to access. Will throw an error if the name does not exist.
-- "assignmentOperator":
-	Required argument. The operator which indicates how the expression output is applied to the variable. This can be the `=` operator to overwrite the previous value, & for certain types you can use the `+=`  /  `-=` operators to add or remove value from the current value.
-- "expression":
-	Required argument. The output of this expression will be applied to variable, spaces do not matter here because it is at the end of the instruction. If the output does not match the pre-defined type of the variable then an error is thrown.
-
-**Examples**:
-
-```python
-var ANY variable = 0;
-set variable = 1;
-set variable += 1; # Now 2;
-set variable = "The variable type is now string!";
-set variable += " Added more string to the string!";
-set variable = 8;
-set variable /= 2; # Now 4;
-set variable *= 2; # Now 8;
-```
-
-This instruction only works on named variables, this means you cannot set array elements, map keys/values, or object properties using the "set" keyword. Each type has their own methods for updating properties.
 
 ## If / Elif / Else
 These instructions can be used to test values for conditionally executing code. These are **composite** instructions, meaning in addition to taking arguments like a normal instruction, it also consumes all instructions that are defined after it, up until the `/` (end) instruction.
@@ -368,7 +388,7 @@ while true;
 var INT i = 0;
 while i < 100_000;
 	IO.print:[i];
-	set i += 1;
+	i += 1;
 /;
 ```
 

@@ -7,13 +7,13 @@ void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const st
 			emit_error(ERR_invalid_property_access, {get_variant_type_name(first.t), get_variant_type_name(second.t)});
 			return;
 		}
-		ARR_t array = std::any_cast<ARR_t>(first.d);
+		ARR_t& array = std::any_cast<ARR_t&>(first.d);
 		const INT_t& index = std::any_cast<const INT_t&>(second.d);
 		if (index >= (INT_t)array.size()) {
 			emit_error(ERR_index_out_of_range, {std::to_string(index)});
 			return;
 		}
-		result = array[index];
+		result_ptr = &array[index];
 		return;
 	}
 
@@ -37,7 +37,7 @@ void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const st
 	// Access object property.
 	// For hash tables, functions, or other objects.
 	else if (first.t == MAP) {
-		MAP_t map = std::any_cast<MAP_t>(first.d);
+		MAP_t& map = std::any_cast<MAP_t&>(first.d);
 
 		// Determine type of the object.
 		STR_t obj_type = "m";
@@ -65,7 +65,7 @@ void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const st
 				return;
 			}
 			// Return Variant at the key.
-			result = it->second;
+			result_ptr = &it->second;
 			return;
 		}
 

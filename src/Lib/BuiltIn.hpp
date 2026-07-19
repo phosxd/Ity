@@ -8,7 +8,7 @@ Variant LIB_BI_init(ScopeState& _state, const ARR_t& args) {
 }
 
 
-// Return the type of the given Variant, in string form.
+// Return a copy of the current scope state.
 Variant LIB_BI_get_state(ScopeState& state, const ARR_t& args) {
 	if (not expect_arg_count(args, 0)) return VariantPresets.empty;
 	return Variant{MAP, state.d};
