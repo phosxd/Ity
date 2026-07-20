@@ -16,6 +16,8 @@ And so on...
 
 This is exactly how commands are lied out in your terminal, which makes it very easy to remember, however most modern programming languages don't work like this so it might go against some of your habits.
 
+There is one more thing to note with this. Some instructions may make use of expression syntax, in which case spacing your arguments will not matter wherever the expression is located.
+
 ## Comments
 Comments are defined by the "#" character. When a comment is defined, all characters after it until the new line are ignored. In this regard, it acts just the same as Python.
 
@@ -46,7 +48,7 @@ However, setting a variable to a reference of another variable does not link the
 ```python
 # "a" is unaffected
 var INT a = 5;
-var INT b = a; # 
+var INT b = a;
 b = 10;
 a; # Resolves to 5
 ```
@@ -94,7 +96,10 @@ Holds a string of UTF-8 encoded characters.
 ";
 ```
 
-Strings can make use of `\` (back-slash) to escape characters.
+Strings can make use of `\` (back-slash) for escape sequences. Here is each one that is supported:
+- (`\n`) New line.
+- (`\t`) Tab.
+- (`\e`) Escape character. Can be used to input ANSI.
 
 ```python
 "Line 1\nLine 2";

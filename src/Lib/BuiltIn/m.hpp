@@ -86,16 +86,20 @@ const Variant LIB_BI {
 		{"ANSI", Variant{
 			MAP,
 			(MAP_t){
-				{"reset",    Variant{STR, ANSI::reset, VariantMode_constant}},
-				{"bold",     Variant{STR, ANSI::bold, VariantMode_constant}},
-				{"black",    Variant{STR, ANSI::black, VariantMode_constant}},
-				{"red",      Variant{STR, ANSI::red, VariantMode_constant}},
-				{"green",    Variant{STR, ANSI::green, VariantMode_constant}},
-				{"orange",   Variant{STR, ANSI::orange, VariantMode_constant}},
-				{"blue",     Variant{STR, ANSI::blue, VariantMode_constant}},
-				{"purple",   Variant{STR, ANSI::purple, VariantMode_constant}},
-				{"white",    Variant{STR, ANSI::white, VariantMode_constant}},
-				{"yellow",   Variant{STR, ANSI::yellow, VariantMode_constant}},
+				{"reset",    Variant{STR, ANSI::reset,   VariantMode_constant}},
+				{"bold",     Variant{STR, ANSI::bold,    VariantMode_constant}},
+				{"black",    Variant{STR, ANSI::black,   VariantMode_constant}},
+				{"red",      Variant{STR, ANSI::red,     VariantMode_constant}},
+				{"green",    Variant{STR, ANSI::green,   VariantMode_constant}},
+				{"orange",   Variant{STR, ANSI::orange,  VariantMode_constant}},
+				{"blue",     Variant{STR, ANSI::blue,    VariantMode_constant}},
+				{"purple",   Variant{STR, ANSI::purple,  VariantMode_constant}},
+				{"white",    Variant{STR, ANSI::white,   VariantMode_constant}},
+				{"yellow",   Variant{STR, ANSI::yellow,  VariantMode_constant}},
+				// Extra sequences.
+				{"cursor_off",    Variant{STR, ANSI::cursor_off,    VariantMode_constant}},
+				{"cursor_on",     Variant{STR, ANSI::cursor_on,     VariantMode_constant}},
+				{"clear_screen",  Variant{STR, ANSI::clear_screen,  VariantMode_constant}},
 			},VariantMode_constant
 		}},
 

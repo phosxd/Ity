@@ -55,16 +55,20 @@ using Clock_t = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 
 namespace ANSI {
-	static std::string reset = "\033[0m";
-	static std::string bold = "\033[1m";
-	static std::string black = "\x1B[30m";
-	static std::string red = "\x1B[31m";
-	static std::string green = "\x1B[32m";
-	static std::string orange = "\x1B[33m";
-	static std::string blue = "\x1B[34m";
-	static std::string purple = "\x1B[35m";
-	static std::string white = "\x1B[37m";
-	static std::string yellow = "\x1B[93m";
+	static constexpr std::string reset         = "\e[0m";
+	static constexpr std::string bold          = "\e[1m";
+	static constexpr std::string black         = "\e[30m";
+	static constexpr std::string red           = "\e[31m";
+	static constexpr std::string green         = "\e[32m";
+	static constexpr std::string orange        = "\e[33m";
+	static constexpr std::string blue          = "\e[34m";
+	static constexpr std::string purple        = "\e[35m";
+	static constexpr std::string white         = "\e[37m";
+	static constexpr std::string yellow        = "\e[93m";
+	// Extras...
+	static constexpr std::string cursor_off    = "\e[?25l";
+	static constexpr std::string cursor_on     = "\e[?25h";
+	static constexpr std::string clear_screen  = "\e[2J\e[H";
 }
 
 struct debug_flags_struct {

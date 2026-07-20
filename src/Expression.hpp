@@ -134,10 +134,12 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 		// Handle string logic.
 		if (is_string) {
 			// End escaped.
-			if (is_escaped_char == true) {
+			if (is_escaped_char) {
 				is_escaped_char = false;
-				if (ch == 'n') buffer.push_back('\n');
-				else if (ch == 't') buffer.push_back('\t');
+				if (ch == 'n') buffer.push_back('\n');       // New line character.
+				else if (ch == 't') buffer.push_back('\t');  // Tab character.
+				else if (ch == 'e') buffer.push_back('\e');  // Escape character.
+				// Standard character.
 				else buffer.push_back(ch);
 				continue;
 			}

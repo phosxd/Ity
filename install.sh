@@ -2,7 +2,7 @@ install_path="/usr/local/bin/ity"
 
 bash build.sh
 code=$?
-if (( $code != 0 )); then
+if [[ "${code}" != "0" ]]; then
 	exit
 fi
 

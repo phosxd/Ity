@@ -139,7 +139,7 @@ fi
 
 if (( $result != 0 )); then
 	echo "${RED}Build failed... Resolve errors then try again.${RESET}"
-	exit
+	exit 1
 fi
 
 cd ../
