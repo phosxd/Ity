@@ -56,7 +56,7 @@ void INST_Var_exec(ScopeState& state, const Instruction* inst, InstToken& token,
 				return;
 			}
 			// Replace value if argument is available.
-			const ARR_t& scope_args = std::any_cast<const ARR_t&>(get_data(state, "__ARGS__")->d);
+			const ARR_t& scope_args = AnyCast(ARR_t,get_data(state, "__ARGS__")->d);
 			if (func_arg_index < scope_args.size()) {
 				value = scope_args[func_arg_index];
 				func_arg_index += 1;

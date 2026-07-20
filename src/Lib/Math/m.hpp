@@ -15,7 +15,7 @@ Variant LIB_Math_math(ScopeState& _state, const ARR_t& args, const std::string& 
 	VariantType type;
 	VariantData data;
 	if (var.t == INT) {
-		const INT_t& d = std::any_cast<const INT_t&>(var.d);
+		const INT_t& d = AnyCast(INT_t,var.d);
 		type = INT;
 		if (func == "abs") data = std::abs(d);
 		else if (func == "floor")  data = (INT_t)std::floor(d);
@@ -54,8 +54,7 @@ Variant LIB_Math_pow(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_types(args[0], valid_types, 0) || not expect_arg_types(args[1], valid_types, 1)) return VariantPresets.empty;
 
 	return Variant{
-		FLOAT,
-		(float)std::pow(
+		FLOAT, (FLOAT_t)std::pow(
 			var_to_float(args[0]),
 			var_to_float(args[1])
 		)
@@ -69,8 +68,7 @@ Variant LIB_Math_pow(ScopeState& _state, const ARR_t& args) {
 // ---------------
 
 const Variant LIB_Math {
-	MAP,
-	(MAP_t){
+	MAP, (MAP_t){
 		{"__name",     Variant{STR, (STR_t)"Math", VariantMode_constant}},
 		{"__init__",   NativeFuncTrans(NONE,   (NativeFunc_t)LIB_Math_init)},
 		{"abs",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_abs)},

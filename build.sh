@@ -6,7 +6,7 @@ GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
 
 BIN_SIZE_LIMIT=100000
-COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt -Wl,--gc-sections -Wl,--build-id=none Ity.cpp -o ity.o Main.cpp -o Ity.bin"
+COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt -Wl,--gc-sections -Wl,--build-id=none"
 
 DO_TEST=0
 DEBUG=0
@@ -15,7 +15,27 @@ OPTIM_balanced="-O2 -finline-limit=4"
 OPTIM_speed="-Ofast"
 OPTIM_size="-Os -finline-limit=0"
 
+LINKS=".Ity_tmp_generated.cpp -o ity.o Main.cpp -o Ity.bin"
 
+
+# Parse "LIBRARIES" file.
+readarray -t LibrariesFile <<< "$(cat BuildWithLibs.txt)"
+LibNames=()
+for line in "${LibrariesFile[@]}"; do
+	# Skip lines without "." prefix.
+	if [[ ${line:0:1} != "." ]]; then
+		continue
+	fi
+
+	lib_name=${line:1} # Get line with "." prefix excluded.
+	LibNames+=(${lib_name})
+	#LINKS+=" Lib/${lib_name}/m.cpp -o LIB_${lib_name}.o" # Add to links.
+done
+
+echo "${LINKS}"
+
+
+# Iterate on every command line arg...
 for i in "$@"; do
 	case $i in
 		-t|--test)
@@ -38,6 +58,7 @@ for i in "$@"; do
 done
 
 
+# Choose optimization profile...
 optim=""
 if [[ "$OPTIM" == "balanced" ]]; then
 	optim=$OPTIM_balanced
@@ -48,9 +69,36 @@ fi
 if [[ "$OPTIM" == "size" ]]; then
 	optim=$OPTIM_size
 fi
-BUILD_ARGS="${optim} ${COMMON_BUILD_ARGS}"
 
 echo "(Optimization: ${OPTIM})"
+
+
+
+
+# Put everything into a final BUILD_ARGS variable.
+BUILD_ARGS="${optim} ${COMMON_BUILD_ARGS} ${LINKS}"
+
+
+
+
+# Generate new source file with library definitons inserted...
+readarray -t source <<< "$(cat src/Ity.cpp)"
+new_source=""
+for line in "${source[@]}"; do
+	new_source+=${line}$'\n'
+	if [[ "${line}" == "//BUILDER_INSERT: Lib Includes" ]]; then
+		for lib_name in "${LibNames[@]}"; do
+			new_source+="#include \"Lib/${lib_name}/m.hpp\""$'\n'
+		done
+	fi
+	if [[ "${line}" == "//BUILDER_INSERT: Lib Names" ]]; then
+		for lib_name in "${LibNames[@]}"; do
+			new_source+="LIB_${lib_name},"$'\n'
+		done
+	fi
+done
+
+echo "${new_source}" > "src/.Ity_tmp_generated.cpp"
 
 
 
@@ -96,6 +144,7 @@ fi
 
 cd ../
 mv src/Ity.bin Ity.bin
+rm src/.Ity_tmp_generated.cpp
 
 
 

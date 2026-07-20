@@ -1,8 +1,5 @@
 - Fix expressions that resolve to "NONE" not returning a variant of type "NONE" but instead returning an empty sequence.
 
-- Don't return copies of complex data types like arrays & maps inside of expressions. Instead it should always return the original instance. To get a shallow copy of a complex data type, I need to implement a built-in "copy" global function.
-- Implement assignment expression operators to replace the "set" instruction. This will require some tweaking of the expression executor so that it can operate on the original variable at the given location, & not on a copy of it.
-
 
 
 Add standard built-in libraries:

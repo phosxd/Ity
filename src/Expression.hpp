@@ -159,8 +159,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			if (not subexpr.empty()) {
 				clean_up_buffer(result_token, item, buffer);
 				// Tokenize sub-expression & add to sequence.
-				const ExprToken& token = expr_tokenize(subexpr, ln_offset, col_offset);
-				item.seq = std::move(token.seq);
+				item.seq = expr_tokenize(subexpr, ln_offset, col_offset).seq;
 				result_token.seq.push_back(item);
 				// Throw error if operator token found.
 				for (const ExprToken& subtoken : item.seq) {
@@ -355,7 +354,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 
 Variant* resolve_variant(ScopeState& state, Variant& item) {
 	if (item.t == REF) {
-		const std::string& name = std::any_cast<const STR_t&>(item.d);
+		const std::string& name = AnyCast(STR_t,item.d);
 		if (not is_name_globally_free(state, name)) return get_data_globally(state, name);
 		emit_error(ERR_name_does_not_exist, {name});
 		return &item;
@@ -401,7 +400,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 					emit_error(ERR_invalid_syntax, {"Map key must be a string"});
 					return VariantPresets.empty;
 				}
-				key = std::any_cast<STR_t>(subtoken.var.d);
+				key = AnyCast(STR_t,subtoken.var.d);
 				is_key = false;
 			}
 			else {
@@ -473,7 +472,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 		else if (item.t == ExprTokenType_variant) {
 			// Get operator.
 			if (item.var.t == OP) {
-				op_symbol = std::any_cast<STR_t&>(item.var.d);
+				op_symbol = AnyCast(STR_t,item.var.d);
 				if (const auto& it = OPERATIONS.find(op_symbol); it != OPERATIONS.end()) {
 					op = it->second;
 					continue;

@@ -620,19 +620,20 @@ if [[ "$1" != "" ]]; then
 	starting_idx=$1
 fi
 
+# Iterate on each test.
 for (( idx=0; idx<${#tests[@]}; idx+=2 )); do
-	i="${tests[$idx]}"
+	i="${tests[$idx]}" # Get the test code.
 	case_num=$(( (idx/2)+1 ))
-	if (( $case_num < $starting_idx ));then
+	if (( $case_num < $starting_idx )); then
 		continue
 	fi
-	echo "$i" > .test.ity
-	./Ity.bin -codes .test.ity > .test_result.txt
+	echo "$i" > .test.ity # Put test code in a file.
+	./Ity.bin -codes .test.ity > .test_result.txt # Run test code, then output the result to a file.
 	code=$?
 
-	# If results do not match up, test failed.
-	expected=${tests[(($idx+1))]}
-	result=$(cat .test_result.txt)
+	expected=${tests[(($idx+1))]} # Get expected test output.
+	result=$(cat .test_result.txt) # Get test results.
+	# If results do not match up, test failed...
 	if [[ "${result}" != "${expected}" || ("$code" != "0" && "$code" != "1") ]]; then
 		echo
 		echo "${BOLD}Test case source code:${RESET}"
@@ -656,7 +657,10 @@ for (( idx=0; idx<${#tests[@]}; idx+=2 )); do
 	fi
 done
 
+
+# Remove testing files.
 rm .test.ity
 rm .test_result.txt
+
 
 echo "${BOLD}${GREEN}All tests passed!${RESET}"

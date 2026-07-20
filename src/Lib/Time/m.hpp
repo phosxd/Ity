@@ -9,7 +9,7 @@ Variant LIB_Time_init(ScopeState& _state, const ARR_t& args) {
 Variant LIB_Time_get_time(ScopeState& _state, const ARR_t& args, const unsigned int mode) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.empty;
 
-	const STR_t& precision = std::any_cast<STR_t>(args[0].d);
+	const STR_t& precision = AnyCast(STR_t,args[0].d);
 
 	// Initialize clocks.
 	const Clock_t& clock_1 = Clock::now();
@@ -50,11 +50,9 @@ Variant LIB_Time_now(ScopeState& state, const ARR_t& args) {
 // ---------------
 
 const Variant LIB_Time {
-	MAP,
-	(MAP_t){
+	MAP, (MAP_t){
 		{"__name", Variant{STR, (STR_t)"Time", VariantMode_constant}},
-		{"__init__", NativeFuncTrans(NONE, (NativeFunc_t)LIB_Time_init)},
-
+		{"__init__",    NativeFuncTrans(NONE, (NativeFunc_t)LIB_Time_init)},
 		{"system_now",  NativeFuncTrans(INT, (NativeFunc_t)LIB_Time_system_now)},
 		{"now",         NativeFuncTrans(INT, (NativeFunc_t)LIB_Time_now)},
 	},

@@ -22,8 +22,8 @@ Variant LIB_BI_sleep(ScopeState& _state, const ARR_t& args) {
 
 	FLOAT_t sleep_time;
 	switch (var.t) {
-		case INT: sleep_time = std::any_cast<INT_t>(var.d); break;
-		case FLOAT: sleep_time = std::any_cast<FLOAT_t>(var.d); break;
+		case INT: sleep_time = AnyCast(INT_t,var.d); break;
+		case FLOAT: sleep_time = AnyCast(FLOAT_t,var.d); break;
 		default:
 			emit_error(ERR_invalid_func_arg_type, {"0", "INT or FLOAT", get_variant_type_name(var.t)});
 			return VariantPresets.empty;
@@ -47,8 +47,8 @@ Variant LIB_BI_length(ScopeState& _state, const ARR_t& args) {
 	const Variant& var = args[0];
 
 	switch (var.t) {
-		case ARR: return Variant{INT, (int)(std::any_cast<ARR_t>(var.d).size()) }; break;
-		case STR: return Variant(INT, (int)(std::any_cast<STR_t>(var.d).size()) ); break;
+		case ARR: return Variant{INT, (int)(AnyCast(ARR_t,var.d).size()) }; break;
+		case STR: return Variant(INT, (int)(AnyCast(STR_t,var.d).size()) ); break;
 		default:
 			emit_error(ERR_invalid_func_arg_type, {"0", "STR or ARR", get_variant_type_name(var.t)});
 			return VariantPresets.empty;
@@ -69,8 +69,7 @@ Variant LIB_BI_size(ScopeState& _state, const ARR_t& args) {
 // ---------------
 
 const Variant LIB_BI {
-	MAP,
-	(MAP_t){
+	MAP, (MAP_t){
 		{"__name", Variant{STR, (STR_t)"BI", VariantMode_constant}},
 		{"__init", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_init)},
 

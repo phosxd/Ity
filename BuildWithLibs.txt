@@ -1,0 +1,10 @@
+This is a list of libraries that will be compiled into the interpreter binary.
+You can omit specific ones by removing the "." at the beginning.
+
+These libraries are expected to be at "src/Lib/<name>/m.hpp".
+
+
+.IO
+.Time
+.Math
+.FileAccess

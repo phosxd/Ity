@@ -20,16 +20,12 @@
 #include "Expression.hpp"
 
 // Lib imports...
-#include "Lib/BuiltIn.hpp"
-#include "Lib/IO.hpp"
-#include "Lib/Time.hpp"
-#include "Lib/Math.hpp"
+#include "Lib//BuiltIn/m.hpp"
+//BUILDER_INSERT: Lib Includes
 
 const Variant LIBS[] = {
 	LIB_BI,
-	LIB_IO,
-	LIB_Time,
-	LIB_Math
+//BUILDER_INSERT: Lib Names
 };
 
 // Instruction imports...

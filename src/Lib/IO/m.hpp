@@ -47,8 +47,7 @@ Variant LIB_IO_prompt(ScopeState& state, const ARR_t& args) {
 // ---------------
 
 const Variant LIB_IO {
-	MAP,
-	(MAP_t){
+	MAP, (MAP_t){
 		{"__name",       Variant{STR, (STR_t)"IO", VariantMode_constant}},
 		{"__init",       NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_init)},
 		{"in",           NativeFuncTrans(STR,    (NativeFunc_t)LIB_IO_in)},
