@@ -2,13 +2,6 @@
 
 
 void OP_Arith_exec(ScopeState& _state, Variant& first, Variant& second, const std::string& symbol, Variant& result, Variant*& _result_ptr) {
-	// Fixer for negative numbers.
-	if (first.t == NONE && (second.t == INT || second.t == FLOAT)) {
-		second.d = second.d-(second.d*2);
-		result = Variant {second.t, second.d};
-		return;
-	}
-
 	VariantType type = first.t;
 	// Convert output type to FLOAT if either operands are of type FLOAT.
 	if ((first.t == INT && second.t == FLOAT) || (first.t == FLOAT && second.t == INT)) {

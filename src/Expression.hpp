@@ -73,7 +73,7 @@ bool check_ahead(const std::string& text, const unsigned int& start_idx, const s
 // Add the pending literal token if available.
 // Also resets the current buffer.
 void clean_up_buffer(ExprToken& result_token, ExprToken& item, std::string& buffer) {
-	if (item.var.t != NONE && buffer.size() > 0) {
+	if (item.var.t != PLACEHOLDER) {
 		item.var.d = get_literal_from_str(item.var.t, buffer);
 		result_token.seq.push_back(item);
 		buffer.clear();
@@ -98,7 +98,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 	std::string buffer;
 	std::string secondary_buffer;;
 	buffer.reserve(expr_len);
-	ExprToken item;
+	ExprToken item = {0,0, ExprTokenType_variant, Variant{PLACEHOLDER}};
 	unsigned int ln_offset = 0;
 	unsigned int col_offset = 0;
 	unsigned int skip_to_ln = 0;
@@ -157,7 +157,6 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 		else if (is_array || is_map) {
 			const std::string& subexpr = expr.substr(i);
 			if (not subexpr.empty()) {
-				clean_up_buffer(result_token, item, buffer);
 				// Tokenize sub-expression & add to sequence.
 				item.seq = expr_tokenize(subexpr, ln_offset, col_offset).seq;
 				result_token.seq.push_back(item);
@@ -174,6 +173,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			}
 			if (is_array) is_array = false;
 			if (is_map) is_map = false;
+			item = ExprToken{ln_offset, col_offset, ExprTokenType_variant, {PLACEHOLDER}};
 			continue;
 		}
 
@@ -190,9 +190,9 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 				const std::string& subexpr = expr.substr(i+1);
 				clean_up_buffer(result_token, item, buffer);
 				// Tokenize sub-expression.
-				const ExprToken& token = expr_tokenize(subexpr, ln_offset+1, col_offset+1);
+				const ExprToken& token = expr_tokenize(subexpr, ln_offset, col_offset);
 				// Create expression sequence token.
-				item = ExprToken{token.ln+1, token.col+1};
+				item = ExprToken{token.ln, token.col, ExprTokenType_variant, {PLACEHOLDER}};
 				item.t = ExprTokenType_sequence;
 				item.seq = std::move(token.seq);
 				// Add to sequence.
@@ -211,10 +211,13 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 			if (is_start) {
 				const bool next_ref_is_str_ = next_ref_is_str;
 				next_ref_is_str = false;
-				item = ExprToken{ln_offset, col_offset};
+				item = ExprToken{ln_offset, col_offset, ExprTokenType_variant, {PLACEHOLDER}};
 				// Set type integer.
-				if (NUM.find(ch) != std::string::npos) {
+				if ((NUM.find(ch) != std::string::npos) || (ch == '-' && (expr_len > i && NUM.find(expr[i+1]) != std::string::npos ))) {
 					item.var.t = INT;
+					buffer += ch;
+					is_start = false;
+					continue;
 				}
 				// Start string.
 				else if (STRING_SYMBOLS.find(ch) != std::string::npos) {
@@ -266,7 +269,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 				// Separate expression.
 				if (ch == ',') {
 					clean_up_buffer(result_token, item, buffer);
-					item.var.t = NONE;
+					item.var.t = PLACEHOLDER;
 					is_start = true;
 					continue;
 				}
@@ -274,7 +277,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 				// Start operator.
 				else if (is_special_symbol(ch) == true) {
 					clean_up_buffer(result_token, item, buffer);
-					item.var.t = NONE;
+					item.var.t = PLACEHOLDER;
 					is_operator = true;
 				}
 

@@ -1,6 +1,4 @@
-- Fix expressions that resolve to "NONE" not returning a variant of type "NONE" but instead returning an empty sequence.
-
-
+Fix line/column weirdness, incorrect like 70% of cases & I cant figure it out.
 
 Add standard built-in libraries:
 	- FileAccess

@@ -37,7 +37,7 @@ std::string get_variant_type_name(const VariantType& type) {
 	switch (type) {
 		case NONE: return "NONE";
 		// Meta types.
-		case PLACEHOLDER: return "NONE";
+		case PLACEHOLDER: return "PLACEHOLDER";
 		case INTERNAL: return "NONE";
 		case INFERRED: return "*";
 		case ANY: return "ANY";
@@ -441,7 +441,7 @@ struct ExprToken {
 std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 	os << "{ln=" << s.ln << ", col=" << s.col;
 	os << ", var=" << s.var;
-	os << ", seq=" << s.seq;
+	if (not s.seq.empty()) os << ", seq=" << s.seq;
 	os << '}';
 	return os;
 }

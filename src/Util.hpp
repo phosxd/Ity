@@ -20,13 +20,13 @@ std::string operator*(const std::string& a, const int& b) {
 
 
 
-// LShift uint8_t.
+// Insert uint8_t.
 std::ostream& operator<<(std::ostream& os, const uint8_t& s) {
 	return os << std::to_string(s); // Convert to string, otherwie displays as empty.
 }
 
 
-// LShift vector.
+// Insert vector.
 template<class T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& s) {
 	os << '[';
@@ -39,7 +39,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& s) {
 }
 
 
-// LShift unordered_map.
+// Insert unordered_map.
 template<class T, class T2>
 std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
 	os << '{';
