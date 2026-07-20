@@ -367,6 +367,7 @@ void start_shell(int argc, char* argv[]) {
 	// Set other flags.
 	emit_just_codes = exists_in_vec(flags, "-codes");
 	emit_warnings = not exists_in_vec(flags, "-nowarn");
+	safe_mode= exists_in_vec(flags, "-safe");
 
 	std::vector<std::string> split_source_script = {""};
 	for (const std::string& i : (split_str(source_script_path, '/')) ) {split_source_script.push_back(i);}

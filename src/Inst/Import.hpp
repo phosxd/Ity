@@ -30,8 +30,8 @@ void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& _t
 		}
 	}
 
-	// Throw error if library doesn't exist.
-	if (lib == nullptr) {
+	// Throw error if library doesn't exist or is not allowed in safe mode.
+	if (lib == nullptr || (safe_mode && not exists_in_vec(safe_mode_allowed_libs, lib_name))) {
 		emit_error(ERR_unknown_module, {lib_name});
 		return;
 	}

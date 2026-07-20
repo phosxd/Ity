@@ -92,6 +92,9 @@ std::vector<unsigned int> call_trace;
 bool emit_just_codes = false;
 // If false, warning messages will not be displayed.
 bool emit_warnings = true;
+// If true, limits the modules that can be imported.
+bool safe_mode = false;
+const std::vector<std::string> safe_mode_allowed_libs = {"IO","Time","Math"};
 
 
 std::string make_err_message(const ERR_CODE code, const std::vector<std::string> args) {

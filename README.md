@@ -16,7 +16,7 @@ Ity is a work-in-progress, light-weight interpreted programming language built w
 - **No build setup.** Requires no third-party libraries.
 - **Practical.** I/O, ~~file management~~, time, & math modules all built-in.
 
-This is my first project in C++, I'm sure there are things that I have done wrong or have messed up, don't be afriad to open an issue to tell me!
+This is my first project in C++, I'm sure there are things that I have done wrong or have messed up, don't be afraid to open an issue to tell me!
 
 
 # Build interpreter
@@ -72,7 +72,7 @@ Running the interpreter without passing a script file path will run it in "inter
 
 ```bash
 ./Ity.bin
-* Ity (0.0.1)
+* Ity (0.0.2)
 * Runing interactive mode interpreter.
 * Type "quit" or "q" to stop.
 
@@ -90,6 +90,16 @@ You can pass flags to the interpreter to change how it behaves & select what inf
 
 Flags:
 
+- `-safe`:
+	Prevent the interpreter from importing potentially unsafe modules.
+	With this option enabled, only a select few modules can be imported:
+		IO, Time, Math.
+
+- `-codes`:
+	Print simple error / warning codes instead of detailed messages.
+- `-nowarn`:
+	Don't emit any warning messages.
+
 - `-d-full`:
 	Enable all debug flags.
 - `-d-result`:
@@ -103,7 +113,7 @@ Flags:
 - `-d-assign-data`:
 	Print "set_data" calls on the current state.
 - `-d-scoping`:
-	Print scope in/out calls.
+	Print scope in/out/alt calls.
 
 
 # Language usage
