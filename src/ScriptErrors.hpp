@@ -7,6 +7,7 @@ enum ERR_CODE {
 	ERR_expected_ity_extension,
 	ERR_unable_to_open_script,
 	ERR_unknown_module,
+	ERR_disallowed_member_in_safe_mode,
 
 	ERR_max_composite_size,
 	ERR_no_composite_requiring_end,
@@ -50,6 +51,7 @@ enum ERR_CODE {
 	ERR_invalid_character_for_construct,
 };
 
+
 using Clock = std::chrono::high_resolution_clock;
 using Clock_t = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
@@ -71,6 +73,7 @@ namespace ANSI {
 	static constexpr std::string clear_screen  = "\e[2J\e[H";
 }
 
+
 struct debug_flags_struct {
 	bool result = false;        // Print program results when done.
 	bool inst_seq = false;      // Print InstToken sequences directly after tokenization.
@@ -83,6 +86,8 @@ struct debug_flags_struct {
 debug_flags_struct debug_flags;
 
 
+
+
 Clock_t clock_start;
 unsigned int current_line = 0;
 unsigned int current_column = 0;
@@ -91,6 +96,7 @@ std::vector<std::string> current_inst_token_args;
 // Sequence of line & column numbers relating to the exact location a function was called.
 // This is used to show the sequence of function calls leading to an error.
 std::vector<unsigned int> call_trace;
+
 
 // If true, no fancy messages are displayed, just "ERROR: <code>" or "WARN: <code>".
 bool emit_just_codes = false;
@@ -101,12 +107,15 @@ bool safe_mode = false;
 const std::vector<std::string> safe_mode_allowed_libs = {"IO","Time","Math"};
 
 
+
+
 std::string make_err_message(const ERR_CODE code, const std::vector<std::string> args) {
 	if (code == ERR_custom)                                 return args[0];
 	else if (code == ERR_unexpected)                        return "Unexpected (" + args[0] + "): " + args[1] + " Please report bug.";
 	else if (code == ERR_expected_ity_extension)            return "Expected file with \".ity\" extension.";
 	else if (code == ERR_unable_to_open_script)             return "Unable to open script at \"" + args[0] + "\".";
 	else if (code == ERR_unknown_module)                    return "No module with name \"" + args[0] + "\" is available.";
+	else if (code == ERR_disallowed_member_in_safe_mode)    return "Member \"" + args[0] + "\" is not allowed during safe mode (-safe).";
 
 	else if (code == ERR_max_composite_size)                return "Exceeded maximum number of instructions under a composite (65,535). Nesting is not healthy.";
 	else if (code == ERR_no_composite_requiring_end)        return "There is no instruction requiring a composite end here.";

@@ -3,13 +3,17 @@
 #include <cmath>
 
 
+const std::vector<VariantType> valid_types = {INT, FLOAT};
+
+
 Variant LIB_Math_init(ScopeState& _state, const ARR_t& args) {
-	return VariantPresets.empty;
+	return VariantPresets.none;
 }
 
 
 Variant LIB_Math_math(ScopeState& _state, const ARR_t& args, const std::string& func) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
+	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	if (not expect_arg_types(args[0], valid_types, 0)) return VariantPresets.none;
 	const Variant& var = args[0];
 
 	VariantType type;
@@ -32,10 +36,6 @@ Variant LIB_Math_math(ScopeState& _state, const ARR_t& args, const std::string& 
 		else if (func == "log")    data = (FLOAT_t)std::log(d);
 		else if (func == "sqrt")   data = (FLOAT_t)std::sqrtf(d);
 	}
-	else {
-		emit_error(ERR_invalid_func_arg_type, {"0", "INT or FLOAT", get_variant_type_name(var.t)});
-		return VariantPresets.empty;
-	}
 
 	return Variant{type, std::move(data)};
 }
@@ -49,9 +49,8 @@ Variant LIB_Math_sqrt(ScopeState& state, const ARR_t& args) {return LIB_Math_mat
 
 
 Variant LIB_Math_pow(ScopeState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2)) return VariantPresets.empty;
-	const std::vector<VariantType> valid_types = {INT, FLOAT};
-	if (not expect_arg_types(args[0], valid_types, 0) || not expect_arg_types(args[1], valid_types, 1)) return VariantPresets.empty;
+	if (not expect_arg_count(args, 2)) return VariantPresets.none;
+	if (not expect_arg_types(args[0], valid_types, 0) || not expect_arg_types(args[1], valid_types, 1)) return VariantPresets.none;
 
 	return Variant{
 		FLOAT, (FLOAT_t)std::pow(

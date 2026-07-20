@@ -2,12 +2,12 @@
 
 
 Variant LIB_Time_init(ScopeState& _state, const ARR_t& args) {
-	return VariantPresets.empty;
+	return VariantPresets.none;
 }
 
 
 Variant LIB_Time_get_time(ScopeState& _state, const ARR_t& args, const unsigned int mode) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.empty;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 
 	const STR_t& precision = AnyCast(STR_t,args[0].d);
 

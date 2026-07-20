@@ -627,6 +627,7 @@ STR_t var_to_str(const Variant& var) {
 using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
 struct VariantPresets_struct {
 	const Variant empty       {PLACEHOLDER, std::any(), VariantMode_constant};
+	const Variant none        {NONE, std::any(), VariantMode_constant};
 	const Variant obj_type_m  {STR, (STR_t)"m", VariantMode_constant};
 	const Variant obj_type_f  {STR, (STR_t)"f", VariantMode_constant};
 

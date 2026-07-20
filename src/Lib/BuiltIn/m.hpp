@@ -4,20 +4,29 @@
 // Called whenever the module is imported.
 // This can be called multiple times.
 Variant LIB_BI_init(ScopeState& _state, const ARR_t& args) {
-	return VariantPresets.empty;
+	return VariantPresets.none;
 }
 
 
-// Return a copy of the current scope state.
-Variant LIB_BI_get_state(ScopeState& state, const ARR_t& args) {
-	if (not expect_arg_count(args, 0)) return VariantPresets.empty;
-	return Variant{MAP, state.d};
+// Call a system comamnd. Returns the exit status code.
+Variant LIB_BI_system(ScopeState& _state, const ARR_t& args) {
+	if (safe_mode) {
+		emit_error(ERR_disallowed_member_in_safe_mode, {"system"});
+		return VariantPresets.none;
+	}
+
+	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	const std::vector<VariantType> valid_types = {STR};
+	if (not expect_arg_types(args[0], valid_types, 0)) return VariantPresets.none;
+
+	const char* command = AnyCast(STR_t,args[0].d).c_str();
+	return Variant{INT, (INT_t)system(command)};
 }
 
 
 // Pause thread execution for the given number of seconds.
 Variant LIB_BI_sleep(ScopeState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
+	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	const Variant& var = args[0];
 
 	FLOAT_t sleep_time;
@@ -26,24 +35,31 @@ Variant LIB_BI_sleep(ScopeState& _state, const ARR_t& args) {
 		case FLOAT: sleep_time = AnyCast(FLOAT_t,var.d); break;
 		default:
 			emit_error(ERR_invalid_func_arg_type, {"0", "INT or FLOAT", get_variant_type_name(var.t)});
-			return VariantPresets.empty;
+			return VariantPresets.none;
 	}
 
 	std::this_thread::sleep_for(std::chrono::microseconds( (int)(sleep_time*1000000) ));
-	return VariantPresets.empty;
+	return VariantPresets.none;
+}
+
+
+// Return a copy of the current scope state.
+Variant LIB_BI_get_state(ScopeState& state, const ARR_t& args) {
+	if (not expect_arg_count(args, 0)) return VariantPresets.none;
+	return Variant{MAP, state.d};
 }
 
 
 // Return the type of the given Variant, in string form.
 Variant LIB_BI_type_name(ScopeState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
+	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	return Variant{STR, get_variant_type_name(args[0].t)};
 }
 
 
 // Return the length of the given array or string.
 Variant LIB_BI_length(ScopeState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
+	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	const Variant& var = args[0];
 
 	switch (var.t) {
@@ -51,14 +67,14 @@ Variant LIB_BI_length(ScopeState& _state, const ARR_t& args) {
 		case STR: return Variant(INT, (int)(AnyCast(STR_t,var.d).size()) ); break;
 		default:
 			emit_error(ERR_invalid_func_arg_type, {"0", "STR or ARR", get_variant_type_name(var.t)});
-			return VariantPresets.empty;
+			return VariantPresets.none;
 	}
 }
 
 
 // Return the number of bytes taken by the given variant.
 Variant LIB_BI_size(ScopeState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
+	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	return Variant{INT, (int)get_variant_data_size(args[0].d)};
 }
 
@@ -104,8 +120,9 @@ const Variant LIB_BI {
 		}},
 
 		// Utility functions.
-		{"get_state",  NativeFuncTrans(MAP,   (NativeFunc_t)LIB_BI_get_state)},
+		{"system",     NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_system)},
 		{"sleep",      NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_sleep)},
+		{"get_state",  NativeFuncTrans(MAP,   (NativeFunc_t)LIB_BI_get_state)},
 		{"type_name",  NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type_name)},
 		{"length",     NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_length)},
 		{"size",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)}

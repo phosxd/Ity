@@ -57,10 +57,15 @@ Map keys:
 - `white`
 - `yellow`
 
-### MAP get\_state ()
-A function that returns a `MAP` representing the state of the caller scope. In other words, a map of all variables / functions in the current scope.
+### INT system (STR command)
+A function that runs a system command string then returns the exit status code.
 
-One use for this, is to check if a name is currently being used in the scope or to iterate on every variable in the scope.
+```python
+system:['echo Hello World!']; # Returns 0.
+
+system:['NonExistentCommand']; # Returns 32512.
+# sh: line 1: NonExistentCommand: command not found
+```
 
 ### NONE sleep (INT/FLOAT seconds)
 A function that pauses thread execution by the given number of seconds.
@@ -69,6 +74,11 @@ A function that pauses thread execution by the given number of seconds.
 sleep:[1]; # Pause for 1 second.
 sleep:[0.5]; # Pause for half of a second.
 ```
+
+### MAP get\_state ()
+A function that returns a `MAP` representing the state of the caller scope. In other words, a map of all variables / functions in the current scope.
+
+One use for this, is to check if a name is currently being used in the scope or to iterate on every variable in the scope.
 
 ### STR type_name (ANY var)
 A function that returns a `STR` representing the active type of a given variable.

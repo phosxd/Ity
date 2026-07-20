@@ -94,6 +94,9 @@ Flags:
 	Prevent the interpreter from importing potentially unsafe modules.
 	With this option enabled, only a select few modules can be imported:
 		IO, Time, Math.
+	
+	This will also disable certain members/functions:
+		system.
 
 - `-codes`:
 	Print simple error / warning codes instead of detailed messages.
