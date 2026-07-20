@@ -443,7 +443,7 @@ void start_shell(int argc, char* argv[]) {
 				Ity::exec(state, sequence, 0,-1);
 
 				// Print expression result if there is one.
-				if (last_expr_result.t != NONE) {
+				if (last_expr_result.t != PLACEHOLDER) {
 					std::cout << last_expr_result.d;
 				}
 			}
