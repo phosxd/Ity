@@ -35,6 +35,7 @@ const Variant LIBS[] = {
 #include "Inst/End.hpp"
 #include "Inst/If.hpp"
 #include "Inst/While.hpp"
+#include "Inst/Continue.hpp"
 #include "Inst/Func.hpp"
 #include "Inst/Return.hpp"
 
@@ -52,6 +53,8 @@ const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
 	{"elif",     &INST_If},
 	{"else",     &INST_If},
 	{"while",    &INST_While},
+	{"continue", &INST_Continue},
+	{"break",    &INST_Continue},
 	{"func",     &INST_Func},
 	{"return",   &INST_Return},
 };
@@ -190,11 +193,28 @@ std::vector<InstToken> tokenize(const std::string& src) {
 						// Link elif / else.
 						if (inst_name == "elif" || inst_name == "else") {
 							if (last_comp_item.token.args[0] != "if" && last_comp_item.token.args[0] != "elif") {
-								emit_error(ERR_unexpected_else, {}, ln,col);
+								emit_error(ERR_unexpected_inst, {inst_name}, ln,col);
 								return sequence;
 							}
 							item.linked_inst = last_comp_item.token.args[0];
 							item.linked_inst_pos = -(int32_t)last_comp_item_dist;
+						}
+
+						// Link continue / break.
+						else if (inst_name == "continue" || inst_name == "break") {
+							bool found = false;
+							std::vector<CompositeItem> reverse_nest = composite_nest; std::reverse(reverse_nest.begin(), reverse_nest.end());
+							for (const CompositeItem& comp_item : reverse_nest) {
+								if (comp_item.token.args[0] != "while") continue;
+								found = true;
+								item.linked_inst = comp_item.token.args[0];
+								item.linked_inst_pos = -(int32_t)(item.i-comp_item.token.i);
+								break;
+							}
+							if (not found) {
+								emit_error(ERR_unexpected_inst, {inst_name}, ln,col);
+								return sequence;
+							}
 						}
 
 						// Check if return has a parent function.
@@ -207,7 +227,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 								break;
 							}
 							if (not found) {
-								emit_error(ERR_unexpected_return, {}, ln,col);
+								emit_error(ERR_unexpected_inst, {inst_name}, ln,col);
 								return sequence;
 							}
 						}

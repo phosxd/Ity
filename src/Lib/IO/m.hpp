@@ -42,8 +42,9 @@ Variant LIB_IO_key_in(ScopeState& _state, const ARR_t& args) {
 
 
 // Output text.
-Variant LIB_IO_out(ScopeState& _state, const ARR_t& args) {
+Variant LIB_IO_out(ScopeState& state, const ARR_t& args) {
 	for (const Variant& var : args) std::cout << var.d;
+	std::cout << std::flush; // Instantly print to the screen.
 	return VariantPresets.none;
 }
 

@@ -1,0 +1,34 @@
+#!/usr/local/bin/ity
+import IO;
+
+const INT max_cycles = 4;
+IO.out:[(ANSI.cursor_off)]; # Hide the terminal cursor.
+
+
+var INT cycles = 0;
+var INT i = 0; while true;
+	if cycles >= max_cycles; break; /;
+
+	# Print the correct symbol for the iteration in this cycle.
+	if i == 0;   IO.out:['|'];  /;
+	elif i == 1; IO.out:['/'];  /;
+	elif i == 2; IO.out:['-'];  /;
+	elif i == 3; IO.out:['\\']; /;
+	else;
+		IO.out:['|'];
+		i = -1;
+		cycles += 1;
+	/;
+
+	# Wait some time.
+	sleep:[0.133];
+	IO.out:['\e[2K']; # Clear line.
+	IO.out:['\e[1G']; # Set cursor to back to beginning.
+
+	i+=1;
+/;
+
+
+IO.out:[(ANSI.cursor_on)]; # Show the terminal cursor.
+IO.out:['\e[2K\e[1g']; # Clear the line & set the cursor to the beginning.
+IO.print:['Done!'];

@@ -21,7 +21,7 @@ void INST_If_exec(ScopeState& state, const Instruction* _inst, InstToken& token,
 	if (token.linked_inst == "if" || token.linked_inst == "elif") {
 		const InstToken& linked_token = InstTokenSeq[token.i + token.linked_inst_pos];
 		if (linked_token.meta.size() == 0) {
-			emit_error(ERR_unexpected_else);
+			emit_error(ERR_unexpected_inst, {symbol});
 			return;
 		}
 		previous_conditional_passed = std::any_cast<bool>(linked_token.meta[0]);

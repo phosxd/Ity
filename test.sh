@@ -612,6 +612,45 @@ print:[b];
 
 {\"c\": {\"key\": value}, \"b\": 2, \"a\": 1}
 {\"c\": {\"key\": [1, 2, 3]}, \"b\": 2, \"a\": 1}"
+
+# 24
+
+"
+# Loop continue / break
+# ---------------------
+
+merge IO;
+
+
+var INT i = 0; while true; i+=1;
+	print:[i];
+	if i == 5; break; /;
+
+	continue;
+	throw 'This should be skipped';
+/;
+
+print:['Done'];
+"
+
+"1
+2
+3
+4
+5
+Done"
+
+# 25
+
+""
+
+""
+
+# 26
+
+""
+
+""
 )
 
 
@@ -628,7 +667,7 @@ for (( idx=0; idx<${#tests[@]}; idx+=2 )); do
 		continue
 	fi
 	echo "$i" > .test.ity # Put test code in a file.
-	./Ity.bin -codes .test.ity > .test_result.txt # Run test code, then output the result to a file.
+	./ity.bin -codes .test.ity > .test_result.txt # Run test code, then output the result to a file.
 	code=$?
 
 	expected=${tests[(($idx+1))]} # Get expected test output.
@@ -640,7 +679,7 @@ for (( idx=0; idx<${#tests[@]}; idx+=2 )); do
 		echo "${i}"
 		echo "${BOLD}Test case debug results:${RESET}"
 		echo
-		echo "$(./Ity.bin -d-full .test.ity)"
+		echo "$(./ity.bin -d-full .test.ity)"
 		echo
 		echo "- - - - - - - - - - - - - - - - - - - -"
 		echo

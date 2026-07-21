@@ -9,5 +9,5 @@ fi
 echo
 echo $'\033[1mInstalling production build to "'$install_path$'"...\033[0m'
 sudo rm $install_path
-sudo cp Ity.bin $install_path
+sudo cp ity.bin $install_path
 echo "Done. You should be able to run it anywhere on your system! Try running the command \"ity\"!"

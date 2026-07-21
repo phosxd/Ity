@@ -146,7 +146,7 @@ Variant* get_data_globally(ScopeState& state, const std::string& name) {
 // If mode is locked type, will throw an error if the data type does not match the given type.
 void set_data(ScopeState& state, const std::string& name, const VariantType& type, const VariantData& data, const VariantMode& mode) {
 	// Output function call in debug mode...
-	if (debug_flags.data_assign) {
+	if (debug_flags.data_assign && not exists_in_vec(illegal_print_names, name)) {
 		std::cout << ANSI::blue << "Data Assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
 	}
 

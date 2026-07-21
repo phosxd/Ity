@@ -4,53 +4,9 @@
 const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
 constexpr std::string NUM = "0123456789";
 
-
-
-
-// Overloads.
-// ----------
-
-
-// String multiplication.
-std::string operator*(const std::string& a, const int& b) {
-	std::string sum; sum.reserve(a.size()*b);
-	for (int i = 0; i < b; i++) {sum += a;}
-	return sum;
-}
-
-
-
-// Insert uint8_t.
-std::ostream& operator<<(std::ostream& os, const uint8_t& s) {
-	return os << std::to_string(s); // Convert to string, otherwie displays as empty.
-}
-
-
-// Insert vector.
-template<class T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& s) {
-	os << '[';
-	const unsigned int len = s.size();
-	for (unsigned int i = 0; i < len; i++) {
-		if (i != 0) {os << ", ";}
-		os << s[i];
-	}
-	return os << ']';
-}
-
-
-// Insert unordered_map.
-template<class T, class T2>
-std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
-	os << '{';
-	unsigned int idx = 0;
-	for (auto i:s) {
-		if (idx != 0) {os << ", ";}
-		os << "\"" << i.first << "\"" << ": " << i.second;
-		idx++;
-	}
-	return os << '}';
-}
+const std::vector<std::string> illegal_print_names = {
+	"ANSI",
+};
 
 
 
@@ -166,4 +122,53 @@ bool exists_in_vec(const std::vector<T>& v, const T2& val) {
 		if (i == val) return true;
 	}
 	return false;
+}
+
+
+
+
+// Overloads.
+// ----------
+
+
+// String multiplication.
+std::string operator*(const std::string& a, const int& b) {
+	std::string sum; sum.reserve(a.size()*b);
+	for (int i = 0; i < b; i++) {sum += a;}
+	return sum;
+}
+
+
+
+// Insert uint8_t.
+std::ostream& operator<<(std::ostream& os, const uint8_t& s) {
+	return os << std::to_string(s); // Convert to string, otherwie displays as empty.
+}
+
+
+// Insert vector.
+template<class T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& s) {
+	os << '[';
+	const unsigned int len = s.size();
+	for (unsigned int i = 0; i < len; i++) {
+		if (i != 0) {os << ", ";}
+		os << s[i];
+	}
+	return os << ']';
+}
+
+
+// Insert unordered_map.
+template<class T, class T2>
+std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
+	os << '{';
+	unsigned int idx = 0;
+	for (auto i:s) {
+		if (exists_in_vec(illegal_print_names, i.first)) continue;
+		if (idx != 0) {os << ", ";}
+		os << "\"" << i.first << "\"" << ": " << i.second;
+		idx++;
+	}
+	return os << '}';
 }

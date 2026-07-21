@@ -20,8 +20,7 @@ enum ERR_CODE {
 	ERR_invalid_op,
 	ERR_invalid_assignment_op,
 	ERR_invalid_cast,
-	ERR_unexpected_else,
-	ERR_unexpected_return,
+	ERR_unexpected_inst,
 
 	ERR_operand_type_mismatch,
 	ERR_assignment_type_mismatch,
@@ -134,8 +133,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 	}
 	else if (code == ERR_invalid_assignment_op)             return "Invalid assignment operator \"" + args[0] + "\" for instruction \"" + args[1] + "\".";
 	else if (code == ERR_invalid_cast)                      return "Cannot type cast from \"" + args[0] + " to \"" + args[1] + "\".";
-	else if (code == ERR_unexpected_else)                   return "Unexpected \"else\" or \"elif\" instruction. No previous conditional.";
-	else if (code == ERR_unexpected_return)                 return "Unexpected \"return\" instruction. Not inside a function.";
+	else if (code == ERR_unexpected_inst)                   return "Unexpected \"" + args[0] + "\"instruction. No valid previous.";
 
 	else if (code == ERR_operand_type_mismatch) {
 		std::string part = "\".";

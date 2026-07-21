@@ -15,7 +15,7 @@ OPTIM_balanced="-O2 -finline-limit=4"
 OPTIM_speed="-Ofast"
 OPTIM_size="-Os -finline-limit=0"
 
-LINKS=".Ity_tmp_generated.cpp -o ity.o Main.cpp -o Ity.bin"
+LINKS=".Ity_tmp_generated.cpp -o ity.o Main.cpp -o ity.bin"
 
 
 # Parse "LIBRARIES" file.
@@ -119,7 +119,7 @@ result=0
 if [[ $DEBUG == 0 ]]; then
 	g++ $BUILD_ARGS
 	result=$?
-	strip Ity.bin # Better results than "-s" flag for gcc.
+	strip ity.bin # Better results than "-s" flag for gcc.
 	objcopy \
 		--remove-section=.gnu.version \
 		--remove-section=.note.ABI-tag \
@@ -130,7 +130,7 @@ if [[ $DEBUG == 0 ]]; then
 		--remove-section=.gnu.build.attributes \
 		--remove-section=.eh_frame_hdr \
 		--remove-section=.eh_frame \
-		Ity.bin Ity.bin
+		ity.bin ity.bin
 fi
 if [[ $DEBUG == 1 ]]; then
 	g++ -g $BUILD_ARGS
@@ -143,7 +143,7 @@ if (( $result != 0 )); then
 fi
 
 cd ../
-mv src/Ity.bin Ity.bin
+mv src/ity.bin ity.bin
 rm src/.Ity_tmp_generated.cpp
 
 
@@ -155,7 +155,7 @@ end=$(date +%s)
 echo "Done in" $((end-start))"s."
 
 # Get size difference between this & the last build.
-bin_size=$(wc -c < Ity.bin)
+bin_size=$(wc -c < ity.bin)
 prev_bin_size=0
 if [[ -e ".last_build_size" ]]; then
 	prev_bin_size=$(cat .last_build_size)
