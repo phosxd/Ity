@@ -90,8 +90,7 @@ debug_flags_struct debug_flags;
 Clock_t clock_start;
 unsigned int current_line = 0;
 unsigned int current_column = 0;
-unsigned int current_inst_token_col = 0;
-std::vector<std::string> current_inst_token_args;
+
 // Sequence of line & column numbers relating to the exact location a function was called.
 // This is used to show the sequence of function calls leading to an error.
 std::vector<unsigned int> call_trace;
@@ -176,9 +175,21 @@ std::string get_script_pos(const unsigned int ln, const unsigned int col, const 
 	const std::string& ln_col = "Ln/Col " + std::to_string(ln) + ':' + std::to_string(col);
 	if (not pointer) return ln_col;
 
-	const std::string& text_part = ln_col + " ( ";
-	std::string result = text_part + ANSI::purple + join_str(current_inst_token_args, " ") + ANSI::reset + " )\n";
-	return result + ((std::string)" "*(text_part.size() + (col-1) - (current_inst_token_col-1) )) + "^";
+
+	return ln_col;
+
+	// TODO: Add interpreter option that enables the saving of the entire
+	//       raw script file which can be used to display the problematic
+	//       section of code.
+	//
+	//       The "problem text" should be limited to 20 characters as to
+	//       not flood the screen with unnecessary information.
+	//       And the exact problem column should be in the center, along
+	//       with the pointer.
+
+	// const std::string& text_part = ln_col + " ( ";
+	// std::string result = text_part + ANSI::purple + reconstruct + ANSI::reset + " )\n";
+	// return result + ((std::string)" "*(text_part.size() + (col-1) )) + "^";
 }
 
 
@@ -191,7 +202,7 @@ void emit_warn(const ERR_CODE code, std::vector<std::string> args={}) {
 
 	// Print pretty warning message.
 	std::cout << ANSI::yellow << "Warning " << std::to_string(code) << ": " << ANSI::white << make_err_message(code,args) << ANSI::reset << '\n';
-	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(current_line, current_column)) << '\n';
+	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(current_line, current_column, false)) << '\n';
 }
 
 
@@ -206,7 +217,7 @@ void emit_error(const ERR_CODE code, std::vector<std::string> args={}, unsigned 
 
 	// Print pretty error message.
 	std::cout << ANSI::red << "Error " << std::to_string(code) << ": " << ANSI::white << make_err_message(code,args) << ANSI::reset << '\n';
-	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(ln_override, col_override)) << '\n';
+	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(ln_override, col_override, false)) << '\n';
 
 	// Kill program.
 	exit(1);

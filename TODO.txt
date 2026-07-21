@@ -1,4 +1,3 @@
-- Fix line/column weirdness, incorrect like 70% of cases & I cant figure it out.
 - Add more test cases for while loop continue/break correctness in complex scopes scenarios.
 
 Add standard built-in libraries:

@@ -165,7 +165,7 @@ std::ostream& operator<<(std::ostream& os, const VariantData& s) {
 	const std::type_info& t = s.type();
 	if (not s.has_value()) os << "none";
 	else if (t == typeid(bool)) {
-		if (std::any_cast<bool>(s)) os << "true";
+		if (AnyCast(bool,s)) os << "true";
 		else os << "false";
 	}
 	else if (t == typeid(INT_t)) os << AnyCast(INT_t,s);
@@ -380,16 +380,16 @@ VariantData operator/(const VariantData& a, const VariantData& b) {
 	// If a is int...
 	if (t1 == typeid(INT_t)) {
 		// If b is int...
-		if (t2 == typeid(INT_t)) return std::any_cast<const INT_t&>(a) / std::any_cast<const INT_t&>(b);
+		if (t2 == typeid(INT_t)) return AnyCast(INT_t,a) / AnyCast(INT_t,b);
 		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) return std::any_cast<const INT_t&>(a) / std::any_cast<const FLOAT_t&>(b);
+		else if (t2 == typeid(FLOAT_t)) return AnyCast(INT_t,a) / AnyCast(FLOAT_t,b);
 	}
 	// If a is float...
 	else if (t1 == typeid(FLOAT_t)) {;
 		// If b is int...
-		if (t2 == typeid(INT_t)) return std::any_cast<const FLOAT_t&>(a) / std::any_cast<const INT_t&>(b);
+		if (t2 == typeid(INT_t)) return AnyCast(FLOAT_t,a) / AnyCast(INT_t,b);
 		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) return std::any_cast<const FLOAT_t&>(a) / std::any_cast<const FLOAT_t&>(b);
+		else if (t2 == typeid(FLOAT_t)) return AnyCast(FLOAT_t,a) / AnyCast(FLOAT_t,b);
 	}
 
 	// Throw error is none matched.

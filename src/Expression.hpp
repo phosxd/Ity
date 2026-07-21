@@ -116,7 +116,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 		const char& ch = expr[i];
 		// Advance column or line number.
 		col_offset++;
-		if(ch == '\n') {
+		if (ch == '\n') {
 			ln_offset++;
 			col_offset = 0;
 		}

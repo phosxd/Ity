@@ -14,7 +14,6 @@
 #include "ScriptErrors.hpp"
 #include "Common.hpp"
 #include "ScopeState.hpp"
-
 #include "Ity.hpp"
 
 #include "Expression.hpp"
@@ -76,6 +75,12 @@ struct CompositeItem {
 
 
 namespace Ity {
+
+
+ScopeState new_state() {
+	return create_new_scope_state({});
+}
+
 
 std::vector<InstToken> tokenize(const std::string& src) {
 	const size_t& src_len = src.size();
@@ -282,7 +287,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 					else {
 						std::string expr_string; expr_string.reserve(item.args.size());
 						for (const std::string& arg : item.args) expr_string += ' '+arg;
-						item.expr = expr_tokenize(expr_string, item.ln, item.col);
+						item.expr = expr_tokenize(expr_string, item.ln, item.col-1);
 						item.args.clear();
 					}
 				}
@@ -325,8 +330,6 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 		InstToken& item = InstTokenSeq[i];
 		current_line = item.ln;
 		current_column = item.col;
-		current_inst_token_col = item.col;
-		current_inst_token_args = item.args;
 		const int args_len = item.args.size();
 		// If has an expression but no args, run as expression.
 		if (args_len == 0) {
@@ -402,7 +405,7 @@ void start_shell(int argc, char* argv[]) {
 		{"__SCRIPT_START_TIME_MS__",   Variant{INT, (INT_t)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
 		{"__CMD_ARGS__",               Variant{ARR, script_args, VariantMode_constant}}
 	});
-	// Merge MiscBuiltin module.
+	// Merge built-in module.
 	LIB_BI_init(state, (ARR_t){});
 	merge_module(state, std::any_cast<MAP_t>(LIB_BI.d));
 
