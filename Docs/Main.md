@@ -2,6 +2,11 @@ Ity is a simple language compared to the larger languages like Python, C++, & ev
 
 The language is however still meant to be a real alternative, so all the essentials are here & are designed to be as readable & usable as possible.
 
+After reading, or even before, I highly suggest looking at some of the example scripts in the repository. Pick apart what you can from the examples & try making something on your own!
+As a little challenge, try one of these starter projects:
+- Print a readable & formatted current date using the `IO` & `Time` modules. The time module only provides an integer representing the current time, good luck!
+- Command line utility that sorts then returns every given argument in alphabetical order.
+
 # Understanding the layout
 
 An Ity script is first split up into individual instruction tokens. You can think of an instruction token like it's a line in Python, but the difference is that instead of splitting each instruction by line, Ity splits each instruction with a semicolon `;` character instead.
@@ -135,7 +140,7 @@ const ARR my_arr = [1,2,3];
 my_arr:0; # Gives 1;
 
 # Get last element;
-my_arr:(length:[my_arr]-1);
+my_arr:[(length:[my_arr]-1)];
 ```
 
 ## MAP
@@ -270,7 +275,7 @@ number_2 = 20;      # "number" is unchanged.
 # Instructions
 The standard set of instructions in Ity provide you with everything you need to make programs of any ranging complexity.
 
-## Var / Const / Set
+## Var / Const
 There are 3 instructions to assign data in Ity, but which one you use depends on your use case.
 
 ### Var
@@ -368,10 +373,9 @@ if a != b;
 /;
 ```
 
-## While
-You can loop sections of code in 2 different ways.
-
-The first way is to use the dedicated looping instruction "while" which will run all instructions composited below it as over & over until the given condition is no longer met. The condition is checked before the beginning of each iteration.
+## While / Continue / Break
+You can repeatedly execute blocks of code using the `white` composite instruction.
+Before every iteration the given expression gets evaluated. If it returns `true` then the code block will run & return back to the beginning for the next iteration.
 
 ```python
 # Loop forever, the expression returns the literal "true" so the condition will always be met;
@@ -385,6 +389,42 @@ var INT i = 0;
 while i < 100_000;
 	IO.print:[i];
 	i += 1;
+/;
+```
+
+You can skip to the next iteration by using the `continue` instruction.
+
+```python
+import IO;
+
+const STR string = "Hello World!";
+# Print each character in the string, with some delay.
+var INT i = -1; while i < (length:[string]-1); i+=1;
+	# Skip white space characters.
+	if string:i == " ";
+		continue;
+	/;
+
+	# Print then wait...
+	IO.out:[(string:i)];
+	sleep:[0.1];
+/;
+
+
+IO.out:['\n'];
+```
+
+The `break` instruction will stop the loop completely.
+
+```python
+merge IO;
+
+var INT i = -1; while true; i += 1;
+	# Break at 10.
+	if i == 10;
+		break;
+	/;
+	print:[i];
 /;
 ```
 
@@ -411,9 +451,9 @@ exit;
 ```
 
 # Libraries & Globals
-A list of global variables & functions can be found [here](Docs/Globals.md).
+A list of global variables & functions can be found [here](Globals.md).
 Libraries enable you to actually do more complex things with relative ease, here are all the built-in libraries:
-- [IO](Docs/Lib/IO.md)
-- [Time](Docs/Lib/Time.md)
-- [Math](Docs/Lib/Math.md)
-- [FileAccess](Docs/Lib/FileAccess.md)
+- [IO](Lib/IO.md)
+- [Time](Lib/Time.md)
+- [Math](Lib/Math.md)
+- [FileAccess](Lib/FileAccess.md)

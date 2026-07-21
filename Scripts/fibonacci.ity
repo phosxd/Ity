@@ -1,9 +1,7 @@
 #!/usr/local/bin/ity
 import IO;
 
-
 const * n = IO.prompt:['Number: '] -> INT;
-
 
 var INT a = 0;
 var INT b = 1;
@@ -11,9 +9,8 @@ var INT b = 1;
 var INT i = 0; while i < n;
 	var INT c = a;
 	a = b;
-	b = (c + b);
+	b = (c+b);
 
 	IO.print:[a];
-
 	i += 1;
 /;

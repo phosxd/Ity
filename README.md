@@ -18,6 +18,9 @@ Ity is a work-in-progress, light-weight interpreted programming language built w
 
 This is my first project in C++, I'm sure there are things that I have done wrong or have messed up, don't be afraid to open an issue to tell me!
 
+**NOTE:** No AI was used in the development process at all. Purely human made, & will continue to be as such.
+	AI assisted issues or PRs will be rejected.
+
 
 # Build interpreter
 The build process for the Ity interpreter is very straight-forward. After cloning this repository you should notice a `build.sh` bash script inside the root directory.
