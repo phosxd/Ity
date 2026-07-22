@@ -27,7 +27,7 @@ ScopeState* get_state_at_depth(ScopeState& state, const unsigned int target_dept
 		current = current->p;
 	}
 
-	emit_error(ERR_unexpected, {"ScopeState.get_state_at_depth", "no state at depth "+std::to_string(target_depth)});
+	emit_error(ERR_unexpected, {"ScopeState.get_state_at_depth", "no state at depth " + std::to_string(target_depth) + '.'});
 	return &state;
 }
 

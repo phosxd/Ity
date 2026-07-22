@@ -1,11 +1,65 @@
 #pragma once
 
+#include <csignal>
+
 
 // Called whenever the module is imported.
 // This can be called multiple times.
 Variant LIB_BI_init(ScopeState& _state, const ARR_t& args) {
 	return VariantPresets.none;
 }
+
+
+
+
+std::unordered_map<int, std::vector<MAP_t>> LIB_BI_signal_functions;
+ScopeState* LIB_BI_state = nullptr;
+
+// Calls all script functions in `LIB_BI_signal_functions`.
+// Gets executed when we receive a system signal.
+void LIB_BI_on_signal_received(const int sig) {
+	const std::vector<MAP_t>& signal_functions = LIB_BI_signal_functions[sig];
+	// Iterate on each connected function for this signal...
+	for (const MAP_t& func : signal_functions) {
+		Variant args = Variant{ARR, (ARR_t){}};
+		// Call the function.
+		call_script_function(*LIB_BI_state, func, args);
+	}
+};
+
+
+// Connect a system signal to a function.
+Variant LIB_BI_signal(ScopeState& state, const ARR_t& args) {
+	if (not expect_arg_count(args, 2)) return VariantPresets.none;
+	if (args[0].t != INT) {
+		emit_error(ERR_invalid_func_arg_type, {"0", "INT", get_variant_type_name(args[1].t)});
+		return VariantPresets.none;
+	}
+	if (args[1].t != MAP) {
+		emit_error(ERR_invalid_func_arg_type, {"1", "MAP(f)", get_variant_type_name(args[1].t)});
+		return VariantPresets.none;
+	}
+
+	const int signal_number = (int)AnyCast(INT_t,args[0].d);
+	const MAP_t& func = AnyCast(MAP_t,args[1].d);
+	// Emit error if not a function object.
+	if (AnyCast(STR_t,func.at("__t").d) != "f") {
+		emit_error(ERR_invalid_func_arg_type, {"1", "MAP(f)", get_variant_type_name(args[1].t)});
+		return VariantPresets.none;
+	}
+
+	LIB_BI_state = get_state_at_depth(state, 1); // Always run the function in the global state, even if it wasnt defined there.
+	LIB_BI_signal_functions[signal_number].push_back(func); // Add function to array.
+
+	// Connect signal...
+	switch (signal_number) {
+		case 2: signal(SIGINT, LIB_BI_on_signal_received); break;
+		case 15: signal(SIGTERM, LIB_BI_on_signal_received); break;
+	}
+	return VariantPresets.none;
+}
+
+
 
 
 // Call a system comamnd. Returns the exit status code.
@@ -133,7 +187,7 @@ const Variant LIB_BI {
 			{MAP, {
 				{"erase", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_candi_map_erase)},
 			}},
-		}, VariantMode_constant}},
+		}, VariantMode_constant }},
 
 
 		// Type names.
@@ -144,6 +198,13 @@ const Variant LIB_BI {
 		{"STR",    VariantPresets.str_type_str},
 		{"ARR",    VariantPresets.arr_type_str},
 		{"MAP",    VariantPresets.map_type_str},
+
+		// System signals.
+		{"SIGNAL", Variant{
+			MAP, (MAP_t){
+				{"interrupt",   Variant{INT, (INT_t)2, VariantMode_constant}},   // Program interupt request.
+				{"terminate",   Variant{INT, (INT_t)15, VariantMode_constant}},  // Program termination request.
+		}, VariantMode_constant }},
 
 		// ANSI codes.
 		{"ANSI", Variant{
@@ -162,16 +223,16 @@ const Variant LIB_BI {
 				{"cursor_off",    Variant{STR, ANSI::cursor_off,    VariantMode_constant}},
 				{"cursor_on",     Variant{STR, ANSI::cursor_on,     VariantMode_constant}},
 				{"clear_screen",  Variant{STR, ANSI::clear_screen,  VariantMode_constant}},
-			},VariantMode_constant
-		}},
+		}, VariantMode_constant }},
+
 
 		// Utility functions.
+		{"signal",     NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_signal)},
 		{"system",     NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_system)},
 		{"sleep",      NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_sleep)},
 		{"get_state",  NativeFuncTrans(MAP,   (NativeFunc_t)LIB_BI_get_state)},
 		{"type_name",  NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type_name)},
 		{"length",     NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_length)},
-		{"size",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)}
-	},
-	VariantMode_constant
-};
+		{"size",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)},
+
+}, VariantMode_constant };

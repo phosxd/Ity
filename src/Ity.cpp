@@ -16,6 +16,7 @@
 #include "ScopeState.hpp"
 #include "Ity.hpp"
 
+#include "FunctionHandler.hpp"
 #include "Expression.hpp"
 
 // Lib imports...

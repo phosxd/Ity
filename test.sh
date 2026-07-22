@@ -642,9 +642,30 @@ Done"
 
 # 25
 
-""
+"
+# Nested loop continue
+# --------------------
 
-""
+merge IO;
+
+var INT total = 0;
+var INT i = 0; while i < 5; i+=1;
+	var INT j = 0; while j < 10; j+=1;
+		if j%2 == 0; continue; /; # Skip every other number, meaning we skip half of all iterations.
+		total += 1;
+	/;
+	print:[i];
+/;
+
+print:[total];
+"
+
+"1
+2
+3
+4
+5
+25"
 
 # 26
 

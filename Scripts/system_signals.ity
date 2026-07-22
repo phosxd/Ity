@@ -1,0 +1,17 @@
+#!/usr/local/bin/ity
+import IO;
+
+
+func NONE interrupt_handler;
+	IO.print:['\nInterupted'];
+	exit; # Should always call `exit` when connecting to signals that are supposed to end the process.
+/;
+
+
+# Connect signal to our `interrupt_handler` function.
+signal:[(SIGNAL.interrupt), interrupt_handler];
+
+
+# Sleep...
+sleep:[10];
+# During this time, try using `CTRL+C` to interrupt the program, the interrupt handler function should be called.
