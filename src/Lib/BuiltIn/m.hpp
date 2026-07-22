@@ -81,6 +81,42 @@ Variant LIB_BI_size(ScopeState& _state, const ARR_t& args) {
 
 
 
+// Candidate functions.
+// --------------------
+
+
+Variant LIB_BI_candi_arr_erase(ScopeState& _state, ARR_t& args) {
+	if (not expect_arg_count(args, 2)) return VariantPresets.none;
+	if (args[1].t != INT) {
+		emit_error(ERR_invalid_func_arg_type, {"1", "INT", get_variant_type_name(args[1].t)});
+		return VariantPresets.none;
+	}
+
+	ARR_t& data = AnyCastV(ARR_t,args[0].d);
+	const INT_t& index = AnyCast(INT_t,args[1].d);
+	data.erase(data.begin()+index);
+
+	return VariantPresets.none;
+}
+
+
+Variant LIB_BI_candi_map_erase(ScopeState& _state, ARR_t& args) {
+	if (not expect_arg_count(args, 2)) return VariantPresets.none;
+	if (args[1].t != STR) {
+		emit_error(ERR_invalid_func_arg_type, {"1", "STR", get_variant_type_name(args[1].t)});
+		return VariantPresets.none;
+	}
+
+	MAP_t& data = AnyCastV(MAP_t,args[0].d);
+	const STR_t& key = AnyCast(STR_t,args[1].d);
+	data.erase(key);
+
+	return VariantPresets.none;
+}
+
+
+
+
 // DEFINE MAPPINGS
 // ---------------
 
@@ -88,6 +124,17 @@ const Variant LIB_BI {
 	MAP, (MAP_t){
 		{"__name", Variant{STR, (STR_t)"BI", VariantMode_constant}},
 		{"__init", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_init)},
+
+		// Candidates.
+		{"__candi", Variant{INTERNAL, (Candidates_t){
+			{ARR, {
+				{"erase", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_candi_arr_erase)},
+			}},
+			{MAP, {
+				{"erase", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_candi_map_erase)},
+			}},
+		}, VariantMode_constant}},
+
 
 		// Type names.
 		{"NONE",   VariantPresets.none_type_str},
@@ -100,8 +147,7 @@ const Variant LIB_BI {
 
 		// ANSI codes.
 		{"ANSI", Variant{
-			MAP,
-			(MAP_t){
+			MAP, (MAP_t){
 				{"reset",    Variant{STR, ANSI::reset,   VariantMode_constant}},
 				{"bold",     Variant{STR, ANSI::bold,    VariantMode_constant}},
 				{"black",    Variant{STR, ANSI::black,   VariantMode_constant}},

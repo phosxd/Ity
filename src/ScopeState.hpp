@@ -152,7 +152,7 @@ void set_data(ScopeState& state, const std::string& name, const VariantType& typ
 
 	if (not is_name_free(state, name)) {
 		const Variant* var = get_data(state, name);
-		if (var->m == 1) {
+		if (var->m == VariantMode_constant) {
 			emit_error(ERR_cannot_change_constant);
 			return;
 		}
@@ -171,7 +171,7 @@ void set_data(ScopeState& state, const std::string& name, const VariantType& typ
 
 void set_data_globally(ScopeState& state, const std::string& name, const VariantType& type, const VariantData& data, const VariantMode& mode) {
 	if (not is_name_free(state, name)) set_data(state, name, type, data, mode);
-	else if (state.p != nullptr) return set_data_globally(*state.p, name, type, data, mode);
+	else if (state.p) return set_data_globally(*state.p, name, type, data, mode);
 }
 
 

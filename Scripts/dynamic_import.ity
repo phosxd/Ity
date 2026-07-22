@@ -1,0 +1,21 @@
+#!/usr/local/bin/ity
+merge IO;
+
+
+const STR module_name = 'Time';
+# Declare a global object.
+var MAP module = {};
+
+
+# Call import in a temporary scope.
+if true;
+	import @module_name as temporary_module; # The "@" symbol tells "import" to use a variable as the module name to import.
+	module = temporary_module; # Copy the temporary module to the global variable.
+/;
+
+# "Time" is now deleted because we exited the scope.
+# But the copy placed in "module" still remains.
+
+
+# Print result from a call from our dynamically set module.
+print:['Current year is: ', (module.snow:['y'] + 1970)];

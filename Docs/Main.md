@@ -133,14 +133,36 @@ Holds an array of variants which can of any type.
 ];
 ```
 
-You can get an element from the array by using the accessor operator on it.
+You can get an element from the array by using the accessor operator on it. Using a negative number will grab starting from the end of the array.
 
 ```python
 const ARR my_arr = [1,2,3];
-my_arr:0; # Gives 1;
+my_arr:0; # Gives 1.
+my_arr: -1; # Get last element. Same as this: my_arr:(length:[my_arr]-1)
+```
 
-# Get last element;
-my_arr:[(length:[my_arr]-1)];
+Similarly to the method for getting, you can overwrite an element using the accessor operator, but in conjunction with an assignment operator.
+
+Adding a brand new item, instead of overwriting an existing one is also straight forward. Just use the `+=` assignment operator on it with an array containing the item or multiple items your want to add.
+
+```python
+var ARR my_arr = [1,2,3]
+
+# Overwrite array item.
+my_arr:0 = 1;
+# my_arr = [-1, 2, 3]
+
+# Add to array.
+my_arr += [4];
+# my_arr = [-1, 2, 3, 4]
+```
+
+The final thing you need to be able to do with an array is to remove an element. This cannot be done with any operators, for this you must call the `erase` candidate method on the array.
+
+```python
+var ARR my_arr = [1,2,3,4];
+my_arr.erase:[0]; # Remove first item.
+# my_arr = [2,3,4]
 ```
 
 ## MAP
@@ -156,6 +178,44 @@ Unlike dictionaries you would find in most other languages, maps are declared li
 	'string_field', "Hello there!",
 	'keys can have spaces', 'However, it wont be accessible with the "." symbol'
 };
+```
+
+You can get a value in a dictionary key by using the accessor operator, or "." accessor syntax.
+
+```python
+var MAP my_map = {'a',1, 'b',2};
+my_map.a; # Gives value at "a", which is 1.
+my_map:'a'; # Does the same thing.
+```
+
+To set the value of a key in a map, you can use the accessor operator in conjunction with the assignment operator if the key is already in the map. If the key-value pair does not already exist, this will not work.
+
+To add a brand new pair, instead of overwriting an existing one, use the `+=` assignment operator on it with a map containing the pair or multiple pairs your want to add. If there are any overlapping keys, they will be replaced.
+
+```python
+var MAP my_map = {'a',1, 'b',2};
+
+# Overwrite map item.
+my_map.a = 100;
+# my_map = {'a',100, 'b',2}
+
+# Add to map.
+my_map += {'c', 3};
+# my_map = {'a',100, 'b',2, 'c',3}
+```
+
+If you want to check if a key exists in the map, you will need to use the `has` candidate method on the map.
+
+```python
+const MAP my_map = {'a',1, 'b',2};
+my_map.has:['a']; # Returns true.
+```
+
+Removing a key-value pair from a map also requires a candidate method. Use `erase` to do this.
+
+```python
+my_map.erase:['a'];
+# my_map = {'b',2, 'c',3}
 ```
 
 ---
@@ -449,6 +509,40 @@ Using `exit` will quit the program with exit code `0` & print nothing.
 ```python
 exit;
 ```
+
+## Import / Merge
+Modules allow you to expand the capabilities of your script, use the `import` instruction to add a module to the current scope. You can use the "as" keyword followed by a name to import the module & assign it under your custom name.
+
+```python
+import IO; # Import IO built-in module.
+IO.print:['Hello World!'];
+
+import IO as custom_name; # Import IO, but assign it a different name.
+custom_name.print:[];
+
+# Importing the same module more than once works as long as they have unique names.
+```
+
+You can dynamically import a module using the "@" symbol to specify a string variable to use as the module name.
+
+```python
+const STR module_name = 'IO';
+import @module_name as some_module; # Import dynamically.
+
+# In practice, you should verify the member "print" exists in "some_module" before trying to access it.
+some_module.print:['Hello There!'];
+```
+
+If you don't want to assign a name to an imported module at all, use the `merge` instruction which will directly add all the module's members to the current scope.
+
+However this should be used with caution, if you merge a module that just so happens to have a member with the same name as something else in the current scope then you will get a "name taken" error.
+
+```python
+merge IO;
+print:['Hello World!'];
+```
+
+The `merge` instruction will not work with dynamic names ("@") or aliases ("as").
 
 # Libraries & Globals
 A list of global variables & functions can be found [here](Globals.md).

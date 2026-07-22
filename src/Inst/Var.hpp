@@ -41,7 +41,7 @@ void INST_Var_exec(ScopeState& state, const Instruction* inst, InstToken& token,
 	}
 
 	// Get value from expression.
-	current_column += count_non_empty_strings({symbol,type_name,name,op}) + symbol.size() + type_name.size() + name.size() + op.size();
+	current_column += count_non_empty_strings({symbol,type_name,name,op}) + symbol.size() + type_name.size() + name.size() + op.size() -1;
 	Variant value = expr_run(state, expr);
 
 	// Infer the variable's type as expression return type.

@@ -57,7 +57,7 @@ const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
 	{"func",     &INST_Func},
 	{"return",   &INST_Return},
 };
-const std::vector<std::string> declarative_instructions = {"var","const","func"};
+const std::vector<std::string> declarative_instructions = {"import","merge","var","const","func"};
 
 
 Variant last_expr_result;

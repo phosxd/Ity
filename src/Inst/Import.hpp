@@ -3,8 +3,27 @@
 
 void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& _token, const std::vector<std::string>& args) {
 	const std::string& symbol = args[0];
-	const std::string& lib_name = args[1];
+	std::string lib_name = args[1];
 	std::string applied_name = lib_name;
+
+	// Ok bro.
+	if (lib_name.size() == 0) return;
+
+	// Get lib name from variable.
+	if (lib_name[0] == '@') {
+		const std::string& var_name = lib_name.substr(1);
+		// Throw error if variable name is bogus.
+		if (is_name_globally_free(state, var_name)) {
+			emit_error(ERR_name_does_not_exist, {var_name});
+			return;
+		}
+		// Get variable.
+		Variant var = *get_data_globally(state, var_name);
+		// Convert to string if variable is not a string.
+		if (var.t != STR) var.d = var_to_str(var);
+		// Set lib name to look for as the variable value.
+		lib_name = AnyCast(STR_t,var.d);
+	}
 
 	// Get alias.
 	if (args.size() == 4) {
@@ -21,10 +40,11 @@ void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& _t
 		return;
 	}
 
+
 	// Find library.
 	const Variant* lib = nullptr;
 	for (const Variant& item : LIBS) {
-		if ( std::any_cast<STR_t>(std::any_cast<MAP_t>(item.d).at("__name").d) == lib_name) {
+		if ( AnyCast(STR_t,AnyCast(MAP_t,item.d).at("__name").d) == lib_name) {
 			lib = &item;
 			break;
 		}
@@ -36,7 +56,7 @@ void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& _t
 		return;
 	}
 
-	const MAP_t& lib_map = std::any_cast<const MAP_t&>(lib->d);
+	const MAP_t& lib_map = AnyCast(MAP_t,lib->d);
 	//std::any_cast<NativeFunc_t>(lib_map.at("__init").d) (state, {}); // Call init function.
 	// Merge all public members of the library into the scope.
 	if (symbol == "merge") merge_module(state, lib_map);

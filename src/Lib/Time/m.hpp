@@ -34,7 +34,7 @@ Variant LIB_Time_get_time(ScopeState& _state, const ARR_t& args, const unsigned 
 }
 
 
-Variant LIB_Time_system_now(ScopeState& state, const ARR_t& args) {
+Variant LIB_Time_snow(ScopeState& state, const ARR_t& args) {
 	return LIB_Time_get_time(state, args, 0);
 }
 
@@ -51,10 +51,10 @@ Variant LIB_Time_now(ScopeState& state, const ARR_t& args) {
 
 const Variant LIB_Time {
 	MAP, (MAP_t){
-		{"__name", Variant{STR, (STR_t)"Time", VariantMode_constant}},
-		{"__init__",    NativeFuncTrans(NONE, (NativeFunc_t)LIB_Time_init)},
-		{"system_now",  NativeFuncTrans(INT, (NativeFunc_t)LIB_Time_system_now)},
-		{"now",         NativeFuncTrans(INT, (NativeFunc_t)LIB_Time_now)},
+		{"__name",      Variant{STR, (STR_t)"Time", VariantMode_constant}},
+		{"__init__",    NativeFuncTrans(NONE,  (NativeFunc_t)LIB_Time_init)},
+		{"snow",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_Time_snow)},
+		{"now",         NativeFuncTrans(INT,   (NativeFunc_t)LIB_Time_now)},
 	},
 	VariantMode_constant
 };

@@ -29,7 +29,7 @@ enum VariantType {
 
 
 #define AnyCast(T, var) std::any_cast<const T&>(var)
-#define AnyCastV(T, var) std::any_cast<T>(var)
+#define AnyCastV(T, var) std::any_cast<T&>(var)
 
 
 // Get string representation of a VariantType.
@@ -112,6 +112,8 @@ using STR_t = std::string;
 using ARR_t = std::vector<Variant>;
 using MAP_t = std::unordered_map<std::string,Variant>;
 
+using Candidates_t = std::unordered_map<VariantType, std::unordered_map<std::string,Variant>>;
+
 
 // Resolve VariantData to a real VariantType.
 VariantType get_variant_data_type(const VariantData& d) {
@@ -164,10 +166,7 @@ size_t get_variant_data_size(const VariantData& s) {
 std::ostream& operator<<(std::ostream& os, const VariantData& s) {
 	const std::type_info& t = s.type();
 	if (not s.has_value()) os << "none";
-	else if (t == typeid(bool)) {
-		if (AnyCast(bool,s)) os << "true";
-		else os << "false";
-	}
+	else if (t == typeid(bool)) os << (AnyCast(bool,s) ? "true" : "false");
 	else if (t == typeid(INT_t)) os << AnyCast(INT_t,s);
 	else if (t == typeid(FLOAT_t)) os << std::to_string(AnyCast(FLOAT_t,s)); // `std::cout` wont show the full precision by default, so we convert to string.
 	else if (t == typeid(STR_t)) os << AnyCast(STR_t,s);
@@ -277,6 +276,15 @@ ARR_t operator+(const ARR_t& a, const ARR_t& b) {
 }
 
 
+MAP_t operator+(const MAP_t& a, const MAP_t& b) {
+	MAP_t result = a; result.reserve(b.size());
+	for (const auto& it : b) {
+		result[it.first] = it.second;
+	}
+	return result;
+}
+
+
 VariantData operator+(const VariantData& a, const VariantData& b) {
 	const std::type_info& t1 = a.type();
 	const std::type_info& t2 = b.type();
@@ -284,6 +292,9 @@ VariantData operator+(const VariantData& a, const VariantData& b) {
 	if (t1 == typeid(STR_t) && t2 == typeid(STR_t)) return AnyCast(STR_t,a) + AnyCast(STR_t,b);
 	// If a is array & b is array...
 	else if (t1 == typeid(ARR_t) && t2 == typeid(ARR_t)) return AnyCast(ARR_t,a) + AnyCast(ARR_t,b);
+	// If a is map & b is map...
+	else if (t1 == typeid(MAP_t) && t2 == typeid(MAP_t)) return AnyCast(MAP_t,a) + AnyCast(MAP_t,b);
+
 	// If a is int...
 	else if (t1 == typeid(INT_t)) {
 		// If b is int...
@@ -613,7 +624,7 @@ INT_t var_to_int(const Variant& var) {
 
 STR_t var_to_str(const Variant& var) {
 	switch (var.t) {
-		case BOOL:   return std::to_string(AnyCast(bool,var.d));
+		case BOOL:   return (AnyCast(bool,var.d)) ? "true" : "false";
 		case INT:    return std::to_string(AnyCast(INT_t,var.d));
 		case FLOAT:  return std::to_string(AnyCast(FLOAT_t,var.d));
 		case STR:    return AnyCast(STR_t,var.d);

@@ -2,17 +2,28 @@
 
 
 void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const std::string& _symbol, Variant& result, Variant*& result_ptr) {
+	// if (second.t == STR) {
+	// 	get_data_globally(state, "__candi");
+	// }
+
+
+	// Access array element.
 	if (first.t == ARR) {
 		if (second.t != INT) {
 			emit_error(ERR_invalid_property_access, {get_variant_type_name(first.t), get_variant_type_name(second.t)});
 			return;
 		}
-		ARR_t& array = std::any_cast<ARR_t&>(first.d);
-		const INT_t& index = std::any_cast<const INT_t&>(second.d);
-		if (index >= (INT_t)array.size()) {
-			emit_error(ERR_index_out_of_range, {std::to_string(index)});
+		ARR_t& array = AnyCastV(ARR_t,first.d);
+		const INT_t& array_len = (INT_t)array.size();
+		INT_t index = AnyCastV(INT_t,second.d);
+		// Parse negative index.
+		if (index < 0) index = array_len+index;
+		// Throw error if index out of range.
+		if (index >= array_len || index < 0) {
+			emit_error(ERR_index_out_of_range, {std::to_string(AnyCast(INT_t,second.d))}); // Use original given index for error to reduce confusion in negative index cases.
 			return;
 		}
+		// Return reference to array element.
 		result_ptr = &array[index];
 		return;
 	}
@@ -23,8 +34,8 @@ void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const st
 			emit_error(ERR_invalid_property_access, {get_variant_type_name(first.t), get_variant_type_name(second.t)});
 			return;
 		}
-		const STR_t& str = std::any_cast<const STR_t&>(first.d);
-		const INT_t& index = std::any_cast<const INT_t&>(second.d);
+		const STR_t& str = AnyCast(STR_t,first.d);
+		const INT_t& index = AnyCast(INT_t,second.d);
 		if (index >= (INT_t)str.size()) {
 			emit_error(ERR_index_out_of_range, {std::to_string(index)});
 			return;
@@ -47,7 +58,7 @@ void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const st
 				emit_error(ERR_unexpected, {"OP_Access.exec", "Improper type of \"__t\" property."});
 				return;
 			}
-			obj_type = std::any_cast<STR_t>(obj_type_var.d);
+			obj_type = AnyCast(STR_t,obj_type_var.d);
 		}
 
 		// Access map.

@@ -430,7 +430,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 	for (size_t i = 0; i < seq_len; i++) {
 		ExprToken& item = token.seq[i];
 		current_line = line_ + item.ln;
-		current_column = col_ + (item.col-1);
+		current_column = col_ + (item.col);
 
 		// Execute operator.
 		if (op) {
