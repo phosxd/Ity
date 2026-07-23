@@ -632,6 +632,21 @@ STR_t var_to_str(const Variant& var) {
 }
 
 
+// Get the type of a `MAP` object.
+STR_t var_get_obj_type(const MAP_t& map) {
+	STR_t obj_type = "m";
+	if (map.find("__t") != map.end()) {
+		const Variant& obj_type_var = map.at("__t");
+		if (obj_type_var.t != STR) {
+			emit_error(ERR_unexpected, {"var_get_obj_type", "Improper type of \"__t\" property."});
+			return obj_type;
+		}
+		obj_type = AnyCast(STR_t,obj_type_var.d);
+	}
+	return obj_type;
+}
+
+
 
 using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
 struct VariantPresets_struct {

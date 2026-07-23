@@ -6,8 +6,19 @@ void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const st
 	if (second.t == STR && not is_name_globally_free(state, "__tm__")) {
 		// Find & return method.
 		MAP_t& methods = AnyCastV(MAP_t,get_data_globally(state, "__tm__")->d);
-		const auto& it = methods.find( (get_variant_type_name(first.t)+':'+AnyCast(STR_t,second.d)) );
+		const std::string type_name = get_variant_type_name(first.t);
+		const STR_t method_name = AnyCast(STR_t,second.d);
+		MAP_t::iterator it = methods.find((type_name+':'+method_name));
+
+		// If method not found in top level type, try in the MAP type.
+		if (first.t == MAP && it == methods.end()) {
+			const STR_t& map_type = var_get_obj_type(AnyCast(MAP_t,first.d));
+			it = methods.find( (type_name+'('+map_type+')'+':'+method_name) );
+		}
+
+		// Return the method.
 		if (it != methods.end()) {
+
 			MAP_t func = AnyCast(MAP_t,it->second.d); // Copy function.
 			func["__ba"].d = AnyCast(ARR_t,func["__ba"].d) + (ARR_t){Variant{INTERNAL, &first}}; // Bind first variant to the function copy.
 			// Return copied function.
@@ -62,15 +73,7 @@ void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const st
 		MAP_t& map = AnyCastV(MAP_t,first.d);
 
 		// Determine type of the object.
-		STR_t obj_type = "m";
-		if (map.find("__t") != map.end()) {
-			const Variant& obj_type_var = map.at("__t");
-			if (obj_type_var.t != STR) {
-				emit_error(ERR_unexpected, {"OP_Access.exec", "Improper type of \"__t\" property."});
-				return;
-			}
-			obj_type = AnyCast(STR_t,obj_type_var.d);
-		}
+		const STR_t& obj_type = var_get_obj_type(map);
 
 		// Access map.
 		if (obj_type == "m") {

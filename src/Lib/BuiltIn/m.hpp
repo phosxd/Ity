@@ -139,7 +139,10 @@ Variant LIB_BI_size(ScopeState& _state, const ARR_t& args) {
 // -------------
 
 
-Variant LIB_BI_candi_arr_erase(ScopeState& _state, ARR_t& args) {
+// Array.
+// ------
+
+Variant LIB_BI_tm_arr_erase(ScopeState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 	if (args[1].t != INT) {
 		emit_error(ERR_invalid_func_arg_type, {"1", "INT", get_variant_type_name(args[1].t)});
@@ -162,8 +165,11 @@ Variant LIB_BI_candi_arr_erase(ScopeState& _state, ARR_t& args) {
 }
 
 
+// Map.
+// ----
+
 // Erase a key-value pair in the `MAP` by key. Does nothing if the key doesn't exist.
-Variant LIB_BI_candi_map_erase(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_map_erase(ScopeState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 	if (args[1].t != STR) {
 		emit_error(ERR_invalid_func_arg_type, {"1", "STR", get_variant_type_name(args[1].t)});
@@ -187,7 +193,7 @@ Variant LIB_BI_candi_map_erase(ScopeState& _state, ARR_t& args) {
 
 
 // Return array of keys in the `MAP`.
-Variant LIB_BI_candi_map_keys(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_map_keys(ScopeState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 
 	// Get data.
@@ -203,7 +209,7 @@ Variant LIB_BI_candi_map_keys(ScopeState& _state, ARR_t& args) {
 
 
 // Return whether or not the `MAP` has the given key.
-Variant LIB_BI_candi_map_has(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_map_has(ScopeState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 	if (args[1].t != STR) {
 		emit_error(ERR_invalid_func_arg_type, {"1", "STR", get_variant_type_name(args[1].t)});
@@ -216,6 +222,26 @@ Variant LIB_BI_candi_map_has(ScopeState& _state, ARR_t& args) {
 	// Return whether or not the map has the key.
 	if (data.find(key) != data.end()) return VariantPresets.bool_true;
 	return VariantPresets.bool_false;
+}
+
+
+// Function.
+// ---------
+
+// Return array of keys in the `MAP`.
+Variant LIB_BI_tm_func_bind(ScopeState& _state, ARR_t& args) {
+	if (not expect_arg_count(args, 2)) return VariantPresets.none;
+	if (args[1].t != ARR) {
+		emit_error(ERR_invalid_func_arg_type, {"1", "ARR", get_variant_type_name(args[1].t)});
+		return VariantPresets.none;
+	}
+
+	// Get data.
+	MAP_t data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d ); // Copy the function.
+	// Add the given array to the function's bounded arguments.
+	data["__ba"].d = AnyCast(ARR_t,data["__ba"].d) + AnyCast(ARR_t,args[1].d);
+	// Return the new function.
+	return Variant{MAP, data};
 }
 
 
@@ -232,10 +258,12 @@ const Variant LIB_BI {
 		// Type methods.
 		{"__tm", Variant{
 			MAP, (MAP_t){
-				{"ARR:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_candi_arr_erase)},
-				{"MAP:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_candi_map_erase)},
-				{"MAP:keys",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_candi_map_keys)},
-				{"MAP:has",    NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_candi_map_has)},
+				{"ARR:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_erase)},
+				{"MAP:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_map_erase)},
+				{"MAP:keys",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_map_keys)},
+				{"MAP:has",    NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_map_has)},
+
+				{"MAP(f):bind",  NativeFuncTrans(MAP,  (NativeFunc_t)LIB_BI_tm_func_bind)},
 		}, VariantMode_locked_type }},
 
 
