@@ -175,11 +175,30 @@ void set_data_globally(ScopeState& state, const std::string& name, const Variant
 }
 
 
+
+
 // Merge all public members of the `map` into the scope `state`.
 void merge_module(ScopeState& state, const MAP_t& map) {
 	for (const auto& i : map) {
 		const std::string& prop_name = i.first;
+
+		if (prop_name == "__tm") {
+			if (is_name_free(state, "__tm__")) state.d["__tm__"] = i.second;
+			else state.d["__tm__"].d = (AnyCast(MAP_t,get_data(state, "__tm__")->d) + AnyCast(MAP_t,i.second.d));
+		}
+
 		if (prop_name.starts_with("__")) continue; // Skip private members.
 		set_data(state, prop_name, i.second.t, i.second.d, i.second.m);
 	}
+}
+
+
+void import_module(ScopeState& state, const std::string& name, const MAP_t& map) {
+	const auto& it = map.find("__tm");
+	if (it != map.end()) {
+		if (is_name_free(state, "__tm__")) state.d["__tm__"] = it->second;
+		else state.d["__tm__"].d = (AnyCast(MAP_t,get_data(state, "__tm__")->d) + AnyCast(MAP_t,it->second.d));
+	}
+
+	set_data(state, name, MAP, map, VariantMode_constant);
 }

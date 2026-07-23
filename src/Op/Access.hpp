@@ -2,9 +2,19 @@
 
 
 void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const std::string& _symbol, Variant& result, Variant*& result_ptr) {
-	// if (second.t == STR) {
-	// 	get_data_globally(state, "__candi");
-	// }
+	// Try to access type method.
+	if (second.t == STR && not is_name_globally_free(state, "__tm__")) {
+		// Find & return method.
+		MAP_t& methods = AnyCastV(MAP_t,get_data_globally(state, "__tm__")->d);
+		const auto& it = methods.find( (get_variant_type_name(first.t)+':'+AnyCast(STR_t,second.d)) );
+		if (it != methods.end()) {
+			MAP_t func = AnyCast(MAP_t,it->second.d); // Copy function.
+			func["__ba"].d = AnyCast(ARR_t,func["__ba"].d) + (ARR_t){Variant{INTERNAL, &first}}; // Bind first variant to the function copy.
+			// Return copied function.
+			result = Variant{MAP, func, VariantMode_constant};
+			return;
+		}
+	}
 
 
 	// Access array element.
@@ -27,6 +37,7 @@ void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const st
 		result_ptr = &array[index];
 		return;
 	}
+
 
 	// Access string character.
 	else if (first.t == STR) {
@@ -90,13 +101,14 @@ void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const st
 			// Call native function...
 			if (const auto& it = map.find("__nc"); it != map.end()) {
 				const NativeFunc_t& n_func = AnyCast(NativeFunc_t,it->second.d);
-				const ARR_t& n_args = AnyCast(ARR_t,second.d);
+				const ARR_t& n_args = AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,second.d); // Merge bound arguments.
 				result = n_func(state, n_args);
 				return;
 			}
 			// Call script function...
 			else {
-				result = call_script_function(state, map, second);
+				Variant args {ARR, (AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,second.d))}; // Merge bound arguments.
+				result = call_script_function(state, map, args);
 				return;
 			}
 		}

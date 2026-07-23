@@ -51,7 +51,7 @@ void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& _t
 	}
 
 	// Throw error if library doesn't exist or is not allowed in safe mode.
-	if (lib == nullptr || (safe_mode && not exists_in_vec(safe_mode_allowed_libs, lib_name))) {
+	if (not lib || (safe_mode && not exists_in_vec(safe_mode_allowed_libs, lib_name))) {
 		emit_error(ERR_unknown_module, {lib_name});
 		return;
 	}
@@ -61,7 +61,7 @@ void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& _t
 	// Merge all public members of the library into the scope.
 	if (symbol == "merge") merge_module(state, lib_map);
 	// Add library to scope with the given name.
-	else set_data(state, applied_name, MAP, lib_map, VariantMode_constant);
+	else import_module(state, applied_name, lib_map);
 }
 
 

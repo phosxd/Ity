@@ -19,9 +19,9 @@ template<class T, class T2>
 bool is_vec_equal(const std::vector<T>& a, const std::vector<T2>& b) {
 	const size_t& a_len = a.size();
 	const size_t& b_len = b.size();
-	if (a_len != b_len) {return false;}
+	if (a_len != b_len) return false;
 	for (size_t i = 0; i < a_len; i++) {
-		if (not (a[i] == b[i])) {return false;}
+		if (not (a[i] == b[i])) return false;
 	}
 	return true;
 }
@@ -35,13 +35,12 @@ bool str_ends_with(const std::string& text, const std::string& suffix) {
 // Returns the string with all instances of `ch` removed from the start of it.
 std::string trim_left(const std::string& text, const char ch) {
 	const size_t& text_len = text.size();
-	if (text_len == 0) return text;
-	if (text.at(0) != ch) return text;
+	if (text_len == 0 || text[0] != ch) return text;
 	bool ended = false;
 	std::string result; result.reserve(text_len);
 	for (size_t i = 0; i < text_len; i++) {
 		if (text.at(i) != ch) ended = true;
-		if (ended) result.push_back(text.at(i));
+		if (ended) result.push_back(text[i]);
 	}
 	return result;
 }
@@ -54,7 +53,7 @@ std::string join_str(const std::vector<std::string>& vec, const std::string& sep
 	std::string result = vec.front();
 	result.reserve(sep.size() * (vec_len-1));
 	for (size_t i = 1; i < vec_len; i++) {
-		result += sep + vec.at(i);
+		result += sep + vec[i];
 	}
 	return result;
 }

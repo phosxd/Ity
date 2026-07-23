@@ -112,8 +112,6 @@ using STR_t = std::string;
 using ARR_t = std::vector<Variant>;
 using MAP_t = std::unordered_map<std::string,Variant>;
 
-using Candidates_t = std::unordered_map<VariantType, std::unordered_map<std::string,Variant>>;
-
 
 // Resolve VariantData to a real VariantType.
 VariantType get_variant_data_type(const VariantData& d) {
@@ -662,9 +660,10 @@ const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t
 	return Variant{
 		MAP,
 		(MAP_t){
-			{"__t", VariantPresets.obj_type_f},
-			{"__rt", Variant{INTERNAL, return_type, VariantMode_constant}},
-			{"__nc", Variant{FUNC, native_func}}
+			{"__t",   VariantPresets.obj_type_f}, // Map type.
+			{"__rt",  Variant{INTERNAL, return_type, VariantMode_constant}}, // Return type.
+			{"__nc",  Variant{FUNC, native_func}}, // Native call.
+			{"__ba",  Variant{ARR, (ARR_t){}}}, // Bound args.
 		},
 		VariantMode_constant,
 	};

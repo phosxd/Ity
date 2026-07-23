@@ -24,10 +24,11 @@ void INST_Func_exec(ScopeState& state, const Instruction* _inst, InstToken& toke
 	set_data(
 		state, name, MAP,
 		(MAP_t){
-			{"__t", VariantPresets.obj_type_f},
-			{"__i", Variant{INT, (INT_t)token.i}},
-			{"__si", Variant{INT, (INT_t)get_state_depth(state)}},
-			{"__rt", Variant{INTERNAL, get_variant_type_from_name(type_name)}}
+			{"__t",   VariantPresets.obj_type_f}, // Map type.
+			{"__i",   Variant{INT, (INT_t)token.i}}, // Function token index.
+			{"__si",  Variant{INT, (INT_t)get_state_depth(state)}}, // State index (depth).
+			{"__rt",  Variant{INTERNAL, get_variant_type_from_name(type_name)}}, // Return type.
+			{"__ba",  Variant{ARR, (ARR_t){}}}, // Bound args.
 		},
 		VariantMode_constant
 	);

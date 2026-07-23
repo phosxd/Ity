@@ -1,0 +1,21 @@
+#!/usr/local/bin/ity
+import IO;
+
+
+func STR STRMethod_hello; arg ANY obj; arg INT times = 1;
+	# Hacking type methods like this does not allow you to access the object the method was called on. At least not yet.
+	IO.print:[('Hello World! ' * times)]; # But you can still supply then use arguments in custom methods.
+/;
+
+
+# Add our own function to the type methods global.
+__tm__ += {'STR:hello', STRMethod_hello};
+# "STR" is the type this method is available to & "hello" is the name of the method.
+
+# I should also note that in the same way you can add to the type methods map, you can remove & override existing methods. Do what you will with that information.
+
+
+# Create a new STR.
+var STR my_str = '';
+# Call our custom method on it.
+my_str.hello:[3];

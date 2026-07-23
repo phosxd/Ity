@@ -7,9 +7,9 @@ func FLOAT add; arg FLOAT first; arg FLOAT second;
 /;
 
 
-print:[( (ANSI.bold) + 'Add 2 numbers...' + (ANSI.reset) )];
+print:[(ANSI.bold), 'Add 2 numbers...', (ANSI.reset)];
 
 const * a = prompt:['Value 1: '] -> FLOAT;
 const * b = prompt:['Value 2: '] -> FLOAT;
 
-print:[(ANSI.yellow), 'Sum: ', (add:[a,b])];
+print:[(ANSI.yellow), 'Sum: ', (add:[a,b]), (ANSI.reset)];
