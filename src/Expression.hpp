@@ -424,34 +424,45 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 	const unsigned int col_ = col_offset + token.col;
 	const size_t& seq_len = token.seq.size();
 	Variant* result = nullptr;
-	std::vector<Variant> temporaries;
+	Variant* second = nullptr;
+	// Pre initialized variables.
+	Variant pre_exec_result = VariantPresets.empty;
+	Variant op_result = VariantPresets.empty;
+
+	Variant temporary = VariantPresets.empty; // Used to store temporary value which can be pointed to in `result`.
+	Variant temporary2 = VariantPresets.empty;
+
 	const Operation* op = nullptr;
 	std::string op_symbol;
 	for (size_t i = 0; i < seq_len; i++) {
 		ExprToken& item = token.seq[i];
 		current_line = line_ + item.ln;
-		current_column = col_ + (item.col);
+		current_column = col_ + item.col;
 
 		// Execute operator.
 		if (op) {
 			if (op->pre_exec) {
 				// Skip evaluation of second Variant if pre_exec says so...
 				bool eval_second_operand = true;
-				Variant pre_exec_result = op->pre_exec(state, *result, op_symbol, eval_second_operand);
+				pre_exec_result.t = PLACEHOLDER; // Reset the type for reuse.
+				// Run pre-executor.
+				op->pre_exec(state, *result, op_symbol, eval_second_operand, pre_exec_result, result);
 				if (not eval_second_operand) {
-					temporaries.push_back(pre_exec_result);
-					result = &temporaries.back();
+					if (pre_exec_result.t != PLACEHOLDER) {
+						temporary = pre_exec_result; // Copy `pre_exec_result`.
+						result = &temporary; // Set pointer to copied value.
+					}
 					op = nullptr;
 					continue;
 				}
 			}
-			// Execute operator...
-			Variant* second = nullptr;
-			Variant token;
+			// Get our second variant to operate on.
+			// If second is a sequence...
 			if (item.t == ExprTokenType_sequence) {
-				token = expr_exec(state, item, true, current_line, current_column);
-				second = &token;
+				temporary2 = expr_exec(state, item, true, current_line, current_column); // Write result into `temporary2`.
+				second = &temporary2; // Set second variant to a pointer of `temporary2`.
 			}
+			// If it's a normal var...
 			else second = resolve_variant(state, item.var);
 			// Throw error if second is an operator.
 			if (second->t == OP) {
@@ -459,17 +470,21 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 				return *result;
 			}
 
-			Variant op_result = Variant{PLACEHOLDER};
-			if (result == nullptr) {
+			op_result.t = PLACEHOLDER; // Reset the type for reuse.
+			// Don't use a nullptr for first variant in operator.
+			if (not result) {
 				Variant empty;
 				op->exec(state, empty, *second, op_symbol, op_result, result);
 			}
-			else op->exec(state, *result, *second, op_symbol, op_result, result);
-			op = nullptr;
+			// If we have a proper first variant, get value in pointer then use that.
+			else op->exec(state, *result, *second, op_symbol, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
+			// If we reveive a direct value, set the result to that.
 			if (op_result.t != PLACEHOLDER) {
-				temporaries.push_back(op_result);
-				result = &temporaries.back();
+				temporary = op_result; // Copy result. We cant set a pointer to `op_result` directly because the value may get overriden before we have a chance to use the pointer.
+				result = &temporary; // Set pointer to copied result.
 			}
+
+			op = nullptr;
 			continue;
 		}
 
@@ -477,29 +492,28 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 		else if (item.t == ExprTokenType_variant) {
 			// Get operator.
 			if (item.var.t == OP) {
-				op_symbol = AnyCast(STR_t,item.var.d);
+				op_symbol = AnyCast(std::string,item.var.d);
+				// Find the Operation object from the symbol.
 				if (const auto& it = OPERATIONS.find(op_symbol); it != OPERATIONS.end()) {
 					op = it->second;
 					continue;
 				}
+				// Throw error if invalid operator.
 				emit_error(ERR_invalid_op, {op_symbol});
 				return *result;
 			}
 			// Get variant.
-			else {
-				result = resolve_variant(state, item.var);
-				continue;
-			}
+			else result = resolve_variant(state, item.var);
 		}
 
 		// Get value from sub-sequence
 		else if (item.t == ExprTokenType_sequence) {
-			temporaries.push_back(expr_exec(state, item, current_line, current_column));
-			result = &temporaries.back();
+			temporary = expr_exec(state, item, current_line, current_column);
+			result = &temporary; // Set pointer to sub-expression result.
 		}
 	}
 
-	if (result == nullptr) return Variant{};
+	if (not result) return VariantPresets.none;
 
 	// Output result in debug mode.
 	if (debug_flags.expr_result && not subexpr) {

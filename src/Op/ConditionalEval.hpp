@@ -1,17 +1,17 @@
 #pragma once
 
 
-Variant OP_ConditionalEval_pre_exec(ScopeState& _state, Variant& first, const std::string& symbol, bool& eval_second_operand) {
+void OP_ConditionalEval_pre_exec(ScopeState& _state, Variant& first, const std::string& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
 	if (symbol == "&&") {
 		eval_second_operand = first.d == true;
-		return VariantPresets.bool_false;
+		result = VariantPresets.bool_false;
+		return;
 	}
 	else if (symbol == "||") {
 		eval_second_operand = first.d == false;
-		return VariantPresets.bool_true;
+		result = VariantPresets.bool_true;
+		return;
 	}
-
-	return VariantPresets.empty;
 }
 
 

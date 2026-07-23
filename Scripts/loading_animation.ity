@@ -1,34 +1,32 @@
 #!/usr/local/bin/ity
 import IO;
 
-const INT max_cycles = 4;
-IO.out:[(ANSI.cursor_off)]; # Hide the terminal cursor.
+
+const ARR frames = ['|','/','-','\\'];
 
 
-var INT cycles = 0;
-var INT i = 0; while true;
-	if cycles >= max_cycles; break; /;
-
-	# Print the correct symbol for the iteration in this cycle.
-	if i == 0;   IO.out:['|'];  /;
-	elif i == 1; IO.out:['/'];  /;
-	elif i == 2; IO.out:['-'];  /;
-	elif i == 3; IO.out:['\\']; /;
-	else;
-		IO.out:['|'];
-		i = -1;
-		cycles += 1;
+# Run through the animation forever.
+func NONE do_animation;
+	IO.out:[(ANSI.cursor_off)]; # Hide the terminal cursor.
+	while true;
+		var INT i = -1; while i < (length:[frames]-1); i+=1;
+			IO.out:['\e[1G',' ',(frames:i)];
+			sleep:[0.133];
+		/;
 	/;
-
-	# Wait some time.
-	sleep:[0.133];
-	IO.out:['\e[2K']; # Clear line.
-	IO.out:['\e[1G']; # Set cursor to back to beginning.
-
-	i+=1;
 /;
 
 
-IO.out:[(ANSI.cursor_on)]; # Show the terminal cursor.
-IO.out:['\e[2K\e[1g']; # Clear the line & set the cursor to the beginning.
-IO.print:['Done!'];
+# Called when the program is interrupted or finished.
+func NONE done;
+	IO.out:[(ANSI.cursor_on)]; # Show the terminal cursor.
+	IO.out:['\e[2K\e[1g']; # Clear the line & set the cursor to the beginning.
+	IO.print:['Done!'];
+
+	exit;
+/;
+
+
+signal:[(SIGNAL.interrupt), done];
+do_animation:[];
+done:[];
