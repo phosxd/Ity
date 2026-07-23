@@ -186,6 +186,22 @@ Variant LIB_BI_candi_map_erase(ScopeState& _state, ARR_t& args) {
 }
 
 
+// Return array of keys in the `MAP`.
+Variant LIB_BI_candi_map_keys(ScopeState& _state, ARR_t& args) {
+	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+
+	// Get data.
+	const MAP_t& data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d );
+	// Get all keys.
+	ARR_t keys; keys.reserve(data.size());
+	for (const auto& it : data) {
+		keys.push_back(Variant{STR, (STR_t)it.first});
+	}
+	// Return the keys.
+	return Variant{ARR, keys};
+}
+
+
 // Return whether or not the `MAP` has the given key.
 Variant LIB_BI_candi_map_has(ScopeState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
@@ -218,6 +234,7 @@ const Variant LIB_BI {
 			MAP, (MAP_t){
 				{"ARR:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_candi_arr_erase)},
 				{"MAP:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_candi_map_erase)},
+				{"MAP:keys",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_candi_map_keys)},
 				{"MAP:has",    NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_candi_map_has)},
 		}, VariantMode_locked_type }},
 

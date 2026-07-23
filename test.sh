@@ -669,6 +669,91 @@ print:[total];
 
 # 26
 
+"
+# System command
+# --------------
+
+var INT code = system:['echo hello'];
+if code != 0; throw 'Wrong code'; /;
+"
+
+"hello"
+
+# 27
+
+"
+# Complex data addition
+# ---------------------
+
+merge IO;
+
+var ARR arr = [1,2,3];
+arr += [4,5,6];
+print:[arr];
+
+var MAP map = {'a',1};
+map += {'b',2};
+print:[map];
+"
+
+"[1, 2, 3, 4, 5, 6]
+{\"b\": 2, \"a\": 1}"
+
+# 28
+
+"
+# Array/Map item erase
+# --------------------
+
+merge IO;
+
+var ARR arr = [1,2,3];
+arr.erase:[0];
+print:[arr];
+
+var MAP map = {'a',1, 'b',2};
+map.erase:['a'];
+print:[map];
+"
+
+"[2, 3]
+{\"b\": 2}"
+
+# 29
+
+"
+# Iterate on map keys
+# -------------------
+
+merge IO;
+
+var MAP map = {'a',1, 'b',2, 'c',3};
+const ARR keys = map.keys:[];
+
+var INT i = 0; while i < (length:[keys]);
+	print:[(map:(keys:i))];
+	i+=1;
+/;
+"
+
+"3
+2
+1"
+
+# 30
+
+""
+
+""
+
+# 31
+
+""
+
+""
+
+# 32
+
 ""
 
 ""

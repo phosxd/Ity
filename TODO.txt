@@ -1,8 +1,5 @@
-- Add more test cases for while loop continue/break correctness in complex scopes scenarios.
-- Add test cases for array/map addition.
-- Add test cases for array/map type methods after implemented.
-
 - Add `STR` type methods: `split`, `join`, `erase`.
+
 
 Add standard built-in libraries:
 	- FileAccess
