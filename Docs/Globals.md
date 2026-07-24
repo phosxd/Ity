@@ -42,6 +42,13 @@ E.g. `NONE` = "NONE"
 
 The only types that are not included here are meta types like `ANY` & `*` (inferred).
 
+### (MAP) SIGNAL
+A map of all supported system signals represented as an `INT`.
+
+Map keys:
+- `interrupt`: `2`
+- `terminate`: `15`
+
 ### (MAP) ANSI
 A map of common [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) escape codes represented as a string. This is useful for printing stylized text in the terminal.
 
@@ -56,6 +63,26 @@ Map keys:
 - `purple`
 - `white`
 - `yellow`
+
+# Standard Global Functions
+
+### NONE signal (INT signal_code, MAP(f) function)
+A function that connects the given function to a system signal. Refer to the [SIGNAL](#map-signal) member for valid signal codes.
+
+```python
+func NONE on_signal_interrupt_reveived;
+	print:['Received interrupt signal!'];
+	exit;
+/;
+
+
+signal:[(SIGNAL.interrupt), on_signal_interrupt_reveived];
+sleep:[999];
+
+# Program will end when given the interrupt signal, but it will call the connected function first.
+```
+
+Note: connecting to a signal will override it's system default behavior. Which means connecting to signals which would normally exit the program, will no longer do so, the functionality needs to be recreated. In simpler terms, always manually exit the program in your connected signal function for signals that would normally do so.
 
 ### INT system (STR command)
 A function that runs a system command string then returns the exit status code.
@@ -118,4 +145,35 @@ size:[[1,2,3,4]]; # Returns 52.
 
 size:[{'a',1, 'b',2, 'c',3, 'd',4}]; # Returns 52 as well.
 size:[{'array value',[1,2,3,4]}]; # Returns 71.
+```
+
+
+# Standard Global Type Methods
+
+### NONE `ARR`.erase (INT index)
+Delete an item inside the array.
+
+### NONE `MAP`.erase (STR key)
+Delete a key-value pair inside the map.
+
+### ARR `MAP`.keys ()
+Get an unsorted array of `STR` values representing keys inside of the map.
+
+### BOOL `MAP`.has (STR key)
+Returns whether or not the given key exists inside the map.
+
+### MAP(f) `MAP(f)`.bind (ARR args)
+Returns a new function object with the given `ARR` added it's bound arguments.
+
+Calling a function with bound arguments will pass them as the first arguments into the function, user specified arguments will be last.
+
+```python
+func BOOL flip; arg BOOL value;
+	if value; return false; /;
+	return true;
+/;
+
+
+const MAP bound_flip_function = ( flip.bind:[[true]] );
+bound_flip_function:[]; # Returns false, because we bound true to the first argument.
 ```
