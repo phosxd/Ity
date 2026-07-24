@@ -7,23 +7,11 @@ As a little challenge, try one of these starter projects:
 - Print a readable & formatted current date using the `IO` & `Time` modules. The time module only provides an integer representing the current time, good luck!
 - Command line utility that sorts then returns every given argument in alphabetical order.
 
-# Understanding the layout
 
-An Ity script is first split up into individual instruction tokens. You can think of an instruction token like it's a line in Python, but the difference is that instead of splitting each instruction by line, Ity splits each instruction with a semicolon `;` character instead.
+Each instruction & expression is separated by a semi-colon `;` character. Some instructions may require white space separation between sections (E.g. `var INT x=1`). `var` & `INT` require a space, otherwise they would be treated as a single string.
 
-But what actually is an instruction token? It's an arbitrary sequence of arguments split up by a space character (unless the space is inside of a string literal). The very first argument is the name of the instruction to use, the rest of the arguments are passed onto the instruction for it's own uses.
 
-```python
-<instruction> <arg1> <arg2> <...>;
-<instruction> <arg1> <arg2> <...>;
-And so on...
-```
-
-This is exactly how commands are lied out in your terminal, which makes it very easy to remember, however most modern programming languages don't work like this so it might go against some of your habits.
-
-There is one more thing to note with this. Some instructions may make use of expression syntax, in which case spacing your arguments will not matter wherever the expression is located.
-
-## Comments
+# Comments
 Comments are defined by the "#" character. When a comment is defined, all characters after it until the new line are ignored. In this regard, it acts just the same as Python.
 
 ```python
@@ -31,9 +19,7 @@ Comments are defined by the "#" character. When a comment is defined, all charac
 "# this is not a comment, we're in a string";
 ```
 
-## Expressions
-
-An instruction may make use of the expression system for some parts of their logic, you can also run expressions alone, without a call to an instruction.
+# Expressions
 
 Expressions don't have any strict rules on spacing & can be used for defining literals, calling functions, & performing mathematical operations.
 
@@ -336,23 +322,12 @@ number_2 = 20;      # "number" is unchanged.
 The standard set of instructions in Ity provide you with everything you need to make programs of any ranging complexity.
 
 ## Var / Const
-There are 3 instructions to assign data in Ity, but which one you use depends on your use case.
+These instructions are used to declare variables in the current scope.
 
 ### Var
 If you need to declare a name that holds a value that can be changed after declaration, use the `var` instruction:
 
 `var <type> <varName> <assignmentOperator> <expression>`
-
-**Arguments**:
-- "type":
-	Required argument. This tells the instruction the type of value that "expression" should return & the type that the variable will be permanently set as. 
-	If the "type" is passed as `*`, then the type will be automatically set as the expression output type (this is not the same as the `ANY` type).
-- "varName":
-	Required argument. The name given to the variable so that it can be accessed from other instructions in the scope, the name should not match any other name declared in the scope otherwise an error will be thrown, it should also not have any symbols in it (numbers & underscores are fine if used properly).
-- "assignmentOperator":
-	Required argument. The operator which indicates how the expression output is applied to the variable. The only correct value for this argument is the `=` character.
-- "expression":
-	Required argument. The output of this expression will be applied to variable, spaces do not matter here because it is at the end of the instruction.
 
 **Examples**:
 
@@ -366,6 +341,9 @@ var INT the_number_one = 1;
 var FLOAT a_very_specific_number = 125.98765;
 var STR some_text = "Hello World!";
 var * my_inferred_var = "This can be any value at declaration";
+
+# You don't need spaces between the name, assignment operator, & expression.
+var BOOL some_bool=true;
 ```
 
 To modify the value of a variable, you can use the assignment operators in an expression.
@@ -377,7 +355,7 @@ a = 0; # "a" is now 0
 a = ('Hello ' + 'World');
 ```
 
-Although you need to be careful evaluating complex expressions after the assignment operator. In the example `a = 'Hello ' + 'World'`, execution happens in this order:
+You need to be careful evaluating complex expressions after the assignment operator. In the example `a = 'Hello ' + 'World'`, execution happens in this order:
 - Get reference to "a".
 - Set reference "a" to the next item in the expression (`'Hello '`) through the `=` operator.
 - Operator `+` is taking the output of everything before it `a = 'Hello '`
@@ -391,10 +369,10 @@ If you need to declare a name that has a value which **cannot** be modified or o
 ```python
 const INT my_constant_value = 20;
 
-# This is not allowed;
+# This is not allowed.
 const ANY some_constant_value = 20;
 
-# This is fine;
+# This is fine.
 const * inferred_constant = true;
 ```
 
@@ -407,28 +385,28 @@ These instructions can be used to test values for conditionally executing code. 
 var INT a = 0;
 var INT b = 5;
 
-# This will not run;
+# This will fail, & not run.
 if a == b;
-	# ... ;
+	# ...
 /;
 
-# This will also fail;
+# This will also fail.
 elif a > 10;
-	# ... ;
+	# ...
 /;
 
-# This will succeed because all other conditions failed;
+# This will succeed because all other conditions failed.
 else;
-	# ... ;
+	# ...
 /;
 
 
-# You can nest conditionals;
+# You can nest conditionals.
 if a != b;
 	if a > 1;
-		# ... ;
+		# ...
 	/; else;
-		# ... ;
+		# ...
 	/;
 /;
 ```
@@ -438,13 +416,13 @@ You can repeatedly execute blocks of code using the `white` composite instructio
 Before every iteration the given expression gets evaluated. If it returns `true` then the code block will run & return back to the beginning for the next iteration.
 
 ```python
-# Loop forever, the expression returns the literal "true" so the condition will always be met;
-# The loop can still be ended with the "break" instruction;
+# Loop forever, the expression returns the literal "true" so the condition will always be met.
+# The loop can still be ended with the "break" instruction.
 while true;
 	IO.print:["Hello! You're stuck with me forever >:)"];
 /;
 
-# Count to 100 thousand;
+# Count to 100 thousand.
 var INT i = 0;
 while i < 100_000;
 	IO.print:[i];
