@@ -21,21 +21,21 @@ ScopeState* get_state_at_depth(ScopeState& state, const unsigned int target_dept
 	if (target_depth == depth) return &state;
 	ScopeState* current = state.p;
 	while (true) {
-		if (current == nullptr) break;
+		if (not current) break;
 		depth -= 1;
 		if (depth == target_depth) return current;
 		current = current->p;
 	}
 
-	emit_error(ERR_unexpected, {"ScopeState.get_state_at_depth", "no state at depth " + std::to_string(target_depth) + '.'});
+	emit_error(ERR_unexpected, {"ScopeState.get_state_at_depth", "No state at depth " + std::to_string(target_depth) + '.'});
 	return &state;
 }
 
 
 // Create a new blank scope state.
-ScopeState create_new_scope_state(const MAP_t data, ScopeState* parent = nullptr) {
+ScopeState create_new_scope_state(const MAP_t& data, ScopeState* parent = nullptr) {
 	ScopeState result;
-	if (parent != nullptr) result.p = parent;
+	if (parent) result.p = parent;
 	result.d = std::move(data);
 	return result;
 }
@@ -53,9 +53,9 @@ void scope_in(ScopeState& state) {
 // Transforms "state" into a copy of it's parent state, deleting all data on the current state.
 void scope_out(ScopeState& state) {
 	ScopeState* p = nullptr;
-	if (state.p != nullptr) p = state.p;
+	if (state.p) p = state.p;
 	else {
-		emit_error(ERR_unexpected, {"ScopeState.scope_out", "Minimum depth reached, unable to scope out."});
+		emit_error(ERR_unexpected, {"ScopeState.scope_out", "Minimum depth reached."});
 		return;
 	}
 	state.p = std::move(p->p);
@@ -117,7 +117,7 @@ bool is_name_free(const ScopeState& state, const std::string& name) {
 // Checks if the name is available in this scope or any scopes above it.
 bool is_name_globally_free(const ScopeState& state, const std::string& name) {
 	if (state.d.find(name) == state.d.end()) {
-		if (state.p != nullptr) return is_name_globally_free(*state.p, name);
+		if (state.p) return is_name_globally_free(*state.p, name);
 		return true;
 	}
 	return false;
@@ -135,7 +135,7 @@ Variant* get_data(ScopeState& state, const std::string& name) {
 // Gets the data for name in this scope or any scope above it. Ensure the name exists in one of the scopes (use is_name_globally_free).
 Variant* get_data_globally(ScopeState& state, const std::string& name) {
 	if (not is_name_free(state, name)) return get_data(state, name);
-	else if (state.p == nullptr) emit_error(ERR_unexpected, {"ScopeState.get_data_globally", "Cannot get data."});
+	else if (not state.p) emit_error(ERR_unexpected, {"ScopeState.get_data_globally", "Cannot get data."});
 	return get_data_globally(*state.p, name);
 }
 
@@ -150,21 +150,9 @@ void set_data(ScopeState& state, const std::string& name, const VariantType& typ
 		std::cout << ANSI::blue << "Data Assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
 	}
 
-	if (not is_name_free(state, name)) {
-		const Variant* var = get_data(state, name);
-		if (var->m == VariantMode_constant) {
-			emit_error(ERR_cannot_change_constant);
-			return;
-		}
-	}
 	const VariantType& data_type = get_variant_data_type(data);
-
-	// Throw error if data is not applicable.
-	if (mode != VariantMode_dynamic_type && type != data_type) {
-		emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data_type), get_variant_type_name(type)});
-		return;
-	}
-
+	if (not is_name_free(state, name) && get_data(state, name)->m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
+	if (mode != VariantMode_dynamic_type && type != data_type) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data_type), get_variant_type_name(type)}); // Throw error if data is not applicable.
 	state.d[name] = Variant{data_type, data, mode};
 }
 

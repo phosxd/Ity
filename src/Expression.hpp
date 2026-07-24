@@ -1,5 +1,54 @@
 #pragma once
 
+
+
+
+Variant call_script_function(ScopeState& state, const MAP_t& func, const Variant& args) {
+	// Throw error if maximum execution depth is reached.
+	if (execution_depth > execution_depth_max) {
+		emit_error(ERR_max_execution_depth, {std::to_string(execution_depth_max)});
+		return VariantPresets.none;
+	}
+
+	func_arg_index = 0; // Reset arg counter for the `var` instruction.
+	const INT_t& func_token_index = AnyCast(INT_t,func.at("__i").d);
+	const VariantType& func_return_type = AnyCast(VariantType,func.at("__rt").d);
+	const InstToken& func_token = InstTokenSeq[func_token_index];
+
+	// Throw error if token is not a function token.
+	// The only time this should happen is if the tokens are corrupted in some way.
+	if (func_token.args[0] != "func") {
+		emit_error(ERR_unexpected, {"FunctionHandler", "Missing function: " + std::to_string(func_token_index) + " isn't a \"func\" token."});
+		return VariantPresets.none;
+	}
+
+	//call_trace.push_back(current_line); call_trace.push_back(current_column);
+	push_back_ongoing_scopes(); // Save ongoing scopes for later.
+	// Create an alternate scope, for use inside the function.
+	ScopeState func_state = create_new_scope_state(
+		(MAP_t){
+			{"__ARGS__", args},
+			{"__RET__", Variant{func_return_type, std::any(), VariantMode_dynamic_type}}, // Initialize return variable.
+		},
+		get_state_at_depth(state, AnyCast(INT_t,func.at("__si").d)) // Use function definition scope as the parent.
+	);
+	if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;
+	Ity::exec(func_state, InstTokenSeq, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
+	restore_ongoing_scopes(); // Restore previously ongoing scopes, nowthat we are out of the function.
+
+
+	// Get result & check if return type matches.
+	const Variant& func_result = func_state.d["__RET__"];
+	if (func_result.t != func_return_type && func_return_type != ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func_return_type)});
+	// Return result.
+	//call_trace.pop_back(); call_trace.pop_back();
+	if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
+	return func_result;
+}
+
+
+
+
 #include "Op/Arith.hpp"
 #include "Op/Set.hpp"
 #include "Op/Compare.hpp"
@@ -349,8 +398,7 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 
 	clean_up_buffer(result_token, item, buffer);
 	expr_cache[expr] = result_token.seq;
-	final_ln_offset = ln_offset;
-	final_col_offset = col_offset;
+	final_ln_offset = ln_offset; final_col_offset = col_offset;
 	return result_token;
 }
 
@@ -359,10 +407,9 @@ ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int
 
 Variant* resolve_variant(ScopeState& state, Variant& item) {
 	if (item.t == REF) {
-		const std::string& name = AnyCast(STR_t,item.d);
+		const STR_t& name = AnyCast(STR_t,item.d);
 		if (not is_name_globally_free(state, name)) return get_data_globally(state, name);
 		emit_error(ERR_name_does_not_exist, {name});
-		return &item;
 	}
 
 	return &item;
@@ -378,7 +425,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 
 	// Resolve array.
 	if (token.var.t == ARR) {
-		std::vector<Variant> array; array.reserve(token.seq.size());
+		ARR_t array; array.reserve(token.seq.size());
 		for (ExprToken& subtoken : token.seq) {
 			if (subtoken.t == ExprTokenType_sequence) array.push_back(expr_exec(state, subtoken, current_line, current_column));
 			else array.push_back(*resolve_variant(state, subtoken.var));
@@ -394,10 +441,9 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 			emit_error(ERR_invalid_syntax, {"Map literal expects key-value pairs. ( {'a', 1, 'b', 2} )"});
 			return VariantPresets.empty;
 		}
-		MAP_t map;
-		map.reserve(token.seq.size()/2);
+		MAP_t map; map.reserve(token.seq.size()/2);
 		bool is_key = true;
-		std::string key;
+		STR_t key;
 		for (ExprToken& subtoken : token.seq) {
 			if (is_key) {
 				// Throw error if key is not a string.
@@ -471,13 +517,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 			}
 
 			op_result.t = PLACEHOLDER; // Reset the type for reuse.
-			// Don't use a nullptr for first variant in operator.
-			if (not result) {
-				Variant empty;
-				op->exec(state, empty, *second, op_symbol, op_result, result);
-			}
-			// If we have a proper first variant, get value in pointer then use that.
-			else op->exec(state, *result, *second, op_symbol, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
+			op->exec(state, *result, *second, op_symbol, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
 			// If we reveive a direct value, set the result to that.
 			if (op_result.t != PLACEHOLDER) {
 				temporary = op_result; // Copy result. We cant set a pointer to `op_result` directly because the value may get overriden before we have a chance to use the pointer.

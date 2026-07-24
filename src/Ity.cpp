@@ -16,7 +16,6 @@
 #include "ScopeState.hpp"
 #include "Ity.hpp"
 
-#include "FunctionHandler.hpp"
 #include "Expression.hpp"
 
 // Lib imports...
@@ -122,11 +121,6 @@ std::vector<InstToken> tokenize(const std::string& src) {
 		// Skip over spaces & tabs at the start of the item.
 		if (is_start) {
 			if (ch == ' ' || ch == '\n' || ch == '\t') continue;
-			// Start comment.
-			if (ch == '#') {
-				is_comment = true;
-				continue;
-			}
 			item = InstToken{(unsigned int)sequence.size(), ln,col};
 			is_start = false;
 		}
@@ -160,6 +154,12 @@ std::vector<InstToken> tokenize(const std::string& src) {
 				str_start_ln = ln;
 				str_start_col = col;
 				buffer.push_back(ch);
+				continue;
+			}
+
+			// Start comment.
+			if (ch == '#') {
+				is_comment = true;
 				continue;
 			}
 
