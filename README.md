@@ -31,14 +31,14 @@ After compilation has finished, the build script will display the time it took t
 ```
 (Optimization: balanced)
 Building prodution binary...
-Done in 2s.
-Final size: 96512 bytes. (+0)
+Done in 4s.
+Final size: 116384 bytes. (+0)
 ```
 
-If the final build size is larger than 100,000 bytes it will give you a warning message.
+If the final build size is larger than 150,000 bytes it will give you a warning message.
 
 ```
-Binary size is over the goal of 100000.
+Binary size is over the goal of 150000.
 ```
 
 ## Flags

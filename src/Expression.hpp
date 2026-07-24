@@ -52,7 +52,6 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, const Variant
 #include "Op/Arith.hpp"
 #include "Op/Set.hpp"
 #include "Op/Compare.hpp"
-#include "Op/ConditionalEval.hpp"
 #include "Op/Access.hpp"
 #include "Op/TypeCast.hpp"
 
@@ -80,8 +79,9 @@ const std::unordered_map<std::string, const Operation*> OPERATIONS = {
 	{">=",  &OP_Compare},
 	{"<",   &OP_Compare},
 	{"<=",  &OP_Compare},
-	{"&&",  &OP_ConditionalEval},
-	{"||",  &OP_ConditionalEval},
+	{"&&",  &OP_Compare},
+	{"||",  &OP_Compare},
+
 	{":",   &OP_Access},
 	{"->",  &OP_TypeCast}
 };
@@ -133,7 +133,7 @@ void clean_up_buffer(ExprToken& result_token, ExprToken& item, std::string& buff
 unsigned int final_ln_offset = 0;
 unsigned int final_col_offset = 0;
 // Tokenize an expression. Returns an ExprToken with type "ExprTokenType_sequence".
-ExprToken expr_tokenize(const std::string& expr, unsigned int ln=0, unsigned int col=0) {
+ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const unsigned int col=0) {
 	ExprToken result_token = ExprToken{ln, col};
 	result_token.t = ExprTokenType_sequence;
 
@@ -512,7 +512,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 			else second = resolve_variant(state, item.var);
 			// Throw error if second is an operator.
 			if (second->t == OP) {
-				emit_error(ERR_invalid_syntax, {"Cannot operate on another operator"});
+				emit_error(ERR_invalid_syntax, {"Operator cannot be used as operand"});
 				return *result;
 			}
 

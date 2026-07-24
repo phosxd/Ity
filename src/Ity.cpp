@@ -188,13 +188,12 @@ std::vector<InstToken> tokenize(const std::string& src) {
 						const Instruction* inst = INSTRUCTIONS.at(inst_name); // Get instruction specifications.
 
 						// Call token processor.
-						if (inst->processor) {
-							const AnyMap_t extra = {
-								{"last_comp_item",       &last_comp_item},
+						if (inst->processor) {;
+							inst->processor(inst, item, {
 								{"last_comp_item_dist",  last_comp_item_dist},
+								{"last_comp_item",       &last_comp_item},
 								{"composite_nest",       &composite_nest}
-							};
-							inst->processor(inst, item, extra, ln, col);
+							}, ln, col);
 						}
 
 						// Tokenize expression if possible...
@@ -282,10 +281,11 @@ std::vector<InstToken> tokenize(const std::string& src) {
 void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t start_idx, const int end_idx) {
 	InstTokenSeq = sequence;
 	execution_depth += 1;
-	const size_t seq_len = InstTokenSeq.size();
+	const size_t seq_len = (end_idx > 0)
+		? std::min((int)InstTokenSeq.size(), end_idx+1)
+		: InstTokenSeq.size()
+	;
 	for (size_t i = start_idx; i < seq_len; i++) {
-		if ((int)i == end_idx) break;
-
 		InstToken& item = InstTokenSeq[i];
 		current_line = item.ln;
 		current_column = item.col;
@@ -296,17 +296,21 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 			continue;
 		}
 
-		// Execute instruction.
-		const Instruction* inst = INSTRUCTIONS.at(item.args[0]);
+		// Get instruction specification.
+		const Instruction* inst = INSTRUCTIONS.find(item.args[0])->second;
+		// Check arguments.
 		if (args_len < inst->REQUIRED) {
 			emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst->REQUIRED)});
 			return;
 		}
+		// Execute the instruction.
 		inst->exec(state, inst, item);
+		// Skip specified number of instructions if `exec_jump_value` has been set.
 		if (exec_jump_value != 0) {
 			i += exec_jump_value;
 			exec_jump_value = 0;
 		}
+		// Break execution loop, if `exec_jump_out` has been set to true.
 		if (exec_jump_out) {
 			exec_jump_out = false;
 			break;

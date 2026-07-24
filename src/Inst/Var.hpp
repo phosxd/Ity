@@ -21,7 +21,8 @@ void INST_Var_processor(const Instruction* _inst, InstToken& token, const AnyMap
 	}
 
 	token.meta = {name, op};
-	token.expr = expr_tokenize(expr);
+	token.expr = expr_tokenize(expr, ln);
+	token.expr.col = col-expr.size();
 }
 
 
@@ -62,7 +63,6 @@ void INST_Var_exec(ScopeState& state, const Instruction* _inst, InstToken& token
 	}
 
 	// Get value from expression.
-	current_column += count_non_empty_strings({symbol,type_name,name,op}) + symbol.size() + type_name.size() + name.size() + op.size() -1;
 	Variant value = expr_exec(state, token.expr);
 
 	// Infer the variable's type as expression return type.
