@@ -20,7 +20,8 @@ void INST_Var_processor(const Instruction* _inst, InstToken& token, const AnyMap
 		name += ch;
 	}
 
-	token.meta = {name, op, expr};
+	token.meta = {name, op};
+	token.expr = expr_tokenize(expr);
 }
 
 
@@ -31,7 +32,6 @@ void INST_Var_exec(ScopeState& state, const Instruction* _inst, InstToken& token
 	const std::string& type_name = token.args[1];
 	const std::string& name = AnyCast(std::string,token.meta[0]);
 	const std::string& op = AnyCast(std::string,token.meta[1]);
-	const std::string& expr = AnyCast(std::string,token.meta[2]);
 
 	if (not is_valid_name(name)) {
 		emit_error(ERR_name_must_not_contain_symbols, {name});
@@ -63,7 +63,7 @@ void INST_Var_exec(ScopeState& state, const Instruction* _inst, InstToken& token
 
 	// Get value from expression.
 	current_column += count_non_empty_strings({symbol,type_name,name,op}) + symbol.size() + type_name.size() + name.size() + op.size() -1;
-	Variant value = expr_run(state, expr);
+	Variant value = expr_exec(state, token.expr);
 
 	// Infer the variable's type as expression return type.
 	if (type == INFERRED) type = value.t;
