@@ -1,4 +1,5 @@
 - Add `STR` type methods: `split`, `join`, `erase`.
+- Add ability to import other scripts as modules.
 
 
 Add standard built-in libraries:

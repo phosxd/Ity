@@ -63,17 +63,6 @@ const std::vector<std::string> declarative_instructions = {"import","merge","var
 Variant last_expr_result;
 
 
-struct CompositeItem {
-	InstToken token;
-	unsigned int index = 0;
-	uint16_t size = 0;
-	unsigned int ln = 0;
-	unsigned int col = 0;
-	bool declarative = false;
-};
-
-
-
 namespace Ity {
 
 
@@ -194,51 +183,20 @@ std::vector<InstToken> tokenize(const std::string& src) {
 				}
 				if (item.args.size() > 0) {
 					const std::string& inst_name = item.args[0];
-					// Is a valid instruction.
+					// If is a valid instruction...
 					if (INSTRUCTIONS.find(inst_name) != INSTRUCTIONS.end()) {
-						// Link elif / else.
-						if (inst_name == "elif" || inst_name == "else") {
-							if (last_comp_item.token.args[0] != "if" && last_comp_item.token.args[0] != "elif") {
-								emit_error(ERR_unexpected_inst, {inst_name}, ln,col);
-								return sequence;
-							}
-							item.linked_inst = last_comp_item.token.args[0];
-							item.linked_inst_pos = -(int32_t)last_comp_item_dist;
+						const Instruction* inst = INSTRUCTIONS.at(inst_name); // Get instruction specifications.
+
+						// Call token processor.
+						if (inst->processor) {
+							const AnyMap_t extra = {
+								{"last_comp_item",       &last_comp_item},
+								{"last_comp_item_dist",  last_comp_item_dist},
+								{"composite_nest",       &composite_nest}
+							};
+							inst->processor(inst, item, extra, ln, col);
 						}
 
-						// Link continue / break.
-						else if (inst_name == "continue" || inst_name == "break") {
-							bool found = false;
-							std::vector<CompositeItem> reverse_nest = composite_nest; std::reverse(reverse_nest.begin(), reverse_nest.end());
-							for (const CompositeItem& comp_item : reverse_nest) {
-								if (comp_item.token.args[0] != "while") continue;
-								found = true;
-								item.linked_inst = comp_item.token.args[0];
-								item.linked_inst_pos = -(int32_t)(item.i-comp_item.token.i);
-								break;
-							}
-							if (not found) {
-								emit_error(ERR_unexpected_inst, {inst_name}, ln,col);
-								return sequence;
-							}
-						}
-
-						// Check if return has a parent function.
-						else if (inst_name == "return") {
-							bool found = false;
-							std::vector<CompositeItem> reverse_nest = composite_nest; std::reverse(reverse_nest.begin(), reverse_nest.end());
-							for (const CompositeItem& comp_item : reverse_nest) {
-								if (comp_item.token.args[0] != "func") continue;
-								found = true;
-								break;
-							}
-							if (not found) {
-								emit_error(ERR_unexpected_inst, {inst_name}, ln,col);
-								return sequence;
-							}
-						}
-
-						const Instruction* inst = INSTRUCTIONS.at(inst_name);
 						// Tokenize expression if possible...
 						if (inst->has_expr) {
 							std::vector<std::string> new_args; new_args.reserve(inst->REQUIRED);
@@ -344,7 +302,7 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 			emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst->REQUIRED)});
 			return;
 		}
-		inst->exec(state, inst, item, item.args);
+		inst->exec(state, inst, item);
 		if (exec_jump_value != 0) {
 			i += exec_jump_value;
 			exec_jump_value = 0;

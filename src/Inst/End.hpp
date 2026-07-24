@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_End_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
+void INST_End_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
 	if (token.linked_inst.empty()) return;
 
 	if (token.linked_inst == "while") {

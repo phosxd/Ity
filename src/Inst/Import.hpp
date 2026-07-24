@@ -1,9 +1,9 @@
 #pragma once
 
 
-void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& _token, const std::vector<std::string>& args) {
-	const std::string& symbol = args[0];
-	std::string lib_name = args[1];
+void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
+	const std::string& symbol = token.args[0];
+	std::string lib_name = token.args[1];
 	std::string applied_name = lib_name;
 
 	// Ok bro.
@@ -26,12 +26,12 @@ void INST_Import_exec(ScopeState& state, const Instruction* _inst, InstToken& _t
 	}
 
 	// Get alias.
-	if (args.size() == 4) {
-		if (args[2] != "as") {
+	if (token.args.size() == 4) {
+		if (token.args[2] != "as") {
 			emit_error(ERR_invalid_syntax, {"Expected keyword \"as\""});
 			return;
 		}
-		applied_name = args[3];
+		applied_name = token.args[3];
 	}
 
 	// Throw error if the name is already declared in this scope.

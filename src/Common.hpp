@@ -86,6 +86,7 @@ std::ostream& operator<<(std::ostream& os, const VariantType& s) {
 // ------------
 
 using VariantData = std::any;
+using AnyMap_t = std::unordered_map<std::string, std::any>;
 
 
 
@@ -519,15 +520,27 @@ std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
 #pragma pack(1)
 struct Instruction {
 	uint8_t REQUIRED; // Required argument count,
-	void (*exec)(ScopeState&, const Instruction*, InstToken&, const std::vector<std::string>&) = nullptr;
+	void (*exec)(ScopeState&, const Instruction*, InstToken&) = nullptr;
 	bool is_composite;
 	bool has_expr = false;
+	void (*processor)(const Instruction*, InstToken&, const AnyMap_t&, const unsigned int& ln, const unsigned int& col) = nullptr;
 };
 
 
 std::ostream& operator<<(std::ostream& os, const Instruction& s) {
 	return os << "Instruction{}";
 }
+
+
+struct CompositeItem {
+	InstToken token;
+	unsigned int index = 0;
+	uint16_t size = 0;
+	unsigned int ln = 0;
+	unsigned int col = 0;
+	bool declarative = false;
+};
+
 
 
 

@@ -1,10 +1,10 @@
 #pragma once
 
 
-void INST_Exit_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
-	if (args[0] == "exit") exit(0);
+void INST_Exit_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
+	if (token.args[0] == "exit") exit(0);
 
-	else if (args[0] == "throw") {
+	else if (token.args[0] == "throw") {
 		if (token.expr.seq.empty()) {
 			emit_error(ERR_custom, {"Exception thrown."});
 			return;

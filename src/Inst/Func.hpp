@@ -1,9 +1,9 @@
 #pragma once
 
 
-void INST_Func_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
-	const std::string& type_name = args[1];
-	const std::string& name = args[2];
+void INST_Func_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
+	const std::string& type_name = token.args[1];
+	const std::string& name = token.args[2];
 
 	if (not is_valid_name(name)) {
 		emit_error(ERR_name_must_not_contain_symbols, {name});

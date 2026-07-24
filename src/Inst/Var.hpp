@@ -1,16 +1,37 @@
 #pragma once
 
 
-void INST_Var_exec(ScopeState& state, const Instruction* inst, InstToken& token, const std::vector<std::string>& args) {
-	const size_t& args_len = args.size();
-	const std::string& symbol = args[0];
-	const std::string& type_name = args[1];
-	const std::string& name = args[2];
-	const std::string& op = (args_len>3) ? args[3] : "";
-	std::string expr; expr.reserve(args_len-inst->REQUIRED);
-	for (size_t i = 4; i < args_len; i++) {
-		expr += ' '+args[i];
+void INST_Var_processor(const Instruction* _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+	std::string name;
+	std::string op = "";
+	std::string expr;
+	bool is_expr = false;
+	for (const char& ch : join_str(std::vector<std::string>(token.args.begin()+2, token.args.end()), " ")) {
+		if (is_expr) {
+			expr += ch;
+			continue;
+		}
+		if (ch == '=') {
+			op = ch;
+			is_expr = true;
+			continue;
+		}
+		if (ch == ' ') continue;
+		name += ch;
 	}
+
+	token.meta = {name, op, expr};
+}
+
+
+
+
+void INST_Var_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
+	const std::string& symbol = token.args[0];
+	const std::string& type_name = token.args[1];
+	const std::string& name = AnyCast(std::string,token.meta[0]);
+	const std::string& op = AnyCast(std::string,token.meta[1]);
+	const std::string& expr = AnyCast(std::string,token.meta[2]);
 
 	if (not is_valid_name(name)) {
 		emit_error(ERR_name_must_not_contain_symbols, {name});
@@ -76,5 +97,6 @@ const Instruction INST_Var {
 	3,              // Required arg count.
 	INST_Var_exec,  // Function.
 	false,          // Is composite.
-	false           // Has expression. (Manually handled for this Instruction).
+	false,          // Has expression. (Manually handled for this Instruction).
+	INST_Var_processor,
 };

@@ -1,8 +1,28 @@
 #pragma once
 
 
-void INST_If_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
-	const std::string& symbol = args[0];
+
+void INST_If_processor(const Instruction* _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+	if (token.args[0] == "elif" || token.args[0] == "else") {
+		const CompositeItem& last_comp_item = *std::any_cast<CompositeItem*>(extra.at("last_comp_item"));
+
+		// Throw error if previous composite item was not a valid conditional.
+		if (last_comp_item.token.args[0] != "if" && last_comp_item.token.args[0] != "elif") {
+			emit_error(ERR_unexpected_inst, {token.args[0]}, ln,col);
+			return;
+		}
+
+		// Link token to the previous conditional.
+		token.linked_inst = last_comp_item.token.args[0];
+		token.linked_inst_pos = -(int32_t)AnyCast(uint16_t,extra.at("last_comp_item_dist"));
+	}
+}
+
+
+
+
+void INST_If_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
+	const std::string& symbol = token.args[0];
 
 	// Get value from expression.
 	const Variant& value = expr_exec(state, token.expr);
@@ -51,4 +71,5 @@ const Instruction INST_If {
 	INST_If_exec,  // Function.
 	true,          // Is composite.
 	true,          // Has expression.
+	INST_If_processor,
 };

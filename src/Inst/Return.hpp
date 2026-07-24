@@ -1,7 +1,27 @@
 #pragma once
 
 
-void INST_Return_exec(ScopeState& state, const Instruction* _inst, InstToken& token, const std::vector<std::string>& args) {
+void INST_Return_processor(const Instruction* _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+	bool found = false;
+	std::vector<CompositeItem> reverse_nest = *std::any_cast<std::vector<CompositeItem>*>(extra.at("composite_nest"));
+	std::reverse(reverse_nest.begin(), reverse_nest.end());
+	for (const CompositeItem& comp_item : reverse_nest) {
+		if (comp_item.token.args[0] != "func") continue;
+		found = true;
+		break;
+	}
+
+	// Throw error if there if instruciton is not under a function.
+	if (not found) {
+		emit_error(ERR_unexpected_inst, {token.args[0]}, ln,col);
+		return;
+	}
+}
+
+
+
+
+void INST_Return_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
 	// Cleanly exit all scopes in the function.
 	exit_ongoing_scopes(state);
 
@@ -18,4 +38,5 @@ const Instruction INST_Return {
 	INST_Return_exec,  // Function.
 	false,             // Is composite.
 	true,              // Has expression.
+	INST_Return_processor,
 };

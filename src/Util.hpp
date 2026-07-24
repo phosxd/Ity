@@ -89,7 +89,7 @@ unsigned int count_non_empty_strings(const std::vector<std::string>& items) {
 	const size_t& items_len = items.size();
 	unsigned int count = 0;
 	for (size_t i = 0; i < items_len; i++) {
-		if (not std::move(items[i]).empty()) count++;
+		if (not items[i].empty()) count++;
 	}
 	return count;
 }
