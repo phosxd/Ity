@@ -2,6 +2,7 @@
 
 
 void INST_Var_processor(const Instruction* _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+	const std::string& type_name = token.args[1];
 	std::string name;
 	std::string op = "";
 	std::string expr;
@@ -20,7 +21,25 @@ void INST_Var_processor(const Instruction* _inst, InstToken& token, const AnyMap
 		name += ch;
 	}
 
-	token.meta = {name, op};
+	// Throw error if invalid name.
+	if (not is_valid_name(name)) {
+		emit_error(ERR_name_must_not_contain_symbols, {name}, ln, col);
+		return;
+	}
+
+	VariantType type = get_variant_type_from_name(type_name);
+	VariantMode mode = VariantMode_locked_type;
+	if (token.args[0] == "const") mode = VariantMode_constant;
+	if (type == ANY) {
+		if (mode == 1) {
+			emit_error(ERR_constant_type_not_explicit);
+			return;
+		}
+		mode = VariantMode_dynamic_type;
+	}
+
+	// Set token properties.
+	token.meta = {name, op, type, mode};
 	token.expr = expr_tokenize(expr, ln);
 	token.expr.col = col-expr.size();
 }
@@ -30,14 +49,8 @@ void INST_Var_processor(const Instruction* _inst, InstToken& token, const AnyMap
 
 void INST_Var_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
 	const std::string& symbol = token.args[0];
-	const std::string& type_name = token.args[1];
 	const std::string& name = AnyCast(std::string,token.meta[0]);
 	const std::string& op = AnyCast(std::string,token.meta[1]);
-
-	if (not is_valid_name(name)) {
-		emit_error(ERR_name_must_not_contain_symbols, {name});
-		return;
-	}
 
 	// Give error if the var name is not free on the current scope.
 	if (not is_name_free(state, name)) {
@@ -50,23 +63,14 @@ void INST_Var_exec(ScopeState& state, const Instruction* _inst, InstToken& token
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
-	// Set variable mode.
-	VariantType type = get_variant_type_from_name(type_name);
-	VariantMode mode = VariantMode_locked_type;
-	if (symbol == "const") mode = VariantMode_constant;
-	if (type == ANY) {
-		if (mode == 1) {
-			emit_error(ERR_constant_type_not_explicit);
-			return;
-		}
-		mode = VariantMode_dynamic_type;
-	}
-
+	// Get variable type & mode.
+	VariantType type = AnyCastV(VariantType,token.meta[2]);
+	const VariantMode& mode = AnyCast(VariantMode,token.meta[3]);
 	// Get value from expression.
 	Variant value = expr_exec(state, token.expr);
-
 	// Infer the variable's type as expression return type.
 	if (type == INFERRED) type = value.t;
+
 
 	// Set variable data.
 	if (op == "=" || op == "") {
@@ -84,11 +88,6 @@ void INST_Var_exec(ScopeState& state, const Instruction* _inst, InstToken& token
 			}
 		}
 		set_data(state, name, type, value.d, mode);
-	}
-	// Throw error if invalid operator.
-	else {
-		emit_error(ERR_invalid_assignment_op, {op, symbol});
-		return;
 	}
 }
 

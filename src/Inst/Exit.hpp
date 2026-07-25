@@ -2,8 +2,23 @@
 
 
 void INST_Exit_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
-	if (token.args[0] == "exit") exit(0);
+	// Exit with status code.
+	if (token.args[0] == "exit") {
+		if (token.expr.seq.empty()) {
+			exit(0);
+			return;
+		}
 
+		const Variant& var = expr_exec(state, token.expr);
+		if (var.t != INT) {
+			emit_error(ERR_invalid_syntax, {"Expected integer expression"});
+			return;
+		}
+
+		exit(AnyCast(INT_t,var.d));
+	}
+
+	// Throw error.
 	else if (token.args[0] == "throw") {
 		if (token.expr.seq.empty()) {
 			emit_error(ERR_custom, {"Exception thrown."});
@@ -12,11 +27,11 @@ void INST_Exit_exec(ScopeState& state, const Instruction* _inst, InstToken& toke
 
 		const Variant& var = expr_exec(state, token.expr);
 		if (var.t != STR) {
-			emit_error(ERR_expected_string_expression);
+			emit_error(ERR_invalid_syntax, {"Expected string expression"});
 			return;
 		}
 
-		emit_error(ERR_custom, {std::any_cast<STR_t>(var.d)});
+		emit_error(ERR_custom, {AnyCast(STR_t,var.d)});
 	}
 }
 

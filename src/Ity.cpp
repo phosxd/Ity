@@ -154,10 +154,8 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 			// Add argument to args.
 			if (ch == ' ' || ch == '\n') {
-				if (buffer.size() > 0) {
-					item.args.push_back(buffer);
-					buffer.clear();
-				}
+				item.args.push_back(buffer);
+				buffer.clear();
 				continue;
 			}
 
@@ -170,6 +168,9 @@ std::vector<InstToken> tokenize(const std::string& src) {
 					item.args.push_back(buffer);
 					buffer.clear();
 				}
+
+				const size_t& args_len = item.args.size();
+
 				// Handle composite instructions.
 				for (CompositeItem& comp_item : composite_nest) {
 					// Throw error if composite size is about to go over the max for a 16-bit unsigned integer.
@@ -179,13 +180,19 @@ std::vector<InstToken> tokenize(const std::string& src) {
 					}
 					comp_item.size += 1;
 					// Flag composite as declarative, if a declarative instruction is found inside it.
-					if (&comp_item == &composite_nest.back() && item.args.size() > 0 && exists_in_vec(declarative_instructions, item.args[0])) comp_item.declarative = true;
+					if (&comp_item == &composite_nest.back() && args_len > 0 && exists_in_vec(declarative_instructions, item.args[0])) comp_item.declarative = true;
 				}
-				if (item.args.size() > 0) {
+				if (args_len > 0) {
 					const std::string& inst_name = item.args[0];
 					// If is a valid instruction...
 					if (INSTRUCTIONS.find(inst_name) != INSTRUCTIONS.end()) {
 						const Instruction* inst = INSTRUCTIONS.at(inst_name); // Get instruction specifications.
+
+						// Check arguments.
+						if (args_len < inst->REQUIRED) {
+							emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst->REQUIRED)}, ln,col);
+							return sequence;
+						}
 
 						// Call token processor.
 						if (inst->processor) {;
@@ -201,13 +208,25 @@ std::vector<InstToken> tokenize(const std::string& src) {
 							std::vector<std::string> new_args; new_args.reserve(inst->REQUIRED);
 							std::string expr_string;
 							unsigned int i_ = 0;
+							unsigned int ln_ = 0;
+							unsigned int col_ = 0;
 							for (const std::string& arg : item.args) {
-								if (i_ < inst->REQUIRED) new_args.push_back(arg);
+								if (i_ < inst->REQUIRED) {
+									// Count lines / columns.
+									for (const char& ch : arg) {
+										col_++;
+										if (ch == '\n') {
+											ln_++;
+											col_ = 0;
+										}
+									}
+									new_args.push_back(arg);
+								}
 								else expr_string += ' '+item.args[i_];
 								i_++;
 							}
-							item.expr = expr_tokenize(expr_string, item.ln, item.col);
-							item.args = new_args;
+							item.args = std::move(new_args);
+							item.expr = expr_tokenize(expr_string, item.ln+ln_, item.col+col_);
 						}
 
 						// Start composite item...
@@ -289,20 +308,14 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 		InstToken& item = InstTokenSeq[i];
 		current_line = item.ln;
 		current_column = item.col;
-		const int args_len = item.args.size();
 		// If has an expression but no args, run as expression.
-		if (args_len == 0) {
+		if (item.args.size() == 0) {
 			if (not item.expr.seq.empty()) last_expr_result = expr_exec(state, item.expr);
 			continue;
 		}
 
 		// Get instruction specification.
 		const Instruction* inst = INSTRUCTIONS.find(item.args[0])->second;
-		// Check arguments.
-		if (args_len < inst->REQUIRED) {
-			emit_error(ERR_invalid_inst_arg_count, {item.args[0], std::to_string(inst->REQUIRED)});
-			return;
-		}
 		// Execute the instruction.
 		inst->exec(state, inst, item);
 		// Skip specified number of instructions if `exec_jump_value` has been set.
@@ -362,11 +375,11 @@ void start_shell(int argc, char* argv[]) {
 	// Initialize state.
 	ScopeState state = create_new_scope_state({
 		{"__VERSION__",                Variant{ARR, (ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}}, VariantMode_constant}},
-		{"__VERSION_STRING__",         Variant{STR, ItyVersionString, VariantMode_constant}},
-		{"__OS_NAME__",                Variant{STR, OSName, VariantMode_constant}},
-		{"__SCRIPT_FILE_NAME__",       Variant{STR, split_source_script.back(), VariantMode_constant}},
+		{"__VERSION_STRING__",         Variant{STR, (STR_t)ItyVersionString, VariantMode_constant}},
+		{"__OS_NAME__",                Variant{STR, (STR_t)OSName, VariantMode_constant}},
+		{"__SCRIPT_FILE_NAME__",       Variant{STR, (STR_t)split_source_script.back(), VariantMode_constant}},
 		{"__SCRIPT_START_TIME_MS__",   Variant{INT, (INT_t)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
-		{"__CMD_ARGS__",               Variant{ARR, script_args, VariantMode_constant}}
+		{"__CMD_ARGS__",               Variant{ARR, (ARR_t)script_args, VariantMode_constant}}
 	});
 	// Merge built-in module.
 	LIB_BI_init(state, (ARR_t){});

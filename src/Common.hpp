@@ -52,14 +52,15 @@ std::string get_variant_type_name(const VariantType& type) {
 		case ARR: return "ARR";
 		case MAP: return "MAP";
 	}
-	return "NONE";
+	return "PLACEHOLDER";
 }
 
 
 // Get VariantType from a string representation.
 VariantType get_variant_type_from_name(const std::string& name) {
+	if (name == "NONE") return NONE;
 	// Meta types.
-	if (name == "*")          return INFERRED;
+	else if (name == "*")     return INFERRED;
 	else if (name == "ANY")   return ANY;
 	else if (name == "OP")    return OP;
 	else if (name == "REF")   return REF;
@@ -71,7 +72,7 @@ VariantType get_variant_type_from_name(const std::string& name) {
 	else if (name == "STR")    return STR;
 	else if (name == "ARR")    return ARR;
 	else if (name == "MAP")    return MAP;
-	return NONE;
+	return PLACEHOLDER;
 }
 
 
