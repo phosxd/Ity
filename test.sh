@@ -742,9 +742,21 @@ var INT i = 0; while i < (length:[keys]);
 
 # 30
 
-""
+"
+# Add raw character to string
+# ---------------------------
 
-""
+merge IO;
+
+var STR string = 'ab';
+string += 99; # ASCII character for 'c'.
+
+print:[string];
+print:[( 'a'.raw:[] )]; # Print the integer representation of 'a'.
+"
+
+"abc
+97"
 
 # 31
 

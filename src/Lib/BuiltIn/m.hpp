@@ -139,6 +139,20 @@ Variant LIB_BI_size(ScopeState& _state, const ARR_t& args) {
 // -------------
 
 
+// String.
+// -------
+
+// Returns the raw character code for the first character in the string.
+Variant LIB_BI_tm_str_raw(ScopeState& _state, ARR_t& args) {
+	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	// Get data.
+	const STR_t& data = AnyCast(STR_t, AnyCastV(Variant*,args[0].d)->d );
+	// Return integer representation.
+	if (data.empty()) return Variant{INT, (INT_t)-1};
+	return Variant{INT, (INT_t)data[0]};
+}
+
+
 // Array.
 // ------
 
@@ -258,6 +272,7 @@ const Variant LIB_BI {
 		// Type methods.
 		{"__tm", Variant{
 			MAP, (MAP_t){
+				{"STR:raw",    NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_tm_str_raw)},
 				{"ARR:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_erase)},
 				{"MAP:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_map_erase)},
 				{"MAP:keys",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_map_keys)},

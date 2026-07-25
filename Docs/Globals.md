@@ -150,14 +150,39 @@ size:[{'array value',[1,2,3,4]}]; # Returns 71.
 
 # Standard Global Type Methods
 
+### INT `STR`.raw ()
+Get an ASCII code for the first character in the string.
+
+```python
+const STR string = 'a';
+string.raw:[]; # Returns 97.
+```
+
 ### NONE `ARR`.erase (INT index)
 Delete an item inside the array.
+
+```python
+const ARR array = [1,2,3];
+array.erase:[0];
+# array = [2,3]
+```
 
 ### NONE `MAP`.erase (STR key)
 Delete a key-value pair inside the map.
 
+```python
+const MAP map = {'a',1, 'b',2, 'c',3};
+map.erase:['a'];
+# map = {'b'2, 'c',3}
+```
+
 ### ARR `MAP`.keys ()
 Get an unsorted array of `STR` values representing keys inside of the map.
+
+```python
+const MAP map = {'a',1, 'b',2, 'c',3};
+map.keys:[]; # Returns ["c", "b", "a"].
+```
 
 ### BOOL `MAP`.has (STR key)
 Returns whether or not the given key exists inside the map.

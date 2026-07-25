@@ -1,0 +1,11 @@
+import IO;
+
+
+const STR string = __CMD_ARGS__:0;
+IO.print:[('You entered: ' + string)];
+IO.print:[( (ANSI.bold)+'Here is what that is made of:'+(ANSI.reset) )];
+
+var INT i = -1; while i < (length:[string]-1); i+=1;
+	const STR ch = string:i;
+	IO.print:[(ch.raw:[])];
+/;

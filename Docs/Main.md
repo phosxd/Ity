@@ -106,6 +106,14 @@ my_str:5;  # Gives "f";
 'abc':1;   # Gives "b";
 ```
 
+Adding an `INT` to a string will append the ASCII representation of the integer to the string.
+
+```python
+var STR my_str = 'ab';
+my_str += 99; # 99 = 'c'.
+# my_str = 'abc'
+```
+
 ## ARR
 Holds an array of variants which can of any type.
 

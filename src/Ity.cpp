@@ -107,6 +107,12 @@ std::vector<InstToken> tokenize(const std::string& src) {
 			continue;
 		}
 
+		// Start comment.
+		if (ch == '#' && not is_string) {
+			is_comment = true;
+			continue;
+		}
+
 		// Skip over spaces & tabs at the start of the item.
 		if (is_start) {
 			if (ch == ' ' || ch == '\n' || ch == '\t') continue;
@@ -143,12 +149,6 @@ std::vector<InstToken> tokenize(const std::string& src) {
 				str_start_ln = ln;
 				str_start_col = col;
 				buffer.push_back(ch);
-				continue;
-			}
-
-			// Start comment.
-			if (ch == '#') {
-				is_comment = true;
 				continue;
 			}
 
