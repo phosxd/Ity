@@ -108,9 +108,13 @@ void INST_While_exec(ScopeState& state, const Instruction* _inst, InstToken& tok
 		// Scope out if previously scoped in.
 		if ((token.declarative_composite || symbol == "for") && token.meta.size() > 3) {
 			scope_out(state);
-			token.meta.pop_back();
 			scoped_tokens.pop_back();
+			token.meta.pop_back();
 		}
+
+		// Reset token state.
+		token.meta[1] = std::monostate();
+		token.meta[2] = (unsigned int)0;
 		return;
 	}
 
