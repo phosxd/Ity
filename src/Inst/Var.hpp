@@ -7,11 +7,14 @@ void INST_Var_processor(const Instruction* _inst, InstToken& token, const AnyMap
 	std::string op = "";
 	std::string expr;
 	bool is_expr = false;
+	unsigned int ln_ = 0;
+	unsigned int col_ = 0;
 	for (const char& ch : join_str(std::vector<std::string>(token.args.begin()+2, token.args.end()), " ")) {
 		if (is_expr) {
 			expr += ch;
 			continue;
 		}
+		LN_COL_COUNTER(ch,ln_,col_);
 		if (ch == '=') {
 			op = ch;
 			is_expr = true;
@@ -40,8 +43,7 @@ void INST_Var_processor(const Instruction* _inst, InstToken& token, const AnyMap
 
 	// Set token properties.
 	token.meta = {name, op, type, mode};
-	token.expr = expr_tokenize(expr, ln);
-	token.expr.col = col-expr.size();
+	token.expr = expr_tokenize(expr, ln-ln_, col-col_);
 }
 
 

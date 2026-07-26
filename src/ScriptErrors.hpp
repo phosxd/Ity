@@ -96,12 +96,22 @@ unsigned int current_column = 0;
 std::vector<unsigned int> call_trace;
 
 
+constexpr bool has_runtime_debug =
+#ifdef RUNTIME_DEBUG
+	true
+#else
+	false
+#endif
+;
+
 // If true, no fancy messages are displayed, just "ERROR: <code>" or "WARN: <code>".
 bool emit_just_codes = false;
 // If false, warning messages will not be displayed.
 bool emit_warnings = true;
 // If true, limits the modules that can be imported.
 bool safe_mode = false;
+// If true. wait for confirmation to run the next instruction.
+bool step_mode = false;
 const std::vector<std::string> safe_mode_allowed_libs = {"IO","Time","Math"};
 
 
@@ -109,6 +119,7 @@ const std::vector<std::string> safe_mode_allowed_libs = {"IO","Time","Math"};
 
 std::string make_err_message(const ERR_CODE code, const std::vector<std::string> args) {
 	if (code == ERR_custom)                                 return args[0];
+	#ifdef RUNTIME_DEBUG
 	else if (code == ERR_unexpected)                        return "Unexpected (" + args[0] + "): " + args[1] + " Please report bug.";
 	else if (code == ERR_expected_ity_extension)            return "Expected file with \".ity\" extension.";
 	else if (code == ERR_unable_to_open_script)             return "Unable to open script at \"" + args[0] + "\".";
@@ -166,8 +177,9 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 
 	else if (code == ERR_unexpected_char_at_expr_end)       return "Unexpected character \"" + args[0] + "\" at end of expression.";
 	else if (code == ERR_invalid_character_for_construct)   return "Invalid character for " + args[0] + " construct: \"" + args[1] + "\".";
+	#endif
 
-	return "Error code \"" + std::to_string(code) + "\".";
+	return "";
 }
 
 

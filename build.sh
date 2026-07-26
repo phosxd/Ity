@@ -10,6 +10,7 @@ COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-unwind-tables -
 
 DO_TEST=0
 DEBUG=0
+RUNTIME_DEBUG=1
 OPTIM="balanced"
 OPTIM_balanced="-O2 -finline-limit=4"
 OPTIM_speed="-Ofast"
@@ -44,11 +45,14 @@ for i in "$@"; do
 		-d|--debug)
 			DEBUG=1
 		;;
-		-s|--static*)
+		-s|--static)
 			COMMON_BUILD_ARGS="-static ${COMMON_BUILD_ARGS}"
 		;;
 		-o=*|--optimize=*)
 			OPTIM="${i#*=}"
+		;;
+		-srd|--strip-runtime-debug)
+			RUNTIME_DEBUG=0
 		;;
 		*)
 			echo "${RED}Unknown option \"$i\"."
@@ -77,6 +81,9 @@ echo "(Optimization: ${OPTIM})"
 
 # Put everything into a final BUILD_ARGS variable.
 BUILD_ARGS="${optim} ${COMMON_BUILD_ARGS} ${LINKS}"
+if [[ $RUNTIME_DEBUG -eq 1 ]]; then
+	BUILD_ARGS="-DRUNTIME_DEBUG ${BUILD_ARGS}"
+fi
 
 
 

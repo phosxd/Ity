@@ -51,6 +51,10 @@ You can pass flags to the build script.
 	Statically link final binary.
 - `-d` or `--debug`:
 	Build with debug symbols in-tact.
+- `-srd` or `--strip-runtime-deubg`
+	Remove runtime error strings & debug flag branches.
+	Error codes & ln/col tracking are still kept.
+	Use this to save an extra few kilobytes.
 - `-t` or `--test`:
 	Run tests after compilation.
 
@@ -105,6 +109,8 @@ Flags:
 	Print simple error / warning codes instead of detailed messages.
 - `-nowarn`:
 	Don't emit any warning messages.
+- `-step`:
+	Wait for confirmation before running the next instruction.
 
 - `-d-full`:
 	Enable all debug flags.

@@ -42,18 +42,24 @@ const Variant LIBS[] = {
 const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
 	{"import",   &INST_Import},
 	{"merge",    &INST_Import},
+
 	{"exit",     &INST_Exit},
 	{"throw",    &INST_Exit},
+
 	{"var",      &INST_Var},
 	{"const",    &INST_Var},
 	{"arg",      &INST_Var},
+
 	{"/",        &INST_End},
 	{"if",       &INST_If},
 	{"elif",     &INST_If},
 	{"else",     &INST_If},
+
 	{"while",    &INST_While},
+	{"for",      &INST_While},
 	{"continue", &INST_Continue},
 	{"break",    &INST_Continue},
+
 	{"func",     &INST_Func},
 	{"return",   &INST_Return},
 };
@@ -94,12 +100,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 	for (size_t i = 0; i < src_len; i++) {
 		const char& ch = src[i];
-		// Advance column or line number.
-		col++;
-		if(ch == '\n') {
-			ln++;
-			col = 0;
-		}
+		LN_COL_COUNTER(ch,ln,col);
 
 		// End comment.
 		if (is_comment) {
@@ -205,28 +206,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 						// Tokenize expression if possible...
 						if (inst->has_expr) {
-							std::vector<std::string> new_args; new_args.reserve(inst->REQUIRED);
-							std::string expr_string;
-							unsigned int i_ = 0;
-							unsigned int ln_ = 0;
-							unsigned int col_ = 0;
-							for (const std::string& arg : item.args) {
-								if (i_ < inst->REQUIRED) {
-									// Count lines / columns.
-									for (const char& ch : arg) {
-										col_++;
-										if (ch == '\n') {
-											ln_++;
-											col_ = 0;
-										}
-									}
-									new_args.push_back(arg);
-								}
-								else expr_string += ' '+item.args[i_];
-								i_++;
-							}
-							item.args = std::move(new_args);
-							item.expr = expr_tokenize(expr_string, item.ln+ln_, item.col+col_);
+							item.args = tokenize_expr_from_inst_args(item, inst->REQUIRED);
 						}
 
 						// Start composite item...
@@ -286,9 +266,11 @@ std::vector<InstToken> tokenize(const std::string& src) {
 		const CompositeItem& comp_item = composite_nest[composite_nest.size()-1];
 		emit_error(ERR_no_composite_end, {}, comp_item.ln, comp_item.col);
 	}
+	#ifdef RUNTIME_DEBUG
 	if (debug_flags.inst_seq) {
 		std::cout << ANSI::purple << "Instruction Sequence: " << ANSI::reset << sequence << '\n';
 	}
+	#endif
 
 	return sequence;
 }
@@ -308,6 +290,13 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 		InstToken& item = InstTokenSeq[i];
 		current_line = item.ln;
 		current_column = item.col;
+
+		// If in step mode, print token & wait for confirmation before continuing.
+		if (step_mode) {
+			std::cout << ANSI::orange << item << ANSI::reset << '\n';
+			std::string _input; std::getline(std::cin, _input);
+		}
+
 		// If has an expression but no args, run as expression.
 		if (item.args.size() == 0) {
 			if (not item.expr.seq.empty()) last_expr_result = expr_exec(state, item.expr);
@@ -348,6 +337,7 @@ void start_shell(int argc, char* argv[]) {
 	}
 
 	// Set debug flags
+	#ifdef RUNTIME_DEBUG
 	debug_flags.result = exists_in_vec(flags, "-d-result");
 	debug_flags.inst_seq = exists_in_vec(flags, "-d-inst-seq");
 	debug_flags.expr_seq = exists_in_vec(flags, "-d-expr-seq");
@@ -362,11 +352,13 @@ void start_shell(int argc, char* argv[]) {
 		debug_flags.data_assign = true;
 		debug_flags.scoping = true;
 	}
+	#endif
 
 	// Set other flags.
 	emit_just_codes = exists_in_vec(flags, "-codes");
 	emit_warnings = not exists_in_vec(flags, "-nowarn");
-	safe_mode= exists_in_vec(flags, "-safe");
+	safe_mode = exists_in_vec(flags, "-safe");
+	step_mode = exists_in_vec(flags, "-step");
 
 	std::vector<std::string> split_source_script = {""};
 	for (const std::string& i : (split_str(source_script_path, '/')) ) {split_source_script.push_back(i);}
@@ -374,16 +366,17 @@ void start_shell(int argc, char* argv[]) {
 
 	// Initialize state.
 	ScopeState state = create_new_scope_state({
-		{"__VERSION__",                Variant{ARR, (ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}}, VariantMode_constant}},
-		{"__VERSION_STRING__",         Variant{STR, (STR_t)ItyVersionString, VariantMode_constant}},
-		{"__OS_NAME__",                Variant{STR, (STR_t)OSName, VariantMode_constant}},
-		{"__SCRIPT_FILE_NAME__",       Variant{STR, (STR_t)split_source_script.back(), VariantMode_constant}},
-		{"__SCRIPT_START_TIME_MS__",   Variant{INT, (INT_t)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
-		{"__CMD_ARGS__",               Variant{ARR, (ARR_t)script_args, VariantMode_constant}}
+		{"__VERSION__",                Variant{ARR,  (ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}}, VariantMode_constant}},
+		{"__VERSION_STRING__",         Variant{STR,  (STR_t)ItyVersionString, VariantMode_constant}},
+		{"__OS_NAME__",                Variant{STR,  (STR_t)OSName, VariantMode_constant}},
+		{"__SCRIPT_FILE_NAME__",       Variant{STR,  (STR_t)split_source_script.back(), VariantMode_constant}},
+		{"__SCRIPT_START_TIME_MS__",   Variant{INT,  (INT_t)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
+		{"__CMD_ARGS__",               Variant{ARR,  (ARR_t)script_args, VariantMode_constant}},
+		{"__HAS_RUNTIME_DEBUG__",      Variant(BOOL, (bool)has_runtime_debug, VariantMode_constant)},
 	});
 	// Merge built-in module.
 	LIB_BI_init(state, (ARR_t){});
-	merge_module(state, std::any_cast<MAP_t>(LIB_BI.d));
+	merge_module(state, AnyCast(MAP_t,LIB_BI.d));
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 
@@ -454,6 +447,7 @@ void start_shell(int argc, char* argv[]) {
 
 
 	// Output program results in debug mode.
+	#ifdef RUNTIME_DEBUG
 	if (debug_flags.result) {
 		const auto total_end = std::chrono::high_resolution_clock::now();
 		const std::vector<std::vector<long int>> times = {
@@ -461,11 +455,12 @@ void start_shell(int argc, char* argv[]) {
 			{std::chrono::duration_cast<std::chrono::microseconds>(timers[1]-timers[0]).count(), std::chrono::duration_cast<std::chrono::milliseconds>(timers[1]-timers[0]).count()},
 		};
 		std::cout << "\n\n" << "Program results...\n------------------\n";
-		if (not source_script_path.empty()) {std::cout << "TIME (Inst-Tokenization): " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
-		std::cout <<                                      "TIME (total):             " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
-		std::cout <<                                      "STATE SIZE:               " << get_state_size(state) << " bytes." << '\n';
+		if (not source_script_path.empty()) {std::cout << "TIME (Tokenization):    " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
+		std::cout <<                                      "TIME (Total):           " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
+		std::cout <<                                      "STATE SIZE:             " << get_state_size(state) << " bytes." << '\n';
 		std::cout << '\n';
 	}
+	#endif
 
 
 	return;

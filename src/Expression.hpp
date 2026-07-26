@@ -32,7 +32,11 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, const Variant
 		},
 		get_state_at_depth(state, AnyCast(INT_t,func.at("__si").d)) // Use function definition scope as the parent.
 	);
+
+	#ifdef RUNTIME_DEBUG
 	if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;
+	#endif
+
 	Ity::exec(func_state, InstTokenSeq, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
 	restore_ongoing_scopes(); // Restore previously ongoing scopes, nowthat we are out of the function.
 
@@ -42,9 +46,17 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, const Variant
 	if (func_result.t != func_return_type && func_return_type != ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func_return_type)});
 	// Return result.
 	//call_trace.pop_back(); call_trace.pop_back();
+
+	#ifdef RUNTIME_DEBUG
 	if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
+	#endif
+
 	return func_result;
 }
+
+
+
+inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) {col++; if (ch == '\n') {ln++; col = 0;}}
 
 
 
@@ -71,7 +83,7 @@ const std::unordered_map<std::string, const Operation*> OPERATIONS = {
 	{"*=",  &OP_Set},
 	{"/=",  &OP_Set},
 	{"%=",  &OP_Set},
-	{"@=",  &OP_Set},
+	{"<<=", &OP_Set},
 
 	{"==",  &OP_Compare},
 	{"!=",  &OP_Compare},
@@ -91,7 +103,8 @@ std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
 
 bool is_valid_name(const std::string& name) {
 	const size_t& name_len = name.size();
-	for(size_t i = 0; i < name_len; i++) {
+	if (name_len == 0) return false;
+	for (size_t i = 0; i < name_len; i++) {
 		const bool is_digit = (NUM.find(name[i]) != std::string::npos);
 		if (i == 0 && is_digit) return false;
 		if ((ALPHA.find(name[i]) == std::string::npos && not is_digit) && name[i] != '_') return false;
@@ -163,12 +176,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 
 	for (size_t i = 0; i < expr_len; i++) {
 		const char& ch = expr[i];
-		// Advance column or line number.
-		col_offset++;
-		if (ch == '\n') {
-			ln_offset++;
-			col_offset = 0;
-		}
+		LN_COL_COUNTER(ch,ln_offset,col_offset);
 
 		// Skip to desired column or line number.
 		if (skip_to_ln != 0) {
@@ -241,11 +249,11 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				const std::string& subexpr = expr.substr(i+1);
 				clean_up_buffer(result_token, item, buffer);
 				// Tokenize sub-expression.
-				const ExprToken& token = expr_tokenize(subexpr, ln_offset, col_offset);
+				const ExprToken& token = expr_tokenize(subexpr, ln_offset, col_offset-1);
 				// Create expression sequence token.
 				item = ExprToken{token.ln, token.col, ExprTokenType_variant, {PLACEHOLDER}};
 				item.t = ExprTokenType_sequence;
-				item.seq = std::move(token.seq);
+				item.seq = token.seq;
 				// Add to sequence.
 				result_token.seq.push_back(item);
 				// Skip over characters inside the sub-expression.
@@ -417,11 +425,13 @@ Variant* resolve_variant(ScopeState& state, Variant& item) {
 
 
 // Execute a sequence of ExprTokens. `token` itself is an ExprToken which should contain a sequence in `ExprToken.seq`.
-Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false, unsigned int ln_offset=0, unsigned int col_offset=0) {
+Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false, const unsigned int ln_offset=0, const unsigned int col_offset=0) {
 	// Output sequence in debug mode.
+	#ifdef RUNTIME_DEBUG
 	if (debug_flags.expr_seq && not subexpr) {
 		std::cout << ANSI::purple << "ExprToken Sequence: " << ANSI::reset << token.seq << "\n";
 	};
+	#endif
 
 	// Resolve array.
 	if (token.var.t == ARR) {
@@ -475,8 +485,8 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 	Variant pre_exec_result = VariantPresets.empty;
 	Variant op_result = VariantPresets.empty;
 
-	Variant temporary = VariantPresets.empty; // Used to store temporary value which can be pointed to in `result`.
-	Variant temporary2 = VariantPresets.empty;
+	Variant temp = VariantPresets.empty; // Used to store temporary value which can be pointed to in `result`.
+	Variant temp2 = VariantPresets.empty;
 
 	const Operation* op = nullptr;
 	std::string op_symbol;
@@ -495,8 +505,8 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 				op->pre_exec(state, *result, op_symbol, eval_second_operand, pre_exec_result, result);
 				if (not eval_second_operand) {
 					if (pre_exec_result.t != PLACEHOLDER) {
-						temporary = pre_exec_result; // Copy `pre_exec_result`.
-						result = &temporary; // Set pointer to copied value.
+						temp = pre_exec_result; // Copy `pre_exec_result`.
+						result = &temp; // Set pointer to copied value.
 					}
 					op = nullptr;
 					continue;
@@ -505,8 +515,8 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 			// Get our second variant to operate on.
 			// If second is a sequence...
 			if (item.t == ExprTokenType_sequence) {
-				temporary2 = expr_exec(state, item, true, current_line, current_column); // Write result into `temporary2`.
-				second = &temporary2; // Set second variant to a pointer of `temporary2`.
+				temp2 = expr_exec(state, item, true, current_line, current_column); // Write result into `temp2`.
+				second = &temp2; // Set second variant to a pointer of `temp2`.
 			}
 			// If it's a normal var...
 			else second = resolve_variant(state, item.var);
@@ -520,8 +530,8 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 			op->exec(state, *result, *second, op_symbol, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
 			// If we reveive a direct value, set the result to that.
 			if (op_result.t != PLACEHOLDER) {
-				temporary = op_result; // Copy result. We cant set a pointer to `op_result` directly because the value may get overriden before we have a chance to use the pointer.
-				result = &temporary; // Set pointer to copied result.
+				temp = op_result; // Copy result. We cant set a pointer to `op_result` directly because the value may get overriden before we have a chance to use the pointer.
+				result = &temp; // Set pointer to copied result.
 			}
 
 			op = nullptr;
@@ -548,17 +558,19 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 
 		// Get value from sub-sequence
 		else if (item.t == ExprTokenType_sequence) {
-			temporary = expr_exec(state, item, current_line, current_column);
-			result = &temporary; // Set pointer to sub-expression result.
+			temp = expr_exec(state, item, current_line, current_column);
+			result = &temp; // Set pointer to sub-expression result.
 		}
 	}
 
 	if (not result) return VariantPresets.none;
 
 	// Output result in debug mode.
+	#ifdef RUNTIME_DEBUG
 	if (debug_flags.expr_result && not subexpr) {
 		std::cout << ANSI::purple << "Expression Result: " << ANSI::reset << *result << "\n";
 	};
+	#endif
 
 	return *result;
 }
@@ -570,4 +582,28 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 Variant expr_run(ScopeState& state, const std::string& expr) {
 	ExprToken tokens = expr_tokenize(expr, current_line, current_column);
 	return expr_exec(state, tokens);
+}
+
+
+
+
+// Inserts a tokenized expression with proper meta data into the given `token.expr`.
+// Expression is assumed to start at `start_idx` in `token.args`.
+std::vector<std::string> tokenize_expr_from_inst_args(InstToken& token, const unsigned int& start_idx) {
+	std::vector<std::string> new_args; new_args.reserve(start_idx);
+	std::string expr_string;
+	unsigned int i = 0;
+	unsigned int ln = 0;
+	unsigned int col = 0;
+	for (const std::string& arg : token.args) {
+		if (i < start_idx) {
+			for (const char& ch : arg) LN_COL_COUNTER(ch,ln,col);
+			new_args.push_back(arg);
+		}
+		else expr_string += ' '+token.args[i];
+		i++;
+	}
+
+	token.expr = expr_tokenize(expr_string, token.ln+ln, token.col+col);
+	return new_args;
 }

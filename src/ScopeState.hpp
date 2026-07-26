@@ -46,7 +46,10 @@ ScopeState create_new_scope_state(const MAP_t& data, ScopeState* parent = nullpt
 void scope_in(ScopeState& state) {
 	state.p = new ScopeState(create_new_scope_state(state.d, state.p));
 	state.d.clear();
+
+	#ifdef RUNTIME_DEBUG
 	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope In (" + std::to_string(get_state_depth(state)) + ")\n" << ANSI::reset;
+	#endif
 }
 
 
@@ -63,7 +66,9 @@ void scope_out(ScopeState& state) {
 	state.d = std::move(p->d);
 	delete p;
 
+	#ifdef RUNTIME_DEBUG
 	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope Out (" + std::to_string(get_state_depth(state)) + ")\n" << ANSI::reset;
+	#endif
 }
 
 
@@ -146,9 +151,11 @@ Variant* get_data_globally(ScopeState& state, const std::string& name) {
 // If mode is locked type, will throw an error if the data type does not match the given type.
 void set_data(ScopeState& state, const std::string& name, const VariantType& type, const VariantData& data, const VariantMode& mode) {
 	// Output function call in debug mode...
+	#ifdef RUNTIME_DEBUG
 	if (debug_flags.data_assign && not exists_in_vec(illegal_print_names, name)) {
 		std::cout << ANSI::blue << "Data Assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
 	}
+	#endif
 
 	const VariantType& data_type = get_variant_data_type(data);
 	if (not is_name_free(state, name) && get_data(state, name)->m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.

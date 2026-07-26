@@ -17,12 +17,10 @@ void OP_Set_exec(ScopeState& state, Variant& first, Variant& second, const std::
 	else if (symbol == "/=") data = first.d / second.d;
 	else if (symbol == "%=") data = first.d % second.d;
 
-	// Set to reference of second.
-	// TODO: currently does not work as it is supposed to.
-	//       at the moment, it just behaves like "=".
-	else if (symbol == "@=") {
+	// Move second into first, unsetting the second variant.
+	else if (symbol == "<<=") {
 		if (not variant_data_type_matches(second.d, first)) return;
-		first = second;
+		first = std::move(second);
 		result_ptr = &first;
 		return;
 	}
