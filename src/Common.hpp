@@ -366,7 +366,9 @@ VariantData operator*(const VariantData& a, const VariantData& b) {
 		}
 		ARR_t a_val = AnyCast(ARR_t,a);
 		ARR_t sum; sum.reserve(a_val.size()*b_val);
-		for (INT_t i = 0; i < b_val; i++) sum = sum+a_val;
+		for (INT_t i = 0; i < b_val; i++) {
+			for (auto& item : a_val) sum.push_back(item);
+		};
 		return sum;
 	}
 	// If a is int...

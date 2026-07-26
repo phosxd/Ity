@@ -14,7 +14,6 @@ IO.print:[('You entered: ' + string)];
 IO.print:[( (ANSI.bold)+'Here is what that is made of:'+(ANSI.reset) )];
 
 
-var INT i = -1; while i < (length:[string]-1); i+=1;
-	const STR ch = string:i;
+for ch in string;
 	IO.print:[(ch.raw:[])];
 /;

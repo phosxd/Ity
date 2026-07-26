@@ -760,9 +760,39 @@ print:[( 'a'.raw:[] )]; # Print the integer representation of 'a'.
 
 # 31
 
-""
+"
+# Loop over iterable
+# ------------------
 
-""
+merge IO;
+
+for i in [1,2,3];
+	print:[i];
+/;
+
+
+for i in 'abc';
+	print:[i];
+/;
+
+
+# Shadowed var name.
+var INT i = 0;
+for i in 3;
+	print:[(i+4)];
+/;
+"
+
+"1
+2
+3
+a
+b
+c
+Warning: 24
+4
+5
+6"
 
 # 32
 

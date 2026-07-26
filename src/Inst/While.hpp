@@ -3,16 +3,16 @@
 
 void INST_While_processor(const Instruction* inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	const std::string& symbol = token.args[0];
-	token.meta = {"", std::monostate(), (unsigned int)0};
+	token.meta = {(STR_t)"", std::monostate(), (unsigned int)0};
 
 	if (symbol == "for") {
 		// Throw error if not enough args, or third arg is not the required keyword.
-		if (token.args.size() < 4 || token.args[3] != "in") {
+		if (token.args.size() < 4 || token.args[2] != "in") {
 			emit_error(ERR_invalid_syntax, {"Expected keyword \"in\""}, ln, col);
 			return;
 		}
 
-		const std::string& name = token.args[1];
+		const STR_t& name = token.args[1];
 		// Throw error if invalid name.
 		if (not is_valid_name(name)) {
 			emit_error(ERR_name_must_not_contain_symbols, {name}, ln, col);
@@ -34,67 +34,106 @@ void INST_While_processor(const Instruction* inst, InstToken& token, const AnyMa
 
 void INST_While_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
 	const std::string& symbol = token.args[0];
-	Variant value = VariantPresets.bool_false;
+	bool value = false;
+
+	// For loop variables.
+	const Variant* item = nullptr;
+	Variant temp = VariantPresets.empty;
+	const STR_t& name = AnyCast(STR_t,token.meta[0]);
+
 
 	// While loop.
 	if (symbol == "while") {
 		// Get value from expression.
-		value = expr_exec(state, token.expr);
+		const Variant& var = expr_exec(state, token.expr);
 		// Throw error if not boolean.
-		if (value.t != BOOL) {
+		if (var.t != BOOL) {
 			emit_error(ERR_expected_boolean_expression);
+			return;
+		}
+		value = AnyCast(bool,var.d);
+	}
+
+
+	// For loop.
+	else if (symbol == "for") {
+		const unsigned int index = AnyCast(unsigned int,token.meta[2]);
+		// Get iterable.
+		if (token.meta[1].type() == typeid(std::monostate)) token.meta[1] = expr_exec(state, token.expr);
+		Variant& iterable = AnyCastV(Variant,token.meta[1]);
+
+		// Get item from array.
+		if (iterable.t == ARR) {
+			ARR_t& data = AnyCastV(ARR_t,iterable.d);
+			if (data.size() <= index) value = false;
+			else {
+				value = true;
+				item = &data[index];
+			}
+		}
+
+		// Get item from string.
+		else if (iterable.t == STR) {
+			const STR_t& data = AnyCast(STR_t,iterable.d);
+			if (data.size() <= index) value = false;
+			else {
+				value = true;
+				temp = Variant{STR, (STR_t)(std::string(1,data[index]))};
+				item = &temp;
+			}
+		}
+
+		// Get item from integer.
+		else if (iterable.t == INT) {
+			const INT_t& data = AnyCast(INT_t,iterable.d);
+			if (data <= (INT_t)index) value = false;
+			else {
+				value = true;
+				temp = Variant{INT, (INT_t)index};
+				item = &temp;
+			}
+		}
+
+		// Throw error if variant is not iterable.
+		else {
+			emit_error(ERR_invalid_syntax, {"Expected iterable expression"});
 			return;
 		}
 	}
 
 
 	// Jump past instructions in this composite if failed.
-	if (not AnyCast(bool,value.d)) {
+	if (not value) {
 		exec_jump_value += token.composite_size; // Add 1 to skip the end instruction, otherwise will jump back to this instruction.
 		// Scope out if previously scoped in.
-		if (token.declarative_composite && token.meta.size() > 3) {
+		if ((token.declarative_composite || symbol == "for") && token.meta.size() > 3) {
 			scope_out(state);
 			token.meta.pop_back();
 			scoped_tokens.pop_back();
 		}
 		return;
 	}
-	// If entering loop for first time & the composite is declarative, then scope in.
-	else if (token.declarative_composite && token.meta.size() == 3) {
+
+	// If entering loop for first time & (the composite is declarative or is a for loop), then scope in.
+	else if ((token.declarative_composite || symbol == "for") && token.meta.size() == 3) {
 		token.meta.push_back(true);
 		scope_in(state);
 		scoped_tokens.push_back(&token);
+
+		if (symbol == "for") {
+			// Give warning if the var name is shadowing another var name.
+			if (not is_name_globally_free(*(state.p), name)) {
+				emit_warn(ERR_name_is_shadowed, {name});
+			}
+		}
 	}
 
 
-	// For loop.
-	// if (symbol == "for") {
-	// 	const std::string& name = AnyCast(STR_t,token.meta[0]);
-	// 	unsigned int index = AnyCast(unsigned int,token.meta[1]);
-	// 	// Give warning if the var name is shadowing another var name.
-	// 	if (not is_name_globally_free(state, name)) {
-	// 		emit_warn(ERR_name_is_shadowed, {name});
-	// 	}
- //
-	// 	// Get iterable.
-	// 	Variant iterable = expr_exec(state, token.expr);
-	// 	Variant* item = nullptr;
-	// 	Variant temp = VariantPresets.empty;
-	// 	if (iterable.t == ARR) {
-	// 		item = &AnyCastV(ARR_t,iterable.d)[index];
-	// 	}
-	// 	else if (iterable.t == STR) {
-	// 		temp = Variant{STR, AnyCast(STR_t,iterable.d)[index]};
-	// 		item = &temp;
-	// 	}
-	// 	else {
-	// 		emit_error(ERR_invalid_syntax, {"Expected iterable expression"});
-	// 		return;
-	// 	}
- //
-	// 	// Set item.
-	// 	set_data(state, name, ANY, *item, VariantMode_dynamic_type);
-	// }
+	// If for loop, set the variable.
+	if (symbol == "for" && value) {
+		set_data(state, name, item->t, item->d, VariantMode_dynamic_type);
+		token.meta[2] = AnyCast(unsigned int,token.meta[2]) + 1;
+	}
 }
 
 
