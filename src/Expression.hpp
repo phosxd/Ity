@@ -180,12 +180,12 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 
 		// Skip to desired column or line number.
 		if (skip_to_ln != 0) {
-			if (ln_offset >= skip_to_ln) {skip_to_ln = 0;}
-			else {continue;}
+			if (ln_offset >= skip_to_ln) skip_to_ln = 0;
+			else continue;
 		}
 		if (skip_to_col != 0) {
-			if (col_offset >= skip_to_col) {skip_to_col = 0;}
-			else {continue;}
+			if (col_offset >= skip_to_col) skip_to_col = 0;
+			else continue;
 		}
 
 		// Handle string logic.

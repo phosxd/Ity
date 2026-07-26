@@ -156,12 +156,8 @@ Variant LIB_BI_tm_str_raw(ScopeState& _state, ARR_t& args) {
 // Array.
 // ------
 
-Variant LIB_BI_tm_arr_erase(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_arr_map_erase(ScopeState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (args[1].t != INT) {
-		emit_error(ERR_invalid_func_arg_type, {"1", "INT", get_variant_type_name(args[1].t)});
-		return VariantPresets.none;
-	}
 
 	Variant* var = AnyCastV(Variant*,args[0].d);
 	// Throw error if the variant is a constant.
@@ -170,40 +166,40 @@ Variant LIB_BI_tm_arr_erase(ScopeState& _state, ARR_t& args) {
 		return VariantPresets.none;
 	}
 
-	// Get data & index.
-	ARR_t& data = AnyCastV(ARR_t, var->d );
-	const INT_t& index = AnyCast(INT_t,args[1].d);
-	// Erase item from array reference.
-	data.erase(data.begin()+index);
+	if (var->t == ARR) {
+		// Throw error if argument is not an integer.
+		if (args[1].t != INT) {
+			emit_error(ERR_invalid_func_arg_type, {"1", "INT", get_variant_type_name(args[1].t)});
+			return VariantPresets.none;
+		}
+
+		// Get data & index.
+		ARR_t& data = AnyCastV(ARR_t, var->d );
+		const INT_t& index = AnyCast(INT_t,args[1].d);
+		// Erase item from array reference.
+		data.erase(data.begin()+index);
+	}
+
+	else if (var->t == MAP) {
+		// Throw error if argument is not a string.
+		if (args[1].t != STR) {
+			emit_error(ERR_invalid_func_arg_type, {"1", "STR", get_variant_type_name(args[1].t)});
+			return VariantPresets.none;
+		}
+
+		// Get data & map.
+		MAP_t& data = AnyCastV(MAP_t, var->d );
+		const STR_t& key = AnyCast(STR_t,args[1].d);
+		// Erase item from map reference.
+		data.erase(key);
+	}
+
 	return VariantPresets.none;
 }
 
 
 // Map.
 // ----
-
-// Erase a key-value pair in the `MAP` by key. Does nothing if the key doesn't exist.
-Variant LIB_BI_tm_map_erase(ScopeState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (args[1].t != STR) {
-		emit_error(ERR_invalid_func_arg_type, {"1", "STR", get_variant_type_name(args[1].t)});
-		return VariantPresets.none;
-	}
-
-	Variant* var = AnyCastV(Variant*,args[0].d);
-	// Throw error if the variant is a constant.
-	if (var->m == VariantMode_constant) {
-		emit_error(ERR_cannot_change_constant);
-		return VariantPresets.none;
-	}
-
-	// Get data & key.
-	MAP_t& data = AnyCastV(MAP_t, var->d );
-	const STR_t& key = AnyCast(STR_t,args[1].d);
-	// Erase field from map reference.
-	data.erase(key);
-	return VariantPresets.none;
-}
 
 
 // Return array of keys in the `MAP`.
@@ -273,8 +269,8 @@ const Variant LIB_BI {
 		{"__tm", Variant{
 			MAP, (MAP_t){
 				{"STR:raw",    NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_tm_str_raw)},
-				{"ARR:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_erase)},
-				{"MAP:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_map_erase)},
+				{"ARR:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
+				{"MAP:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
 				{"MAP:keys",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_map_keys)},
 				{"MAP:has",    NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_map_has)},
 

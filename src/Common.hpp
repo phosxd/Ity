@@ -16,7 +16,6 @@ enum VariantType {
 	ANY,
 	OP,
 	REF,
-	FUNC,
 	// Real types.
 	NONE,
 	BOOL,
@@ -43,7 +42,6 @@ std::string get_variant_type_name(const VariantType& type) {
 		case ANY: return "ANY";
 		case OP: return "OP";
 		case REF: return "REF";
-		case FUNC: return "FUNC";
 		// Real types.
 		case BOOL: return "BOOL";
 		case INT: return "INT";
@@ -64,7 +62,6 @@ VariantType get_variant_type_from_name(const std::string& name) {
 	else if (name == "ANY")   return ANY;
 	else if (name == "OP")    return OP;
 	else if (name == "REF")   return REF;
-	else if (name == "FUNC")  return FUNC;
 	// Real types.
 	else if (name == "BOOL")   return BOOL;
 	else if (name == "INT")    return INT;
@@ -694,11 +691,10 @@ const VariantPresets_struct VariantPresets;
 // Translate a native function to a usable function object.
 const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t& native_func) {
 	return Variant{
-		MAP,
-		(MAP_t){
+		MAP, (MAP_t){
 			{"__t",   VariantPresets.obj_type_f}, // Map type.
 			{"__rt",  Variant{INTERNAL, return_type, VariantMode_constant}}, // Return type.
-			{"__nc",  Variant{FUNC, native_func}}, // Native call.
+			{"__nc",  Variant{INTERNAL, native_func}}, // Native call.
 			{"__ba",  Variant{ARR, (ARR_t){}}}, // Bound args.
 		},
 		VariantMode_constant,

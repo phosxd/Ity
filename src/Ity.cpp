@@ -63,10 +63,14 @@ const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
 	{"func",     &INST_Func},
 	{"return",   &INST_Return},
 };
-const std::vector<std::string> declarative_instructions = {"import","merge","var","const","func"};
+
+const std::vector<std::string> DECL_INSTRUCTIONS = {"import","merge","var","const","func"};
+constexpr char INST_END_SYMBOL = ';';
+constexpr std::string COMP_INST_END_SYMBOL = "/";
+constexpr std::string ITY_FILE_EXT = ".ity";
 
 
-Variant last_expr_result;
+Variant last_expr_result = VariantPresets.empty;
 
 
 namespace Ity {
@@ -80,8 +84,7 @@ ScopeState new_state() {
 std::vector<InstToken> tokenize(const std::string& src) {
 	const size_t& src_len = src.size();
 	std::vector<InstToken> sequence;
-	std::string buffer;
-	buffer.reserve(src_len);
+	std::string buffer; buffer.reserve(src_len);
 	InstToken item;
 	unsigned int ln = current_line;
 	unsigned int col = current_column-1;
@@ -144,7 +147,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 		else {
 			// Start string.
-			if (ch == '\'' || ch == '"') {
+			if (STRING_SYMBOLS.find(ch) != std::string::npos) {
 				is_string = true;
 				string_type = ch;
 				str_start_ln = ln;
@@ -161,7 +164,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 			}
 
 			// If is instruction end, append item to sequence & reset state.
-			if (ch == ';') {
+			if (ch == INST_END_SYMBOL) {
 				last_comp_item_dist += 1;
 
 				// Append remaining argument to args.
@@ -181,7 +184,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 					}
 					comp_item.size += 1;
 					// Flag composite as declarative, if a declarative instruction is found inside it.
-					if (&comp_item == &composite_nest.back() && args_len > 0 && exists_in_vec(declarative_instructions, item.args[0])) comp_item.declarative = true;
+					if (&comp_item == &composite_nest.back() && args_len > 0 && exists_in_vec(DECL_INSTRUCTIONS, item.args[0])) comp_item.declarative = true;
 				}
 				if (args_len > 0) {
 					const std::string& inst_name = item.args[0];
@@ -214,7 +217,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 							composite_nest.push_back(CompositeItem{item, (unsigned int)sequence.size(), 0, ln, col});
 						}
 						// End composite item...
-						else if (inst_name == "/") {
+						else if (inst_name == COMP_INST_END_SYMBOL) {
 							if (composite_nest.size() > 0) {
 								// Get & remove most recent composite item.
 								CompositeItem comp_item = composite_nest.back();
@@ -292,10 +295,12 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 		current_column = item.col;
 
 		// If in step mode, print token & wait for confirmation before continuing.
+		#ifdef RUNTIME_DEBUG
 		if (step_mode) {
 			std::cout << ANSI::orange << item << ANSI::reset << '\n';
 			std::string _input; std::getline(std::cin, _input);
 		}
+		#endif
 
 		// If has an expression but no args, run as expression.
 		if (item.args.size() == 0) {
@@ -330,10 +335,10 @@ void start_shell(int argc, char* argv[]) {
 	std::vector<std::string> flags;
 	std::string source_script_path = "";
 	for (int i = 1; i < argc; i++) {
-		const std::string& arg_str (argv[i]);
+		const std::string& arg_str = argv[i];
 		if (arg_str[0] == '-') flags.push_back(arg_str);
 		else if (source_script_path.empty()) source_script_path = arg_str;
-		else script_args.push_back(Variant{STR, arg_str, VariantMode_constant});
+		else script_args.push_back(Variant{STR, (STR_t)arg_str, VariantMode_constant});
 	}
 
 	// Set debug flags
@@ -383,7 +388,7 @@ void start_shell(int argc, char* argv[]) {
 
 	// Parse & execute script file...
 	if (not source_script_path.empty()) {
-		if (not str_ends_with(source_script_path,".ity")) {
+		if (not str_ends_with(source_script_path,ITY_FILE_EXT)) {
 			emit_error(ERR_expected_ity_extension);
 			return;
 		}
