@@ -2,7 +2,7 @@
 
 
 
-void INST_If_processor(const Instruction* _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+void INST_If_processor(const Instruction*& _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	if (token.args[0] == "elif" || token.args[0] == "else") {
 		const CompositeItem& last_comp_item = *std::any_cast<CompositeItem*>(extra.at("last_comp_item"));
 
@@ -21,7 +21,7 @@ void INST_If_processor(const Instruction* _inst, InstToken& token, const AnyMap_
 
 
 
-void INST_If_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
+void INST_If_exec(ScopeState& state, const Instruction*& _inst, InstToken& token) {
 	const std::string& symbol = token.args[0];
 
 	// Get value from expression.

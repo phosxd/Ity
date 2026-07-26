@@ -91,11 +91,13 @@ using AnyMap_t = std::unordered_map<std::string, std::any>;
 // Variant.
 // --------
 
+
 enum VariantMode {
 	VariantMode_dynamic_type,
 	VariantMode_constant,
 	VariantMode_locked_type,
 };
+
 
 #pragma pack(1)
 struct Variant {
@@ -109,7 +111,7 @@ using INT_t = int;
 using FLOAT_t = double;
 using STR_t = std::string;
 using ARR_t = std::vector<Variant>;
-using MAP_t = std::unordered_map<std::string,Variant>;
+using MAP_t = std::unordered_map<STR_t,Variant>;
 
 
 // Resolve VariantData to a real VariantType.
@@ -126,7 +128,7 @@ VariantType get_variant_data_type(const VariantData& d) {
 
 
 // Return true if `data` is applicable to `var`.
-bool variant_data_type_matches(const VariantData& data, const Variant& var, const bool do_emit_error = true) {
+const bool variant_data_type_matches(const VariantData& data, const Variant& var, const bool do_emit_error = true) {
 	const VariantType& data_type = get_variant_data_type(data);
 	if (var.m == VariantMode_dynamic_type || var.t == data_type) return true;
 	if (do_emit_error) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data_type), get_variant_type_name(var.t)});
@@ -504,6 +506,7 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 // Scope State.
 // ------------
 
+
 #pragma pack(1)
 struct ScopeState {
 	ScopeState* p = nullptr;  // Parent scope state.
@@ -511,32 +514,23 @@ struct ScopeState {
 };
 
 
-std::ostream& operator<<(std::ostream& os, const ScopeState& s) {
-	os << "ScopeState{p=" << s.p << ", d=" << s.d << "}";
-	return os;
-}
-
-
 
 
 // Instruction.
 // ------------
 
+
 #pragma pack(1)
 struct Instruction {
-	uint8_t REQUIRED; // Required argument count,
-	void (*exec)(ScopeState&, const Instruction*, InstToken&) = nullptr;
-	bool is_composite;
-	bool has_expr = false;
-	void (*processor)(const Instruction*, InstToken&, const AnyMap_t&, const unsigned int& ln, const unsigned int& col) = nullptr;
+	const uint8_t REQUIRED; // Required argument count,
+	void (*exec)(ScopeState&, const Instruction*&, InstToken&) = nullptr;
+	const bool is_composite;
+	const bool has_expr = false;
+	void (*processor)(const Instruction*&, InstToken&, const AnyMap_t&, const unsigned int& ln, const unsigned int& col) = nullptr;
 };
 
 
-std::ostream& operator<<(std::ostream& os, const Instruction& s) {
-	return os << "Instruction{}";
-}
-
-
+#pragma pack(1)
 struct CompositeItem {
 	InstToken token;
 	unsigned int index = 0;
@@ -553,15 +547,11 @@ struct CompositeItem {
 // Operation.
 // ----------
 
+
 struct Operation {
 	void (*exec)(ScopeState&, Variant& first, Variant& second, const std::string& symbol, Variant& result, Variant*& result_ptr) = nullptr;
 	void (*pre_exec)(ScopeState&, Variant& first, const std::string& symbol, bool& eval_second_operand, Variant& result, Variant*& result_ptr) = nullptr;
 };
-
-
-std::ostream& operator<<(std::ostream& os, const Operation& s) {
-	return os << "Operation{}";
-}
 
 
 
@@ -570,7 +560,7 @@ std::ostream& operator<<(std::ostream& os, const Operation& s) {
 
 
 std::string multiple_types_str(const std::vector<VariantType>& types) {
-	std::string result;
+	std::string result; result.reserve(types.size());
 	unsigned int i = 0;
 	for (const VariantType& type : types) {
 		if (i != 0) result += " or ";

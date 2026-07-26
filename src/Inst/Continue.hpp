@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Continue_processor(const Instruction* _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+void INST_Continue_processor(const Instruction*& _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	if (token.args[0] == "continue" || token.args[0] == "break") {
 		bool found = false;
 		std::vector<CompositeItem> reverse_nest = *std::any_cast<std::vector<CompositeItem>*>(extra.at("composite_nest"));
@@ -23,7 +23,7 @@ void INST_Continue_processor(const Instruction* _inst, InstToken& token, const A
 }
 
 
-void INST_Continue_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
+void INST_Continue_exec(ScopeState& state, const Instruction*& _inst, InstToken& token) {
 	if (token.linked_inst == "while" || token.linked_inst == "for") {
 		InstToken& linked_token = InstTokenSeq[token.i + token.linked_inst_pos];
 		exec_jump_value += linked_token.composite_size + token.linked_inst_pos;

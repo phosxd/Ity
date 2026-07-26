@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Return_processor(const Instruction* _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+void INST_Return_processor(const Instruction*& _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	bool found = false;
 	std::vector<CompositeItem> reverse_nest = *std::any_cast<std::vector<CompositeItem>*>(extra.at("composite_nest"));
 	std::reverse(reverse_nest.begin(), reverse_nest.end());
@@ -21,7 +21,7 @@ void INST_Return_processor(const Instruction* _inst, InstToken& token, const Any
 
 
 
-void INST_Return_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
+void INST_Return_exec(ScopeState& state, const Instruction*& _inst, InstToken& token) {
 	// Cleanly exit all scopes in the function.
 	exit_ongoing_scopes(state);
 

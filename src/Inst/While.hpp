@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_While_processor(const Instruction* inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+void INST_While_processor(const Instruction*& inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	const std::string& symbol = token.args[0];
 	token.meta = {(STR_t)"", std::monostate(), (unsigned int)0};
 
@@ -32,7 +32,7 @@ void INST_While_processor(const Instruction* inst, InstToken& token, const AnyMa
 
 
 
-void INST_While_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
+void INST_While_exec(ScopeState& state, const Instruction*& _inst, InstToken& token) {
 	const std::string& symbol = token.args[0];
 	bool value = false;
 

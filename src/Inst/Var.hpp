@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Var_processor(const Instruction* _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+void INST_Var_processor(const Instruction*& _inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	const std::string& type_name = token.args[1];
 	std::string name;
 	std::string op = "";
@@ -49,7 +49,7 @@ void INST_Var_processor(const Instruction* _inst, InstToken& token, const AnyMap
 
 
 
-void INST_Var_exec(ScopeState& state, const Instruction* _inst, InstToken& token) {
+void INST_Var_exec(ScopeState& state, const Instruction*& _inst, InstToken& token) {
 	const std::string& symbol = token.args[0];
 	const std::string& name = AnyCast(std::string,token.meta[0]);
 	const std::string& op = AnyCast(std::string,token.meta[1]);
