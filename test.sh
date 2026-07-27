@@ -4,6 +4,8 @@ BLACK=$'\x1B[30m'
 RED=$'\x1B[31m'
 GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
+CLEAR_LINE=$'\x1B[2K'
+RESET_POS=$'\x1B[1G'
 
 
 tests=(
@@ -796,6 +798,75 @@ Warning: 24
 
 # 32
 
+"
+# Complex nested loops
+# --------------------
+
+merge IO;
+
+for i in 2;
+	for i in 2;
+		var INT i2 = 0; while i2 < 2;
+			for i3 in 2;
+				print:[(i+i2+i3)];
+			/;
+			i2 += 1;
+		/;
+	/;
+/;
+"
+
+"Warning: 24
+0
+1
+1
+2
+1
+2
+2
+3
+Warning: 24
+0
+1
+1
+2
+1
+2
+2
+3"
+
+# 33
+
+"
+{'a': 1, 'b': 2}; # Invalid map declaration syntax.
+"
+
+"Error: 20"
+
+# 34
+
+"
+{'a', 1+1, 'b', 2}; # Invalid map item at 'a'.
+"
+
+"Error: 20"
+
+# 35
+
+"
+[1+1, 2, 3]; # Invalid array item at index 0.
+"
+
+"Error: 20"
+
+# 36
+
+""
+
+""
+
+# 37
+
 ""
 
 ""
@@ -814,6 +885,10 @@ for (( idx=0; idx<${#tests[@]}; idx+=2 )); do
 	if (( $case_num < $starting_idx )); then
 		continue
 	fi
+
+	# Print test case number.
+	printf "${CLEAR_LINE}${RESET_POS}[Case ${case_num}] "
+
 	echo "$i" > .test.ity # Put test code in a file.
 	./ity.bin -codes .test.ity > .test_result.txt # Run test code, then output the result to a file.
 	code=$?
@@ -850,4 +925,4 @@ rm .test.ity
 rm .test_result.txt
 
 
-echo "${BOLD}${GREEN}All tests passed!${RESET}"
+echo "${CLEAR_LINE}${RESET_POS}${BOLD}${GREEN}All tests passed!${RESET}"

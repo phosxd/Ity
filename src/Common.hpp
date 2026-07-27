@@ -566,7 +566,7 @@ struct Operation {
 // ----------------------------------------
 
 
-std::string multiple_types_str(const std::vector<VariantType>& types) {
+const std::string multiple_types_str(const std::vector<VariantType>& types) {
 	std::string result; result.reserve(types.size());
 	unsigned int i = 0;
 	for (const VariantType& type : types) {
@@ -702,14 +702,14 @@ const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t
 // NativeFunc helper functions.
 // ----------------------------
 
-bool expect_arg_count(const ARR_t& args, const size_t& count) {
+const bool expect_arg_count(const ARR_t& args, const size_t& count) {
 	if (args.size() == count) return true;
 	emit_error(ERR_invalid_func_arg_count, {std::to_string(count), std::to_string(args.size())});
 	return false;
 }
 
 
-bool expect_arg_types(const Variant& arg, const std::vector<VariantType>& types, const unsigned int arg_idx) {
+const bool expect_arg_types(const Variant& arg, const std::vector<VariantType>& types, const unsigned int arg_idx) {
 	if (exists_in_vec(types, arg.t)) return true;
 	emit_error(ERR_invalid_func_arg_type, {std::to_string(arg_idx), multiple_types_str(types), get_variant_type_name(arg.t)});
 	return false;
@@ -721,12 +721,12 @@ bool expect_arg_types(const Variant& arg, const std::vector<VariantType>& types,
 // Constants.
 // ----------
 
-constexpr STR_t ItyVersionString = "0.0.2";
+constexpr STR_t ItyVersionString = "0.1.0";
 // Last number indicates release type:
 //	0 = release.
 //	1 = beta / pre-release.
 //	2 = experimental / custom.
-const std::vector<INT_t> ItyVersion = {0,0,2, 0};
+constexpr INT_t ItyVersion[4] = {0,1,0, 0};
 
 constexpr STR_t OSName =
 #if _WIN32

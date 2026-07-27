@@ -5,6 +5,7 @@
 
 
 
+struct Variant;
 struct ScopeState;
 struct InstToken;
 

@@ -1,7 +1,7 @@
 
 <div align="middle">
 
-**Version:** 0.0.2
+**Version:** 0.1.0
 
 Ity is a work-in-progress, light-weight interpreted programming language built with C++.
 
@@ -11,7 +11,8 @@ Ity is a work-in-progress, light-weight interpreted programming language built w
 
 
 # Overview
-- **Tiny & portable.** < 150kb executable.
+- **Tiny & portable.** < 150KB executable. All self-contained.
+- **Efficient memory usage.** 400KB runtime (Python: 11.2MB, Node: 45MB, Bash: 3.2MB).
 - **Platform agnostic.** No platform dependant code.
 - **No build setup.** Requires no third-party libraries.
 - **Practical.** I/O, ~~file management~~, time, & math modules all built-in.
@@ -48,7 +49,7 @@ You can pass flags to the build script.
 	Set optimization level.
 	"balanced", "speed", or "size".
 - `-s` or `--static`:
-	Statically link final binary.
+	Statically link final binary. Comes at no performance benefiet & increases binary size about 1.5MB.
 - `-d` or `--debug`:
 	Build with debug symbols in-tact.
 - `-srd` or `--strip-runtime-deubg`
@@ -79,7 +80,7 @@ Running the interpreter without passing a script file path will run it in "inter
 
 ```bash
 ./Ity.bin
-* Ity (0.0.2)
+* Ity (0.1.0)
 * Runing interactive mode interpreter.
 * Type "quit" or "q" to stop.
 

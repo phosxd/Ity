@@ -79,11 +79,6 @@ Variant last_expr_result = VariantPresets.empty;
 namespace Ity {
 
 
-ScopeState new_state() {
-	return create_new_scope_state({});
-}
-
-
 std::vector<InstToken> tokenize(const std::string& src) {
 	const size_t& src_len = src.size();
 	std::vector<InstToken> sequence;
@@ -208,7 +203,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 								{"last_comp_item_dist",  last_comp_item_dist},
 								{"last_comp_item",       &last_comp_item},
 								{"composite_nest",       &composite_nest}
-							}, ln, col);
+							}, ln,col);
 						}
 
 						// Tokenize expression if possible...
