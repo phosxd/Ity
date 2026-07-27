@@ -8,7 +8,7 @@ unsigned int get_state_depth(const ScopeState& state) {
 	unsigned int depth = 1;
 	ScopeState* current = state.p;
 	while (true) {
-		if (current == nullptr) break;
+		if (not current) break;
 		current = current->p;
 		depth += 1;
 	}
@@ -32,12 +32,12 @@ ScopeState* get_state_at_depth(ScopeState& state, const unsigned int target_dept
 }
 
 
-// Create a new blank scope state.
-ScopeState create_new_scope_state(const MAP_t& data, ScopeState* parent = nullptr) {
-	ScopeState result;
-	if (parent) result.p = parent;
-	result.d = std::move(data);
-	return result;
+// Create a new scope state.
+ScopeState create_new_scope_state(const MAP_t& data = {}, ScopeState* parent = nullptr) {
+	return ScopeState{
+		(parent) ? std::move(parent) : nullptr, // Moving `parent` is safe since it's already a copy of the pointer.
+		std::move(data) // Yes, it is intentional that we move the referenced data, unsetting the original passed value.
+	};
 }
 
 
@@ -78,10 +78,10 @@ inline void scope_flush(ScopeState& state) {
 }
 
 
-// Scope out of all ongoing scopes & reset token metadata (if needed).
+// Scope out of all ongoing scopes & call emergency cleanup functions if needed.
 void exit_ongoing_scopes(ScopeState& state) {
 	for (InstToken* token : scoped_tokens) {
-		if (token->args.at(0) == "while") token->meta.clear();
+		if (token->inst->emergency_scope_exit) token->inst->emergency_scope_exit(token);
 		scope_out(state);
 	}
 	scoped_tokens.clear();
@@ -90,7 +90,7 @@ void exit_ongoing_scopes(ScopeState& state) {
 
 // Save ongoing scopes for later.
 void push_back_ongoing_scopes() {
-	scoped_tokens_stack.push_back(scoped_tokens);
+	scoped_tokens_stack.push_back(std::move(scoped_tokens));
 	scoped_tokens = {};
 }
 
@@ -104,7 +104,7 @@ void restore_ongoing_scopes() {
 
 // Returns the cumulative size of all Variants in the state data.
 // This does *not* account for the data inside the state's parent.
-unsigned int get_state_size(const ScopeState& state) {
+const unsigned int get_state_size(const ScopeState& state) {
 	unsigned int final_size = 0;
 	for (const auto& i : state.d) {
 		final_size += i.first.size() + sizeof(i.second.t) + sizeof(i.second.m) + get_variant_data_size(i.second.d);
@@ -114,13 +114,13 @@ unsigned int get_state_size(const ScopeState& state) {
 
 
 // Checks if the name is available in this scope.
-bool is_name_free(const ScopeState& state, const std::string& name) {
+const bool is_name_free(const ScopeState& state, const std::string& name) {
 	return state.d.find(name) == state.d.end();
 }
 
 
 // Checks if the name is available in this scope or any scopes above it.
-bool is_name_globally_free(const ScopeState& state, const std::string& name) {
+const bool is_name_globally_free(const ScopeState& state, const std::string& name) {
 	if (state.d.find(name) == state.d.end()) {
 		if (state.p) return is_name_globally_free(*state.p, name);
 		return true;

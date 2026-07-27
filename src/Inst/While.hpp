@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_While_processor(const Instruction*& inst, InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+void INST_While_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	const std::string& symbol = token.args[0];
 	token.meta = {(STR_t)"", std::monostate(), (unsigned int)0};
 
@@ -25,14 +25,14 @@ void INST_While_processor(const Instruction*& inst, InstToken& token, const AnyM
 
 
 	else if (symbol == "while") {
-		token.args = tokenize_expr_from_inst_args(token, inst->REQUIRED);
+		token.args = tokenize_expr_from_inst_args(token, token.inst->REQUIRED);
 	}
 }
 
 
 
 
-void INST_While_exec(ScopeState& state, const Instruction*& _inst, InstToken& token) {
+void INST_While_exec(ScopeState& state, InstToken& token) {
 	const std::string& symbol = token.args[0];
 	bool value = false;
 
@@ -141,10 +141,21 @@ void INST_While_exec(ScopeState& state, const Instruction*& _inst, InstToken& to
 }
 
 
+
+void INST_While_emergency_scope_exit(InstToken*& token) {
+	// Reset token state.
+	token->meta[1] = std::monostate();
+	token->meta[2] = (unsigned int)0;
+}
+
+
+
+
 const Instruction INST_While {
 	1,                // Required arg count.
 	INST_While_exec,  // Function.
 	true,             // Is composite.
 	false,            // Has expression.
 	INST_While_processor,
+	INST_While_emergency_scope_exit,
 };

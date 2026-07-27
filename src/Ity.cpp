@@ -64,7 +64,10 @@ const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
 	{"return",   &INST_Return},
 };
 
-const std::vector<std::string> DECL_INSTRUCTIONS = {"import","merge","var","const","func"};
+constexpr std::string DECL_INSTRUCTIONS[] = {"import","merge","var","const","func"};
+constexpr size_t DECL_INSTRUCTIONS_size = 5;
+
+constexpr char COMMENT_SYMBOL = '#';
 constexpr char INST_END_SYMBOL = ';';
 constexpr std::string COMP_INST_END_SYMBOL = "/";
 constexpr std::string ITY_FILE_EXT = ".ity";
@@ -112,7 +115,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 		}
 
 		// Start comment.
-		if (ch == '#' && not is_string) {
+		if (ch == COMMENT_SYMBOL && not is_string) {
 			is_comment = true;
 			continue;
 		}
@@ -184,13 +187,14 @@ std::vector<InstToken> tokenize(const std::string& src) {
 					}
 					comp_item.size += 1;
 					// Flag composite as declarative, if a declarative instruction is found inside it.
-					if (&comp_item == &composite_nest.back() && args_len > 0 && exists_in_vec(DECL_INSTRUCTIONS, item.args[0])) comp_item.declarative = true;
+					if (&comp_item == &composite_nest.back() && args_len > 0 && exists_in_arr(DECL_INSTRUCTIONS, DECL_INSTRUCTIONS_size, item.args[0])) comp_item.declarative = true;
 				}
 				if (args_len > 0) {
 					const std::string& inst_name = item.args[0];
 					// If is a valid instruction...
 					if (INSTRUCTIONS.find(inst_name) != INSTRUCTIONS.end()) {
 						const Instruction* inst = INSTRUCTIONS.at(inst_name); // Get instruction specifications.
+						item.inst = inst;
 
 						// Check arguments.
 						if (args_len < inst->REQUIRED) {
@@ -200,7 +204,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 						// Call token processor.
 						if (inst->processor) {;
-							inst->processor(inst, item, {
+							inst->processor(item, {
 								{"last_comp_item_dist",  last_comp_item_dist},
 								{"last_comp_item",       &last_comp_item},
 								{"composite_nest",       &composite_nest}
@@ -289,7 +293,7 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 		? std::min((int)InstTokenSeq.size(), end_idx+1)
 		: InstTokenSeq.size()
 	;
-	for (size_t i = start_idx; i < seq_len; i++) {
+	for (unsigned int i = start_idx; i < seq_len; i++) {
 		InstToken& item = InstTokenSeq[i];
 		current_line = item.ln;
 		current_column = item.col;
@@ -308,10 +312,8 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 			continue;
 		}
 
-		// Get instruction specification.
-		const Instruction* inst = INSTRUCTIONS.find(item.args[0])->second;
 		// Execute the instruction.
-		inst->exec(state, inst, item);
+		item.inst->exec(state, item);
 		// Skip specified number of instructions if `exec_jump_value` has been set.
 		if (exec_jump_value != 0) {
 			i += exec_jump_value;

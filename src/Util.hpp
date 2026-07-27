@@ -124,6 +124,15 @@ bool exists_in_vec(const std::vector<T>& v, const T2& val) {
 }
 
 
+template<class T, class T2>
+bool exists_in_arr(const T v[], const size_t& size, const T2& val) {
+	for (unsigned int i = 0; i < size; i++) {
+		if (v[i] == val) return true;
+	}
+	return false;
+}
+
+
 
 
 // Overloads.
@@ -133,7 +142,7 @@ bool exists_in_vec(const std::vector<T>& v, const T2& val) {
 // String multiplication.
 std::string operator*(const std::string& a, const int& b) {
 	std::string sum; sum.reserve(a.size()*b);
-	for (int i = 0; i < b; i++) {sum += a;}
+	for (int i = 0; i < b; i++) sum += a;
 	return sum;
 }
 
@@ -141,7 +150,7 @@ std::string operator*(const std::string& a, const int& b) {
 
 // Insert uint8_t.
 std::ostream& operator<<(std::ostream& os, const uint8_t& s) {
-	return os << std::to_string(s); // Convert to string, otherwie displays as empty.
+	return os << std::to_string(s); // Convert to string, otherwise it displays as empty.
 }
 
 
@@ -166,7 +175,8 @@ std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
 	for (auto i:s) {
 		if (exists_in_vec(illegal_print_names, i.first)) continue;
 		if (idx != 0) {os << ", ";}
-		os << "\"" << i.first << "\"" << ": " << i.second;
+		os << "\"" << i.first << "\"" << ": ";
+		os << i.second;
 		idx++;
 	}
 	return os << '}';

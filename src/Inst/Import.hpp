@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Import_exec(ScopeState& state, const Instruction*& _inst, InstToken& token) {
+void INST_Import_exec(ScopeState& state, InstToken& token) {
 	const std::string& symbol = token.args[0];
 	std::string lib_name = token.args[1];
 	std::string applied_name = lib_name;

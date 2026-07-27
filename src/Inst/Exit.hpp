@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Exit_exec(ScopeState& state, const Instruction*& _inst, InstToken& token) {
+void INST_Exit_exec(ScopeState& state, InstToken& token) {
 	// Exit with status code.
 	if (token.args[0] == "exit") {
 		if (token.expr.seq.empty()) {

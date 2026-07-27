@@ -430,7 +430,9 @@ VariantData operator%(const VariantData& a, const VariantData& b) {
 // VARIANT OVERLOADS.
 
 std::ostream& operator<<(std::ostream& os, const Variant& s) {
-	return os << s.d;
+	if (s.t == STR) os << '"' << s.d << '"';
+	else os << s.d;
+	return os;
 }
 
 
@@ -470,12 +472,16 @@ std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 // ----------
 
 
+struct Instruction;
+
+
 #pragma pack(1)
 struct InstToken {
 	unsigned int i = 0;
 	unsigned int ln = 0;
 	unsigned int col = 0;
 	std::vector<std::string> args;
+	const Instruction* inst = nullptr;
 	ExprToken expr;
 
 	uint16_t composite_size = 0; // How large the composite instruction is. If `0`, is not a composite instruction.
@@ -523,10 +529,11 @@ struct ScopeState {
 #pragma pack(1)
 struct Instruction {
 	const uint8_t REQUIRED; // Required argument count,
-	void (*exec)(ScopeState&, const Instruction*&, InstToken&) = nullptr;
+	void (*exec)(ScopeState&, InstToken&) = nullptr;
 	const bool is_composite;
 	const bool has_expr = false;
-	void (*processor)(const Instruction*&, InstToken&, const AnyMap_t&, const unsigned int& ln, const unsigned int& col) = nullptr;
+	void (*processor)(InstToken&, const AnyMap_t&, const unsigned int& ln, const unsigned int& col) = nullptr;
+	void (*emergency_scope_exit)(InstToken*&) = nullptr;
 };
 
 

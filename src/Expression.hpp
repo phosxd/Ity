@@ -38,7 +38,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, const Variant
 	#endif
 
 	Ity::exec(func_state, InstTokenSeq, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
-	restore_ongoing_scopes(); // Restore previously ongoing scopes, nowthat we are out of the function.
+	restore_ongoing_scopes(); // Restore previously ongoing scopes, now that we are out of the function.
 
 
 	// Get result & check if return type matches.
@@ -56,7 +56,10 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, const Variant
 
 
 
-inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) {col++; if (ch == '\n') {ln++; col = 0;}}
+inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) {
+	if (ch == '\n') {ln++; col = 0;}
+	else col++;
+}
 
 
 

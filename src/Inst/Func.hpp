@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Func_exec(ScopeState& state, const Instruction*& _inst, InstToken& token) {
+void INST_Func_exec(ScopeState& state, InstToken& token) {
 	const std::string& type_name = token.args[1];
 	const std::string& name = token.args[2];
 

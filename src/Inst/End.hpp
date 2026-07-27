@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_End_exec(ScopeState& state, const Instruction*& _inst, InstToken& token) {
+void INST_End_exec(ScopeState& state, InstToken& token) {
 	if (token.linked_inst.empty()) return;
 
 	if (token.linked_inst == "while" || token.linked_inst == "for") {
