@@ -1,0 +1,7 @@
+merge IO; merge Time; merge FileAccess;
+
+const INT start = now:['us'];
+const STR blob = (read_file_text:['Benchmark/Allocation/Blob.txt'] -> STR) * 100_000;
+
+print:[(size:[blob])];
+print:['\nDone in ', (now:['us']-start / 1_000_000.0), 's.'];
