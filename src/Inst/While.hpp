@@ -45,13 +45,13 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 	// While loop.
 	if (symbol == "while") {
 		// Get value from expression.
-		const Variant& var = expr_exec(state, token.expr);
+		const Variant* var = expr_exec(state, token.expr);
 		// Throw error if not boolean.
-		if (var.t != BOOL) {
+		if (var->t != BOOL) {
 			emit_error(ERR_expected_boolean_expression);
 			return;
 		}
-		value = AnyCast(bool,var.d);
+		value = AnyCast(bool,var->d);
 	}
 
 
@@ -59,7 +59,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 	else if (symbol == "for") {
 		const unsigned int index = AnyCast(unsigned int,token.meta[2]);
 		// Get iterable.
-		if (token.meta[1].type() == typeid(std::monostate)) token.meta[1] = expr_exec(state, token.expr);
+		if (token.meta[1].type() == typeid(std::monostate)) token.meta[1] = *expr_exec(state, token.expr);
 		Variant& iterable = AnyCastV(Variant,token.meta[1]);
 
 		// Get item from array.

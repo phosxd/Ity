@@ -895,9 +895,31 @@ Warning: 24
 
 # 40
 
-""
+"
+# Reference comprehension in arrays
+# ---------------------------------
 
-""
+merge IO;
+
+var a = [1,[2,3]];
+print:[a];
+a:1:0 = 99;
+print:[a];
+
+var ARR b = [];
+b <<= a; # Move a into b.
+print:[a, ' ', b];
+
+var ARR c = [];
+c <<= (b:1); # Move nested array into c.
+print:[b, ' ', c];
+
+"
+
+"[1, [2, 3]]
+[1, [99, 3]]
+none [1, [99, 3]]
+[1, none] [99, 3]"
 
 # 41
 

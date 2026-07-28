@@ -16,6 +16,6 @@ __tm__ += {'STR:hello', STRMethod_hello};
 
 
 # Create a new STR.
-var STR my_str = '';
+var my_str = '';
 # Call our custom method on it.
 my_str.hello:[3];

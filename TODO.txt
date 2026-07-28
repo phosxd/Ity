@@ -1,5 +1,4 @@
 - Add `STR` type methods: `split`, `join`, `erase`.
-- Add built-in `range` function which generates an array of numbers with the given start, end, & step.
 - Add ability to import other scripts as modules.
 
 Add more FileAccess methods:

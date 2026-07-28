@@ -9,13 +9,13 @@ void INST_Exit_exec(ScopeState& state, InstToken& token) {
 			return;
 		}
 
-		const Variant& var = expr_exec(state, token.expr);
-		if (var.t != INT) {
+		const Variant* var = expr_exec(state, token.expr);
+		if (var->t != INT) {
 			emit_error(ERR_invalid_syntax, {"Expected integer expression"});
 			return;
 		}
 
-		exit(AnyCast(INT_t,var.d));
+		exit(AnyCast(INT_t,var->d));
 	}
 
 	// Throw error.
@@ -25,13 +25,13 @@ void INST_Exit_exec(ScopeState& state, InstToken& token) {
 			return;
 		}
 
-		const Variant& var = expr_exec(state, token.expr);
-		if (var.t != STR) {
+		const Variant* var = expr_exec(state, token.expr);
+		if (var->t != STR) {
 			emit_error(ERR_invalid_syntax, {"Expected string expression"});
 			return;
 		}
 
-		emit_error(ERR_custom, {AnyCast(STR_t,var.d)});
+		emit_error(ERR_custom, {AnyCast(STR_t,var->d)});
 	}
 }
 

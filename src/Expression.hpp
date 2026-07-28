@@ -416,6 +416,11 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 
 
 
+// This is a pool of all temporaries created in an expression.
+// Systems have exactly until the next expr exec call to use the data of a temporary, before it gets deleted.
+std::vector<Variant> temporary_pool;
+
+
 Variant* resolve_variant(ScopeState& state, Variant& item) {
 	if (item.t == REF) {
 		const STR_t& name = AnyCast(STR_t,item.d);
@@ -428,7 +433,7 @@ Variant* resolve_variant(ScopeState& state, Variant& item) {
 
 
 // Execute a sequence of ExprTokens. `token` itself is an ExprToken which should contain a sequence in `ExprToken.seq`.
-Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false, const unsigned int ln_offset=0, const unsigned int col_offset=0) {
+Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=false, const unsigned int ln_offset=0, const unsigned int col_offset=0) {
 	// Output sequence in debug mode.
 	#ifdef RUNTIME_DEBUG
 	if (debug_flags.expr_seq && not subexpr) {
@@ -440,11 +445,11 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 	if (token.var.t == ARR) {
 		ARR_t array; array.reserve(token.seq.size());
 		for (ExprToken& subtoken : token.seq) {
-			if (subtoken.t == ExprTokenType_sequence) array.push_back(expr_exec(state, subtoken, current_line, current_column));
+			if (subtoken.t == ExprTokenType_sequence) array.push_back(*expr_exec_(state, subtoken, current_line, current_column));
 			else array.push_back(*resolve_variant(state, subtoken.var));
 		}
 
-		return Variant{ARR, std::move(array)};
+		temporary_pool.push_back(Variant{ARR, std::move(array)}); return &temporary_pool.back();
 	}
 
 	// Resolve map.
@@ -452,7 +457,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 		// Throw error if there are an odd number of elements.
 		if (token.seq.size() % 2 != 0) {
 			emit_error(ERR_invalid_syntax, {"Map literal expects key-value pairs. ( {'a', 1, 'b', 2} )"});
-			return VariantPresets.empty;
+			return new Variant{};
 		}
 		MAP_t map; map.reserve(token.seq.size()/2);
 		bool is_key = true;
@@ -462,20 +467,20 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 				// Throw error if key is not a string.
 				if (subtoken.var.t != STR) {
 					emit_error(ERR_invalid_syntax, {"Map key must be a string"});
-					return VariantPresets.empty;
+					return new Variant{};
 				}
 				key = AnyCast(STR_t,subtoken.var.d);
 				is_key = false;
 			}
 			else {
 				// Apply value.
-				if (subtoken.t == ExprTokenType_sequence) map[key] = expr_exec(state, subtoken, current_line, current_column);
+				if (subtoken.t == ExprTokenType_sequence) map[key] = *expr_exec_(state, subtoken, current_line, current_column);
 				else map[key] = *resolve_variant(state, subtoken.var);
 				is_key = true;
 			}
 		}
 
-		return Variant{MAP, std::move(map)};
+		temporary_pool.push_back(Variant{MAP, std::move(map)}); return &temporary_pool.back();
 	}
 
 
@@ -488,11 +493,10 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 	Variant pre_exec_result = VariantPresets.empty;
 	Variant op_result = VariantPresets.empty;
 
-	Variant temp = VariantPresets.empty; // Used to store temporary value which can be pointed to in `result`.
-	Variant temp2 = VariantPresets.empty;
-
 	const Operation* op = nullptr;
 	std::string op_symbol;
+
+	temporary_pool.reserve(seq_len); // `std::vector` invalidates all references to items inside it when it reallocates, reserve up to the sequence length to ensure we never reallocate.
 	for (size_t i = 0; i < seq_len; i++) {
 		ExprToken& item = token.seq[i];
 		current_line = line_ + item.ln;
@@ -508,8 +512,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 				op->pre_exec(state, *result, op_symbol, eval_second_operand, pre_exec_result, result);
 				if (not eval_second_operand) {
 					if (pre_exec_result.t != PLACEHOLDER) {
-						temp = pre_exec_result; // Copy `pre_exec_result`.
-						result = &temp; // Set pointer to copied value.
+						temporary_pool.push_back(pre_exec_result); result = &temporary_pool.back();
 					}
 					op = nullptr;
 					continue;
@@ -518,23 +521,21 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 			// Get our second variant to operate on.
 			// If second is a sequence...
 			if (item.t == ExprTokenType_sequence) {
-				temp2 = expr_exec(state, item, true, current_line, current_column); // Write result into `temp2`.
-				second = &temp2; // Set second variant to a pointer of `temp2`.
+				second = expr_exec_(state, item, true, current_line, current_column);
 			}
 			// If it's a normal var...
 			else second = resolve_variant(state, item.var);
 			// Throw error if second is an operator.
 			if (second->t == OP) {
 				emit_error(ERR_invalid_syntax, {"Operator cannot be used as operand"});
-				return *result;
+				return result;
 			}
 
 			op_result.t = PLACEHOLDER; // Reset the type for reuse.
 			op->exec(state, *result, *second, op_symbol, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
 			// If we reveive a direct value, set the result to that.
 			if (op_result.t != PLACEHOLDER) {
-				temp = op_result; // Copy result. We cant set a pointer to `op_result` directly because the value may get overriden before we have a chance to use the pointer.
-				result = &temp; // Set pointer to copied result.
+				temporary_pool.push_back(op_result); result = &temporary_pool.back();
 			}
 
 			op = nullptr;
@@ -553,7 +554,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 				}
 				// Throw error if invalid operator.
 				emit_error(ERR_invalid_op, {op_symbol});
-				return *result;
+				return result;
 			}
 			// Get variant.
 			else result = resolve_variant(state, item.var);
@@ -561,12 +562,14 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 
 		// Get value from sub-sequence
 		else if (item.t == ExprTokenType_sequence) {
-			temp = expr_exec(state, item, current_line, current_column);
-			result = &temp; // Set pointer to sub-expression result.
+			result = expr_exec_(state, item, current_line, current_column);
 		}
 	}
 
-	if (not result) return VariantPresets.none;
+	if (not result) {
+		temporary_pool.push_back(VariantPresets.none);
+		return &temporary_pool.back();
+	}
 
 	// Output result in debug mode.
 	#ifdef RUNTIME_DEBUG
@@ -575,7 +578,15 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 	};
 	#endif
 
-	return *result;
+	return result;
+}
+
+
+
+
+Variant* expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false, const unsigned int ln_offset=0, const unsigned int col_offset=0) {
+	temporary_pool.clear();
+	return expr_exec_(state, token, subexpr, ln_offset, col_offset);
 }
 
 
@@ -584,7 +595,7 @@ Variant expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false,
 // Tokenize then execute an expression.
 Variant expr_run(ScopeState& state, const std::string& expr) {
 	ExprToken tokens = expr_tokenize(expr, current_line, current_column);
-	return expr_exec(state, tokens);
+	return *expr_exec(state, tokens);
 }
 
 

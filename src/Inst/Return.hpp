@@ -26,8 +26,8 @@ void INST_Return_exec(ScopeState& state, InstToken& token) {
 	exit_ongoing_scopes(state);
 
 	// Get value from expression & set return value.
-	const Variant& value = expr_exec(state, token.expr);
-	set_data(state, "__RET__", value.t, value.d, VariantMode_dynamic_type);
+	const Variant* var = expr_exec(state, token.expr);
+	set_data(state, "__RET__", var->t, var->d, VariantMode_dynamic_type);
 
 	exec_jump_out = true;
 }

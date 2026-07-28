@@ -25,16 +25,16 @@ void INST_If_exec(ScopeState& state, InstToken& token) {
 	const std::string& symbol = token.args[0];
 
 	// Get value from expression.
-	const Variant& value = expr_exec(state, token.expr);
+	const Variant* var = expr_exec(state, token.expr);
 
 	// Throw error for "if" & "elif" if not boolean.
 	bool expr_passed = false;
 	if (symbol != "else") {
-		if (value.t != BOOL) {
+		if (var->t != BOOL) {
 			emit_error(ERR_expected_boolean_expression);
 			return;
 		}
-		else expr_passed = std::any_cast<bool>(value.d);
+		else expr_passed = std::any_cast<bool>(var->d);
 	}
 
 	bool previous_conditional_passed = true;

@@ -37,7 +37,7 @@ func BOOL is_prime; arg INT n;
 
 
 
-const * count = IO.prompt:['Count: '] -> INT;
+const count = IO.prompt:['Count: '] -> INT;
 const INT start = Time.now:['ms'];
 
 

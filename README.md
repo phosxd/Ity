@@ -66,9 +66,13 @@ On the other hand, if you are *really* constrained with file size & are willing 
 
 The overall differences between each profile is largely insignificant in most real-word cases, so unless you are working with tight constraints I wouldn't worry about changing the optimization profile.
 
+## Installation
+You can install Ity on your system as a command called `ity` by running the `install.sh` script.
+
+
 # Interpreter usage
-After building the interpreter, you should see a file called `Ity.bin` which is the standalone interpreter executable.
-You can run this in your terminal with `./Ity.bin`.
+After building the interpreter, you should see a file called `ity.bin` which is the standalone interpreter executable.
+You can run this in your terminal with `./ity.bin`.
 
 ## Source mode
 If you run the interpreter with the path of an Ity script file, it will parse then execute it without printing anything (unless debug flags are set or manual print calls are executed inside the script).
@@ -79,7 +83,7 @@ Passing a command line argument after the file path, without using the "-" prefi
 Running the interpreter without passing a script file path will run it in "interactive" mode, similar to the Python interpreter's interactive mode, it allows you to immediately parse & execute the code you give it.
 
 ```bash
-./Ity.bin
+./ity.bin
 * Ity (0.1.0)
 * Runing interactive mode interpreter.
 * Type "quit" or "q" to stop.

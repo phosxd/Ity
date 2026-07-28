@@ -15,7 +15,7 @@ void OP_Arith_exec(ScopeState& _state, Variant& first, Variant& second, const st
 	else if (symbol == "/") data = first.d / second.d;
 	else if (symbol == "%") data = first.d % second.d;
 
-	result = Variant {type, data};
+	result = Variant{type, data};
 }
 
 

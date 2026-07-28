@@ -1,7 +1,7 @@
 #!/usr/local/bin/ity
 import IO;
 
-const * n = IO.prompt:['Number: '] -> INT;
+const n = IO.prompt:['Number: '] -> INT;
 
 var INT a = 0;
 var INT b = 1;

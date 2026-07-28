@@ -22,7 +22,7 @@ func BOOL is_prime; arg INT n;
 /;
 
 
-const * count = prompt:['Count: '] -> INT;
+const count = prompt:['Count: '] -> INT;
 const INT start = now:['us'];
 
 

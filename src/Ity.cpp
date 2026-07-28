@@ -303,7 +303,7 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 
 		// If has an expression but no args, run as expression.
 		if (item.args.size() == 0) {
-			if (not item.expr.seq.empty()) last_expr_result = expr_exec(state, item.expr);
+			if (not item.expr.seq.empty()) last_expr_result = *expr_exec(state, item.expr);
 			continue;
 		}
 

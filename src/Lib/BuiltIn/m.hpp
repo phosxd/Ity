@@ -134,6 +134,46 @@ Variant LIB_BI_size(ScopeState& _state, const ARR_t& args) {
 
 
 
+Variant LIB_BI_range(ScopeState& _state, const ARR_t& args) {
+	if (args.size() == 0) {
+		emit_error(ERR_invalid_func_arg_count, {"1+", "0"});
+		return VariantPresets.none;
+	}
+	if (args[0].t != INT) {
+		emit_error(ERR_invalid_func_arg_type, {"0", "INT", get_variant_type_name(args[0].t)});
+		return VariantPresets.none;
+	}
+
+	INT_t step = 1;
+	INT_t start = 0;
+	INT_t end = AnyCast(INT_t,args[0].d);
+	if (args.size() > 1) {
+		if (args[1].t != INT) {
+			emit_error(ERR_invalid_func_arg_type, {"1", "INT", get_variant_type_name(args[1].t)});
+			return VariantPresets.none;
+		}
+		start = end;
+		end = AnyCast(INT_t,args[1].d);
+	}
+	if (args.size() > 2) {
+		if (args[2].t != INT) {
+			emit_error(ERR_invalid_func_arg_type, {"2", "INT", get_variant_type_name(args[2].t)});
+			return VariantPresets.none;
+		}
+		step = AnyCast(INT_t,args[2].d);
+	}
+
+
+	ARR_t data; data.reserve(end);
+	for (INT_t i = start; i < end; i += step) {
+		data.push_back(Variant{INT, i});
+	}
+
+	return Variant{ARR, data};
+}
+
+
+
 
 // Type methods.
 // -------------
@@ -322,5 +362,6 @@ const Variant LIB_BI {
 		{"type_name",  NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type_name)},
 		{"length",     NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_length)},
 		{"size",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)},
+		{"range",      NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_range)},
 
 }, VariantMode_constant };

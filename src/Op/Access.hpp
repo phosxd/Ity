@@ -18,7 +18,6 @@ void OP_Access_exec(ScopeState& state, Variant& first, Variant& second, const st
 
 		// Return the method.
 		if (it != methods.end()) {
-
 			MAP_t func = AnyCast(MAP_t,it->second.d); // Copy function.
 			func["__ba"].d = AnyCast(ARR_t,func["__ba"].d) + (ARR_t){Variant{INTERNAL, &first}}; // Bind first variant to the function copy.
 			// Return copied function.

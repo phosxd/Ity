@@ -1,6 +1,6 @@
 merge IO; merge Time;
 
-const * n = prompt:['Count: '] -> INT;
+const n = prompt:['Count: '] -> INT;
 const INT start = now:['ms'];
 
 for i in n; print:[i]; /;

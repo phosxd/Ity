@@ -96,9 +96,9 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 	VariantType type = AnyCastV(VariantType,token.meta[2]);
 	const VariantMode& mode = AnyCast(VariantMode,token.meta[3]);
 	// Get value from expression.
-	Variant value = expr_exec(state, token.expr);
+	Variant* var = expr_exec(state, token.expr);
 	// Infer the variable's type as expression return type.
-	if (type == INFERRED) type = value.t;
+	if (type == INFERRED) type = var->t;
 
 
 	// Set variable data.
@@ -112,11 +112,11 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 			// Replace value if argument is available.
 			const ARR_t& scope_args = AnyCast(ARR_t,get_data(state, "__ARGS__")->d);
 			if (func_arg_index < scope_args.size()) {
-				value = scope_args[func_arg_index];
+				temporary_pool.push_back(scope_args[func_arg_index]); var = &temporary_pool.back();
 				func_arg_index += 1;
 			}
 		}
-		set_data(state, name, type, value.d, mode);
+		set_data(state, name, type, var->d, mode);
 	}
 }
 
