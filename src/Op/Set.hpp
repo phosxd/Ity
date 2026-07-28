@@ -20,6 +20,12 @@ void OP_Set_exec(ScopeState& state, Variant& first, Variant& second, const std::
 	// Move second into first, unsetting the second variant.
 	else if (symbol == "<<=") {
 		if (not variant_data_type_matches(second.d, first)) return;
+		// Throw error if source variant is constant.
+		if (second.m == VariantMode_constant) {
+			emit_error(ERR_cannot_change_constant);
+			return;
+		}
+		// Move second into first.
 		first = std::move(second);
 		result_ptr = &first;
 		return;

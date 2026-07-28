@@ -923,6 +923,40 @@ none [1, [99, 3]]
 
 # 41
 
+"
+# Reference comprehension in maps
+# -------------------------------
+
+merge IO;
+
+var a = {'a',1 ,'b',[1,2]};
+print:[a];
+a.b:0 = 99;
+print:[a];
+
+var MAP b = {};
+b <<= a; # Move a into b.
+print:[a, ' ', b];
+
+var ARR c = [];
+c <<= (b.b); # Move nested array into c.
+print:[b, ' ', c];
+
+"
+
+"{\"b\": [1, 2], \"a\": 1}
+{\"b\": [99, 2], \"a\": 1}
+none {\"b\": [99, 2], \"a\": 1}
+{\"b\": none, \"a\": 1} [99, 2]"
+
+# 42
+
+""
+
+""
+
+# 43
+
 ""
 
 ""
