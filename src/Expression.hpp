@@ -509,7 +509,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 				bool eval_second_operand = true;
 				pre_exec_result.t = PLACEHOLDER; // Reset the type for reuse.
 				// Run pre-executor.
-				op->pre_exec(state, *result, op_symbol, eval_second_operand, pre_exec_result, result);
+				op->pre_exec(state, result, op_symbol, eval_second_operand, pre_exec_result, result);
 				if (not eval_second_operand) {
 					if (pre_exec_result.t != PLACEHOLDER) {
 						temporary_pool.push_back(pre_exec_result); result = &temporary_pool.back();
@@ -532,7 +532,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 			}
 
 			op_result.t = PLACEHOLDER; // Reset the type for reuse.
-			op->exec(state, *result, *second, op_symbol, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
+			op->exec(state, result, second, op_symbol, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
 			// If we reveive a direct value, set the result to that.
 			if (op_result.t != PLACEHOLDER) {
 				temporary_pool.push_back(op_result); result = &temporary_pool.back();

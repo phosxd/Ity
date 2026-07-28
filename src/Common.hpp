@@ -556,8 +556,8 @@ struct CompositeItem {
 
 
 struct Operation {
-	void (*exec)(ScopeState&, Variant& first, Variant& second, const std::string& symbol, Variant& result, Variant*& result_ptr) = nullptr;
-	void (*pre_exec)(ScopeState&, Variant& first, const std::string& symbol, bool& eval_second_operand, Variant& result, Variant*& result_ptr) = nullptr;
+	void (*exec)(ScopeState&, Variant*& first, Variant*& second, const std::string& symbol, Variant& result, Variant*& result_ptr) = nullptr;
+	void (*pre_exec)(ScopeState&, Variant*& first, const std::string& symbol, bool& eval_second_operand, Variant& result, Variant*& result_ptr) = nullptr;
 };
 
 
