@@ -16,7 +16,8 @@ tests=(
 ###
 # com;ment;
 
-throw 'all good';
+throw 'all good'; # inline comment!
+;;
 "
 
 "Error: 0"
@@ -38,7 +39,13 @@ _a = none);
 var BOOL _b = true;
 _b = false;
 _b = false);
+"
 
+""
+
+# 3
+
+"
 var INT _c = 0;
 _c = 00;
 _c = 0_0;
@@ -49,6 +56,15 @@ _c = -0;
 _c = -1;
 _c = -10 0_0;
 
+var inferred = 0;
+inferred = 100;
+"
+
+""
+
+# 4
+
+"
 var FLOAT _d = 0.0;
 _d = 0.00000000000001;
 _d = 1.0;
@@ -58,6 +74,15 @@ _d = -1.0;
 _d = -0.001;
 _d = -100 000 000 . 500;
 
+var inferred = 0.0;
+inferred = 100.125;
+"
+
+""
+
+# 5
+
+"
 var STR _e = 'a';
 _e = 'a';
 _e = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -69,6 +94,15 @@ _e = '
 _e = '\;';
 _e = '\'escape\'';
 
+var inferred = 'a';
+inferred = 'b';
+"
+
+""
+
+# 6
+
+"
 var ANY _j = none;
 _j = true;
 _j = false;
@@ -81,7 +115,7 @@ _j = 'abc';
 
 ""
 
-# 3
+# 7
 
 "
 # Complex Data Assignment
@@ -99,7 +133,7 @@ print:[_a, '\n', _b];
 "[1, 2, 3, 1, 2, 3]
 {\"c\": 3, \"b\": 2, \"a\": 1}"
 
-# 4
+# 8
 
 "
 # Accessor Operator
@@ -113,7 +147,7 @@ print:[( {'a',[10,20,30]} : 'a' : 0 )];
 "30
 10"
 
-# 5
+# 9
 
 "
 # Mathematical Expression
@@ -152,7 +186,7 @@ print:[ (10 % 4) ];
 5.333333333333333
 2"
 
-# 6
+# 10
 
 "
 # String Operations
@@ -169,7 +203,7 @@ print:[ ('abc ' * 3) ];
 Hello World!
 abc abc abc "
 
-# 7
+# 11
 
 "
 # Comparison expression
@@ -216,7 +250,7 @@ false
 false
 true"
 
-# 8
+# 12
 
 "
 # Expression syntax
@@ -233,7 +267,7 @@ true"
 
 ""
 
-# 9
+# 13
 
 "
 merge IO;
@@ -251,7 +285,7 @@ if true == false;
 
 "true is true"
 
-# 10
+# 14
 
 "
 merge IO;
@@ -274,7 +308,7 @@ if true == true;
 
 "passed"
 
-# 11
+# 15
 
 "
 # Chaining conditionals
@@ -312,7 +346,7 @@ else;
 
 ""
 
-# 12
+# 16
 
 "
 merge IO;
@@ -331,7 +365,7 @@ x; # Should throw error
 "1
 Error: 26"
 
-# 13
+# 17
 
 "
 merge IO;
@@ -355,7 +389,7 @@ while false;
 
 "10"
 
-# 14
+# 18
 
 "
 merge IO;
@@ -377,7 +411,7 @@ print:[i];
 
 "10"
 
-# 15
+# 19
 
 "
 # Variable in while loop should be destroyed after each iteration
@@ -392,7 +426,7 @@ test; # Should throw an error
 
 "Error: 26"
 
-# 16
+# 20
 
 "
 func NONE test;
@@ -411,7 +445,7 @@ var INT i = 0; while i < 5;
 
 ""
 
-# 17
+# 21
 
 "
 merge IO;
@@ -438,7 +472,7 @@ print:[ (add:[4,5]) ];
 "Hello there!
 9"
 
-# 18
+# 22
 
 "
 merge IO;
@@ -473,7 +507,7 @@ if true;
 1
 5"
 
-# 19
+# 23
 
 "
 # Early exit conditional check
@@ -501,7 +535,7 @@ true
 true
 true"
 
-# 20
+# 24
 
 "
 merge IO;
@@ -528,7 +562,7 @@ false
 100.
 10.876."
 
-# 21
+# 25
 
 "
 merge IO;
@@ -547,7 +581,7 @@ var INT i = 0; while i < 10;
 
 "0123"
 
-# 22
+# 26
 
 "
 merge IO;
@@ -581,7 +615,7 @@ print:[b];
 {\"c\": 3, \"b\": 2, \"a\": 1}
 {\"c\": 3, \"b\": 2, \"a\": \"hello\"}"
 
-# 23
+# 27
 
 "
 merge IO;
@@ -615,7 +649,7 @@ print:[b];
 {\"c\": {\"key\": \"value\"}, \"b\": 2, \"a\": 1}
 {\"c\": {\"key\": [1, 2, 3]}, \"b\": 2, \"a\": 1}"
 
-# 24
+# 28
 
 "
 # Loop continue / break
@@ -642,7 +676,7 @@ print:['Done'];
 5
 Done"
 
-# 25
+# 29
 
 "
 # Nested loop continue
@@ -669,7 +703,7 @@ print:[total];
 5
 25"
 
-# 26
+# 30
 
 "
 # System command
@@ -681,7 +715,7 @@ if code != 0; throw 'Wrong code'; /;
 
 "hello"
 
-# 27
+# 31
 
 "
 # Complex data addition
@@ -701,7 +735,7 @@ print:[map];
 "[1, 2, 3, 4, 5, 6]
 {\"b\": 2, \"a\": 1}"
 
-# 28
+# 32
 
 "
 # Array/Map item erase
@@ -721,7 +755,7 @@ print:[map];
 "[2, 3]
 {\"b\": 2}"
 
-# 29
+# 33
 
 "
 # Iterate on map keys
@@ -742,7 +776,7 @@ var INT i = 0; while i < (length:[keys]);
 2
 1"
 
-# 30
+# 34
 
 "
 # Add raw character to string
@@ -760,7 +794,7 @@ print:[( 'a'.raw:[] )]; # Print the integer representation of 'a'.
 "abc
 97"
 
-# 31
+# 35
 
 "
 # Loop over iterable
@@ -796,7 +830,7 @@ Warning: 24
 5
 6"
 
-# 32
+# 36
 
 "
 # Complex nested loops
@@ -835,7 +869,7 @@ Warning: 24
 2
 3"
 
-# 33
+# 37
 
 "
 {'a': 1, 'b': 2}; # Invalid map declaration syntax.
@@ -843,7 +877,7 @@ Warning: 24
 
 "Error: 20"
 
-# 34
+# 38
 
 "
 {'a', 1+1, 'b', 2}; # Invalid map item at 'a'.
@@ -851,7 +885,7 @@ Warning: 24
 
 "Error: 20"
 
-# 35
+# 39
 
 "
 [1+1, 2, 3]; # Invalid array item at index 0.
@@ -859,13 +893,13 @@ Warning: 24
 
 "Error: 20"
 
-# 36
+# 40
 
 ""
 
 ""
 
-# 37
+# 41
 
 ""
 

@@ -10,6 +10,7 @@ These results were recordered using the following specs:
 
 
 [---------------------------------------------------------------------------]
+|
 |	LOOP:
 |	-----
 |
@@ -35,6 +36,7 @@ These results were recordered using the following specs:
 |	5. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		63.72s AVG
 |
 |
+|
 |	ALLOCATION:
 |	-----------
 |
@@ -45,5 +47,6 @@ These results were recordered using the following specs:
 |	3. Ity		0.1.0											0.172s AVG
 |	4. Kal		0.1.0											0.243s AVG
 |	5. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		134.7s (ONCE)
+|
 [---------------------------------------------------------------------------]
 

@@ -2,27 +2,54 @@
 
 
 void INST_Var_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
-	const std::string& type_name = token.args[1];
+	std::string type_name;
 	std::string name;
 	std::string op = "";
 	std::string expr;
+	std::string buffer;
 	bool is_expr = false;
 	unsigned int ln_ = 0;
 	unsigned int col_ = 0;
-	for (const char& ch : join_str(std::vector<std::string>(token.args.begin()+2, token.args.end()), " ")) {
+	unsigned int arg_count = 0;
+	// Parse arguments for type name, var name, operator, & expression.
+	for (const char& ch : join_str(std::vector<std::string>(token.args.begin()+1, token.args.end()), " ")+' ') {
 		if (is_expr) {
 			expr += ch;
 			continue;
 		}
 		LN_COL_COUNTER(ch,ln_,col_);
+
+		// If encountered the only valid operator...
 		if (ch == '=') {
+			// If we only found 1 argument before the operator then set `name` to `type_name`, & type name should be inferred instead.
+			if (arg_count == 1) {
+				name = type_name;
+				type_name = "*";
+			}
+			// Set `op`.
 			op = ch;
-			is_expr = true;
+			is_expr = true; // Expect everything after to be an expression.
 			continue;
 		}
-		if (ch == ' ') continue;
-		name += ch;
+
+		// If new argument...
+		if (ch == ' ') {
+			arg_count += 1;
+			// Assign first to `type_name`.
+			if (arg_count == 1) type_name = buffer;
+			// Assign second to `name`.
+			else if (arg_count == 2) name = buffer;
+			buffer.clear();
+			continue;
+		}
+		buffer += ch;
 	}
+
+	if (arg_count == 1 && not is_expr) {
+		name = type_name;
+		type_name = "*";
+	}
+
 
 	// Throw error if invalid name.
 	if (not is_valid_name(name)) {
@@ -95,7 +122,7 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 
 
 const Instruction INST_Var {
-	3,              // Required arg count.
+	2,              // Required arg count.
 	INST_Var_exec,  // Function.
 	false,          // Is composite.
 	false,          // Has expression. (Manually handled for this Instruction).

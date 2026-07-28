@@ -1,7 +1,7 @@
 merge IO; merge Time;
 
 
-func INT iSqrt; arg INT n;
+func INT isqrt; arg INT n;
 	if n < 0; throw "'n' cannot be negative."; /;
 	var INT x = n;
 	var INT y = ((x+1) / 2); while y < x;
@@ -13,7 +13,7 @@ func INT iSqrt; arg INT n;
 
 func BOOL is_prime; arg INT n;
 	if n%2 == 0; return n == 2; /;
-	var INT r = iSqrt:[n];
+	var INT r = isqrt:[n];
 	var INT i = 3; while i <= r;
 		if n%i == 0; return false; /;
 		i += 2;
