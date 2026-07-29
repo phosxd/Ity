@@ -301,6 +301,20 @@ The type-cast operator will attempt to translate the first value to the target t
 Assignment operators allow you to modify the value of a variant. This is useful for setting the value of named variables after declaration.
 ### =
 Overwrite the data of the variant.
+
+### <<=
+Move data into the target variant, this destroys / resets the source variant. When a variant is reset, it's value is set to `none` even if it goes against it's explicit type, making this very dangerous to work with if not handled properly.
+
+You cannot move data in to or out of a constant variable.
+
+```python
+var INT a = 1;
+var ANY b;
+b <<= a; # Move "a" into "b"
+
+# a = none
+# b = 1
+```
 ### +=
 Add to the variant.
 ### -=
@@ -335,7 +349,7 @@ These instructions are used to declare variables in the current scope.
 ### Var
 If you need to declare a name that holds a value that can be changed after declaration, use the `var` instruction:
 
-`var <type> <varName> <assignmentOperator> <expression>`
+`var [type] <varName> <assignmentOperator> <expression>`
 
 **Examples**:
 
@@ -349,6 +363,7 @@ var INT the_number_one = 1;
 var FLOAT a_very_specific_number = 125.98765;
 var STR some_text = "Hello World!";
 var * my_inferred_var = "This can be any value at declaration";
+var also_an_inferred_var = "Not specifiying a type will make it inferred";
 
 # You don't need spaces between the name, assignment operator, & expression.
 var BOOL some_bool=true;

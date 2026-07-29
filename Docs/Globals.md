@@ -139,12 +139,27 @@ length:[[1,2,3,4]]; # Returns 4.
 A function that returns an `INT` representing the size (in bytes) of a given variable.
 
 ```python
-size:[0]; # Usually returns 4 (assuming a 32-bit integer).
+size:[0];              # Usually returns 4 (assuming a 32-bit integer).
 size:['Hello World!']; # Returns the number of characters in the string.
-size:[[1,2,3,4]]; # Returns 52.
+size:[[1,2,3,4]];      # Returns 52.
 
 size:[{'a',1, 'b',2, 'c',3, 'd',4}]; # Returns 52 as well.
-size:[{'array value',[1,2,3,4]}]; # Returns 71.
+size:[{'array value',[1,2,3,4]}];    # Returns 71.
+```
+
+### ARR range (INT start, INT end, INT step=1)
+A function that returns an `ARR` of `INT` values in sequential range of "start" & "end", with the given "step".
+
+```python
+range:[0, 5];    # Gives [0, 1, 2, 3, 4].
+range:[0, 5, 2]; # Gives [0, 2, 4].
+```
+
+### INT rand (INT min, INT max)
+A function that returns an `INT`, which is a random number between the given minimum & maximum values. Uses the standard C `rand` function internally, with the seed set to the program start time.
+
+```python
+rand:[0, 10]; # Some random value from 0 to 10.
 ```
 
 
