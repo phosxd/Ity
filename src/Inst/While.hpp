@@ -38,7 +38,6 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 
 	// For loop variables.
 	const Variant* item = nullptr;
-	Variant temp = VariantPresets.empty;
 	const STR_t& name = AnyCast(STR_t,token.meta[0]);
 
 
@@ -57,7 +56,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 
 	// For loop.
 	else if (symbol == "for") {
-		const unsigned int index = AnyCast(unsigned int,token.meta[2]);
+		const unsigned int& index = AnyCast(unsigned int,token.meta[2]);
 		// Get iterable.
 		if (token.meta[1].type() == typeid(std::monostate)) token.meta[1] = *expr_exec(state, token.expr);
 		Variant& iterable = AnyCastV(Variant,token.meta[1]);
@@ -78,8 +77,8 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 			if (data.size() <= index) value = false;
 			else {
 				value = true;
-				temp = Variant{STR, (STR_t)(std::string(1,data[index]))};
-				item = &temp;
+				temporary_pool.push_back(Variant{STR, (STR_t)(std::string(1,data[index]))});
+				item = &temporary_pool.back();
 			}
 		}
 
@@ -89,8 +88,8 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 			if (data <= (INT_t)index) value = false;
 			else {
 				value = true;
-				temp = Variant{INT, (INT_t)index};
-				item = &temp;
+				temporary_pool.push_back(Variant{INT, (INT_t)index});
+				item = &temporary_pool.back();
 			}
 		}
 
@@ -146,6 +145,7 @@ void INST_While_emergency_scope_exit(InstToken*& token) {
 	// Reset token state.
 	token->meta[1] = std::monostate();
 	token->meta[2] = (unsigned int)0;
+	token->meta.pop_back();
 }
 
 

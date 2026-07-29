@@ -24,11 +24,10 @@ func BOOL is_prime; arg INT n;
 
 	var INT r = int_square_root:[n];
 
-	var INT i = 3; while i <= r;
+	for i in range:[3, (r+1), 2];
 		if n % i == 0;
 			return false;
 		/;
-		i += 2;
 	/;
 
 	return true;

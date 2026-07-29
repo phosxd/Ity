@@ -951,11 +951,56 @@ none {\"b\": [99, 2], \"a\": 1}
 
 # 42
 
-""
+"
+# Complex temporary integrity
+# ---------------------------
 
-""
+merge IO;
+
+func INT f;
+	const val = 10;
+	while true;
+		return val; # Return variable value from an early exit.
+	/;
+/;
+
+
+func NONE f2;
+	var res = f:[];
+	print:[res];
+/;
+
+
+f2:[];
+"
+
+"10"
 
 # 43
+
+"
+func INT f2;
+	for i in 2;
+		return rand:[0,100];
+	/;
+/;
+
+func NONE f;
+	var n = f2:[];
+	for i in range:[n];
+		return;
+	/;
+	1+1;
+/;
+
+for i in 3;
+	f:[];
+/;
+"
+
+""
+
+# 44
 
 ""
 

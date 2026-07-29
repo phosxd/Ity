@@ -1,6 +1,6 @@
 - Add `STR` type methods: `split`, `join`, `erase`.
 - Add ability to import other scripts as modules.
-
+ 
 Add more FileAccess methods:
 	- read_file_bytes
 	- write_file_text

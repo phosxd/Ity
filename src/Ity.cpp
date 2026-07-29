@@ -381,6 +381,10 @@ void start_shell(int argc, char* argv[]) {
 	merge_module(state, AnyCast(MAP_t,LIB_BI.d));
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
+	std::srand(
+		std::chrono::duration_cast<std::chrono::microseconds>(Clock::now()
+		- std::chrono::time_point<std::chrono::high_resolution_clock>()
+	).count());
 
 
 	// Parse & execute script file...

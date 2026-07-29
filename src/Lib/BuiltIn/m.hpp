@@ -70,8 +70,7 @@ Variant LIB_BI_system(ScopeState& _state, const ARR_t& args) {
 	}
 
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
-	const std::vector<VariantType> valid_types = {STR};
-	if (not expect_arg_types(args[0], valid_types, 0)) return VariantPresets.none;
+	if (not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 
 	const char* command = AnyCast(STR_t,args[0].d).c_str();
 	return Variant{INT, (INT_t)system(command)};
@@ -81,15 +80,14 @@ Variant LIB_BI_system(ScopeState& _state, const ARR_t& args) {
 // Pause thread execution for the given number of seconds.
 Variant LIB_BI_sleep(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	if (not expect_arg_types(args[0], {INT, FLOAT}, 0)) return VariantPresets.none;
 	const Variant& var = args[0];
 
 	FLOAT_t sleep_time;
 	switch (var.t) {
 		case INT: sleep_time = AnyCast(INT_t,var.d); break;
 		case FLOAT: sleep_time = AnyCast(FLOAT_t,var.d); break;
-		default:
-			emit_error(ERR_invalid_func_arg_type, {"0", "INT or FLOAT", get_variant_type_name(var.t)});
-			return VariantPresets.none;
+		default: break;
 	}
 
 	std::this_thread::sleep_for(std::chrono::microseconds( (int)(sleep_time*1000000) ));
@@ -114,14 +112,13 @@ Variant LIB_BI_type_name(ScopeState& _state, const ARR_t& args) {
 // Return the length of the given array or string.
 Variant LIB_BI_length(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	if (not expect_arg_types(args[0], {STR, ARR}, 0)) return VariantPresets.none;
 	const Variant& var = args[0];
 
 	switch (var.t) {
 		case ARR: return Variant{INT, (int)(AnyCast(ARR_t,var.d).size()) }; break;
 		case STR: return Variant(INT, (int)(AnyCast(STR_t,var.d).size()) ); break;
-		default:
-			emit_error(ERR_invalid_func_arg_type, {"0", "STR or ARR", get_variant_type_name(var.t)});
-			return VariantPresets.none;
+		default: return VariantPresets.none;
 	}
 }
 
@@ -133,16 +130,13 @@ Variant LIB_BI_size(ScopeState& _state, const ARR_t& args) {
 }
 
 
-
+// Return an array of integers from the given start, end, & step.
 Variant LIB_BI_range(ScopeState& _state, const ARR_t& args) {
 	if (args.size() == 0) {
 		emit_error(ERR_invalid_func_arg_count, {"1+", "0"});
 		return VariantPresets.none;
 	}
-	if (args[0].t != INT) {
-		emit_error(ERR_invalid_func_arg_type, {"0", "INT", get_variant_type_name(args[0].t)});
-		return VariantPresets.none;
-	}
+	if (not expect_arg_types(args[0], {INT}, 0)) return VariantPresets.none;
 
 	INT_t step = 1;
 	INT_t start = 0;
@@ -170,6 +164,18 @@ Variant LIB_BI_range(ScopeState& _state, const ARR_t& args) {
 	}
 
 	return Variant{ARR, data};
+}
+
+
+// Return a random number in range of `min` & `max` integer arguments.
+Variant LIB_BI_rand(ScopeState& _state, const ARR_t& args) {
+	if (not expect_arg_count(args, 2)) return VariantPresets.none;
+	if (not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {INT}, 1)) return VariantPresets.none;
+
+	const INT_t& min = AnyCast(INT_t,args[0].d);
+	const INT_t& max = AnyCast(INT_t,args[1].d);
+
+	return Variant{INT, (std::rand() % (max-min+1) + min)};
 }
 
 
@@ -363,5 +369,6 @@ const Variant LIB_BI {
 		{"length",     NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_length)},
 		{"size",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)},
 		{"range",      NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_range)},
+		{"rand",       NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_rand)},
 
 }, VariantMode_constant };
