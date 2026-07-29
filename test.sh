@@ -33,12 +33,18 @@ none_; none;
 var * true_ = 'a';
 true_; true;
 
-var NONE _a;
-_a = none;
-_a = none);
-var BOOL _b = true;
-_b = false;
-_b = false);
+var NONE a;
+a = none;
+a = none);
+var BOOL b = true;
+b = false;
+b = false);
+
+# Var syntax comprehension.
+var c=1;
+var d = 1;
+var INT e=1;
+var INT f =1;
 "
 
 ""

@@ -2,7 +2,7 @@
 
 
 void INST_Var_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
-	std::string type_name;
+	std::string type_name = "*";
 	std::string name;
 	std::string op = "";
 	std::string expr;
@@ -21,8 +21,11 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& extra, const unsigned 
 
 		// If encountered the only valid operator...
 		if (ch == '=') {
+			if (not buffer.empty()) {
+				name = buffer;
+			}
 			// If we only found 1 argument before the operator then set `name` to `type_name`, & type name should be inferred instead.
-			if (arg_count == 1) {
+			else if (arg_count == 1) {
 				name = type_name;
 				type_name = "*";
 			}
@@ -35,9 +38,7 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& extra, const unsigned 
 		// If new argument...
 		if (ch == ' ') {
 			arg_count += 1;
-			// Assign first to `type_name`.
 			if (arg_count == 1) type_name = buffer;
-			// Assign second to `name`.
 			else if (arg_count == 2) name = buffer;
 			buffer.clear();
 			continue;
@@ -45,7 +46,7 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& extra, const unsigned 
 		buffer += ch;
 	}
 
-	if (arg_count == 1 && not is_expr) {
+	else if (arg_count == 1 && not is_expr) {
 		name = type_name;
 		type_name = "*";
 	}
