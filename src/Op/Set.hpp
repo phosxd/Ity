@@ -8,14 +8,14 @@ void OP_Set_exec(ScopeState& state, Variant*& first, Variant*& second, const std
 		return;
 	}
 
-	VariantData data;
+	Variant var = VariantPresets.empty;
 
-	if (symbol == "=") data = second->d;
-	else if (symbol == "+=") data = first->d + second->d;
-	else if (symbol == "-=") data = first->d - second->d;
-	else if (symbol == "*=") data = first->d * second->d;
-	else if (symbol == "/=") data = first->d / second->d;
-	else if (symbol == "%=") data = first->d % second->d;
+	if (symbol == "=")       var = *second;
+	else if (symbol == "+=") var = *first + *second;
+	else if (symbol == "-=") var = *first - *second;
+	else if (symbol == "*=") var = *first * *second;
+	else if (symbol == "/=") var = *first / *second;
+	else if (symbol == "%=") var = *first % *second;
 
 	// Move second into first, unsetting the second variant.
 	else if (symbol == "<<=") {
@@ -31,12 +31,10 @@ void OP_Set_exec(ScopeState& state, Variant*& first, Variant*& second, const std
 		return;
 	}
 
-
 	// Throw error if types do not match & target variant's type is not dynamic.
-	if (not variant_data_type_matches(data, *first)) return;
+	if (not variant_data_type_matches(var.d, *first)) return;
 
-	first->t = second->t;
-	first->d = data;
+	*first = var;
 	result_ptr = first;
 }
 
