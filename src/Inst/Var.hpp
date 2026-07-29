@@ -46,7 +46,7 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& extra, const unsigned 
 		buffer += ch;
 	}
 
-	else if (arg_count == 1 && not is_expr) {
+	if (arg_count == 1 && not is_expr) {
 		name = type_name;
 		type_name = "*";
 	}
@@ -93,13 +93,10 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
-	// Get variable type & mode.
+	// Get variable type.
 	VariantType type = AnyCastV(VariantType,token.meta[2]);
-	const VariantMode& mode = AnyCast(VariantMode,token.meta[3]);
 	// Get value from expression.
-	Variant* var = expr_exec(state, token.expr);
-	// Infer the variable's type as expression return type.
-	if (type == INFERRED) type = var->t;
+	Variant var = *expr_exec(state, token.expr);
 
 
 	// Set variable data.
@@ -113,11 +110,14 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 			// Replace value if argument is available.
 			const ARR_t& scope_args = AnyCast(ARR_t,get_data(state, "__ARGS__")->d);
 			if (func_arg_index < scope_args.size()) {
-				temporary_pool.push_back(scope_args[func_arg_index]); var = &temporary_pool.back();
+				var = scope_args[func_arg_index];
 				func_arg_index += 1;
 			}
 		}
-		set_data(state, name, type, var->d, mode);
+		// Infer the variable's type as expression return type.
+		if (type == INFERRED) type = var.t;
+		// Set data.
+		set_data(state, name, type, var.d, AnyCast(VariantMode,token.meta[3]));
 	}
 }
 

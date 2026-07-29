@@ -32,7 +32,7 @@ enum VariantType {
 
 
 // Get string representation of a VariantType.
-std::string get_variant_type_name(const VariantType& type) {
+const std::string get_variant_type_name(const VariantType& type) {
 	switch (type) {
 		case NONE:         return "NONE";
 		// Meta types.
@@ -55,7 +55,7 @@ std::string get_variant_type_name(const VariantType& type) {
 
 
 // Get VariantType from a string representation.
-VariantType get_variant_type_from_name(const std::string& name) {
+const VariantType get_variant_type_from_name(const std::string& name) {
 	if (name == "NONE") return NONE;
 	// Meta types.
 	else if (name == "*")     return INFERRED;
