@@ -10,7 +10,6 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, const Variant
 		return VariantPresets.none;
 	}
 
-	func_arg_index = 0; // Reset arg counter for the `var` instruction.
 	const INT_t& func_token_index = AnyCast(INT_t,func.at("__i").d);
 	const VariantType& func_return_type = AnyCast(VariantType,func.at("__rt").d);
 	const InstToken& func_token = InstTokenSeq[func_token_index];

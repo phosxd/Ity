@@ -772,9 +772,6 @@ unsigned int execution_depth = 0;
 int exec_jump_value = 0;
 bool exec_jump_out = false;
 
-// Modified by "Var" instruction & "Access" operation.
-unsigned int func_arg_index = 0;
-
 // Modified by "While", "If", & "End" instructions.
 std::vector<InstToken*> scoped_tokens;
 // Managed by `ScopeState*_ongoing_scopes` functions.

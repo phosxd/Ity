@@ -80,7 +80,7 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& extra, const unsigned 
 void INST_Var_exec(ScopeState& state, InstToken& token) {
 	const std::string& symbol = token.args[0];
 	const std::string& name = AnyCast(std::string,token.meta[0]);
-	const std::string& op = AnyCast(std::string,token.meta[1]);
+	//const std::string& op = AnyCast(std::string,token.meta[1]);
 
 	// Give error if the var name is not free on the current scope.
 	if (not is_name_free(state, name)) {
@@ -93,32 +93,29 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
-	// Get variable type.
-	VariantType type = AnyCastV(VariantType,token.meta[2]);
 	// Get value from expression.
 	Variant var = *expr_exec(state, token.expr);
 
 
-	// Set variable data.
-	if (op == "=" || op == "") {
-		if (symbol == "arg") {
-			// Throw error if this scope holds no arguments.
-			if (is_name_free(state, "__ARGS__")) {
-				emit_error(ERR_no_args_available);
-				return;
-			}
-			// Replace value if argument is available.
-			const ARR_t& scope_args = AnyCast(ARR_t,get_data(state, "__ARGS__")->d);
-			if (func_arg_index < scope_args.size()) {
-				var = scope_args[func_arg_index];
-				func_arg_index += 1;
-			}
+	if (symbol == "arg") {
+		// Throw error if this scope holds no arguments.
+		if (is_name_free(state, "__ARGS__")) {
+			emit_error(ERR_no_args_available);
+			return;
 		}
-		// Infer the variable's type as expression return type.
-		if (type == INFERRED) type = var.t;
-		// Set data.
-		set_data(state, name, type, var.d, AnyCast(VariantMode,token.meta[3]));
+		// Get argument if available.
+		ARR_t& scope_args = AnyCastV(ARR_t,get_data(state, "__ARGS__")->d);
+		if (not scope_args.empty()) {
+			var = scope_args.back();
+			scope_args.pop_back();
+		}
 	}
+
+	// Get variable type & infer it if needed.
+	VariantType type = AnyCastV(VariantType,token.meta[2]);
+	if (type == INFERRED) type = var.t;
+	// Set data.
+	set_data(state, name, type, var.d, AnyCast(VariantMode,token.meta[3]));
 }
 
 
