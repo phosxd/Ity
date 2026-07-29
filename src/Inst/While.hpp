@@ -37,7 +37,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 	bool value = false;
 
 	// For loop variables.
-	const Variant* item = nullptr;
+	Variant item;
 	const STR_t& name = AnyCast(STR_t,token.meta[0]);
 
 
@@ -67,7 +67,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 			if (data.size() <= index) value = false;
 			else {
 				value = true;
-				item = &data[index];
+				item = data[index];
 			}
 		}
 
@@ -77,8 +77,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 			if (data.size() <= index) value = false;
 			else {
 				value = true;
-				temporary_pool.push_back(Variant{STR, (STR_t)(std::string(1,data[index]))});
-				item = &temporary_pool.back();
+				item = Variant{STR, (STR_t)(std::string(1,data[index]))};
 			}
 		}
 
@@ -88,8 +87,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 			if (data <= (INT_t)index) value = false;
 			else {
 				value = true;
-				temporary_pool.push_back(Variant{INT, (INT_t)index});
-				item = &temporary_pool.back();
+				item = Variant{INT, (INT_t)index};
 			}
 		}
 
@@ -134,7 +132,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 
 	// If for loop, set the variable.
 	if (symbol == "for" && value) {
-		set_data(state, name, item->t, item->d, VariantMode_dynamic_type);
+		set_data(state, name, item.t, item.d, VariantMode_dynamic_type);
 		token.meta[2] = AnyCast(unsigned int,token.meta[2]) + 1;
 	}
 }

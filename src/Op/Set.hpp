@@ -8,7 +8,7 @@ void OP_Set_exec(ScopeState& state, Variant*& first, Variant*& second, const std
 		return;
 	}
 
-	Variant var = VariantPresets.empty;
+	Variant var;
 
 	if (symbol == "=")       var = *second;
 	else if (symbol == "+=") var = *first + *second;
