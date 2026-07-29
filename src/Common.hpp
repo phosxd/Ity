@@ -177,39 +177,46 @@ std::ostream& operator<<(std::ostream& os, const VariantData& s) {
 
 // COMPARISON OPERATORS
 
-inline void emit_operator_overload_error(const std::string& operation, const VariantData& a, const VariantData& b) {
-	emit_error(ERR_operand_type_mismatch, {operation, get_variant_type_name(get_variant_data_type(a)), get_variant_type_name(get_variant_data_type(b))});
-}
-inline void emit_operator_overload_error2(const std::string& operation, const Variant& a, const Variant& b) {
+inline void emit_operator_overload_error(const std::string& operation, const Variant& a, const Variant& b) {
 	emit_error(ERR_operand_type_mismatch, {operation, get_variant_type_name(a.t), get_variant_type_name(b.t)});
 }
 
 
-bool operator==(const VariantData& a, const VariantData& b) {
-	const std::type_info& t1 = a.type();
-	const std::type_info& t2 = b.type();
-	// If a is string & b is string...
-	if (t1 == typeid(STR_t) && t2 == typeid(STR_t)) return AnyCast(STR_t,a) == AnyCast(STR_t,b);
-	// If a is array & b is array...
-	else if (t1 == typeid(ARR_t) && t2 == typeid(ARR_t)) return AnyCast(ARR_t,a) == AnyCast(ARR_t,b);
-	// If a is map & b is map...
-	else if (t1 == typeid(MAP_t) && t2 == typeid(MAP_t)) return AnyCast(MAP_t,a) == AnyCast(MAP_t,b);
-
-	// If a is bool & b is bool...
-	else if (t1 == typeid(bool) && t2 == typeid(bool)) return AnyCast(bool,a) == AnyCast(bool,b);
-	// If a is int...
-	else if (t1 == typeid(INT_t)) {
-		// If b is int...
-		if (t2 == typeid(INT_t)) return AnyCast(INT_t,a) == AnyCast(INT_t,b);
-		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) return AnyCast(INT_t,a) == AnyCast(FLOAT_t,b);
-	}
-	// If a is float...
-	else if (t1 == typeid(FLOAT_t)) {;
-		// If b is int...
-		if (t2 == typeid(INT_t)) return AnyCast(FLOAT_t,a) == AnyCast(INT_t,b);
-		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) return AnyCast(FLOAT_t,a) == AnyCast(FLOAT_t,b);
+bool operator==(const Variant& a, const Variant& b) {
+	switch (a.t) {
+		// If a is bool & b is bool...
+		case BOOL: {
+			if (b.t == BOOL) return AnyCast(bool,a.d) == AnyCast(bool,b.d);
+			break;
+		}
+		// If a is int...
+		case INT: {
+			if (b.t == INT)        return AnyCast(INT_t,a.d) == AnyCast(INT_t,b.d);
+			else if (b.t == FLOAT) return AnyCast(INT_t,a.d) == AnyCast(FLOAT_t,b.d);
+			break;
+		}
+		// If a is float...
+		case FLOAT: {
+			if (b.t == INT)        return AnyCast(FLOAT_t,a.d) == AnyCast(INT_t,b.d);
+			else if (b.t == FLOAT) return AnyCast(FLOAT_t,a.d) == AnyCast(FLOAT_t,b.d);
+			break;
+		}
+		// If a is string & b is string...
+		case STR: {
+			if (b.t == STR) return AnyCast(STR_t,a.d) == AnyCast(STR_t,b.d);
+			break;
+		}
+		// If a is array & b is array...
+		case ARR: {
+			if (b.t == ARR) return AnyCast(ARR_t,a.d) == AnyCast(ARR_t,b.d);
+			break;
+		}
+		// If a is map & b is map...
+		case MAP: {
+			if (b.t == MAP) return AnyCast(MAP_t,a.d) == AnyCast(MAP_t,b.d);
+			break;
+		}
+		default: break;
 	}
 
 	// Throw error is none matched.
@@ -218,22 +225,21 @@ bool operator==(const VariantData& a, const VariantData& b) {
 }
 
 
-bool operator>(const VariantData& a, const VariantData& b) {
-	const std::type_info& t1 = a.type();
-	const std::type_info& t2 = b.type();
-	// If a is int...
-	if (t1 == typeid(INT_t)) {
-		// If b is int...
-		if (t2 == typeid(INT_t)) return AnyCast(INT_t,a) > AnyCast(INT_t,b);
-		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) return AnyCast(INT_t,a) > AnyCast(FLOAT_t,b);
-	}
-	// If a is float...
-	else if (t1 == typeid(FLOAT_t)) {;
-		// If b is int...
-		if (t2 == typeid(INT_t)) return AnyCast(FLOAT_t,a) > AnyCast(INT_t,b);
-		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) return AnyCast(FLOAT_t,a) > AnyCast(FLOAT_t,b);
+bool operator>(const Variant& a, const Variant& b) {
+	switch (a.t) {
+		// If a is int...
+		case INT: {
+			if (b.t == INT)        return AnyCast(INT_t,a.d) > AnyCast(INT_t,b.d);
+			else if (b.t == FLOAT) return AnyCast(INT_t,a.d) > AnyCast(FLOAT_t,b.d);
+			break;
+		}
+		// If a is float...
+		case FLOAT: {
+			if (b.t == INT)        return AnyCast(FLOAT_t,a.d) > AnyCast(INT_t,b.d);
+			else if (b.t == FLOAT) return AnyCast(FLOAT_t,a.d) > AnyCast(FLOAT_t,b.d);
+			break;
+		}
+		default: break;
 	}
 
 	// Throw error is none matched.
@@ -242,22 +248,20 @@ bool operator>(const VariantData& a, const VariantData& b) {
 }
 
 
-bool operator<(const VariantData& a, const VariantData& b) {
-	const std::type_info& t1 = a.type();
-	const std::type_info& t2 = b.type();
-	// If a is int...
-	if (t1 == typeid(INT_t)) {
-		// If b is int...
-		if (t2 == typeid(INT_t)) return AnyCast(INT_t,a) < AnyCast(INT_t,b);
-		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) return AnyCast(INT_t,a) < AnyCast(FLOAT_t,b);
-	}
-	// If a is float...
-	else if (t1 == typeid(FLOAT_t)) {;
-		// If b is int...
-		if (t2 == typeid(INT_t)) return AnyCast(FLOAT_t,a) < AnyCast(INT_t,b);
-		// If b is float...
-		else if (t2 == typeid(FLOAT_t)) return AnyCast(FLOAT_t,a) < AnyCast(FLOAT_t,b);
+bool operator<(const Variant& a, const Variant& b) {
+	switch (a.t) {
+		// If a is int...
+		case INT: {
+			if (b.t == INT)        return AnyCast(INT_t,a.d) < AnyCast(INT_t,b.d);
+			else if (b.t == FLOAT) return AnyCast(INT_t,a.d) < AnyCast(FLOAT_t,b.d);
+			break;
+		}
+		// If a is float...
+		case FLOAT: {
+			if (b.t == INT)        return AnyCast(FLOAT_t,a.d) < AnyCast(INT_t,b.d);
+			else if (b.t == FLOAT) return AnyCast(FLOAT_t,a.d) < AnyCast(FLOAT_t,b.d);
+		}
+		default: break;
 	}
 
 	// Throw error is none matched.
@@ -289,6 +293,17 @@ MAP_t operator+(const MAP_t& a, const MAP_t& b) {
 
 Variant operator+(const Variant& a, const Variant& b) {
 	switch (a.t) {
+		// If a is int...
+		case INT: {
+			if (b.t == INT)         return Variant{INT,   (AnyCast(INT_t,a.d) + AnyCast(INT_t,b.d))};
+			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(INT_t,a.d) + AnyCast(FLOAT_t,b.d))};
+		}
+		// If a is float...
+		case FLOAT: {
+			if (b.t == INT)         return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) + AnyCast(INT_t,b.d))};
+			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) + AnyCast(FLOAT_t,b.d))};
+			break;
+		}
 		// If a is string...
 		case STR: {
 			if (b.t == STR)       return Variant{STR, (AnyCast(STR_t,a.d) + AnyCast(STR_t,b.d))};
@@ -305,23 +320,11 @@ Variant operator+(const Variant& a, const Variant& b) {
 			if (b.t == MAP) return Variant{MAP, (AnyCast(MAP_t,a.d) + AnyCast(MAP_t,b.d))};
 			break;
 		}
-
-		// If a is int...
-		case INT: {
-			if (b.t == INT)         return Variant{INT,   (AnyCast(INT_t,a.d) + AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(INT_t,a.d) + AnyCast(FLOAT_t,b.d))};
-		}
-		// If a is float...
-		case FLOAT: {
-			if (b.t == INT)         return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) + AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) + AnyCast(FLOAT_t,b.d))};
-			break;
-		}
 		default: break;
 	}
 
 	// Throw error is none matched.
-	emit_operator_overload_error2("Arith(+)", a,b);
+	emit_operator_overload_error("Arith(+)", a,b);
 	return a;
 }
 
@@ -344,13 +347,25 @@ Variant operator-(const Variant& a, const Variant& b) {
 	}
 
 	// Throw error is none matched.
-	emit_operator_overload_error2("Arith(-)", a,b);
+	emit_operator_overload_error("Arith(-)", a,b);
 	return a;
 }
 
 
 Variant operator*(const Variant& a, const Variant& b) {
 	switch (a.t) {
+		// If a is int...
+		case INT: {
+			if (b.t == INT)         return Variant{INT,   (AnyCast(INT_t,a.d) * AnyCast(INT_t,b.d))};
+			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(INT_t,a.d) * AnyCast(FLOAT_t,b.d))};
+			break;
+		}
+		// If a is float...
+		case FLOAT: {
+			if (b.t == INT)         return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) * AnyCast(INT_t,b.d))};
+			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) * AnyCast(FLOAT_t,b.d))};
+			break;
+		}
 		// If a is string & b is int.
 		case STR: {
 			if (b.t == INT) {
@@ -380,23 +395,11 @@ Variant operator*(const Variant& a, const Variant& b) {
 			}
 			break;
 		}
-		// If a is int...
-		case INT: {
-			if (b.t == INT)         return Variant{INT,   (AnyCast(INT_t,a.d) * AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(INT_t,a.d) * AnyCast(FLOAT_t,b.d))};
-			break;
-		}
-		// If a is float...
-		case FLOAT: {
-			if (b.t == INT)         return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) * AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) * AnyCast(FLOAT_t,b.d))};
-			break;
-		}
 		default: break;
 	}
 
 	// Throw error is none matched.
-	emit_operator_overload_error2("Arith(*)", a,b);
+	emit_operator_overload_error("Arith(*)", a,b);
 	return a;
 }
 
@@ -418,7 +421,7 @@ Variant operator/(const Variant& a, const Variant& b) {
 	}
 
 	// Throw error is none matched.
-	emit_operator_overload_error2("Arith(/)", a,b);
+	emit_operator_overload_error("Arith(/)", a,b);
 	return a;
 }
 
@@ -428,7 +431,7 @@ Variant operator%(const Variant& a, const Variant& b) {
 	if (a.t == INT && b.t == INT) return Variant{INT, (AnyCast(INT_t,a.d) % AnyCast(INT_t,b.d))};
 
 	// Throw error is none matched.
-	emit_operator_overload_error2("Arith(%)", a,b);
+	emit_operator_overload_error("Arith(%)", a,b);
 	return a;
 }
 
