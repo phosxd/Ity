@@ -73,8 +73,30 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 		// Determine type of the object.
 		const STR_t& obj_type = var_get_obj_type(map);
 
-		// Access map.
-		if (obj_type == "m") {
+		// Access function...
+		if (obj_type == "f") {
+			// Throw error if accessor is not an array.
+			if (second->t != ARR) {
+				emit_error(ERR_invalid_func_call, {get_variant_type_name(second->t)});
+				return;
+			}
+			// Call native function...
+			if (const auto& it = map.find("__nc"); it != map.end()) {
+				const NativeFunc_t& n_func = AnyCast(NativeFunc_t,it->second.d);
+				const ARR_t& n_args = AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,second->d); // Merge bound arguments.
+				result = n_func(state, n_args);
+				return;
+			}
+			// Call script function...
+			else {
+				Variant args {ARR, (AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,second->d))}; // Merge bound arguments.
+				result = call_script_function(state, map, args);
+				return;
+			}
+		}
+
+		// Access as map if type doesn't match any of the above...
+		else {
 			// Throw error if accessor is not a string.
 			if (second->t != STR) {
 				emit_error(ERR_invalid_property_access, {get_variant_type_name(first->t), get_variant_type_name(second->t)});
@@ -90,28 +112,6 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 			// Return Variant at the key.
 			result_ptr = &it->second;
 			return;
-		}
-
-		// Access function.
-		else if (obj_type == "f") {
-			// Throw error if accessor is not an array.
-			if (second->t != ARR) {
-				emit_error(ERR_invalid_func_call, {get_variant_type_name(second->t)});
-				return;
-			}
-			// Call native function...
-			if (const auto& it = map.find("__nc"); it != map.end()) {
-				const NativeFunc_t& n_func = AnyCast(NativeFunc_t,it->second.d);
-				const ARR_t& n_args = AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,second->d); // Merge bound arguments.
-				result = n_func(state, n_args);
-				return;
-			}
-			// Call script function...
-			else {
-				const Variant args {ARR, (AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,second->d))}; // Merge bound arguments.
-				result = call_script_function(state, map, args);
-				return;
-			}
 		}
 
 	}

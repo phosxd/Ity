@@ -106,8 +106,8 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 		// Get argument if available.
 		ARR_t& scope_args = AnyCastV(ARR_t,get_data(state, "__ARGS__")->d);
 		if (not scope_args.empty()) {
-			var = scope_args.back();
-			scope_args.pop_back();
+			var = scope_args.front();
+			scope_args.erase(scope_args.begin());
 		}
 	}
 

@@ -284,7 +284,7 @@ Variant LIB_BI_tm_map_has(ScopeState& _state, ARR_t& args) {
 // Function.
 // ---------
 
-// Return array of keys in the `MAP`.
+// Bind arguments to the function.
 Variant LIB_BI_tm_func_bind(ScopeState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 	if (args[1].t != ARR) {

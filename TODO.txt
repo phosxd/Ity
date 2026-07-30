@@ -1,5 +1,6 @@
 - Add `STR` type methods: `split`, `join`, `erase`.
 - Add ability to import other scripts as modules.
+- Make script functions connected to type methods able to access the variable the function was called on.
  
 Add more FileAccess methods:
 	- read_file_bytes

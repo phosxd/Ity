@@ -369,7 +369,7 @@ x; # Should throw error
 "
 
 "1
-Error: 26"
+Error: 27"
 
 # 17
 
@@ -430,7 +430,7 @@ while i < 4;
 test; # Should throw an error
 "
 
-"Error: 26"
+"Error: 27"
 
 # 20
 
@@ -509,7 +509,7 @@ if true;
 /;
 "
 
-"Warning: 24
+"Warning: 25
 1
 5"
 
@@ -831,7 +831,7 @@ for i in 3;
 a
 b
 c
-Warning: 24
+Warning: 25
 4
 5
 6"
@@ -856,7 +856,7 @@ for i in 2;
 /;
 "
 
-"Warning: 24
+"Warning: 25
 0
 1
 1
@@ -865,7 +865,7 @@ for i in 2;
 2
 2
 3
-Warning: 24
+Warning: 25
 0
 1
 1
@@ -881,7 +881,7 @@ Warning: 24
 {'a': 1, 'b': 2}; # Invalid map declaration syntax.
 "
 
-"Error: 20"
+"Error: 21"
 
 # 38
 
@@ -889,7 +889,7 @@ Warning: 24
 {'a', 1+1, 'b', 2}; # Invalid map item at 'a'.
 "
 
-"Error: 20"
+"Error: 21"
 
 # 39
 
@@ -897,7 +897,7 @@ Warning: 24
 [1+1, 2, 3]; # Invalid array item at index 0.
 "
 
-"Error: 20"
+"Error: 21"
 
 # 40
 

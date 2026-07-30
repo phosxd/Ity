@@ -19,6 +19,7 @@ enum ERR_CODE {
 	ERR_invalid_inst_arg_count,
 	ERR_invalid_op,
 	ERR_invalid_assignment_op,
+	ERR_missing_operand,
 	ERR_invalid_cast,
 	ERR_unexpected_inst,
 
@@ -142,6 +143,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 		return "Invalid operator \"" + args[0] + part;
 	}
 	else if (code == ERR_invalid_assignment_op)             return "Invalid assignment operator \"" + args[0] + "\" for instruction \"" + args[1] + "\".";
+	else if (code == ERR_missing_operand)                   return "Operator is missing an operand.";
 	else if (code == ERR_invalid_cast)                      return "Cannot type cast from \"" + args[0] + " to \"" + args[1] + "\".";
 	else if (code == ERR_unexpected_inst)                   return "Unexpected \"" + args[0] + "\"instruction. No valid previous.";
 

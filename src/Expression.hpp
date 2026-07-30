@@ -3,7 +3,7 @@
 
 
 
-Variant call_script_function(ScopeState& state, const MAP_t& func, const Variant& args) {
+Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args) {
 	// Throw error if maximum execution depth is reached.
 	if (execution_depth > execution_depth_max) {
 		emit_error(ERR_max_execution_depth, {std::to_string(execution_depth_max)});
@@ -26,7 +26,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, const Variant
 	// Create an alternate scope, for use inside the function.
 	ScopeState func_state = create_new_scope_state(
 		(MAP_t){
-			{"__ARGS__", args},
+			{"__ARGS__", std::move(args)},
 			{"__RET__", Variant{func_return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
 		},
 		get_state_at_depth(state, AnyCast(INT_t,func.at("__si").d)) // Use function definition scope as the parent.
@@ -50,6 +50,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, const Variant
 	if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
 	#endif
 
+	args = std::move(func_state.d["__ARGS__"]);
 	return func_result;
 }
 
@@ -503,6 +504,12 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 
 		// Execute operator.
 		if (op) {
+			// Throw error if there is no first operand.
+			if (not result) {
+				emit_error(ERR_missing_operand);
+				return result;
+			}
+			// Run operator pre-exec.
 			if (op->pre_exec) {
 				// Skip evaluation of second Variant if pre_exec says so...
 				bool eval_second_operand = true;
