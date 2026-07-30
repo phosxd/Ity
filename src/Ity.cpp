@@ -2,7 +2,7 @@
 #include <vector>
 #include <unordered_map>
 #include <cstdint>
-#include <any>
+#include <variant>
 
 #include <iostream>
 #include <fstream>
@@ -199,7 +199,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 						// Call token processor.
 						if (inst->processor) {;
-							inst->processor(item, {
+							inst->processor(item, (AnyMap_t){
 								{"last_comp_item_dist",  last_comp_item_dist},
 								{"last_comp_item",       &last_comp_item},
 								{"composite_nest",       &composite_nest}
@@ -443,7 +443,7 @@ void start_shell(int argc, char* argv[]) {
 
 				// Print expression result if there is one.
 				if (last_expr_result.t != PLACEHOLDER) {
-					std::cout << last_expr_result.d;
+					std::cout << last_expr_result;
 				}
 			}
 			current_line += 1;

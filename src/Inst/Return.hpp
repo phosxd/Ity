@@ -3,7 +3,7 @@
 
 void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	bool found = false;
-	std::vector<CompositeItem> reverse_nest = *std::any_cast<std::vector<CompositeItem>*>(extra.at("composite_nest"));
+	std::vector<CompositeItem> reverse_nest = *AnyCast(std::vector<CompositeItem>*,extra.at("composite_nest"));
 	std::reverse(reverse_nest.begin(), reverse_nest.end());
 	for (const CompositeItem& comp_item : reverse_nest) {
 		if (comp_item.token.args[0] != "func") continue;
@@ -27,7 +27,7 @@ void INST_Return_exec(ScopeState& state, InstToken& token) {
 
 	// Get value from expression & set return value.
 	const Variant* var = expr_exec(state, token.expr);
-	set_data(state, "__RET__", var->t, var->d, VariantMode_dynamic_type);
+	set_data(state, "__RET__", var->t, *var, VariantMode_dynamic_type);
 
 	exec_jump_out = true;
 }

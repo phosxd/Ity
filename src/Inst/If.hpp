@@ -4,7 +4,7 @@
 
 void INST_If_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	if (token.args[0] == "elif" || token.args[0] == "else") {
-		const CompositeItem& last_comp_item = *std::any_cast<CompositeItem*>(extra.at("last_comp_item"));
+		const CompositeItem& last_comp_item = *AnyCast(CompositeItem*,extra.at("last_comp_item"));
 
 		// Throw error if previous composite item was not a valid conditional.
 		if (last_comp_item.token.args[0] != "if" && last_comp_item.token.args[0] != "elif") {
@@ -34,7 +34,7 @@ void INST_If_exec(ScopeState& state, InstToken& token) {
 			emit_error(ERR_expected_boolean_expression);
 			return;
 		}
-		else expr_passed = std::any_cast<bool>(var->d);
+		else expr_passed = AnyCast(bool,var->d);
 	}
 
 	bool previous_conditional_passed = true;
@@ -44,7 +44,7 @@ void INST_If_exec(ScopeState& state, InstToken& token) {
 			emit_error(ERR_unexpected_inst, {symbol});
 			return;
 		}
-		previous_conditional_passed = std::any_cast<bool>(linked_token.meta[0]);
+		previous_conditional_passed = AnyCast(bool,linked_token.meta[0]);
 	}
 
 	bool passed = false;

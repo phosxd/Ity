@@ -126,7 +126,7 @@ Variant LIB_BI_length(ScopeState& _state, const ARR_t& args) {
 // Return the number of bytes taken by the given variant.
 Variant LIB_BI_size(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
-	return Variant{INT, (int)get_variant_data_size(args[0].d)};
+	return Variant{INT, (int)get_variant_size(args[0])};
 }
 
 

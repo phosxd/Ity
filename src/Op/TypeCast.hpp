@@ -7,7 +7,7 @@ void OP_TypeCast_exec(ScopeState& _state, Variant*& first, Variant*& second, con
 		return;
 	}
 
-	const STR_t& target = std::any_cast<STR_t>(second->d);
+	const STR_t& target = AnyCast(STR_t,second->d);
 	Variant var;
 
 	if (target == "BOOL")        {var.t = BOOL;   var.d = var_to_bool(*first);}

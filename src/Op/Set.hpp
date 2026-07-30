@@ -19,7 +19,7 @@ void OP_Set_exec(ScopeState& state, Variant*& first, Variant*& second, const std
 
 	// Move second into first, unsetting the second variant.
 	else if (symbol == "<<=") {
-		if (not variant_data_type_matches(second->d, *first)) return;
+		if (not variant_type_matches(*second, *first)) return;
 		// Throw error if source variant is constant.
 		if (second->m == VariantMode_constant) {
 			emit_error(ERR_cannot_change_constant);
@@ -32,7 +32,7 @@ void OP_Set_exec(ScopeState& state, Variant*& first, Variant*& second, const std
 	}
 
 	// Throw error if types do not match & target variant's type is not dynamic.
-	if (not variant_data_type_matches(var.d, *first)) return;
+	if (not variant_type_matches(var, *first)) return;
 
 	*first = var;
 	result_ptr = first;

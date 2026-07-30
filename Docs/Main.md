@@ -303,17 +303,26 @@ Assignment operators allow you to modify the value of a variant. This is useful 
 Overwrite the data of the variant.
 
 ### <<=
-Move data into the target variant, this destroys / resets the source variant. When a variant is reset, it's value is set to `none` even if it goes against it's explicit type, making this very dangerous to work with if not handled properly.
+Move data into the target variant, this resets the source variant.
+
+What happens to the source variant depends on it's type. If it's an `ARR`,  `MAP`, or `STR`, then all items are moved out. If it's a simple type like `NONE`, `BOOL`, `INT`, or `FLOAT`, then the value is copied & stays the same.
 
 You cannot move data in to or out of a constant variable.
 
 ```python
-var INT a = 1;
+var ARR a = [1,2,3];
 var ANY b;
 b <<= a; # Move "a" into "b"
 
-# a = none
-# b = 1
+# a = []
+# b = [1,2,3]
+
+var INT c = 99;
+var ANY d;
+d <<= c;
+
+# c = 99
+# d = 99
 ```
 ### +=
 Add to the variant.

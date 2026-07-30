@@ -107,7 +107,7 @@ void restore_ongoing_scopes() {
 const unsigned int get_state_size(const ScopeState& state) {
 	unsigned int final_size = 0;
 	for (const auto& i : state.d) {
-		final_size += i.first.size() + sizeof(i.second.t) + sizeof(i.second.m) + get_variant_data_size(i.second.d);
+		final_size += i.first.size() + sizeof(i.second.t) + sizeof(i.second.m) + get_variant_size(i.second);
 	}
 	return final_size;
 }
@@ -122,7 +122,7 @@ const bool is_name_free(const ScopeState& state, const std::string& name) {
 // Checks if the name is available in this scope or any scopes above it.
 const bool is_name_globally_free(const ScopeState& state, const std::string& name) {
 	if (state.d.find(name) == state.d.end()) {
-		if (state.p) return is_name_globally_free(*state.p, name);
+		if (state.p) return is_name_globally_free(*(state.p), name);
 		return true;
 	}
 	return false;
@@ -149,7 +149,7 @@ Variant* get_data_globally(ScopeState& state, const std::string& name) {
 // If mode is dynamic type, the set "type" & the actual type of "data" can be different.
 // If mode is constant, will throw an error when if the name is already taken in the current scope.
 // If mode is locked type, will throw an error if the data type does not match the given type.
-void set_data(ScopeState& state, const std::string& name, const VariantType& type, const VariantData& data, const VariantMode& mode) {
+void set_data(ScopeState& state, const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode) {
 	// Output function call in debug mode...
 	#ifdef RUNTIME_DEBUG
 	if (debug_flags.data_assign && not exists_in_vec(illegal_print_names, name)) {
@@ -157,14 +157,13 @@ void set_data(ScopeState& state, const std::string& name, const VariantType& typ
 	}
 	#endif
 
-	const VariantType& data_type = get_variant_data_type(data);
 	if (not is_name_free(state, name) && get_data(state, name)->m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
-	if (mode != VariantMode_dynamic_type && type != data_type) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data_type), get_variant_type_name(type)}); // Throw error if data is not applicable.
-	state.d[name] = Variant{data_type, data, mode};
+	if (mode != VariantMode_dynamic_type && type != data.t) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data.t), get_variant_type_name(type)}); // Throw error if data is not applicable.
+	state.d[name] = Variant{data.t, data.d, mode};
 }
 
 
-void set_data_globally(ScopeState& state, const std::string& name, const VariantType& type, const VariantData& data, const VariantMode& mode) {
+void set_data_globally(ScopeState& state, const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode) {
 	if (not is_name_free(state, name)) set_data(state, name, type, data, mode);
 	else if (state.p) return set_data_globally(*state.p, name, type, data, mode);
 }
@@ -183,7 +182,7 @@ void merge_module(ScopeState& state, const MAP_t& map) {
 		}
 
 		if (prop_name.starts_with("__")) continue; // Skip private members.
-		set_data(state, prop_name, i.second.t, i.second.d, i.second.m);
+		set_data(state, prop_name, i.second.t, i.second, i.second.m);
 	}
 }
 
@@ -195,5 +194,5 @@ void import_module(ScopeState& state, const std::string& name, const MAP_t& map)
 		else state.d["__tm__"].d = (AnyCast(MAP_t,get_data(state, "__tm__")->d) + AnyCast(MAP_t,it->second.d));
 	}
 
-	set_data(state, name, MAP, map, VariantMode_constant);
+	set_data(state, name, MAP, Variant{MAP, map}, VariantMode_constant);
 }

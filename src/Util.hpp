@@ -172,7 +172,7 @@ template<class T, class T2>
 std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
 	os << '{';
 	unsigned int idx = 0;
-	for (auto i:s) {
+	for (auto& i:s) {
 		if (exists_in_vec(illegal_print_names, i.first)) continue;
 		if (idx != 0) {os << ", ";}
 		os << "\"" << i.first << "\"" << ": ";

@@ -7,7 +7,7 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 		// Find & return method.
 		MAP_t& methods = AnyCastV(MAP_t,get_data_globally(state, "__tm__")->d);
 		const std::string type_name = get_variant_type_name(first->t);
-		const STR_t method_name = AnyCast(STR_t,second->d);
+		const STR_t& method_name = AnyCast(STR_t,second->d);
 		MAP_t::iterator it = methods.find((type_name+':'+method_name));
 
 		// If method not found in top level type, try in the MAP type.
@@ -70,7 +70,6 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 	// For hash tables, functions, or other objects.
 	else if (first->t == MAP) {
 		MAP_t& map = AnyCastV(MAP_t,first->d);
-
 		// Determine type of the object.
 		const STR_t& obj_type = var_get_obj_type(map);
 
@@ -109,7 +108,7 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 			}
 			// Call script function...
 			else {
-				Variant args {ARR, (AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,second->d))}; // Merge bound arguments.
+				const Variant args {ARR, (AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,second->d))}; // Merge bound arguments.
 				result = call_script_function(state, map, args);
 				return;
 			}

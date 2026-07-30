@@ -115,7 +115,7 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 	VariantType type = AnyCastV(VariantType,token.meta[2]);
 	if (type == INFERRED) type = var.t;
 	// Set data.
-	set_data(state, name, type, var.d, AnyCast(VariantMode,token.meta[3]));
+	set_data(state, name, type, var, AnyCast(VariantMode,token.meta[3]));
 }
 
 

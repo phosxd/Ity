@@ -28,7 +28,7 @@ Variant LIB_Math_math(ScopeState& _state, const ARR_t& args, const std::string& 
 		else if (func == "sqrt")   data = (INT_t)std::sqrt((double)d);
 	}
 	else if (var.t == FLOAT) {
-		const FLOAT_t& d = std::any_cast<const FLOAT_t&>(var.d);
+		const FLOAT_t& d = AnyCast(FLOAT_t,var.d);
 		type = FLOAT;
 		if (func == "abs")         data = (FLOAT_t)std::abs(d);
 		else if (func == "floor")  data = (FLOAT_t)std::floor(d);

@@ -27,7 +27,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, const Variant
 	ScopeState func_state = create_new_scope_state(
 		(MAP_t){
 			{"__ARGS__", args},
-			{"__RET__", Variant{func_return_type, std::any(), VariantMode_dynamic_type}}, // Initialize return variable.
+			{"__RET__", Variant{func_return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
 		},
 		get_state_at_depth(state, AnyCast(INT_t,func.at("__si").d)) // Use function definition scope as the parent.
 	);

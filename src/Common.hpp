@@ -27,8 +27,15 @@ enum VariantType {
 };
 
 
-#define AnyCast(T, var) std::any_cast<const T&>(var)
-#define AnyCastV(T, var) std::any_cast<T&>(var)
+enum VariantMode {
+	VariantMode_dynamic_type,
+	VariantMode_constant,
+	VariantMode_locked_type,
+};
+
+
+#define AnyCast(T, var) std::get<T>(var)
+#define AnyCastV(T, var) std::get<T>(var)
 
 
 // Get string representation of a VariantType.
@@ -83,8 +90,39 @@ std::ostream& operator<<(std::ostream& os, const VariantType& s) {
 // VariantData.
 // ------------
 
-using VariantData = std::any;
-using AnyMap_t = std::unordered_map<std::string, std::any>;
+struct Variant; // Forward declare.
+struct ScopeState;
+struct CompositeItem;
+
+using INT_t = int;
+using FLOAT_t = double;
+using STR_t = std::string;
+using ARR_t = std::vector<Variant>;
+using MAP_t = std::unordered_map<STR_t,Variant>;
+using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
+
+using VariantData = std::variant<
+	std::monostate,
+	bool,
+	INT_t,
+	FLOAT_t,
+	STR_t,
+	ARR_t,
+	MAP_t,
+
+	// Internal types.
+	unsigned int,
+	uint16_t,
+	VariantType,
+	VariantMode,
+	Variant*,
+	NativeFunc_t,
+
+	CompositeItem*,
+	std::vector<CompositeItem>*
+>;
+
+using AnyMap_t = std::unordered_map<std::string, VariantData>;
 
 
 
@@ -92,68 +130,39 @@ using AnyMap_t = std::unordered_map<std::string, std::any>;
 // --------
 
 
-enum VariantMode {
-	VariantMode_dynamic_type,
-	VariantMode_constant,
-	VariantMode_locked_type,
-};
-
-
 #pragma pack(1)
 struct Variant {
 	VariantType t = NONE;
-	VariantData d = std::any();
+	VariantData d;
 	VariantMode m = VariantMode_dynamic_type;
 };
 
 
-using INT_t = int;
-using FLOAT_t = double;
-using STR_t = std::string;
-using ARR_t = std::vector<Variant>;
-using MAP_t = std::unordered_map<STR_t,Variant>;
-
-
-// Resolve VariantData to a real VariantType.
-VariantType get_variant_data_type(const VariantData& d) {
-	const std::type_info& t = d.type();
-	if (t == typeid(bool))          return BOOL;
-	else if (t == typeid(INT_t))    return INT;
-	else if (t == typeid(FLOAT_t))  return FLOAT;
-	else if (t == typeid(STR_t))    return STR;
-	else if (t == typeid(ARR_t))    return ARR;
-	else if (t == typeid(MAP_t))    return MAP;
-	return NONE;
-}
-
-
 // Return true if `data` is applicable to `var`.
-const bool variant_data_type_matches(const VariantData& data, const Variant& var, const bool do_emit_error = true) {
-	const VariantType& data_type = get_variant_data_type(data);
-	if (var.m == VariantMode_dynamic_type || var.t == data_type) return true;
-	if (do_emit_error) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data_type), get_variant_type_name(var.t)});
+const bool variant_type_matches(const Variant& a, const Variant& b, const bool do_emit_error = true) {
+	if (b.m == VariantMode_dynamic_type || b.t == a.t) return true;
+	if (do_emit_error) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(a.t), get_variant_type_name(b.t)});
 	return false;
 }
 
 
-// Return the number of bytes that VariantData takes up.
-size_t get_variant_data_size(const VariantData& s) {
-	const std::type_info& t = s.type();
-	if (t == typeid(INT_t))         return sizeof(AnyCast(INT_t,s));
-	else if (t == typeid(FLOAT_t))  return sizeof(AnyCast(FLOAT_t,s));
-	else if (t == typeid(STR_t))    return AnyCast(STR_t,s).size();
+// Return the number of bytes that Variant takes up.
+size_t get_variant_size(const Variant& var) {
+	if (var.t == INT)         return sizeof(AnyCast(INT_t,var.d));
+	else if (var.t == FLOAT)  return sizeof(AnyCast(FLOAT_t,var.d));
+	else if (var.t == STR)    return AnyCast(STR_t,var.d).size();
 
-	else if (t == typeid(ARR_t)) {
+	else if (var.t == ARR) {
 		size_t sum;
-		for (const Variant& var : AnyCast(ARR_t,s)) {
-			sum += sizeof(var.t) + sizeof(var.m) + get_variant_data_size(var.d);
+		for (const Variant& var : AnyCast(ARR_t,var.d)) {
+			sum += sizeof(var.t) + sizeof(var.m) + get_variant_size(var);
 		}
 		return sum;
 	}
-	else if (t == typeid(MAP_t)) {
+	else if (var.t == MAP) {
 		size_t sum;
-		for (const auto& it : AnyCast(MAP_t,s)) {
-			sum += it.first.size() + sizeof(it.second.t) + sizeof(it.second.m) + get_variant_data_size(it.second.d);
+		for (const auto& it : AnyCast(MAP_t,var.d)) {
+			sum += it.first.size() + sizeof(it.second.t) + sizeof(it.second.m) + get_variant_size(it.second);
 		}
 		return sum;
 	}
@@ -162,15 +171,42 @@ size_t get_variant_data_size(const VariantData& s) {
 }
 
 
-std::ostream& operator<<(std::ostream& os, const VariantData& s) {
-	const std::type_info& t = s.type();
-	if (not s.has_value()) os << "none";
-	else if (t == typeid(bool)) os << (AnyCast(bool,s) ? "true" : "false");
-	else if (t == typeid(INT_t)) os << AnyCast(INT_t,s);
-	else if (t == typeid(FLOAT_t)) os << std::to_string(AnyCast(FLOAT_t,s)); // `std::cout` wont show the full precision by default, so we convert to string.
-	else if (t == typeid(STR_t)) os << AnyCast(STR_t,s);
-	else if (t == typeid(ARR_t)) os << AnyCast(ARR_t,s);
-	else if (t == typeid(MAP_t)) os << AnyCast(MAP_t,s);
+std::ostream& operator<<(std::ostream& os, const Variant& var) {
+	switch (var.t) {
+		case BOOL: {os << (AnyCast(bool,var.d) ? "true" : "false"); break;}
+		case INT: {os << AnyCast(INT_t,var.d); break;}
+		case FLOAT: {os << std::to_string(AnyCast(FLOAT_t,var.d)); break;} // `std::cout` wont show the full precision by default, so we convert to string.
+		case STR: {os << AnyCast(STR_t,var.d); break;}
+
+		case ARR: {
+			os << '[';
+			unsigned int i = 0;
+			for (const Variant& it : AnyCast(ARR_t,var.d)) {
+				if (i != 0) {os << ", ";}
+				if (it.t == STR) os << '"' << it << '"';
+				else os << it;
+				i++;
+			}
+			os << ']';
+			break;
+		}
+
+		case MAP: {
+			os << '{';
+			unsigned int idx = 0;
+			for (auto& i : AnyCast(MAP_t,var.d)) {
+				if (exists_in_vec(illegal_print_names, i.first)) continue;
+				if (idx != 0) {os << ", ";}
+				os << "\"" << i.first << "\"" << ": ";
+				if (i.second.t == STR) os << '"' << i.second << '"';
+				else os << i.second;
+				idx++;
+			}
+			os << '}';
+			break;
+		}
+		default: break;
+	}
 	return os;
 }
 
@@ -436,13 +472,6 @@ Variant operator%(const Variant& a, const Variant& b) {
 }
 
 
-std::ostream& operator<<(std::ostream& os, const Variant& s) {
-	if (s.t == STR) os << '"' << s.d << '"';
-	else os << s.d;
-	return os;
-}
-
-
 
 // ExprToken.
 // ----------
@@ -591,10 +620,10 @@ VariantData get_literal_from_str(const VariantType& type, const std::string& str
 	else if (type == INT) {
 		if (is_int_str_32_in_range(str_val)) return (INT_t)std::stoi(str_val);
 		emit_error(ERR_cannot_initialize_value, {str_val, "Number too large"});
-		return std::any();
+		return std::monostate();
 	}
 	else if (type == FLOAT) return (FLOAT_t)std::stod(str_val);
-	else return std::any();
+	else return std::monostate();
 }
 
 
@@ -669,11 +698,9 @@ STR_t var_get_obj_type(const MAP_t& map) {
 }
 
 
-
-using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
 struct VariantPresets_struct {
-	const Variant empty       {PLACEHOLDER, std::any(), VariantMode_constant};
-	const Variant none        {NONE, std::any(), VariantMode_constant};
+	const Variant empty       {PLACEHOLDER, std::monostate(), VariantMode_constant};
+	const Variant none        {NONE, std::monostate(), VariantMode_constant};
 	const Variant obj_type_m  {STR, (STR_t)"m", VariantMode_constant};
 	const Variant obj_type_f  {STR, (STR_t)"f", VariantMode_constant};
 

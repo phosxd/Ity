@@ -19,7 +19,7 @@ void INST_While_processor(InstToken& token, const AnyMap_t& extra, const unsigne
 			return;
 		}
 
-		token.meta[0] = name;
+		token.meta[0] = std::move(name);
 		token.args = tokenize_expr_from_inst_args(token, 3);
 	}
 
@@ -38,7 +38,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 
 	// For loop variables.
 	Variant item;
-	const STR_t& name = AnyCast(STR_t,token.meta[0]);
+	const std::string name = AnyCast(STR_t,token.meta[0]);
 
 
 	// While loop.
@@ -58,12 +58,16 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 	else if (symbol == "for") {
 		const unsigned int& index = AnyCast(unsigned int,token.meta[2]);
 		// Get iterable.
-		if (token.meta[1].type() == typeid(std::monostate)) token.meta[1] = *expr_exec(state, token.expr);
-		Variant& iterable = AnyCastV(Variant,token.meta[1]);
+		Variant* iterable = nullptr;
+		if (const auto& i = std::get_if<Variant*>(&token.meta[1])) iterable = *i;
+		else {
+			iterable = new Variant(*expr_exec(state, token.expr));
+			token.meta[1] = iterable;
+		}
 
 		// Get item from array.
-		if (iterable.t == ARR) {
-			ARR_t& data = AnyCastV(ARR_t,iterable.d);
+		if (iterable->t == ARR) {
+			ARR_t& data = AnyCastV(ARR_t,iterable->d);
 			if (data.size() <= index) value = false;
 			else {
 				value = true;
@@ -72,8 +76,8 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 		}
 
 		// Get item from string.
-		else if (iterable.t == STR) {
-			const STR_t& data = AnyCast(STR_t,iterable.d);
+		else if (iterable->t == STR) {
+			const STR_t& data = AnyCast(STR_t,iterable->d);
 			if (data.size() <= index) value = false;
 			else {
 				value = true;
@@ -82,8 +86,8 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 		}
 
 		// Get item from integer.
-		else if (iterable.t == INT) {
-			const INT_t& data = AnyCast(INT_t,iterable.d);
+		else if (iterable->t == INT) {
+			const INT_t& data = AnyCast(INT_t,iterable->d);
 			if (data <= (INT_t)index) value = false;
 			else {
 				value = true;
@@ -132,7 +136,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 
 	// If for loop, set the variable.
 	if (symbol == "for" && value) {
-		set_data(state, name, item.t, item.d, VariantMode_dynamic_type);
+		set_data(state, name, item.t, std::move(item), VariantMode_dynamic_type);
 		token.meta[2] = AnyCast(unsigned int,token.meta[2]) + 1;
 	}
 }

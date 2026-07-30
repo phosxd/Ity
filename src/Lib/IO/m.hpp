@@ -43,7 +43,7 @@ Variant LIB_IO_key_in(ScopeState& _state, const ARR_t& args) {
 
 // Output text.
 Variant LIB_IO_out(ScopeState& state, const ARR_t& args) {
-	for (const Variant& var : args) std::cout << var.d;
+	for (const Variant& var : args) std::cout << var;
 	std::cout << std::flush; // Instantly print to the screen.
 	return VariantPresets.none;
 }
@@ -59,7 +59,7 @@ Variant LIB_IO_print(ScopeState& state, const ARR_t& args) {
 
 // Output text to the error pipe.
 Variant LIB_IO_print_err(ScopeState& _state, const ARR_t& args) {
-	for (const Variant& var : args) std::cerr << var.d;
+	for (const Variant& var : args) std::cerr << var;
 	std::cerr << '\n';
 	return VariantPresets.none;
 }
