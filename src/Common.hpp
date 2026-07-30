@@ -17,6 +17,7 @@ enum VariantType {
 	OP,
 	REF,
 	// Real types.
+	PTR,
 	NONE,
 	BOOL,
 	INT,
@@ -50,6 +51,7 @@ const std::string get_variant_type_name(const VariantType& type) {
 		case OP:           return "OP";
 		case REF:          return "REF";
 		// Real types.
+		case PTR:          return "PTR";
 		case BOOL:         return "BOOL";
 		case INT:          return "INT";
 		case FLOAT:        return "FLOAT";
@@ -70,6 +72,7 @@ const VariantType get_variant_type_from_name(const std::string& name) {
 	else if (name == "OP")    return OP;
 	else if (name == "REF")   return REF;
 	// Real types.
+	else if (name == "PTR")    return PTR;
 	else if (name == "BOOL")   return BOOL;
 	else if (name == "INT")    return INT;
 	else if (name == "FLOAT")  return FLOAT;
@@ -102,6 +105,7 @@ using MAP_t = std::unordered_map<STR_t,Variant>;
 using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
 
 using VariantData = std::variant<
+	Variant*,
 	std::monostate,
 	bool,
 	INT_t,
@@ -115,7 +119,6 @@ using VariantData = std::variant<
 	uint16_t,
 	VariantType,
 	VariantMode,
-	Variant*,
 	NativeFunc_t,
 
 	CompositeItem*,

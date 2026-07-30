@@ -13,8 +13,8 @@ func INT isqrt; arg INT n;
 
 func BOOL is_prime; arg INT n;
 	if n%2 == 0; return n == 2; /;
-	var INT r = isqrt:[n];
-	for i in range:[3, (r+1), 2];
+	const r = isqrt:[n] + 1;
+	for i in range:[3, r, 2];
 		if n%i == 0; return false; /;
 	/;
 	return true;
@@ -25,7 +25,7 @@ const count = prompt:['Count: '] -> INT;
 const INT start = now:['us'];
 
 
-var INT p = 2; while p <= count;
+for p in count;
 	if is_prime:[p]; print:[p]; /;
 	p += 1;
 /;

@@ -19,21 +19,23 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 		// Return the method.
 		if (it != methods.end()) {
 			MAP_t func = AnyCast(MAP_t,it->second.d); // Copy function.
-			func["__ba"].d = AnyCast(ARR_t,func["__ba"].d) + (ARR_t){Variant{INTERNAL, first}}; // Bind first variant to the function copy.
+			func["__ba"].d = AnyCast(ARR_t,func["__ba"].d) + (ARR_t){Variant{PTR, first}}; // Bind first variant to the function copy.
 			// Return copied function.
 			result = Variant{MAP, func, VariantMode_constant};
 			return;
 		}
 	}
 
+	Variant& source = (first->t == PTR) ? *(AnyCast(Variant*,first->d)) : *first;
+
 
 	// Access array element.
-	if (first->t == ARR) {
+	if (source.t == ARR) {
 		if (second->t != INT) {
-			emit_error(ERR_invalid_property_access, {get_variant_type_name(first->t), get_variant_type_name(second->t)});
+			emit_error(ERR_invalid_property_access, {get_variant_type_name(source.t), get_variant_type_name(second->t)});
 			return;
 		}
-		ARR_t& array = AnyCastV(ARR_t,first->d);
+		ARR_t& array = AnyCastV(ARR_t,source.d);
 		const INT_t& array_len = (INT_t)array.size();
 		INT_t index = AnyCastV(INT_t,second->d);
 		// Parse negative index.
@@ -50,12 +52,12 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 
 
 	// Access string character.
-	else if (first->t == STR) {
+	else if (source.t == STR) {
 		if (second->t != INT) {
-			emit_error(ERR_invalid_property_access, {get_variant_type_name(first->t), get_variant_type_name(second->t)});
+			emit_error(ERR_invalid_property_access, {get_variant_type_name(source.t), get_variant_type_name(second->t)});
 			return;
 		}
-		const STR_t& str = AnyCast(STR_t,first->d);
+		const STR_t& str = AnyCast(STR_t,source.d);
 		const INT_t& index = AnyCast(INT_t,second->d);
 		if (index >= (INT_t)str.size()) {
 			emit_error(ERR_index_out_of_range, {std::to_string(index)});
@@ -68,8 +70,8 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 
 	// Access object property.
 	// For hash tables, functions, or other objects.
-	else if (first->t == MAP) {
-		MAP_t& map = AnyCastV(MAP_t,first->d);
+	else if (source.t == MAP) {
+		MAP_t& map = AnyCastV(MAP_t,source.d);
 		// Determine type of the object.
 		const STR_t& obj_type = var_get_obj_type(map);
 
@@ -99,7 +101,7 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 		else {
 			// Throw error if accessor is not a string.
 			if (second->t != STR) {
-				emit_error(ERR_invalid_property_access, {get_variant_type_name(first->t), get_variant_type_name(second->t)});
+				emit_error(ERR_invalid_property_access, {get_variant_type_name(source.t), get_variant_type_name(second->t)});
 				return;
 			}
 			// Find key.
@@ -115,7 +117,7 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 		}
 
 	}
-	emit_error(ERR_invalid_property_access, {get_variant_type_name(first->t), get_variant_type_name(second->t)});
+	emit_error(ERR_invalid_property_access, {get_variant_type_name(source.t), get_variant_type_name(second->t)});
 }
 
 

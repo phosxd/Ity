@@ -12,8 +12,8 @@ def iSqrt(n):
 
 def is_prime(n):
     if n%2 == 0: return n == 2
-    r = iSqrt(n)
-    for i in range(3, r+1, 2):
+    r = iSqrt(n) + 1
+    for i in range(3, r, 2):
         if n%i == 0:
             return False
     return True
