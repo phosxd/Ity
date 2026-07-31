@@ -1,0 +1,7 @@
+import RangeIterator;
+merge IO;
+
+# Allocation-less range iteration.
+for i in RangeIterator.new:[0,100_000,2];
+	print:[i];
+/;

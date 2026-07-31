@@ -27,7 +27,7 @@ void INST_Func_exec(ScopeState& state, InstToken& token) {
 			{"__t",   VariantPresets.obj_type_f}, // Map type.
 			{"__i",   Variant{INT, (INT_t)token.i}}, // Function token index.
 			{"__si",  Variant{INT, (INT_t)get_state_depth(state)}}, // State index (depth).
-			{"__rt",  Variant{INTERNAL, get_variant_type_from_name(type_name)}}, // Return type.
+			{"__rt",  Variant{INT, (INT_t)get_variant_type_from_name(type_name)}}, // Return type.
 			{"__ba",  Variant{ARR, (ARR_t){}}}, // Bound args.
 		}},
 		VariantMode_constant

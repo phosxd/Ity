@@ -109,6 +109,13 @@ Variant LIB_BI_type_name(ScopeState& _state, const ARR_t& args) {
 }
 
 
+// Return the type of the given Variant.
+Variant LIB_BI_type(ScopeState& _state, const ARR_t& args) {
+	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	return Variant{INT, (INT_t)(args[0].t)};
+}
+
+
 // Return the length of the given array or string.
 Variant LIB_BI_length(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
@@ -331,13 +338,14 @@ const Variant LIB_BI {
 
 
 		// Type names.
-		{"NONE",   VariantPresets.none_type_str},
-		{"BOOL",   VariantPresets.bool_type_str},
-		{"INT",    VariantPresets.int_type_str},
-		{"FLOAT",  VariantPresets.float_type_str},
-		{"STR",    VariantPresets.str_type_str},
-		{"ARR",    VariantPresets.arr_type_str},
-		{"MAP",    VariantPresets.map_type_str},
+		{"ANY",    VariantPresets.any_type_int},
+		{"NONE",   VariantPresets.none_type_int},
+		{"BOOL",   VariantPresets.bool_type_int},
+		{"INT",    VariantPresets.int_type_int},
+		{"FLOAT",  VariantPresets.float_type_int},
+		{"STR",    VariantPresets.str_type_int},
+		{"ARR",    VariantPresets.arr_type_int},
+		{"MAP",    VariantPresets.map_type_int},
 
 		// System signals.
 		{"SIGNAL", Variant{
@@ -371,7 +379,8 @@ const Variant LIB_BI {
 		{"system",     NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_system)},
 		{"sleep",      NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_sleep)},
 		{"get_state",  NativeFuncTrans(MAP,   (NativeFunc_t)LIB_BI_get_state)},
-		{"type_name",  NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type_name)},
+		{"type_name",  NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_type_name)},
+		{"type",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type)},
 		{"length",     NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_length)},
 		{"size",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)},
 		{"range",      NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_range)},

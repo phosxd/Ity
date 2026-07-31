@@ -1,0 +1,37 @@
+# RangeIterator
+# -------------
+#
+# Implements an efficient range iterator.
+#
+# How is this different from the built-in `range` method?
+#   `range` allocates a literal `ARR` containing a range of integers.
+#   This becomes problematic when creating a range of very large numbers.
+#
+#   RangeIterator just implements an iterable object with a counter instead.
+#
+#
+# PART OF THE STANDARD SET OF ITY MODULES.
+
+
+func MAP RangeIterator_new; arg INT start; arg INT end; arg INT step=1;
+	return {
+		'__t', 'rangeIt',
+		'__iter', RangeIterator_iter,
+		'i', start,
+		's', step,
+		'e', end,
+	};
+/;
+
+
+func ARR RangeIterator_iter; arg PTR obj;
+	obj.i += (obj.s);
+	if obj.i == (obj.e); return [false, none]; /;
+	return [true, (obj.i)];
+/;
+
+
+const MAP __module__ = {
+	'__name', 'RangeIterator',
+	'new', RangeIterator_new,
+};

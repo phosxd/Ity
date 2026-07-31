@@ -11,7 +11,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 	}
 
 	const INT_t& func_token_index = AnyCast(INT_t,func.at("__i").d);
-	const VariantType& func_return_type = AnyCast(VariantType,func.at("__rt").d);
+	const VariantType& func_return_type = static_cast<VariantType>(AnyCast(INT_t,func.at("__rt").d));
 	const InstToken& func_token = InstTokenSeq[func_token_index];
 
 	// Throw error if token is not a function token.
@@ -479,12 +479,17 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 		STR_t key;
 		for (ExprToken& subtoken : token.seq) {
 			if (is_key) {
+				// Get key.
+				const Variant* var = nullptr;
+				if (subtoken.t == ExprTokenType_sequence) var = expr_exec_(state, subtoken, current_line, current_column);
+				else var = resolve_variant(state, subtoken.var);
 				// Throw error if key is not a string.
-				if (subtoken.var.t != STR) {
+				if (var->t != STR) {
 					emit_error(ERR_invalid_syntax, {"Map key must be a string"});
 					return new Variant{};
 				}
-				key = AnyCast(STR_t,subtoken.var.d);
+				// Apply key.
+				key = AnyCast(STR_t,var->d);
 				is_key = false;
 			}
 			else {

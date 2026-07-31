@@ -1015,7 +1015,7 @@ for i in 3;
 merge IO;
 
 func NONE do_modification; arg PTR obj;
-	if type_name:[~obj] != ARR;
+	if type:[~obj] != ARR;
 		throw 'Invalid pointer value, not an array.';
 	/;
 	obj += [3]; # Add an item to the referenced array.

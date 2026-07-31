@@ -1,5 +1,7 @@
 - Add `STR` type methods: `split`, `join`, `erase`.
 - Add ability to import other scripts as modules.
+
+- Fix crash when printing debug for InstToken & ExprToken. I think it has loosely something to do with pointer variants.
  
 
 Add more FileAccess methods:

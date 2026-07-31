@@ -1,0 +1,41 @@
+# VarMap
+# ------
+#
+# Implements a custom data container similar to `MAP`, but keys can be of any type, not just `STR`.
+#
+# Keys must still be convertible to `STR`, as this uses the built-in `MAP` data type internally.
+#
+# PART OF THE STANDARD SET OF ITY MODULES.
+
+
+func MAP VarMap_new;
+	return {
+		'__t', 'varM',
+		'data', {},
+	};
+/;
+
+
+func ANY VarMap_get; arg PTR S; arg ANY key;
+	const STR str_key = ((type:[key]->STR)+':'+(key->STR));
+	if S.data.has:[str_key];
+		return S.data:str_key;
+	/;
+	return none;
+/;
+
+
+func NONE VarMap_set; arg PTR S; arg ANY key; arg ANY value;
+	const STR key_str = ((type:[key]->STR)+':'+(key->STR));
+	S.data += {key_str, value};
+/;
+
+
+const MAP __module__ = {
+	'__name', 'VarMap',
+	'__tm', {
+		'MAP(varM):get', VarMap_get,
+		'MAP(varM):set', VarMap_set,
+	},
+	'new', VarMap_new,
+};
