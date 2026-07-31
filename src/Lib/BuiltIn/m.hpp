@@ -185,6 +185,26 @@ Variant LIB_BI_rand(ScopeState& _state, const ARR_t& args) {
 // -------------
 
 
+// Pointer.
+// --------
+
+// Reassign pointer address.
+Variant LIB_BI_tm_ptr_reassign(ScopeState& _state, const ARR_t& args) {
+	if (not expect_arg_count(args, 2)) return VariantPresets.none;
+	if (not expect_arg_types(args[1], {PTR}, 1)) return VariantPresets.none;
+	// Get data.
+	Variant* data = AnyCastV(Variant*,args[0].d);
+	// Throw error if data is constant.
+	if (data->m == VariantMode_constant) {
+		emit_error(ERR_cannot_change_constant);
+		return VariantPresets.none;
+	}
+	// Reassign pointer.
+	data->d = AnyCastV(Variant*,args[1].d);
+	return VariantPresets.none;
+}
+
+
 // String.
 // -------
 
@@ -213,12 +233,7 @@ Variant LIB_BI_tm_arr_map_erase(ScopeState& _state, ARR_t& args) {
 	}
 
 	if (var->t == ARR) {
-		// Throw error if argument is not an integer.
-		if (args[1].t != INT) {
-			emit_error(ERR_invalid_func_arg_type, {"1", "INT", get_variant_type_name(args[1].t)});
-			return VariantPresets.none;
-		}
-
+		if (not expect_arg_types(args[1], {INT}, 1)) return VariantPresets.none;
 		// Get data & index.
 		ARR_t& data = AnyCastV(ARR_t, var->d );
 		const INT_t& index = AnyCast(INT_t,args[1].d);
@@ -227,12 +242,7 @@ Variant LIB_BI_tm_arr_map_erase(ScopeState& _state, ARR_t& args) {
 	}
 
 	else if (var->t == MAP) {
-		// Throw error if argument is not a string.
-		if (args[1].t != STR) {
-			emit_error(ERR_invalid_func_arg_type, {"1", "STR", get_variant_type_name(args[1].t)});
-			return VariantPresets.none;
-		}
-
+		if (not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
 		// Get data & map.
 		MAP_t& data = AnyCastV(MAP_t, var->d );
 		const STR_t& key = AnyCast(STR_t,args[1].d);
@@ -267,10 +277,7 @@ Variant LIB_BI_tm_map_keys(ScopeState& _state, ARR_t& args) {
 // Return whether or not the `MAP` has the given key.
 Variant LIB_BI_tm_map_has(ScopeState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (args[1].t != STR) {
-		emit_error(ERR_invalid_func_arg_type, {"1", "STR", get_variant_type_name(args[1].t)});
-		return VariantPresets.none;
-	}
+	if (not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
 
 	// Get data & key.
 	const MAP_t& data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d );
@@ -287,10 +294,7 @@ Variant LIB_BI_tm_map_has(ScopeState& _state, ARR_t& args) {
 // Bind arguments to the function.
 Variant LIB_BI_tm_func_bind(ScopeState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (args[1].t != ARR) {
-		emit_error(ERR_invalid_func_arg_type, {"1", "ARR", get_variant_type_name(args[1].t)});
-		return VariantPresets.none;
-	}
+	if (not expect_arg_types(args[1], {ARR}, 1)) return VariantPresets.none;
 
 	// Get data.
 	MAP_t data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d ); // Copy the function.
@@ -314,6 +318,8 @@ const Variant LIB_BI {
 		// Type methods.
 		{"__tm", Variant{
 			MAP, (MAP_t){
+				{"PTR:reassign", NativeFuncTrans(PTR, (NativeFunc_t)LIB_BI_tm_ptr_reassign)},
+
 				{"STR:raw",    NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_tm_str_raw)},
 				{"ARR:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
 				{"MAP:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},

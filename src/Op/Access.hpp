@@ -1,48 +1,62 @@
 #pragma once
 
 
-void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const std::string& _symbol, Variant& result, Variant*& result_ptr) {
-	// Try to access type method.
-	if (second->t == STR && not is_name_globally_free(state, "__tm__")) {
-		// Find & return method.
-		MAP_t& methods = AnyCastV(MAP_t,get_data_globally(state, "__tm__")->d);
-		const std::string type_name = get_variant_type_name(first->t);
-		const STR_t& method_name = AnyCast(STR_t,second->d);
-		MAP_t::iterator it = methods.find((type_name+':'+method_name));
+const bool OP_Access_type_method(const std::string& type_name, const STR_t& method_name, MAP_t& methods, Variant*& o1, Variant& result) {
+	MAP_t::iterator it = methods.find((type_name+':'+method_name));
 
-		// If method not found in top level type, try in the MAP type.
-		if (first->t == MAP && it == methods.end()) {
-			const STR_t& map_type = var_get_obj_type(AnyCast(MAP_t,first->d));
-			it = methods.find( (type_name+'('+map_type+')'+':'+method_name) );
-		}
-
-		// Return the method.
-		if (it != methods.end()) {
-			MAP_t func = AnyCast(MAP_t,it->second.d); // Copy function.
-			func["__ba"].d = AnyCast(ARR_t,func["__ba"].d) + (ARR_t){Variant{PTR, first}}; // Bind first variant to the function copy.
-			// Return copied function.
-			result = Variant{MAP, func, VariantMode_constant};
-			return;
-		}
+	// If method not found in top level type, try in the MAP type.
+	if (o1->t == MAP && it == methods.end()) {
+		const STR_t& map_type = var_get_obj_type(AnyCast(MAP_t,o1->d));
+		it = methods.find( (type_name+'('+map_type+')'+':'+method_name) );
 	}
 
-	Variant& source = (first->t == PTR) ? *(AnyCast(Variant*,first->d)) : *first;
+	// Return the method.
+	if (it != methods.end()) {
+		MAP_t func = AnyCast(MAP_t,it->second.d); // Copy function.
+		func["__ba"].d = AnyCast(ARR_t,func["__ba"].d) + (ARR_t){Variant{PTR, o1}}; // Bind first variant to the function copy.
+		// Return copied function.
+		result = Variant{MAP, func, VariantMode_constant};
+		return true;
+	}
+	return false;
+}
+
+
+
+
+void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const std::string& _symbol, Variant& result, Variant*& result_ptr) {
+	Variant* o1 = resovlve_potential_pointer(first);
+	Variant* o2 = resovlve_potential_pointer(second);
+
+
+	// Try to access type method.
+	if (o2->t == STR && not is_name_globally_free(state, "__tm__")) {
+		// Find & return method.
+		MAP_t& methods = AnyCastV(MAP_t,get_data_globally(state, "__tm__")->d);
+		const STR_t& method_name = AnyCast(STR_t,second->d);
+		// Try pointer type methods first.
+		if (first->t == PTR) {
+			if (OP_Access_type_method(get_variant_type_name(first->t), method_name, methods, first, result)) return;
+		}
+		// Try.
+		if (OP_Access_type_method(get_variant_type_name(o1->t), method_name, methods, o1, result)) return;
+	}
 
 
 	// Access array element.
-	if (source.t == ARR) {
-		if (second->t != INT) {
-			emit_error(ERR_invalid_property_access, {get_variant_type_name(source.t), get_variant_type_name(second->t)});
+	if (o1->t == ARR) {
+		if (o2->t != INT) {
+			emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 			return;
 		}
-		ARR_t& array = AnyCastV(ARR_t,source.d);
+		ARR_t& array = AnyCastV(ARR_t,o1->d);
 		const INT_t& array_len = (INT_t)array.size();
-		INT_t index = AnyCastV(INT_t,second->d);
+		INT_t index = AnyCastV(INT_t,o2->d);
 		// Parse negative index.
 		if (index < 0) index = array_len+index;
 		// Throw error if index out of range.
 		if (index >= array_len || index < 0) {
-			emit_error(ERR_index_out_of_range, {std::to_string(AnyCast(INT_t,second->d))}); // Use original given index for error to reduce confusion in negative index cases.
+			emit_error(ERR_index_out_of_range, {std::to_string(AnyCast(INT_t,o2->d))}); // Use original given index for error to reduce confusion in negative index cases.
 			return;
 		}
 		// Return reference to array element.
@@ -52,13 +66,13 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 
 
 	// Access string character.
-	else if (source.t == STR) {
-		if (second->t != INT) {
-			emit_error(ERR_invalid_property_access, {get_variant_type_name(source.t), get_variant_type_name(second->t)});
+	else if (o1->t == STR) {
+		if (o2->t != INT) {
+			emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 			return;
 		}
-		const STR_t& str = AnyCast(STR_t,source.d);
-		const INT_t& index = AnyCast(INT_t,second->d);
+		const STR_t& str = AnyCast(STR_t,o1->d);
+		const INT_t& index = AnyCast(INT_t,o2->d);
 		if (index >= (INT_t)str.size()) {
 			emit_error(ERR_index_out_of_range, {std::to_string(index)});
 			return;
@@ -70,28 +84,28 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 
 	// Access object property.
 	// For hash tables, functions, or other objects.
-	else if (source.t == MAP) {
-		MAP_t& map = AnyCastV(MAP_t,source.d);
+	else if (o1->t == MAP) {
+		MAP_t& map = AnyCastV(MAP_t,o1->d);
 		// Determine type of the object.
 		const STR_t& obj_type = var_get_obj_type(map);
 
 		// Access function...
 		if (obj_type == "f") {
 			// Throw error if accessor is not an array.
-			if (second->t != ARR) {
-				emit_error(ERR_invalid_func_call, {get_variant_type_name(second->t)});
+			if (o2->t != ARR) {
+				emit_error(ERR_invalid_func_call, {get_variant_type_name(o2->t)});
 				return;
 			}
 			// Call native function...
 			if (const auto& it = map.find("__nc"); it != map.end()) {
 				const NativeFunc_t& n_func = AnyCast(NativeFunc_t,it->second.d);
-				const ARR_t& n_args = AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,second->d); // Merge bound arguments.
+				const ARR_t& n_args = AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,o2->d); // Merge bound arguments.
 				result = n_func(state, n_args);
 				return;
 			}
 			// Call script function...
 			else {
-				Variant args {ARR, (AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,second->d))}; // Merge bound arguments.
+				Variant args {ARR, (AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,o2->d))}; // Merge bound arguments.
 				result = call_script_function(state, map, args);
 				return;
 			}
@@ -100,12 +114,12 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 		// Access as map if type doesn't match any of the above...
 		else {
 			// Throw error if accessor is not a string.
-			if (second->t != STR) {
-				emit_error(ERR_invalid_property_access, {get_variant_type_name(source.t), get_variant_type_name(second->t)});
+			if (o2->t != STR) {
+				emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 				return;
 			}
 			// Find key.
-			const STR_t& key = AnyCast(STR_t,second->d);
+			const STR_t& key = AnyCast(STR_t,o2->d);
 			const auto& it = map.find(key);
 			if (it == map.end()) {
 				emit_error(ERR_no_property_with_name, {key});
@@ -117,7 +131,7 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 		}
 
 	}
-	emit_error(ERR_invalid_property_access, {get_variant_type_name(source.t), get_variant_type_name(second->t)});
+	emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 }
 
 

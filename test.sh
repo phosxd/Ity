@@ -1008,9 +1008,96 @@ for i in 3;
 
 # 44
 
-""
+"
+# Passing / modifying pointer values
+# -----------------------------------
 
-""
+merge IO;
+
+func NONE do_modification; arg PTR obj;
+	if type_name:[~obj] != ARR;
+		throw 'Invalid pointer value, not an array.';
+	/;
+	obj += [3]; # Add an item to the referenced array.
+/;
+
+
+var ARR my_arr = [1,2];
+do_modification:[@my_arr];
+print:[my_arr];
+"
+
+"[1, 2, 3]"
+
+# 45
+
+"
+merge IO;
+
+# Declare variables we can point to.
+var a = 0;
+var b = 0;
+
+# Assign pointers.
+const a_ptr = @a;
+const b_ptr = @b;
+
+# Set value.
+a = 10;
+b = 5;
+
+# Use pointers just like it were the real value.
+print:[( a_ptr + b_ptr )];
+
+# Setting the value on a pointer sets the referenced variant, doesn't overwrite the pointer.
+a_ptr = 99;
+print:[a];
+
+var copy_of_a = ~a_ptr;
+copy_of_a = 0; # 'a' & 'a_ptr' unchanged.
+print:[copy_of_a];
+print:[a];
+
+"
+
+"15
+99
+0
+99"
+
+# 46
+
+"
+# Reassign pointer
+# ----------------
+
+merge IO;
+
+const a = 10;
+const b = 20;
+
+var ptr = @a;
+print:[ptr];
+ptr.reassign:[@b];
+print:[ptr];
+"
+
+"10
+20"
+
+# 47
+
+"
+# Fail reassign const pointer
+# ---------------------------
+
+var a = 1;
+var b = 2;
+const ptr = @a;
+ptr.reassign:[@b]; # Should throw const value error.
+"
+
+"Error: 29"
 )
 
 

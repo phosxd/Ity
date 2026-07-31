@@ -62,6 +62,9 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 }
 
 
+#define resovlve_potential_pointer(var) (var->t == PTR) ? AnyCast(Variant*,var->d) : var;
+
+
 
 
 #include "Op/Arith.hpp"
@@ -72,7 +75,7 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 
 
 constexpr std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
-constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
+constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}@~" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
 const std::unordered_map<std::string, const Operation*> OPERATIONS = {
 	{"+",  &OP_Arith},
 	{"-",  &OP_Arith},
@@ -304,7 +307,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 					item.var.t = NONE;
 				}
 				// Set type reference.
-				else if (is_valid_name(std::string(1,ch))) {
+				else if (ch == '@' || ch == '~' || is_valid_name(std::string(1,ch))) {
 					if (next_ref_is_str_) item.var.t = STR; // Set type as string but don't set `is_string` so it's not treated as a string.
 					else item.var.t = REF;
 				}
@@ -424,8 +427,20 @@ std::vector<Variant> temporary_pool;
 Variant* resolve_variant(ScopeState& state, Variant& item) {
 	if (item.t == REF) {
 		const STR_t& name = AnyCast(STR_t,item.d);
-		if (not is_name_globally_free(state, name)) return get_data_globally(state, name);
-		emit_error(ERR_name_does_not_exist, {name});
+		const STR_t& real_name = trim_left(trim_left(name,'@'),'~');
+		if (not is_name_globally_free(state, real_name)) {
+			Variant* ptr = get_data_globally(state, real_name);
+			if (name[0] == '@') {temporary_pool.push_back(Variant{PTR, ptr}); return &temporary_pool.back();}
+			if (name[0] == '~') {
+				if (ptr->t != PTR) {
+					emit_error(ERR_cannot_dereference, {real_name});
+					return &item;
+				}
+				return AnyCast(Variant*,ptr->d);
+			}
+			return ptr;
+		}
+		emit_error(ERR_name_does_not_exist, {real_name});
 	}
 
 	return &item;

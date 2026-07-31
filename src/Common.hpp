@@ -176,6 +176,7 @@ size_t get_variant_size(const Variant& var) {
 
 std::ostream& operator<<(std::ostream& os, const Variant& var) {
 	switch (var.t) {
+		case PTR: {os << *AnyCast(Variant*,var.d); break;}
 		case BOOL: {os << (AnyCast(bool,var.d) ? "true" : "false"); break;}
 		case INT: {os << AnyCast(INT_t,var.d); break;}
 		case FLOAT: {os << std::to_string(AnyCast(FLOAT_t,var.d)); break;} // `std::cout` wont show the full precision by default, so we convert to string.
@@ -670,7 +671,7 @@ INT_t var_to_int(const Variant& var) {
 		case FLOAT:  return (INT_t)AnyCast(FLOAT_t,var.d);
 		case STR: {
 			const STR_t& d = AnyCast(STR_t,var.d);
-			if (d.size() == 0 || NUM.find(d[0]) == std::string::npos) return 0;
+			if (d.size() == 0 || NUM.find(d[0]) == std::string::npos || not is_int_str_32_in_range(d)) return 0;
 			return std::stoi(d);
 		}
 

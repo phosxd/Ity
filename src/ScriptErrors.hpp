@@ -9,12 +9,14 @@ enum ERR_CODE {
 	ERR_unknown_module,
 	ERR_disallowed_member_in_safe_mode,
 
+	// 6
 	ERR_max_composite_size,
 	ERR_no_composite_requiring_end,
 	ERR_no_composite_end,
 	ERR_no_string_end,
 	ERR_max_execution_depth,
 
+	// 11
 	ERR_invalid_syntax,
 	ERR_invalid_inst_arg_count,
 	ERR_invalid_op,
@@ -23,6 +25,7 @@ enum ERR_CODE {
 	ERR_invalid_cast,
 	ERR_unexpected_inst,
 
+	// 18
 	ERR_operand_type_mismatch,
 	ERR_assignment_type_mismatch,
 	ERR_return_type_mismatch,
@@ -30,6 +33,7 @@ enum ERR_CODE {
 	ERR_expected_boolean_expression,
 	ERR_expected_string_expression,
 
+	// 24
 	ERR_name_is_taken,
 	ERR_name_is_shadowed,
 	ERR_name_must_not_contain_symbols,
@@ -49,6 +53,7 @@ enum ERR_CODE {
 
 	ERR_unexpected_char_at_expr_end,
 	ERR_invalid_character_for_construct,
+	ERR_cannot_dereference,
 };
 
 
@@ -179,6 +184,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 
 	else if (code == ERR_unexpected_char_at_expr_end)       return "Unexpected character \"" + args[0] + "\" at end of expression.";
 	else if (code == ERR_invalid_character_for_construct)   return "Invalid character for " + args[0] + " construct: \"" + args[1] + "\".";
+	else if (code == ERR_cannot_dereference)                return "Cannot dereference \"" + args[0] + "\". Not a pointer.";
 	#endif
 
 	return "";
