@@ -2,13 +2,15 @@
 
 
 void OP_Compare_pre_exec(ScopeState& _state, Variant*& first, const std::string& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
+	Variant*& o1 = resovlve_potential_pointer(first);
+
 	if (symbol == "&&") {
-		eval_second_operand = *first == VariantPresets.bool_true;
+		eval_second_operand = *o1 == VariantPresets.bool_true;
 		result = VariantPresets.bool_false;
 		return;
 	}
 	else if (symbol == "||") {
-		eval_second_operand = *first == VariantPresets.bool_false;
+		eval_second_operand = *o1 == VariantPresets.bool_false;
 		result = VariantPresets.bool_true;
 		return;
 	}
@@ -16,15 +18,18 @@ void OP_Compare_pre_exec(ScopeState& _state, Variant*& first, const std::string&
 
 
 void OP_Compare_exec(ScopeState& _state, Variant*& first, Variant*& second, const std::string& symbol, Variant& result, Variant*& _result_ptr) {
+	Variant*& o1 = resovlve_potential_pointer(first);
+	Variant*& o2 = resovlve_potential_pointer(second);
+
 	bool test = false;
-	if (symbol == "==")       test = *first == *second;
-	else if (symbol == "!=")  test = not (*first == *second);
-	else if (symbol == ">")   test = *first > *second;
-	else if (symbol == "<")   test = *first < *second;
-	else if (symbol == ">=")  test = *first == *second || *first > *second;
-	else if (symbol == "<=")  test = *first == *second || *first < *second;
-	else if (symbol == "&&")  test = *first == VariantPresets.bool_true && *second == VariantPresets.bool_true;
-	else if (symbol == "||")  test = *first == VariantPresets.bool_true || *second == VariantPresets.bool_true;
+	if (symbol == "==")       test = *o1 == *o2;
+	else if (symbol == "!=")  test = not (*o1 == *o2);
+	else if (symbol == ">")   test = *o1 > *o2;
+	else if (symbol == "<")   test = *o1 < *o2;
+	else if (symbol == ">=")  test = *o1 == *o2 || *o1 > *o2;
+	else if (symbol == "<=")  test = *o1 == *o2 || *o1 < *o2;
+	else if (symbol == "&&")  test = *o1 == VariantPresets.bool_true && *o2 == VariantPresets.bool_true;
+	else if (symbol == "||")  test = *o1 == VariantPresets.bool_true || *o2 == VariantPresets.bool_true;
 	result = Variant{BOOL, test};
 }
 

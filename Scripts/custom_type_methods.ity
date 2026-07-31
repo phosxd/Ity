@@ -2,20 +2,29 @@
 import IO;
 
 
-func STR STRMethod_hello; arg ANY obj; arg INT times = 1;
-	# Hacking type methods like this does not allow you to access the object the method was called on. At least not yet.
-	IO.print:[('Hello World! ' * times)]; # But you can still supply then use arguments in custom methods.
+func NONE my_STR_method; arg PTR obj; arg INT times = 1;
+	# Pointer to the object the method was called on can be used.
+	# If you know for certain that you will only be calling this function as a method for a specific type, you can skip the type check.
+
+	if type_name:[~obj] != STR; # Very important: `obj` is of type `PTR`, we need to get the actual value it is holding & check *that* type. We use `~` to do that.
+		throw 'Invalid type.';
+	/;;
+
+	# Pointers can be used just as if they are the value it is representing.
+	obj += (' Hello World!' * times);
 /;
 
 
 # Add our own function to the type methods global.
-__tm__ += {'STR:hello', STRMethod_hello};
-# "STR" is the type this method is available to & "hello" is the name of the method.
+__tm__ += {'STR:add_hello_world', my_STR_method};
+# "STR" is the type this method is available to & "add_hello_world" is the name of the method.
 
 # I should also note that in the same way you can add to the type methods map, you can remove & override existing methods. Do what you will with that information.
 
 
 # Create a new STR.
-var my_str = '';
+var my_str = 'Yoo!';
 # Call our custom method on it.
-my_str.hello:[3];
+my_str.add_hello_world:[2];
+# Print the changes it made to our STR.
+IO.print:[my_str];
