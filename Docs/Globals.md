@@ -136,15 +136,16 @@ length:[[1,2,3,4]]; # Returns 4.
 ```
 
 ### INT size (ANY var)
-A function that returns an `INT` representing the size (in bytes) of a given variable.
+A function that returns an `INT` representing the size (in bytes) of a given variable. Including variant type & mode data (2 bytes extra).
 
 ```python
-size:[0];              # Usually returns 4 (assuming a 32-bit integer).
-size:['Hello World!']; # Returns the number of characters in the string.
-size:[[1,2,3,4]];      # Returns 52.
+size:[0];              # Returns 4 (32-bit int) + 2 (type & mode info).
+size:['Hello World!']; # Returns the number of characters in the string + 2.
+size:[[1,2,3,4]];      # Returns 50.
 
-size:[{'a',1, 'b',2, 'c',3, 'd',4}]; # Returns 52 as well.
-size:[{'array value',[1,2,3,4]}];    # Returns 71.
+# Arrays & maps are particularly bulky.
+size:[{'a',1, 'b',2, 'c',3, 'd',4}]; # Returns 86.
+size:[{'array value',[1,2,3,4]}];    # Returns 119.
 ```
 
 ### ARR range (INT start, INT end, INT step=1)
@@ -203,7 +204,7 @@ map.keys:[]; # Returns ["c", "b", "a"].
 Returns whether or not the given key exists inside the map.
 
 ### MAP(f) `MAP(f)`.bind (ARR args)
-Returns a new function object with the given `ARR` added it's bound arguments.
+Returns a new function object with the given `ARR` added to it's bound arguments.
 
 Calling a function with bound arguments will pass them as the first arguments into the function, user specified arguments will be last.
 

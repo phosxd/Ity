@@ -101,9 +101,9 @@ You can get an individual character from a string by using the accessor operator
 
 ```python
 const STR my_str = 'abcdefg';
-my_str:0;  # Gives "a";
-my_str:5;  # Gives "f";
-'abc':1;   # Gives "b";
+my_str:0;  # Gives "a".
+my_str:5;  # Gives "f".
+'abc':1;   # Gives "b".
 ```
 
 Adding an `INT` to a string will append the ASCII representation of the integer to the string.
@@ -151,7 +151,7 @@ my_arr += [4];
 # my_arr = [-1, 2, 3, 4]
 ```
 
-The final thing you need to be able to do with an array is to remove an element. This cannot be done with any operators, for this you must call the `erase` candidate method on the array.
+The final thing you need to be able to do with an array is to remove an element. This cannot be done with any operators, for this you must call the `erase` type method on the array.
 
 ```python
 var ARR my_arr = [1,2,3,4];
@@ -160,7 +160,9 @@ my_arr.erase:[0]; # Remove first item.
 ```
 
 ## MAP
-Holds an unordered hash table in which the keys are strings & the values are variants which can of any type. Maps can also represent complex objects like functions or interfaces, however it is discouraged to try to declare an object using map declaration syntax.
+Holds an unordered hash table in which the keys are strings & the values are variants which can of any type. Maps can also represent complex objects like functions, interfaces, or custom types with their own iterators & methods.
+
+If you require a map that can hold other simple data types as a key (not just `STR`), use the `VarMap` module.
 
 Unlike dictionaries you would find in most other languages, maps are declared like so: `{'key', 'value'}` instead of the convention `{'key': 'value'}`.
 
@@ -170,7 +172,7 @@ Unlike dictionaries you would find in most other languages, maps are declared li
 	'integer_field', 900_000,
 	'float_field', 0.28450,
 	'string_field', "Hello there!",
-	'keys can have spaces', 'However, it wont be accessible with the "." symbol'
+	'keys can have spaces', 'However, it wont be accessible with the "." symbol',
 };
 ```
 
@@ -198,14 +200,14 @@ my_map += {'c', 3};
 # my_map = {'a',100, 'b',2, 'c',3}
 ```
 
-If you want to check if a key exists in the map, you will need to use the `has` candidate method on the map.
+If you want to check if a key exists in the map, you will need to use the `has` type method on the map.
 
 ```python
 const MAP my_map = {'a',1, 'b',2};
 my_map.has:['a']; # Returns true.
 ```
 
-Removing a key-value pair from a map also requires a candidate method. Use `erase` to do this.
+Removing a key-value pair from a map also requires a type method. Use `erase` to do this.
 
 ```python
 my_map.erase:['a'];
@@ -498,6 +500,57 @@ var INT i = -1; while true; i += 1;
 /;
 ```
 
+## For
+A more convenient way to iterate over a set of items.
+
+```python
+merge IO:
+
+# Print numbers 0 to 9.
+for i in 10;
+	print:[i];
+/;
+
+
+# Print items 1, 2, "3".
+for i in [1,2,'3'];
+	print:[i];
+/;
+
+
+# Print numbers 0, 2, 4, 6, 8.
+for i in range:[0,10,2];
+	print:[i];
+/;
+```
+
+The `range` function can be useful, but it comes at a cost of allocating a literal array with numbers inside, which is bad for large range. For larger ranges you should consider using the `RangeIterator` script-module which implements an iterable object that does not generate an array.
+
+```python
+# Safer range iteration.
+import RangeIterator;
+
+# Print numbers 0, 2, 4, 6, 8.
+for i in RangeIterator.new:[0,10,2];
+	print:[i];
+/;
+```
+
+You can iterate over keys in a `MAP` as well.
+
+```python
+merge IO;
+
+const map = {'a',1, 'b'2, 'c',3};
+# Print keys "a", "b", "c".
+# Print value 1, 2, 3.
+# (Note: order not determined)
+for i in map.keys:[];
+	print:[i];
+	print:[(map:i)];
+/;
+```
+
 ## Throw / Exit
 You can terminate the program safely, or with an error, using `throw` or `exit`.
 
@@ -561,3 +614,9 @@ Libraries enable you to actually do more complex things with relative ease, here
 - [Time](Lib/Time.md)
 - [Math](Lib/Math.md)
 - [FileAccess](Lib/FileAccess.md)
+
+Script-based modules (not built-into the interpreter binary):
+- [StrUtil](Lib/StrUtil.md)
+- [ArrUtil](Lib/ArrUtil.md)
+- [RangeIterator](Lib/RangeIterator.md)
+- [VarMap](Lib/VarMap.md)
