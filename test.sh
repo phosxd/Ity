@@ -1098,6 +1098,47 @@ ptr.reassign:[@b]; # Should throw const value error.
 "
 
 "Error: 29"
+
+# 48
+
+"
+# Very large expression comprehension
+# ------------------------------------
+
+merge IO;
+
+# Safe.
+print:[(
+	(true == true) && (true == true) && (true == true) && (true == true)
+	&& (true == true) && (true == true) && (true == true)
+)];
+
+print:['Passed'];
+
+# Unsafe.
+print:[(
+	(true == true) && (true == true) && (true == true) && (true == true)
+	&& (true == true) && (true == true) && (true == true) && (true == true)
+	&& (true == true) && (true == true) && (true == true) && (true == true)
+)];
+"
+
+"true
+Passed
+true
+Error: 42"
+
+# 49
+
+""
+
+""
+
+# 50
+
+""
+
+""
 )
 
 
@@ -1130,7 +1171,12 @@ for (( idx=0; idx<${#tests[@]}; idx+=2 )); do
 		echo "${i}"
 		echo "${BOLD}Test case debug results:${RESET}"
 		echo
-		echo "$(./ity.bin -d-full .test.ity)"
+		try1=$(./ity.bin -d-full .test.ity)
+		if [[ $try1 == "" ]]; then
+			./ity.bin -d-result .test.ity
+		else
+			echo "$try1"
+		fi
 		echo
 		echo "- - - - - - - - - - - - - - - - - - - -"
 		echo

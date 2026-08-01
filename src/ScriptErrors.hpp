@@ -40,6 +40,7 @@ enum ERR_CODE {
 	ERR_name_does_not_exist,
 	ERR_cannot_initialize_value,
 	ERR_cannot_change_constant,
+	// 30
 	ERR_constant_type_not_explicit,
 	ERR_invalid_property_access,
 	ERR_index_out_of_range,
@@ -49,11 +50,13 @@ enum ERR_CODE {
 	ERR_invalid_func_arg_type,
 	ERR_no_args_available,
 
+	// 38
 	ERR_cannot_multiply_by_negative,
 
 	ERR_unexpected_char_at_expr_end,
 	ERR_invalid_character_for_construct,
 	ERR_cannot_dereference,
+	ERR_max_temporaries_in_use,
 };
 
 
@@ -185,6 +188,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 	else if (code == ERR_unexpected_char_at_expr_end)       return "Unexpected character \"" + args[0] + "\" at end of expression.";
 	else if (code == ERR_invalid_character_for_construct)   return "Invalid character for " + args[0] + " construct: \"" + args[1] + "\".";
 	else if (code == ERR_cannot_dereference)                return "Cannot dereference \"" + args[0] + "\". Not a pointer.";
+	else if (code == ERR_max_temporaries_in_use)            return "Reduce one-off expression complexity; Maximum number of temporaries in use (" + args[0] + "/" + args[1] + "). This will cause corruption!";
 	#endif
 
 	return "";

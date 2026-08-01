@@ -1,6 +1,13 @@
 #pragma once
 
 
+constexpr unsigned int MAX_TEMPORARY_POOL_RESERVE = 16;
+// This is a pool of all temporaries created in an expression.
+// Systems have exactly until the next expr exec call to use the data of a temporary, before it gets deleted.
+std::vector<Variant> temporary_pool;
+std::vector<std::vector<Variant>> temporary_pool_stack;
+
+
 
 
 Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args) {
@@ -23,6 +30,9 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 
 	//call_trace.push_back(current_line); call_trace.push_back(current_column);
 	push_back_ongoing_scopes(); // Save ongoing scopes for later.
+	temporary_pool_stack.push_back(std::move(temporary_pool));
+	temporary_pool = {};
+
 	// Create an alternate scope, for use inside the function.
 	ScopeState func_state = create_new_scope_state(
 		(MAP_t){
@@ -38,6 +48,8 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 
 	Ity::exec(func_state, InstTokenSeq, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
 	restore_ongoing_scopes(); // Restore previously ongoing scopes, now that we are out of the function.
+	temporary_pool = std::move(temporary_pool_stack.back());
+	temporary_pool_stack.pop_back();
 
 
 	// Get result & check if return type matches.
@@ -419,11 +431,6 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 
 
 
-// This is a pool of all temporaries created in an expression.
-// Systems have exactly until the next expr exec call to use the data of a temporary, before it gets deleted.
-std::vector<Variant> temporary_pool;
-
-
 Variant* resolve_variant(ScopeState& state, Variant& item) {
 	if (item.t == REF) {
 		const STR_t& name = AnyCast(STR_t,item.d);
@@ -455,6 +462,9 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 		std::cout << ANSI::purple << "ExprToken Sequence: " << ANSI::reset << token.seq << "\n";
 	};
 	#endif
+
+	// `std::vector` invalidates all references to items inside it when it reallocates, reserve an upper-limit to make sure we wont reallocate.
+	if (temporary_pool.capacity() < MAX_TEMPORARY_POOL_RESERVE) temporary_pool.reserve(MAX_TEMPORARY_POOL_RESERVE);
 
 	// Resolve array.
 	if (token.var.t == ARR) {
@@ -516,7 +526,6 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 	const Operation* op = nullptr;
 	std::string op_symbol;
 
-	temporary_pool.reserve(seq_len); // `std::vector` invalidates all references to items inside it when it reallocates, reserve up to the sequence length to ensure we never reallocate.
 	for (size_t i = 0; i < seq_len; i++) {
 		ExprToken& item = token.seq[i];
 		current_line = line_ + item.ln;
@@ -546,9 +555,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 			}
 			// Get our second variant to operate on.
 			// If second is a sequence...
-			if (item.t == ExprTokenType_sequence) {
-				second = expr_exec_(state, item, true, current_line, current_column);
-			}
+			if (item.t == ExprTokenType_sequence) second = expr_exec_(state, item, true, current_line, current_column);
 			// If it's a normal var...
 			else second = resolve_variant(state, item.var);
 			// Throw error if second is an operator.
@@ -600,7 +607,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 	// Output result in debug mode.
 	#ifdef RUNTIME_DEBUG
 	if (debug_flags.expr_result && not subexpr) {
-		std::cout << ANSI::purple << "Expression Result: " << ANSI::reset << *result << "\n";
+		std::cout << ANSI::purple << "Expression Result: " << ANSI::reset << ((result) ? *result : VariantPresets.none) << "\n";
 	};
 	#endif
 
@@ -612,7 +619,12 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 
 Variant* expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false, const unsigned int ln_offset=0, const unsigned int col_offset=0) {
 	temporary_pool.clear();
-	return expr_exec_(state, token, subexpr, ln_offset, col_offset);
+	Variant* result = expr_exec_(state, token, subexpr, ln_offset, col_offset);
+
+	// Throw error if we go over the temporary variant limit.
+	if (temporary_pool.size() >= MAX_TEMPORARY_POOL_RESERVE) emit_error(ERR_max_temporaries_in_use, {std::to_string(temporary_pool.size()), std::to_string(MAX_TEMPORARY_POOL_RESERVE)});
+
+	return result;
 }
 
 
