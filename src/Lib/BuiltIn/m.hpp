@@ -31,14 +31,7 @@ void LIB_BI_on_signal_received(const int sig) {
 // Connect a system signal to a function.
 Variant LIB_BI_signal(ScopeState& state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (args[0].t != INT) {
-		emit_error(ERR_invalid_func_arg_type, {"0", "INT", get_variant_type_name(args[1].t)});
-		return VariantPresets.none;
-	}
-	if (args[1].t != MAP) {
-		emit_error(ERR_invalid_func_arg_type, {"1", "MAP(f)", get_variant_type_name(args[1].t)});
-		return VariantPresets.none;
-	}
+	if (not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {MAP}, 1)) return VariantPresets.none;
 
 	const int signal_number = (int)AnyCast(INT_t,args[0].d);
 	const MAP_t& func = AnyCast(MAP_t,args[1].d);
@@ -149,18 +142,12 @@ Variant LIB_BI_range(ScopeState& _state, const ARR_t& args) {
 	INT_t start = 0;
 	INT_t end = AnyCast(INT_t,args[0].d);
 	if (args.size() > 1) {
-		if (args[1].t != INT) {
-			emit_error(ERR_invalid_func_arg_type, {"1", "INT", get_variant_type_name(args[1].t)});
-			return VariantPresets.none;
-		}
+		if (not expect_arg_types(args[1], {INT}, 1)) return VariantPresets.none;
 		start = end;
 		end = AnyCast(INT_t,args[1].d);
 	}
 	if (args.size() > 2) {
-		if (args[2].t != INT) {
-			emit_error(ERR_invalid_func_arg_type, {"2", "INT", get_variant_type_name(args[2].t)});
-			return VariantPresets.none;
-		}
+		if (not expect_arg_types(args[2], {INT}, 2)) return VariantPresets.none;
 		step = AnyCast(INT_t,args[2].d);
 	}
 

@@ -160,7 +160,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& s) {
 	os << '[';
 	const unsigned int len = s.size();
 	for (unsigned int i = 0; i < len; i++) {
-		if (i != 0) {os << ", ";}
+		if (i != 0) os << ", ";
 		os << s[i];
 	}
 	return os << ']';
@@ -174,7 +174,7 @@ std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
 	unsigned int idx = 0;
 	for (auto& i:s) {
 		if (exists_in_vec(illegal_print_names, i.first)) continue;
-		if (idx != 0) {os << ", ";}
+		if (idx != 0) os << ", ";
 		os << "\"" << i.first << "\"" << ": ";
 		os << i.second;
 		idx++;

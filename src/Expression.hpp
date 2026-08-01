@@ -175,9 +175,8 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 	}
 
 	const size_t& expr_len = expr.size();
-	std::string buffer;
-	std::string secondary_buffer;;
-	buffer.reserve(expr_len);
+	std::string buffer; buffer.reserve(expr_len);
+	std::string secondary_buffer;
 	ExprToken item = {0,0, ExprTokenType_variant, Variant{PLACEHOLDER}};
 	unsigned int ln_offset = 0;
 	unsigned int col_offset = 0;
@@ -267,7 +266,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				const std::string& subexpr = expr.substr(i+1);
 				clean_up_buffer(result_token, item, buffer);
 				// Tokenize sub-expression.
-				const ExprToken& token = expr_tokenize(subexpr, ln_offset, col_offset-1);
+				const ExprToken& token = expr_tokenize(subexpr, ln_offset, col_offset);
 				// Create expression sequence token.
 				item = ExprToken{token.ln, token.col, ExprTokenType_variant, {PLACEHOLDER}};
 				item.t = ExprTokenType_sequence;

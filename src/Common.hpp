@@ -5,6 +5,10 @@
 
 
 
+#define AnyCast(T, var) std::get<T>(var)
+#define AnyCastV(T, var) std::get<T>(var)
+
+
 // VariantType.
 // ------------
 
@@ -28,6 +32,26 @@ enum VariantType {
 };
 
 
+const std::unordered_map<const VariantType, const std::string> VARIANT_TYPE_NAMES = {
+	// Meta types.
+	{PLACEHOLDER,  "PLACEHOLDER"},
+	{INTERNAL,     "INTERNAL"},
+	{INFERRED,     "*"},
+	{ANY,          "ANY"},
+	{OP,           "OP"},
+	{REF,          "REF"},
+	// Real types.
+	{PTR,          "PTR"},
+	{NONE,         "NONE"},
+	{BOOL,         "BOOL"},
+	{INT,          "INT"},
+	{FLOAT,        "FLOAT"},
+	{STR,          "STR"},
+	{ARR,          "ARR"},
+	{MAP,          "MAP"},
+};
+
+
 enum VariantMode {
 	VariantMode_dynamic_type,
 	VariantMode_constant,
@@ -35,50 +59,17 @@ enum VariantMode {
 };
 
 
-#define AnyCast(T, var) std::get<T>(var)
-#define AnyCastV(T, var) std::get<T>(var)
-
-
 // Get string representation of a VariantType.
-const std::string get_variant_type_name(const VariantType& type) {
-	switch (type) {
-		case NONE:         return "NONE";
-		// Meta types.
-		case PLACEHOLDER:  return "PLACEHOLDER";
-		case INTERNAL:     return "INTERNAL";
-		case INFERRED:     return "*";
-		case ANY:          return "ANY";
-		case OP:           return "OP";
-		case REF:          return "REF";
-		// Real types.
-		case PTR:          return "PTR";
-		case BOOL:         return "BOOL";
-		case INT:          return "INT";
-		case FLOAT:        return "FLOAT";
-		case STR:          return "STR";
-		case ARR:          return "ARR";
-		case MAP:          return "MAP";
-	}
-	return "PLACEHOLDER";
+inline const std::string get_variant_type_name(const VariantType& type) {
+	return VARIANT_TYPE_NAMES.at(type);
 }
 
 
 // Get VariantType from a string representation.
-const VariantType get_variant_type_from_name(const std::string& name) {
-	if (name == "NONE") return NONE;
-	// Meta types.
-	else if (name == "*")     return INFERRED;
-	else if (name == "ANY")   return ANY;
-	else if (name == "OP")    return OP;
-	else if (name == "REF")   return REF;
-	// Real types.
-	else if (name == "PTR")    return PTR;
-	else if (name == "BOOL")   return BOOL;
-	else if (name == "INT")    return INT;
-	else if (name == "FLOAT")  return FLOAT;
-	else if (name == "STR")    return STR;
-	else if (name == "ARR")    return ARR;
-	else if (name == "MAP")    return MAP;
+inline const VariantType get_variant_type_from_name(const std::string& name) {
+	for (const auto& it : VARIANT_TYPE_NAMES) {
+		if (it.second == name) return it.first;
+	}
 	return PLACEHOLDER;
 }
 
@@ -176,22 +167,29 @@ size_t get_variant_size(const Variant& var) {
 
 std::ostream& operator<<(std::ostream& os, const Variant& var) {
 	switch (var.t) {
+		// Meta types.
+		case OP: {os << "OP:" << AnyCast(STR_t,var.d); break;}
+		case REF: {os << "REF:" << AnyCast(STR_t,var.d); break;}
+
+		// Real types.
 		case PTR: {
 			const Variant* d = AnyCast(Variant*,var.d);
 			if (not d) os << "INVALID_PTR";
 			else os << *d;
 			break;
 		}
+		case NONE: {os << "none"; break;}
 		case BOOL: {os << (AnyCast(bool,var.d) ? "true" : "false"); break;}
 		case INT: {os << AnyCast(INT_t,var.d); break;}
 		case FLOAT: {os << std::to_string(AnyCast(FLOAT_t,var.d)); break;} // `std::cout` wont show the full precision by default, so we convert to string.
 		case STR: {os << AnyCast(STR_t,var.d); break;}
 
 		case ARR: {
+			// TODO: fix bad variant data when printing from an expression sequence.
 			os << '[';
 			unsigned int i = 0;
 			for (const Variant& it : AnyCast(ARR_t,var.d)) {
-				if (i != 0) {os << ", ";}
+				if (i != 0) os << ", ";
 				if (it.t == STR) os << '"' << it << '"';
 				else os << it;
 				i++;
@@ -201,6 +199,7 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 		}
 
 		case MAP: {
+			// TODO: fix bad variant data when printing from an expression sequence.
 			os << '{';
 			unsigned int idx = 0;
 			for (auto& i : AnyCast(MAP_t,var.d)) {
