@@ -12,7 +12,7 @@
 // VariantType.
 // ------------
 
-enum VariantType {
+enum VariantType : uint8_t {
 	// Meta types.
 	PLACEHOLDER,
 	INTERNAL,
@@ -52,7 +52,7 @@ const std::unordered_map<const VariantType, const std::string> VARIANT_TYPE_NAME
 };
 
 
-enum VariantMode {
+enum VariantMode : uint8_t {
 	VariantMode_dynamic_type,
 	VariantMode_constant,
 	VariantMode_locked_type,
@@ -142,26 +142,35 @@ const bool variant_type_matches(const Variant& a, const Variant& b, const bool d
 
 // Return the number of bytes that Variant takes up.
 size_t get_variant_size(const Variant& var) {
-	if (var.t == INT)         return sizeof(AnyCast(INT_t,var.d));
-	else if (var.t == FLOAT)  return sizeof(AnyCast(FLOAT_t,var.d));
-	else if (var.t == STR)    return AnyCast(STR_t,var.d).size();
+	size_t size = sizeof(var.t) + sizeof(var.m);
+	switch (var.t) {
+		case INT:    {size += sizeof(AnyCast(INT_t,var.d)); break;}
+		case FLOAT:  {size += sizeof(AnyCast(FLOAT_t,var.d)); break;}
+		case STR:    {size += AnyCast(STR_t,var.d).size(); break;}
 
-	else if (var.t == ARR) {
-		size_t sum;
-		for (const Variant& var : AnyCast(ARR_t,var.d)) {
-			sum += sizeof(var.t) + sizeof(var.m) + get_variant_size(var);
+		case ARR: {
+			const ARR_t& d = AnyCast(ARR_t,var.d);
+			size_t sum = 0;
+			for (const Variant& var : d) {
+				sum += get_variant_size(var);
+			}
+			size += sizeof(d)+sum;
+			break;
 		}
-		return sum;
-	}
-	else if (var.t == MAP) {
-		size_t sum;
-		for (const auto& it : AnyCast(MAP_t,var.d)) {
-			sum += it.first.size() + sizeof(it.second.t) + sizeof(it.second.m) + get_variant_size(it.second);
+
+		case MAP: {
+			const MAP_t& d = AnyCast(MAP_t,var.d);
+			size_t sum = 0;
+			for (const auto& it : d) {
+				sum += it.first.size() + get_variant_size(it.second);
+			}
+			size += sizeof(d)+sum;
+			break;
 		}
-		return sum;
+		default: break;
 	}
 
-	return 0;
+	return size;
 }
 
 

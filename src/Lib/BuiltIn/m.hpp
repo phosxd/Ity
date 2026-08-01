@@ -111,22 +111,24 @@ Variant LIB_BI_type(ScopeState& _state, const ARR_t& args) {
 
 // Return the length of the given array or string.
 Variant LIB_BI_length(ScopeState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.none;
-	if (not expect_arg_types(args[0], {STR, ARR}, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR,ARR}, 0)) return VariantPresets.none;
 	const Variant& var = args[0];
+	size_t size = 0;
 
 	switch (var.t) {
-		case ARR: return Variant{INT, (int)(AnyCast(ARR_t,var.d).size()) }; break;
-		case STR: return Variant(INT, (int)(AnyCast(STR_t,var.d).size()) ); break;
+		case ARR: {size = AnyCast(ARR_t,var.d).size(); break;}
+		case STR: {size = AnyCast(STR_t,var.d).size(); break;}
 		default: return VariantPresets.none;
 	}
+
+	return Variant{INT, (int)size};
 }
 
 
 // Return the number of bytes taken by the given variant.
 Variant LIB_BI_size(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
-	return Variant{INT, (int)get_variant_size(args[0])};
+	return Variant{INT, (INT_t)get_variant_size(args[0])};
 }
 
 
@@ -163,13 +165,15 @@ Variant LIB_BI_range(ScopeState& _state, const ARR_t& args) {
 
 // Return a random number in range of `min` & `max` integer arguments.
 Variant LIB_BI_rand(ScopeState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {INT}, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 2)
+	|| not expect_arg_types(args[0], {INT}, 0)
+	|| not expect_arg_types(args[1], {INT}, 1)
+	) return VariantPresets.none;
 
 	const INT_t& min = AnyCast(INT_t,args[0].d);
 	const INT_t& max = AnyCast(INT_t,args[1].d);
 
-	return Variant{INT, (std::rand() % (max-min+1) + min)};
+	return Variant{INT, (INT_t)(std::rand() % (max-min+1) + min)};
 }
 
 
