@@ -122,8 +122,23 @@ const STR var_type = type_name:[var];
 if (var_type == 'INT') || (var_type == 'FLOAT');
 	print:['Var is a number!'];
 /;
-elif type_name:[var] == 'STR';
+elif var_type == 'STR';
 	print:['Var is a string!'];
+/;
+```
+
+### INT type (ANY var)
+A function that returns an `INT` representing the active type of a given variable. Equal to built-in type constants (E.g. `BOOL`, `INT`, `FLOAT`, etc).
+
+The literal `INT` value returned by `type` should not be relied upon as they may vary across different versions of Ity. Always compare against the type constants or use `type_name`.
+
+```python
+type:['Hello World!']; # Returns 12 (STR).
+
+merge IO;
+
+if type:['string'] == STR;
+	print:['Found string!'];
 /;
 ```
 
@@ -165,6 +180,20 @@ rand:[0, 10]; # Some random value from 0 to 10.
 
 
 # Standard Global Type Methods
+
+### NONE `REF`.reassign (REF to)
+Reassign a `REF`. Will not work on constant reference variants.
+
+```python
+const a = 1;
+const b = 2;
+
+var ref = @a; # References `a`.
+ref.reasssign:[@b]; # Now references `b`.
+
+const c_ref = @a;
+ref.reassign:[@b]; # Fails, `c_ref` is permanently linked to `a`.
+```
 
 ### INT `STR`.raw ()
 Get an ASCII code for the first character in the string.
