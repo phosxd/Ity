@@ -25,8 +25,8 @@ const bool OP_Access_type_method(const std::string& type_name, const STR_t& meth
 
 
 void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const std::string& _symbol, Variant& result, Variant*& result_ptr) {
-	Variant* o1 = resovlve_potential_pointer(first);
-	Variant* o2 = resovlve_potential_pointer(second);
+	Variant* o1 = resovlve_potential_ref(state, first);
+	Variant* o2 = resovlve_potential_ref(state, second);
 
 
 	// Try to access type method.
@@ -35,7 +35,7 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 		MAP_t& methods = AnyCastV(MAP_t,get_data_globally(state, "__tm__")->d);
 		const STR_t& method_name = AnyCast(STR_t,second->d);
 		// Try pointer type methods first.
-		if (first->t == PTR) {
+		if (first->t == PTR || first->t == REF) {
 			if (OP_Access_type_method(get_variant_type_name(first->t), method_name, methods, first, result)) return;
 		}
 		// Try.

@@ -74,7 +74,7 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 }
 
 
-#define resovlve_potential_pointer(var) (var->t == PTR) ? AnyCast(Variant*,var->d) : var;
+#define resovlve_potential_ref(state, var) (var->t == REF) ? get_data_globally(state, AnyCast(STR_t,var->d), &none_var) : ((var->t == PTR) ? AnyCast(Variant*,var->d) : var);
 
 
 
@@ -119,7 +119,7 @@ const std::unordered_map<std::string, const Operation*> OPERATIONS = {
 std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
 
 
-bool is_valid_name(const std::string& name) {
+const bool is_valid_name(const std::string& name) {
 	const size_t& name_len = name.size();
 	if (name_len == 0) return false;
 	for (size_t i = 0; i < name_len; i++) {
@@ -131,7 +131,7 @@ bool is_valid_name(const std::string& name) {
 }
 
 
-bool is_special_symbol(const char& ch) {
+const bool is_special_symbol(const char& ch) {
 	return (
 		ALPHA.find(ch) == std::string::npos
 		&& NUM.find(ch) == std::string::npos
@@ -140,11 +140,11 @@ bool is_special_symbol(const char& ch) {
 }
 
 
-bool check_ahead(const std::string& text, const unsigned int& start_idx, const std::string& substr) {
+const bool check_ahead(const std::string& text, const unsigned int& start_idx, const std::string& substr) {
 	const size_t& substr_len = substr.size();
-	if (text.size() < start_idx+substr_len) {return false;}
+	if (text.size() < start_idx+substr_len) return false;
 	for (size_t i = 0; i < substr_len; i++) {
-		if (text.at(start_idx+i) != substr.at(i)) {return false;}
+		if (text.at(start_idx+i) != substr.at(i)) return false;
 	}
 	return true;
 }
@@ -320,7 +320,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				// Set type reference.
 				else if (ch == '@' || ch == '~' || is_valid_name(std::string(1,ch))) {
 					if (next_ref_is_str_) item.var.t = STR; // Set type as string but don't set `is_string` so it's not treated as a string.
-					else item.var.t = REF;
+					else item.var.t = TREF;
 				}
 				// Set type array.
 				else if (ch == '[') {
@@ -375,19 +375,19 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				else if (item.var.t == BOOL || item.var.t == NONE) {
 					// If no longer matches the bool or none token, switch to a reference.
 					if ((buffer+ch).size() >= secondary_buffer.size() && (buffer+ch) != secondary_buffer) {
-						item.var.t = REF;
+						item.var.t = TREF;
 						secondary_buffer.clear();
 					}
 				}
 
-				else if (item.var.t == REF || (item.var.t == STR && not is_string)) {
+				else if (item.var.t == TREF || (item.var.t == STR && not is_string)) {
 					// Convert reference dot accessor to proper accessor.
 					if (ch == '.') {
 						result_token.seq.push_back(ExprToken{
 							ln_offset, col_offset,
 							ExprTokenType_variant,
 							{
-								(item.var.t == STR) ? STR : REF,
+								(item.var.t == STR) ? STR : TREF,
 								buffer,
 							}
 						});
@@ -431,24 +431,38 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 
 
 Variant* resolve_variant(ScopeState& state, Variant& item) {
-	if (item.t == REF) {
+	// If typed reference...
+	if (item.t == TREF) {
 		const STR_t& name = AnyCast(STR_t,item.d);
 		const STR_t& real_name = trim_left(trim_left(name,'@'),'~');
-		if (not is_name_globally_free(state, real_name)) {
-			Variant* ptr = get_data_globally(state, real_name);
-			if (name[0] == '@') {temporary_pool.push_back(Variant{PTR, ptr}); return &temporary_pool.back();}
-			if (name[0] == '~') {
-				if (ptr->t != PTR) {
+
+		// Throw error if variable is undefined.
+		if (is_name_globally_free(state, real_name)) {
+			emit_error(ERR_name_does_not_exist, {real_name});
+			return &item;
+		}
+
+		// Create named ref.
+		if (name[0] == '@') {temporary_pool.push_back(Variant{REF, real_name}); return &temporary_pool.back();}
+
+		// Get variable.
+		Variant* ptr = get_data_globally(state, real_name);
+		// Deref pointer or named reference.
+		if (name[0] == '~') {
+			switch (ptr->t) {
+				case REF: return get_data_globally(state, AnyCast(STR_t,ptr->d), &none_var);
+				case PTR: return AnyCast(Variant*,ptr->d);
+				default: {
 					emit_error(ERR_cannot_dereference, {real_name});
 					return &item;
 				}
-				return AnyCast(Variant*,ptr->d);
 			}
-			return ptr;
 		}
-		emit_error(ERR_name_does_not_exist, {real_name});
+		// Return variable.
+		return ptr;
 	}
 
+	// Otherwise, just return the Variant as-is.
 	return &item;
 }
 

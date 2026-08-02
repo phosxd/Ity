@@ -1,8 +1,8 @@
 #pragma once
 
 
-void OP_Compare_pre_exec(ScopeState& _state, Variant*& first, const std::string& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
-	Variant*& o1 = resovlve_potential_pointer(first);
+void OP_Compare_pre_exec(ScopeState& state, Variant*& first, const std::string& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
+	Variant* o1 = resovlve_potential_ref(state, first);
 
 	if (symbol == "&&") {
 		eval_second_operand = *o1 == VariantPresets.bool_true;
@@ -17,9 +17,9 @@ void OP_Compare_pre_exec(ScopeState& _state, Variant*& first, const std::string&
 }
 
 
-void OP_Compare_exec(ScopeState& _state, Variant*& first, Variant*& second, const std::string& symbol, Variant& result, Variant*& _result_ptr) {
-	Variant*& o1 = resovlve_potential_pointer(first);
-	Variant*& o2 = resovlve_potential_pointer(second);
+void OP_Compare_exec(ScopeState& state, Variant*& first, Variant*& second, const std::string& symbol, Variant& result, Variant*& _result_ptr) {
+	Variant* o1 = resovlve_potential_ref(state, first);
+	Variant* o2 = resovlve_potential_ref(state, second);
 
 	bool test = false;
 	if (symbol == "==")       test = *o1 == *o2;

@@ -19,9 +19,10 @@ enum VariantType : uint8_t {
 	INFERRED,
 	ANY,
 	OP,
-	REF,
-	// Real types.
+	TREF,
 	PTR,
+	// Real types.
+	REF,
 	NONE,
 	BOOL,
 	INT,
@@ -39,9 +40,10 @@ const std::unordered_map<const VariantType, const std::string> VARIANT_TYPE_NAME
 	{INFERRED,     "*"},
 	{ANY,          "ANY"},
 	{OP,           "OP"},
-	{REF,          "REF"},
-	// Real types.
+	{TREF,         "TREF"},
 	{PTR,          "PTR"},
+	// Real types.
+	{REF,          "REF"},
 	{NONE,         "NONE"},
 	{BOOL,         "BOOL"},
 	{INT,          "INT"},
@@ -177,21 +179,16 @@ size_t get_variant_size(const Variant& var) {
 std::ostream& operator<<(std::ostream& os, const Variant& var) {
 	switch (var.t) {
 		// Meta types.
-		case OP: {os << "OP:" << AnyCast(STR_t,var.d); break;}
-		case REF: {os << "REF:" << AnyCast(STR_t,var.d); break;}
+		case OP:   {os << "OP:" << AnyCast(STR_t,var.d); break;}
+		case TREF: {os << "TREF:" << AnyCast(STR_t,var.d); break;}
 
 		// Real types.
-		case PTR: {
-			const Variant* d = AnyCast(Variant*,var.d);
-			if (not d) os << "INVALID_PTR";
-			else os << *d;
-			break;
-		}
-		case NONE: {os << "none"; break;}
-		case BOOL: {os << (AnyCast(bool,var.d) ? "true" : "false"); break;}
-		case INT: {os << AnyCast(INT_t,var.d); break;}
+		case REF:   {os << "REF:" << AnyCast(STR_t,var.d); break;}
+		case NONE:  {os << "none"; break;}
+		case BOOL:  {os << (AnyCast(bool,var.d) ? "true" : "false"); break;}
+		case INT:   {os << AnyCast(INT_t,var.d); break;}
 		case FLOAT: {os << std::to_string(AnyCast(FLOAT_t,var.d)); break;} // `std::cout` wont show the full precision by default, so we convert to string.
-		case STR: {os << AnyCast(STR_t,var.d); break;}
+		case STR:   {os << AnyCast(STR_t,var.d); break;}
 
 		case ARR: {
 			// TODO: fix bad variant data when printing from an expression sequence.
@@ -235,7 +232,7 @@ inline void emit_operator_overload_error(const std::string& operation, const Var
 }
 
 
-bool operator==(const Variant& a, const Variant& b) {
+const bool operator==(const Variant& a, const Variant& b) {
 	switch (a.t) {
 		// If a is bool & b is bool...
 		case BOOL: {
@@ -278,7 +275,7 @@ bool operator==(const Variant& a, const Variant& b) {
 }
 
 
-bool operator>(const Variant& a, const Variant& b) {
+const bool operator>(const Variant& a, const Variant& b) {
 	switch (a.t) {
 		// If a is int...
 		case INT: {
@@ -301,7 +298,7 @@ bool operator>(const Variant& a, const Variant& b) {
 }
 
 
-bool operator<(const Variant& a, const Variant& b) {
+const bool operator<(const Variant& a, const Variant& b) {
 	switch (a.t) {
 		// If a is int...
 		case INT: {
@@ -499,7 +496,7 @@ Variant operator%(const Variant& a, const Variant& b) {
 // ----------
 
 
-enum ExprTokenType {
+enum ExprTokenType : uint8_t {
 	ExprTokenType_variant,
 	ExprTokenType_sequence,
 };
@@ -588,7 +585,7 @@ struct ScopeState {
 struct Instruction {
 	const uint8_t REQUIRED; // Required argument count,
 	void (*exec)(ScopeState&, InstToken&) = nullptr;
-	const bool is_composite;
+	const bool is_composite = false;
 	const bool has_expr = false;
 	void (*processor)(InstToken&, const AnyMap_t&, const unsigned int& ln, const unsigned int& col) = nullptr;
 	void (*emergency_scope_exit)(InstToken*&) = nullptr;
@@ -637,7 +634,7 @@ const std::string multiple_types_str(const std::vector<VariantType>& types) {
 
 
 VariantData get_literal_from_str(const VariantType& type, const std::string& str_val) {
-	if (type == OP || type == REF || type == STR) return str_val;
+	if (type == OP || type == TREF || type == REF || type == STR) return str_val;
 	else if (type == BOOL) return str_val == "true";
 	else if (type == INT) {
 		if (is_int_str_32_in_range(str_val)) return (INT_t)std::stoi(str_val);
@@ -695,6 +692,7 @@ INT_t var_to_int(const Variant& var) {
 
 STR_t var_to_str(const Variant& var) {
 	switch (var.t) {
+		case REF:    return "REF:"+AnyCast(STR_t,var.d);
 		case BOOL:   return (AnyCast(bool,var.d)) ? "true" : "false";
 		case INT:    return std::to_string(AnyCast(INT_t,var.d));
 		case FLOAT:  return std::to_string(AnyCast(FLOAT_t,var.d));
@@ -706,7 +704,7 @@ STR_t var_to_str(const Variant& var) {
 
 
 // Get the type of a `MAP` object.
-STR_t var_get_obj_type(const MAP_t& map) {
+const STR_t var_get_obj_type(const MAP_t& map) {
 	STR_t obj_type = "m";
 	if (map.find("__t") != map.end()) {
 		const Variant& obj_type_var = map.at("__t");
@@ -720,13 +718,18 @@ STR_t var_get_obj_type(const MAP_t& map) {
 }
 
 
+Variant none_var = {NONE, std::monostate(), VariantMode_constant};
+
+// Collection of Variant presets used in various places within the codebase.
 struct VariantPresets_struct {
 	const Variant empty       {PLACEHOLDER, std::monostate(), VariantMode_constant};
-	const Variant none        {NONE, std::monostate(), VariantMode_constant};
+	const Variant none        = none_var;
 	const Variant obj_type_m  {STR, (STR_t)"m", VariantMode_constant};
 	const Variant obj_type_f  {STR, (STR_t)"f", VariantMode_constant};
 
 	const Variant any_type_int    {INT, (INT_t)ANY, VariantMode_constant};
+	const Variant ptr_type_int    {INT, (INT_t)PTR, VariantMode_constant};
+	const Variant ref_type_int    {INT, (INT_t)REF, VariantMode_constant};
 	const Variant none_type_int   {INT, (INT_t)NONE, VariantMode_constant};
 	const Variant bool_type_int   {INT, (INT_t)BOOL, VariantMode_constant};
 	const Variant int_type_int    {INT, (INT_t)INT, VariantMode_constant};

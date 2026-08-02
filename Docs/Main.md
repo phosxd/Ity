@@ -214,6 +214,93 @@ my_map.erase:['a'];
 # my_map = {'b',2, 'c',3}
 ```
 
+## REF / PTR
+Holds a reference to a variable stored in the scope. This will act exactly like the referenced variable for most cases.
+
+`PTR` is more of an internal type which should not be used if possible. The only time is should be used is when it is fully required, usually in type methods & iterator functions.
+
+Setting, accessing, comparing, or in any way operating on a pointer will always apply to the referenced variable, not the reference itself. Think of it as the 2 variables are hard-linked. This makes it really convenient to work with.
+
+```python
+merge IO;
+
+var my_var = 100;
+const my_ref = @my_var; # "@" symbol indicates "point to this name in the scope".
+
+print:[~my_ref]; # Prints 100.
+my_var = 101;
+print:[~my_ref]; # Prints 101.
+my_ref = 99;
+print:[my_var]; # Prints 99.
+
+# my_ref & my_var are essentially interchangable.
+```
+
+You can dereference a `REF` by using the `~` symbol. This is useful for getting the *actual* type a reference is holding.
+
+```python
+merge IO;
+
+const my_var = 100;
+const my_ref = @my_var;
+
+# Dereference `REF`, get the referenced value directly.
+# Dereferencing also works on `PTR`.
+var INT deref = ~my_ref;
+print:[deref]; # Same value, prints 100.
+deref = 0;
+print:[deref]; # Prints 0.
+print:[~my_ref]; # Reference remains unchanged. Prints 100.
+
+# Get type of referenced value in pointer.
+print:[( type_name:[my_ref] )]; # Prints "REF", that's not what we want.
+print:[( type_name:[~my_ref] )]; # Prints "INT", the actual held value type.
+```
+
+To reassign the reference you can use the `reassign` type method.
+
+```python
+merge IO;
+
+const a = 'a';
+const b = 'b';
+
+var my_ref = @a;
+print:[~my_ref]; # Prints "a".
+my_ref.reassign:[@b];
+print:[~my_ref]; # Prints "b".
+```
+
+If the referenced value ever gets destroyed or goes out of scope, then the `REF` will be reset to the default `noneref`.
+
+```python
+merge IO;
+
+const other_global_value = 'Other Global';
+
+
+# Define a function that reassigns our `REF`.
+func NONE reassign_ref; arg REF ref; arg BOOL local=false;
+	if local;
+		const local_value = 'Local';
+		~ref.reassign:[@local_value]; # We deref so we don't reassign the copy given in the function argument.
+	/;
+	else;
+		~ref.reassign:[@other_global_value];
+	/;
+/;
+
+
+const global_value = 'Global';
+var my_ref = @global_value; # Initialize with some global constant value.
+print:[~my_ref]; # Prints "Global".
+
+reassign_ref:[@my_ref, false]; # Reassign to another global value which is *not* destroyed after the function returns.
+print:[~my_ref]; # Prints "Other Global";
+reassign_ref:[@my_ref, true]; # Reassign to a local value which *is* destroyed after the function returns.
+print:[~my_ref]; # Prints none. The pointer was assigned to a variable that got destroyed.
+```
+
 ---
 
 # Operators

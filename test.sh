@@ -1009,14 +1009,14 @@ for i in 3;
 # 44
 
 "
-# Passing / modifying pointer values
-# -----------------------------------
+# Passing / modifying referenced values
+# -------------------------------------
 
 merge IO;
 
-func NONE do_modification; arg PTR obj;
+func NONE do_modification; arg REF obj;
 	if type:[~obj] != ARR;
-		throw 'Invalid pointer value, not an array.';
+		throw 'Invalid reference value, not an array.';
 	/;
 	obj += [3]; # Add an item to the referenced array.
 /;
@@ -1034,27 +1034,27 @@ print:[my_arr];
 "
 merge IO;
 
-# Declare variables we can point to.
+# Declare variables we can ref.
 var a = 0;
 var b = 0;
 
-# Assign pointers.
-const a_ptr = @a;
-const b_ptr = @b;
+# Assign refs.
+const a_ref = @a;
+const b_ref = @b;
 
 # Set value.
 a = 10;
 b = 5;
 
-# Use pointers just like it were the real value.
-print:[( a_ptr + b_ptr )];
+# Use refs just like it were the real value.
+print:[( a_ref + b_ref )];
 
-# Setting the value on a pointer sets the referenced variant, doesn't overwrite the pointer.
-a_ptr = 99;
+# Setting the value on a ref sets the referenced variant, doesn't overwrite the ref
+a_ref = 99;
 print:[a];
 
-var copy_of_a = ~a_ptr;
-copy_of_a = 0; # 'a' & 'a_ptr' unchanged.
+var copy_of_a = ~a_ref;
+copy_of_a = 0; # 'a' & 'a_ref' unchanged.
 print:[copy_of_a];
 print:[a];
 
@@ -1068,18 +1068,18 @@ print:[a];
 # 46
 
 "
-# Reassign pointer
-# ----------------
+# Reassign reference
+# ------------------
 
 merge IO;
 
 const a = 10;
 const b = 20;
 
-var ptr = @a;
-print:[ptr];
-ptr.reassign:[@b];
-print:[ptr];
+var ref = @a;
+print:[~ref];
+ref.reassign:[@b];
+print:[~ref];
 "
 
 "10
@@ -1088,13 +1088,13 @@ print:[ptr];
 # 47
 
 "
-# Fail reassign const pointer
-# ---------------------------
+# Fail reassign const reference
+# -----------------------------
 
 var a = 1;
 var b = 2;
-const ptr = @a;
-ptr.reassign:[@b]; # Should throw const value error.
+const ref = @a;
+ref.reassign:[@b]; # Should throw const value error.
 "
 
 "Error: 29"

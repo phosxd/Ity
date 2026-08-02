@@ -260,9 +260,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 	}
 
 	// Throw error if unterminated string.
-	if (is_string) {
-		emit_error(ERR_no_string_end, {}, str_start_ln, str_start_col);
-	}
+	if (is_string) emit_error(ERR_no_string_end, {}, str_start_ln, str_start_col);
 	// Throw error if unterminated composite.
 	if (composite_nest.size() > 0) {
 		const CompositeItem& comp_item = composite_nest[composite_nest.size()-1];

@@ -12,7 +12,7 @@ Variant LIB_BI_init(ScopeState& state, const ARR_t& args) {
 
 
 
-std::unordered_map<int, std::vector<MAP_t>> LIB_BI_signal_functions;
+std::unordered_map<uint8_t, std::vector<MAP_t>> LIB_BI_signal_functions;
 ScopeState* LIB_BI_state = nullptr;
 
 // Calls all script functions in `LIB_BI_signal_functions`.
@@ -33,7 +33,7 @@ Variant LIB_BI_signal(ScopeState& state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 	if (not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {MAP}, 1)) return VariantPresets.none;
 
-	const int signal_number = (int)AnyCast(INT_t,args[0].d);
+	const uint8_t signal_number = (uint8_t)AnyCast(INT_t,args[0].d);
 	const MAP_t& func = AnyCast(MAP_t,args[1].d);
 	// Emit error if not a function object.
 	if (AnyCast(STR_t,func.at("__t").d) != "f") {
@@ -53,6 +53,16 @@ Variant LIB_BI_signal(ScopeState& state, const ARR_t& args) {
 }
 
 
+
+// Override maximum execution depth.
+Variant LIB_BI_set_max_depth(ScopeState* state, const ARR_t& args) {
+	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	if (not expect_arg_types(args[0], {INT}, 0)) return VariantPresets.none;
+
+	const INT_t& count = AnyCast(INT_t,args[0].d);
+	execution_depth_max = count;
+	return VariantPresets.none;
+}
 
 
 // Call a system comamnd. Returns the exit status code.
@@ -76,14 +86,14 @@ Variant LIB_BI_sleep(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_types(args[0], {INT, FLOAT}, 0)) return VariantPresets.none;
 	const Variant& var = args[0];
 
-	FLOAT_t sleep_time;
+	FLOAT_t sleep_time = 0;
 	switch (var.t) {
 		case INT: sleep_time = AnyCast(INT_t,var.d); break;
 		case FLOAT: sleep_time = AnyCast(FLOAT_t,var.d); break;
 		default: break;
 	}
 
-	std::this_thread::sleep_for(std::chrono::microseconds( (int)(sleep_time*1000000) ));
+	std::this_thread::sleep_for(std::chrono::microseconds( (uint32_t)(sleep_time*1000000) ));
 	return VariantPresets.none;
 }
 
@@ -142,15 +152,15 @@ Variant LIB_BI_range(ScopeState& _state, const ARR_t& args) {
 
 	INT_t step = 1;
 	INT_t start = 0;
-	INT_t end = AnyCast(INT_t,args[0].d);
+	INT_t end = AnyCastV(INT_t,args[0].d);
 	if (args.size() > 1) {
 		if (not expect_arg_types(args[1], {INT}, 1)) return VariantPresets.none;
 		start = end;
-		end = AnyCast(INT_t,args[1].d);
+		end = AnyCastV(INT_t,args[1].d);
 	}
 	if (args.size() > 2) {
 		if (not expect_arg_types(args[2], {INT}, 2)) return VariantPresets.none;
-		step = AnyCast(INT_t,args[2].d);
+		step = AnyCastV(INT_t,args[2].d);
 	}
 
 
@@ -183,13 +193,13 @@ Variant LIB_BI_rand(ScopeState& _state, const ARR_t& args) {
 // -------------
 
 
-// Pointer.
-// --------
+// Reference.
+// ----------
 
-// Reassign pointer address.
-Variant LIB_BI_tm_ptr_reassign(ScopeState& _state, const ARR_t& args) {
+// Reassign reference address.
+Variant LIB_BI_tm_ref_reassign(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (not expect_arg_types(args[1], {PTR}, 1)) return VariantPresets.none;
+	if (not expect_arg_types(args[1], {REF}, 1)) return VariantPresets.none;
 	// Get data.
 	Variant* data = AnyCastV(Variant*,args[0].d);
 	// Throw error if data is constant.
@@ -197,8 +207,8 @@ Variant LIB_BI_tm_ptr_reassign(ScopeState& _state, const ARR_t& args) {
 		emit_error(ERR_cannot_change_constant);
 		return VariantPresets.none;
 	}
-	// Reassign pointer.
-	data->d = AnyCastV(Variant*,args[1].d);
+	// Reassign reference.
+	data->d = AnyCastV(STR_t,args[1].d);
 	return VariantPresets.none;
 }
 
@@ -313,10 +323,11 @@ const Variant LIB_BI {
 		{"__name", Variant{STR, (STR_t)"BI", VariantMode_constant}},
 		{"__init", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_init)},
 
+
 		// Type methods.
 		{"__tm", Variant{
 			MAP, (MAP_t){
-				{"PTR:reassign", NativeFuncTrans(PTR, (NativeFunc_t)LIB_BI_tm_ptr_reassign)},
+				{"REF:reassign", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_tm_ref_reassign)},
 
 				{"STR:raw",    NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_tm_str_raw)},
 				{"ARR:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
@@ -330,6 +341,8 @@ const Variant LIB_BI {
 
 		// Type names.
 		{"ANY",    VariantPresets.any_type_int},
+		{"PTR",    VariantPresets.ptr_type_int},
+		{"REF",    VariantPresets.ref_type_int},
 		{"NONE",   VariantPresets.none_type_int},
 		{"BOOL",   VariantPresets.bool_type_int},
 		{"INT",    VariantPresets.int_type_int},
@@ -337,6 +350,7 @@ const Variant LIB_BI {
 		{"STR",    VariantPresets.str_type_int},
 		{"ARR",    VariantPresets.arr_type_int},
 		{"MAP",    VariantPresets.map_type_int},
+
 
 		// System signals.
 		{"SIGNAL", Variant{
@@ -365,7 +379,13 @@ const Variant LIB_BI {
 		}, VariantMode_constant }},
 
 
+		// Miscillanious constants.
+		{"noneref", VariantPresets.none},
+
+
 		// Utility functions.
+		{"set_max_depth",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_set_max_depth)},
+
 		{"signal",     NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_signal)},
 		{"system",     NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_system)},
 		{"sleep",      NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_sleep)},
