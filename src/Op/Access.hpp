@@ -94,9 +94,9 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 			if (obj_type == "f") {
 				// Construct arguments array with user passed & bound arguments.
 				const ARR_t args_arr = AnyCast(ARR_t,map.at("__ba").d)
-				+ ( (o2->t == ARR) ? AnyCast(ARR_t,o2->d) : (ARR_t){*o2} );
+				+ ( (second->t == ARR) ? AnyCast(ARR_t,second->d) : (ARR_t){*second} ); // Using "second" instead of "o2" is not a mistake, if it's a `REF`/`PTR` we don't want to use the referenced value. Pass the actual ref/ptr.
 				// Call native function...
-				if (const auto& it = map.find("__nc"); it != map.end()) {
+				if (const MAP_t::iterator& it = map.find("__nc"); it != map.end()) {
 					const NativeFunc_t& n_func = AnyCast(NativeFunc_t,it->second.d);
 					result = n_func(state, args_arr);
 				}
@@ -115,7 +115,7 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 				}
 				// Find key.
 				const STR_t& key = AnyCast(STR_t,o2->d);
-				const auto& it = map.find(key);
+				const MAP_t::iterator& it = map.find(key);
 				if (it == map.end()) {
 					emit_error(ERR_no_property_with_name, {key});
 					return;

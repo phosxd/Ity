@@ -1,8 +1,8 @@
 merge IO; merge Time;
 
-const n = prompt:['Count: '] -> INT;
-const INT start = now:['ms'];
+const n = prompt:'Count: ' -> INT;
+const INT start = now:'ms';
 
-for i in n; print:[i]; /;
+for i in n; print:i; /;
 
-print:['\nDone in ', ((now:['ms']-start) / 1000.0), 's.'];
+print:['\nDone in ', ((now:'ms'-start) / 1000.0), 's.'];

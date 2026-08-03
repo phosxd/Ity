@@ -71,13 +71,13 @@ A function that connects the given function to a system signal. Refer to the [SI
 
 ```python
 func NONE on_signal_interrupt_reveived;
-	print:['Received interrupt signal!'];
+	print:'Received interrupt signal!';
 	exit;
 /;
 
 
 signal:[(SIGNAL.interrupt), on_signal_interrupt_reveived];
-sleep:[999];
+sleep:999;
 
 # Program will end when given the interrupt signal, but it will call the connected function first.
 ```
@@ -88,9 +88,9 @@ Note: connecting to a signal will override it's system default behavior. Which m
 A function that runs a system command string then returns the exit status code.
 
 ```python
-system:['echo Hello World!']; # Returns 0.
+system:'echo Hello World!'; # Returns 0.
 
-system:['NonExistentCommand']; # Returns 32512.
+system:'NonExistentCommand'; # Returns 32512.
 # sh: line 1: NonExistentCommand: command not found
 ```
 
@@ -98,8 +98,8 @@ system:['NonExistentCommand']; # Returns 32512.
 A function that pauses thread execution by the given number of seconds.
 
 ```python
-sleep:[1]; # Pause for 1 second.
-sleep:[0.5]; # Pause for half of a second.
+sleep:1; # Pause for 1 second.
+sleep:0.5; # Pause for half of a second.
 ```
 
 ### MAP get\_state ()
@@ -111,19 +111,19 @@ One use for this, is to check if a name is currently being used in the scope or 
 A function that returns a `STR` representing the active type of a given variable.
 
 ```python
-type_name:['Hello World!']; # Returns "STR".
+type_name:'Hello World!'; # Returns "STR".
 
 
 merge IO;
 
 var ANY var = 4; # Var is INT.
-const STR var_type = type_name:[var];
+const STR var_type = type_name:var;
 
 if (var_type == 'INT') || (var_type == 'FLOAT');
-	print:['Var is a number!'];
+	print:'Var is a number!';
 /;
 elif var_type == 'STR';
-	print:['Var is a string!'];
+	print:'Var is a string!';
 /;
 ```
 
@@ -133,12 +133,12 @@ A function that returns an `INT` representing the active type of a given variabl
 The literal `INT` value returned by `type` should not be relied upon as they may vary across different versions of Ity. Always compare against the type constants or use `type_name`.
 
 ```python
-type:['Hello World!']; # Returns 12 (STR).
+type:'Hello World!'; # Returns 12 (STR).
 
 merge IO;
 
-if type:['string'] == STR;
-	print:['Found string!'];
+if type:'string' == STR;
+	print:'Found string!';
 /;
 ```
 
@@ -146,7 +146,7 @@ if type:['string'] == STR;
 A function that returns an `INT` representing the length of the given `ARR` / `STR` variable.
 
 ```python
-length:['Hello World!']; # Returns 12.
+length:'Hello World!'; # Returns 12.
 length:[[1,2,3,4]]; # Returns 4.
 ```
 
@@ -154,13 +154,13 @@ length:[[1,2,3,4]]; # Returns 4.
 A function that returns an `INT` representing the size (in bytes) of a given variable. Including variant type & mode data (2 bytes extra).
 
 ```python
-size:[0];              # Returns 4 (32-bit int) + 2 (type & mode info).
-size:['Hello World!']; # Returns the number of characters in the string + 2.
-size:[[1,2,3,4]];      # Returns 50.
+size:0;              # Returns 4 (32-bit int) + 2 (type & mode info).
+size:'Hello World!'; # Returns the number of characters in the string + 2.
+size:[[1,2,3,4]];    # Returns 50.
 
 # Arrays & maps are particularly bulky.
-size:[{'a',1, 'b',2, 'c',3, 'd',4}]; # Returns 86.
-size:[{'array value',[1,2,3,4]}];    # Returns 119.
+size:{'a',1, 'b',2, 'c',3, 'd',4}; # Returns 86.
+size:{'array value',[1,2,3,4]};    # Returns 119.
 ```
 
 ### ARR range (INT start, INT end, INT step=1)
@@ -189,10 +189,10 @@ const a = 1;
 const b = 2;
 
 var ref = @a; # References `a`.
-ref.reasssign:[@b]; # Now references `b`.
+ref.reasssign:@b; # Now references `b`.
 
 const c_ref = @a;
-ref.reassign:[@b]; # Fails, `c_ref` is permanently linked to `a`.
+ref.reassign:@b; # Fails, `c_ref` is permanently linked to `a`.
 ```
 
 ### INT `STR`.raw ()
@@ -208,7 +208,7 @@ Delete an item inside the array.
 
 ```python
 const ARR array = [1,2,3];
-array.erase:[0];
+array.erase:0;
 # array = [2,3]
 ```
 
@@ -217,7 +217,7 @@ Delete a key-value pair inside the map.
 
 ```python
 const MAP map = {'a',1, 'b',2, 'c',3};
-map.erase:['a'];
+map.erase:'a';
 # map = {'b'2, 'c',3}
 ```
 

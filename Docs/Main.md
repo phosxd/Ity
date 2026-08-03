@@ -247,14 +247,14 @@ const my_ref = @my_var;
 # Dereference `REF`, get the referenced value directly.
 # Dereferencing also works on `PTR`.
 var INT deref = ~my_ref;
-print:[deref]; # Same value, prints 100.
+print:deref; # Same value, prints 100.
 deref = 0;
-print:[deref]; # Prints 0.
-print:[~my_ref]; # Reference remains unchanged. Prints 100.
+print:deref; # Prints 0.
+print:~my_ref; # Reference remains unchanged. Prints 100.
 
 # Get type of referenced value in pointer.
-print:[( type_name:[my_ref] )]; # Prints "REF", that's not what we want.
-print:[( type_name:[~my_ref] )]; # Prints "INT", the actual held value type.
+print:(type_name:my_ref); # Prints "REF", that's not what we want.
+print:(type_name:~my_ref); # Prints "INT", the actual held value type.
 ```
 
 To reassign the reference you can use the `reassign` type method.
@@ -266,9 +266,9 @@ const a = 'a';
 const b = 'b';
 
 var my_ref = @a;
-print:[~my_ref]; # Prints "a".
-my_ref.reassign:[@b];
-print:[~my_ref]; # Prints "b".
+print:~my_ref; # Prints "a".
+my_ref.reassign:@b;
+print:~my_ref; # Prints "b".
 ```
 
 If the referenced value ever gets destroyed or goes out of scope, then the `REF` will be reset to the default `noneref`.
@@ -280,25 +280,25 @@ const other_global_value = 'Other Global';
 
 
 # Define a function that reassigns our `REF`.
-func NONE reassign_ref; arg REF ref; arg BOOL local=false;
+func NONE reassign_ref; arg REF ref; arg local=false;
 	if local;
 		const local_value = 'Local';
-		~ref.reassign:[@local_value]; # We deref so we don't reassign the copy given in the function argument.
+		~ref.reassign:@local_value; # We deref so we don't reassign the copy given in the function argument.
 	/;
 	else;
-		~ref.reassign:[@other_global_value];
+		~ref.reassign:@other_global_value;
 	/;
 /;
 
 
 const global_value = 'Global';
 var my_ref = @global_value; # Initialize with some global constant value.
-print:[~my_ref]; # Prints "Global".
+print:~my_ref; # Prints "Global".
 
 reassign_ref:[@my_ref, false]; # Reassign to another global value which is *not* destroyed after the function returns.
-print:[~my_ref]; # Prints "Other Global";
+print:~my_ref; # Prints "Other Global";
 reassign_ref:[@my_ref, true]; # Reassign to a local value which *is* destroyed after the function returns.
-print:[~my_ref]; # Prints none. The pointer was assigned to a variable that got destroyed.
+print:~my_ref; # Prints none. The pointer was assigned to a variable that got destroyed.
 ```
 
 ---
@@ -361,8 +361,10 @@ This operator allows you to get object properties, array/string elements, & allo
 Other languages usually split the function call, property access, & element lookup syntax across 3 symbols when in most cases it can be 1.
 
 ```python
-my_func:[arg_1, arg_2]; # Runs "my_func" then returns the result
-my_array:1; # Returns the second element in "my_array"
+my_func:arg; # Runs "my_func" then returns the result
+my_func:[arg_1, arg_2]; # You can pass multiple arguments by wrapping in an array.
+
+my_array:1;  # Returns the second element in "my_array"
 my_string:1; # Returns the second character in "my_string"
 
 var INT i = 5;
@@ -495,6 +497,7 @@ const ANY some_constant_value = 20;
 
 # This is fine.
 const * inferred_constant = true;
+const inferred_constant_2 = true;
 ```
 
 Because constants cannot be modified, it would be useless to assign it the "ANY" type, doing so will throw an error.
@@ -540,13 +543,13 @@ Before every iteration the given expression gets evaluated. If it returns `true`
 # Loop forever, the expression returns the literal "true" so the condition will always be met.
 # The loop can still be ended with the "break" instruction.
 while true;
-	IO.print:["Hello! You're stuck with me forever >:)"];
+	IO.print:"Hello! You're stuck with me forever >:)";
 /;
 
 # Count to 100 thousand.
 var INT i = 0;
 while i < 100_000;
-	IO.print:[i];
+	IO.print:i;
 	i += 1;
 /;
 ```
@@ -558,19 +561,19 @@ import IO;
 
 const STR string = "Hello World!";
 # Print each character in the string, with some delay.
-var INT i = -1; while i < (length:[string]-1); i+=1;
+var INT i = -1; while i < (length:string - 1); i+=1;
 	# Skip white space characters.
 	if string:i == " ";
 		continue;
 	/;
 
 	# Print then wait...
-	IO.out:[(string:i)];
-	sleep:[0.1];
+	IO.out:(string:i);
+	sleep:0.1;
 /;
 
 
-IO.out:['\n'];
+IO.out:'\n';
 ```
 
 The `break` instruction will stop the loop completely.
@@ -583,7 +586,7 @@ var INT i = -1; while true; i += 1;
 	if i == 10;
 		break;
 	/;
-	print:[i];
+	print:i;
 /;
 ```
 
@@ -595,19 +598,19 @@ merge IO:
 
 # Print numbers 0 to 9.
 for i in 10;
-	print:[i];
+	print:i;
 /;
 
 
 # Print items 1, 2, "3".
 for i in [1,2,'3'];
-	print:[i];
+	print:i;
 /;
 
 
 # Print numbers 0, 2, 4, 6, 8.
 for i in range:[0,10,2];
-	print:[i];
+	print:i;
 /;
 ```
 
@@ -619,7 +622,7 @@ import RangeIterator;
 
 # Print numbers 0, 2, 4, 6, 8.
 for i in RangeIterator.new:[0,10,2];
-	print:[i];
+	print:i;
 /;
 ```
 
@@ -633,8 +636,8 @@ const map = {'a',1, 'b'2, 'c',3};
 # Print value 1, 2, 3.
 # (Note: order not determined)
 for i in map.keys:[];
-	print:[i];
-	print:[(map:i)];
+	print:i;
+	print:(map:i);
 /;
 ```
 
@@ -644,11 +647,11 @@ You can terminate the program safely, or with an error, using `throw` or `exit`.
 This example throws an error once recursion depth reaches 1,000:
 
 ```python
-func NONE recurse; arg INT n = 0;
+func NONE recurse; arg n = 0;
 	if n == 1000;
 		throw "Okay, let's stop now: " + (n->STR); # Stop at 1000.
 	/;
-	recurse:[(n+1)];
+	recurse:(n+1);
 /;
 
 recurse:[];
@@ -665,7 +668,7 @@ Modules allow you to expand the capabilities of your script, use the `import` in
 
 ```python
 import IO; # Import IO built-in module.
-IO.print:['Hello World!'];
+IO.print:'Hello World!';
 
 import IO as custom_name; # Import IO, but assign it a different name.
 custom_name.print:[];
@@ -680,7 +683,7 @@ const STR module_name = 'IO';
 import @module_name as some_module; # Import dynamically.
 
 # In practice, you should verify the member "print" exists in "some_module" before trying to access it.
-some_module.print:['Hello There!'];
+some_module.print:'Hello There!';
 ```
 
 If you don't want to assign a name to an imported module at all, use the `merge` instruction which will directly add all the module's members to the current scope.
@@ -689,7 +692,7 @@ However this should be used with caution, if you merge a module that just so hap
 
 ```python
 merge IO;
-print:['Hello World!'];
+print:'Hello World!';
 ```
 
 The `merge` instruction will not work with dynamic names ("@") or aliases ("as").
