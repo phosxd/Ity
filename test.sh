@@ -45,6 +45,12 @@ var c=1;
 var d = 1;
 var INT e=1;
 var INT f =1;
+var BOOL g;
+var INT h;
+var FLOAT i;
+var STR j;
+var ARR k;
+var MAP l;
 "
 
 ""

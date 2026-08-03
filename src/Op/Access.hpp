@@ -34,7 +34,7 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 		// Find & return method.
 		MAP_t& methods = AnyCastV(MAP_t,get_data_globally(state, "__tm__")->d);
 		const STR_t& method_name = AnyCast(STR_t,second->d);
-		// Try pointer type methods first.
+		// Try pointer/reference type methods first.
 		if (first->t == PTR || first->t == REF) {
 			if (OP_Access_type_method(get_variant_type_name(first->t), method_name, methods, first, result)) return;
 		}
@@ -43,93 +43,90 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 	}
 
 
-	// Access array element.
-	if (o1->t == ARR) {
-		if (o2->t != INT) {
-			emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
-			return;
-		}
-		ARR_t& array = AnyCastV(ARR_t,o1->d);
-		const INT_t& array_len = (INT_t)array.size();
-		INT_t index = AnyCastV(INT_t,o2->d);
-		// Parse negative index.
-		if (index < 0) index = array_len+index;
-		// Throw error if index out of range.
-		if (index >= array_len || index < 0) {
-			emit_error(ERR_index_out_of_range, {std::to_string(AnyCast(INT_t,o2->d))}); // Use original given index for error to reduce confusion in negative index cases.
-			return;
-		}
-		// Return reference to array element.
-		result_ptr = &array[index];
-		return;
-	}
-
-
-	// Access string character.
-	else if (o1->t == STR) {
-		if (o2->t != INT) {
-			emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
-			return;
-		}
-		const STR_t& str = AnyCast(STR_t,o1->d);
-		const INT_t& index = AnyCast(INT_t,o2->d);
-		if (index >= (INT_t)str.size()) {
-			emit_error(ERR_index_out_of_range, {std::to_string(index)});
-			return;
-		}
-		result = Variant{STR, std::string(1,str[index])};
-		return;
-	}
-
-
-	// Access object property.
-	// For hash tables, functions, or other objects.
-	else if (o1->t == MAP) {
-		MAP_t& map = AnyCastV(MAP_t,o1->d);
-		// Determine type of the object.
-		const STR_t& obj_type = var_get_obj_type(map);
-
-		// Access function...
-		if (obj_type == "f") {
-			// Throw error if accessor is not an array.
-			if (o2->t != ARR) {
-				emit_error(ERR_invalid_func_call, {get_variant_type_name(o2->t)});
-				return;
-			}
-			// Call native function...
-			if (const auto& it = map.find("__nc"); it != map.end()) {
-				const NativeFunc_t& n_func = AnyCast(NativeFunc_t,it->second.d);
-				const ARR_t& n_args = AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,o2->d); // Merge bound arguments.
-				result = n_func(state, n_args);
-				return;
-			}
-			// Call script function...
-			else {
-				Variant args {ARR, (AnyCast(ARR_t,map.at("__ba").d) + AnyCast(ARR_t,o2->d))}; // Merge bound arguments.
-				result = call_script_function(state, map, args);
-				return;
-			}
-		}
-
-		// Access as map if type doesn't match any of the above...
-		else {
-			// Throw error if accessor is not a string.
-			if (o2->t != STR) {
+	switch (o1->t) {
+		// Access array element.
+		case ARR: {
+			if (o2->t != INT) {
 				emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 				return;
 			}
-			// Find key.
-			const STR_t& key = AnyCast(STR_t,o2->d);
-			const auto& it = map.find(key);
-			if (it == map.end()) {
-				emit_error(ERR_no_property_with_name, {key});
+			ARR_t& array = AnyCastV(ARR_t,o1->d);
+			const INT_t& array_len = (INT_t)array.size();
+			INT_t index = AnyCastV(INT_t,o2->d);
+			// Parse negative index.
+			if (index < 0) index = array_len+index;
+			// Throw error if index out of range.
+			if (index >= array_len || index < 0) {
+				emit_error(ERR_index_out_of_range, {std::to_string(AnyCast(INT_t,o2->d))}); // Use original given index for error to reduce confusion in negative index cases.
 				return;
 			}
-			// Return Variant at the key.
-			result_ptr = &it->second;
+			// Return reference to array element.
+			result_ptr = &array[index];
+			return;
+	}
+
+
+		// Access string character.
+		case STR: {
+			if (o2->t != INT) {
+				emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
+				return;
+			}
+			const STR_t& str = AnyCast(STR_t,o1->d);
+			const INT_t& index = AnyCast(INT_t,o2->d);
+			if (index >= (INT_t)str.size()) {
+				emit_error(ERR_index_out_of_range, {std::to_string(index)});
+				return;
+			}
+			result = Variant{STR, std::string(1,str[index])};
+			return;
+	}
+
+
+		// Access object property.
+		// For hash tables, functions, or other objects.
+		case MAP: {
+			MAP_t& map = AnyCastV(MAP_t,o1->d);
+			// Determine type of the object.
+			const STR_t& obj_type = var_get_obj_type(map);
+
+			// Access function...
+			if (obj_type == "f") {
+				// Construct arguments array with user passed & bound arguments.
+				const ARR_t args_arr = AnyCast(ARR_t,map.at("__ba").d)
+				+ ( (o2->t == ARR) ? AnyCast(ARR_t,o2->d) : (ARR_t){*o2} );
+				// Call native function...
+				if (const auto& it = map.find("__nc"); it != map.end()) {
+					const NativeFunc_t& n_func = AnyCast(NativeFunc_t,it->second.d);
+					result = n_func(state, args_arr);
+				}
+				// Call script function...
+				else {
+					Variant args {ARR, args_arr};
+					result = call_script_function(state, map, args);
+				}
+			}
+			// Access as map if type doesn't match any of the above...
+			else {
+				// Throw error if accessor is not a string.
+				if (o2->t != STR) {
+					emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
+					return;
+				}
+				// Find key.
+				const STR_t& key = AnyCast(STR_t,o2->d);
+				const auto& it = map.find(key);
+				if (it == map.end()) {
+					emit_error(ERR_no_property_with_name, {key});
+					return;
+				}
+				// Return Variant at the key.
+				result_ptr = &it->second;
+			}
 			return;
 		}
 
+		default: break;
 	}
 	emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 }
