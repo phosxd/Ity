@@ -4,7 +4,7 @@
 void INST_Continue_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	if (token.args[0] == "continue" || token.args[0] == "break") {
 		bool found = false;
-		std::vector<CompositeItem> reverse_nest = *AnyCast(std::vector<CompositeItem>*,extra.at("composite_nest"));
+		std::vector<CompositeItem> reverse_nest = *AnyCast(std::vector<CompositeItem>*,extra.at("cn"));
 		std::reverse(reverse_nest.begin(), reverse_nest.end());
 		for (const CompositeItem& comp_item : reverse_nest) {
 			if (comp_item.token.args[0] != "while" && comp_item.token.args[0] != "for") continue;
@@ -40,7 +40,7 @@ void INST_Continue_exec(ScopeState& state, InstToken& token) {
 }
 
 
-const Instruction INST_Continue {
+const auto* INST_Continue = new Instruction{
 	1,                   // Required arg count.
 	INST_Continue_exec,  // Function.
 	false,               // Is composite.

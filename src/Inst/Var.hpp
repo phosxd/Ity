@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Var_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
 	std::string type_name = "*";
 	std::string name;
 	std::string op = "";
@@ -132,7 +132,7 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 }
 
 
-const Instruction INST_Var {
+const auto* INST_Var = new Instruction{
 	2,              // Required arg count.
 	INST_Var_exec,  // Function.
 	false,          // Is composite.

@@ -3,7 +3,7 @@
 
 void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	bool found = false;
-	std::vector<CompositeItem> reverse_nest = *AnyCast(std::vector<CompositeItem>*,extra.at("composite_nest"));
+	std::vector<CompositeItem> reverse_nest = *AnyCast(std::vector<CompositeItem>*,extra.at("cn"));
 	std::reverse(reverse_nest.begin(), reverse_nest.end());
 	for (const CompositeItem& comp_item : reverse_nest) {
 		if (comp_item.token.args[0] != "func") continue;
@@ -33,7 +33,7 @@ void INST_Return_exec(ScopeState& state, InstToken& token) {
 }
 
 
-const Instruction INST_Return {
+const auto* INST_Return = new Instruction{
 	1,                 // Required arg count.
 	INST_Return_exec,  // Function.
 	false,             // Is composite.

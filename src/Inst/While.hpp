@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_While_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+void INST_While_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
 	const std::string& symbol = token.args[0];
 	token.meta = {
 		false,     // Multi.
@@ -185,7 +185,7 @@ void INST_While_emergency_scope_exit(InstToken*& token) {
 
 
 
-const Instruction INST_While {
+const auto* INST_While = new Instruction{
 	1,                // Required arg count.
 	INST_While_exec,  // Function.
 	true,             // Is composite.

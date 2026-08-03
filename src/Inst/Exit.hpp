@@ -36,7 +36,7 @@ void INST_Exit_exec(ScopeState& state, InstToken& token) {
 }
 
 
-const Instruction INST_Exit {
+const auto* INST_Exit = new Instruction{
 	1,                // Required arg count.
 	INST_Exit_exec,   // Function.
 	false,            // Is composite.

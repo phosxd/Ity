@@ -1,6 +1,7 @@
 #pragma once
 
 #include <csignal>
+#include <thread> // Needed for sleep.
 
 
 // Called whenever the module is imported.
@@ -13,16 +14,14 @@ Variant LIB_BI_init(ScopeState& state, const ARR_t& args) {
 
 
 std::unordered_map<uint8_t, std::vector<MAP_t>> LIB_BI_signal_functions;
-ScopeState* LIB_BI_state = nullptr;
+ScopeState* LIB_BI_state = nullptr; // NOTE: Would prefer not to store this here, it's ugly & prone to breaking if/when async becomes a thing.
 
 // Calls all script functions in `LIB_BI_signal_functions`.
 // Gets executed when we receive a system signal.
 void LIB_BI_on_signal_received(const int sig) {
-	const std::vector<MAP_t>& signal_functions = LIB_BI_signal_functions[sig];
-	// Iterate on each connected function for this signal...
-	for (const MAP_t& func : signal_functions) {
+	// Iterate on each connected function for this signal & call it...
+	for (const MAP_t& func : LIB_BI_signal_functions[sig]) {
 		Variant args = Variant{ARR, (ARR_t){}};
-		// Call the function.
 		call_script_function(*LIB_BI_state, func, args);
 	}
 };

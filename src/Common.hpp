@@ -14,22 +14,22 @@
 
 enum VariantType : uint8_t {
 	// Meta types.
-	PLACEHOLDER,
-	INTERNAL,
-	INFERRED,
-	ANY,
-	OP,
-	TREF,
-	PTR,
+	PLACEHOLDER, // Void, absent.
+	INTERNAL,    // Data not meant for in-script usage.
+	INFERRED,    // Inferred type. Should not contain data.
+	ANY,         // Any type. Should not contain data.
+	OP,          // Operator string identifier.
+	TREF,        // Literally typed name reference.
+	PTR,         // Variant pointer.
 	// Real types.
-	REF,
-	NONE,
-	BOOL,
-	INT,
-	FLOAT,
-	STR,
-	ARR,
-	MAP,
+	REF,         // Name reference.
+	NONE,        // Monostate data.
+	BOOL,        // Boolean data.
+	INT,         // Int32 data.
+	FLOAT,       // Float64 data.
+	STR,         // String data.
+	ARR,         // Array of Variants.
+	MAP,         // Unordered String:Variant pairs.
 };
 
 
@@ -55,16 +55,14 @@ const std::unordered_map<const VariantType, const std::string> VARIANT_TYPE_NAME
 
 
 enum VariantMode : uint8_t {
-	VariantMode_dynamic_type,
-	VariantMode_constant,
-	VariantMode_locked_type,
+	VariantMode_dynamic_type,  // Variant can have any type.
+	VariantMode_constant,      // Variant data should never change.
+	VariantMode_locked_type,   // Variant type should never change.
 };
 
 
 // Get string representation of a VariantType.
-inline const std::string get_variant_type_name(const VariantType& type) {
-	return VARIANT_TYPE_NAMES.at(type);
-}
+inline const std::string& get_variant_type_name(const VariantType& type) {return VARIANT_TYPE_NAMES.at(type);}
 
 
 // Get VariantType from a string representation.
@@ -76,9 +74,7 @@ inline const VariantType get_variant_type_from_name(const std::string& name) {
 }
 
 
-std::ostream& operator<<(std::ostream& os, const VariantType& s) {
-	return os << get_variant_type_name(s);
-}
+std::ostream& operator<<(std::ostream& os, const VariantType& s) {return os << get_variant_type_name(s);}
 
 
 
@@ -86,7 +82,8 @@ std::ostream& operator<<(std::ostream& os, const VariantType& s) {
 // VariantData.
 // ------------
 
-struct Variant; // Forward declare.
+// Forward declare these for use inside VariantData.
+struct Variant;
 struct ScopeState;
 struct CompositeItem;
 
@@ -143,7 +140,7 @@ const bool variant_type_matches(const Variant& a, const Variant& b, const bool d
 
 
 // Return the number of bytes that Variant takes up.
-size_t get_variant_size(const Variant& var) {
+const size_t get_variant_size(const Variant& var) {
 	size_t size = sizeof(var.t) + sizeof(var.m);
 	switch (var.t) {
 		case INT:    {size += sizeof(AnyCast(INT_t,var.d)); break;}
@@ -436,7 +433,7 @@ Variant operator*(const Variant& a, const Variant& b) {
 					emit_error(ERR_cannot_multiply_by_negative, {"ARR"});
 					return a;
 				}
-				ARR_t a_val = AnyCast(ARR_t,a.d);
+				ARR_t a_val = AnyCastV(ARR_t,a.d);
 				ARR_t sum; sum.reserve(a_val.size()*b_val);
 				for (INT_t i = 0; i < b_val; i++) {
 					for (auto& item : a_val) sum.push_back(item);

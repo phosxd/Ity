@@ -1,7 +1,7 @@
 #pragma once
 
 
-const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
+const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"; // Too long to be constexpr.
 constexpr std::string NUM = "0123456789";
 
 const std::vector<std::string> illegal_print_names = {
@@ -15,21 +15,13 @@ const std::vector<std::string> illegal_print_names = {
 // ------------------
 
 
-template<class T, class T2>
-bool is_vec_equal(const std::vector<T>& a, const std::vector<T2>& b) {
-	const size_t& a_len = a.size();
-	const size_t& b_len = b.size();
-	if (a_len != b_len) return false;
-	for (size_t i = 0; i < a_len; i++) {
-		if (not (a[i] == b[i])) return false;
-	}
-	return true;
-}
+#define is_vec_equal(a, b) \
+	(a.size() == b.size() \
+	&& std::equal(a.begin(), a.end(), b.begin()))
 
 
-bool str_ends_with(const std::string& text, const std::string& suffix) {
-	return text.size() >= suffix.size() && (text.compare(text.size()-suffix.size(), suffix.size(), suffix) == 0);
-}
+#define str_ends_with(text, suffix) \
+	(text.size() >= suffix.size() && (text.compare(text.size()-suffix.size(), suffix.size(), suffix) == 0))
 
 
 // Returns the string with all instances of `ch` removed from the start of it.
@@ -124,8 +116,8 @@ bool exists_in_vec(const std::vector<T>& v, const T2& val) {
 }
 
 
-template<class T, class T2>
-bool exists_in_arr(const T v[], const size_t& size, const T2& val) {
+template<class T>
+bool exists_in_arr(const T v[], const size_t& size, const T& val) {
 	for (unsigned int i = 0; i < size; i++) {
 		if (v[i] == val) return true;
 	}
@@ -142,10 +134,9 @@ bool exists_in_arr(const T v[], const size_t& size, const T2& val) {
 // String multiplication.
 std::string operator*(const std::string& a, const int& b) {
 	std::string sum; sum.reserve(a.size()*b);
-	for (int i = 0; i < b; i++) sum += a;
+	for (int i=0; i<b; i++) sum += a;
 	return sum;
 }
-
 
 
 // Insert uint8_t.

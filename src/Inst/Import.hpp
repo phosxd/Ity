@@ -65,7 +65,7 @@ void INST_Import_exec(ScopeState& state, InstToken& token) {
 }
 
 
-const Instruction INST_Import {
+const auto* INST_Import = new Instruction{
 	2,                 // Required arg count.
 	INST_Import_exec,  // Function.
 	false,             // Is composite.

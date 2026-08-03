@@ -4,7 +4,7 @@
 
 void INST_If_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	if (token.args[0] == "elif" || token.args[0] == "else") {
-		const CompositeItem& last_comp_item = *AnyCast(CompositeItem*,extra.at("last_comp_item"));
+		const CompositeItem& last_comp_item = *AnyCast(CompositeItem*,extra.at("lci"));
 
 		// Throw error if previous composite item was not a valid conditional.
 		if (last_comp_item.token.args[0] != "if" && last_comp_item.token.args[0] != "elif") {
@@ -14,7 +14,7 @@ void INST_If_processor(InstToken& token, const AnyMap_t& extra, const unsigned i
 
 		// Link token to the previous conditional.
 		token.linked_inst = last_comp_item.token.args[0];
-		token.linked_inst_pos = -(int32_t)AnyCast(uint16_t,extra.at("last_comp_item_dist"));
+		token.linked_inst_pos = -(int32_t)AnyCast(uint16_t,extra.at("lcid"));
 	}
 }
 
@@ -66,7 +66,7 @@ void INST_If_exec(ScopeState& state, InstToken& token) {
 }
 
 
-const Instruction INST_If {
+const auto* INST_If = new Instruction{
 	1,             // Required arg count.
 	INST_If_exec,  // Function.
 	true,          // Is composite.

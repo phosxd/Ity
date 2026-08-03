@@ -1,14 +1,12 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <cstdint>
 #include <variant>
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <chrono>
-#include <thread>
 
 #include "Util.hpp"
 #include "ScriptErrors.hpp"
@@ -40,28 +38,28 @@ const Variant LIBS[] = {
 
 
 const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
-	{"import",   &INST_Import},
-	{"merge",    &INST_Import},
+	{"import",   INST_Import},
+	{"merge",    INST_Import},
 
-	{"exit",     &INST_Exit},
-	{"throw",    &INST_Exit},
+	{"exit",     INST_Exit},
+	{"throw",    INST_Exit},
 
-	{"var",      &INST_Var},
-	{"const",    &INST_Var},
-	{"arg",      &INST_Var},
+	{"var",      INST_Var},
+	{"const",    INST_Var},
+	{"arg",      INST_Var},
 
-	{"/",        &INST_End},
-	{"if",       &INST_If},
-	{"elif",     &INST_If},
-	{"else",     &INST_If},
+	{"/",        INST_End},
+	{"if",       INST_If},
+	{"elif",     INST_If},
+	{"else",     INST_If},
 
-	{"while",    &INST_While},
-	{"for",      &INST_While},
-	{"continue", &INST_Continue},
-	{"break",    &INST_Continue},
+	{"while",    INST_While},
+	{"for",      INST_While},
+	{"continue", INST_Continue},
+	{"break",    INST_Continue},
 
-	{"func",     &INST_Func},
-	{"return",   &INST_Return},
+	{"func",     INST_Func},
+	{"return",   INST_Return},
 };
 
 constexpr std::string DECL_INSTRUCTIONS[] = {"import","merge","var","const","func"};
@@ -99,7 +97,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 	CompositeItem last_comp_item;
 	uint16_t last_comp_item_dist = 0;
 
-	for (size_t i = 0; i < src_len; i++) {
+	for (size_t i=0; i<src_len; i++) {
 		const char& ch = src[i];
 		LN_COL_COUNTER(ch,ln,col);
 
@@ -200,9 +198,9 @@ std::vector<InstToken> tokenize(const std::string& src) {
 						// Call token processor.
 						if (inst->processor) {;
 							inst->processor(item, (AnyMap_t){
-								{"last_comp_item_dist",  last_comp_item_dist},
-								{"last_comp_item",       &last_comp_item},
-								{"composite_nest",       &composite_nest}
+								{"lcid",  last_comp_item_dist},
+								{"lci",   &last_comp_item},
+								{"cn",    &composite_nest}
 							}, ln,col);
 						}
 
