@@ -9,56 +9,10 @@
 #define AnyCastV(T, var) std::get<T>(var)
 
 
+
+
 // VariantType.
 // ------------
-
-enum VariantType : uint8_t {
-	// Meta types.
-	PLACEHOLDER, // Void, absent.
-	INTERNAL,    // Data not meant for in-script usage.
-	INFERRED,    // Inferred type. Should not contain data.
-	ANY,         // Any type. Should not contain data.
-	OP,          // Operator string identifier.
-	TREF,        // Literally typed name reference.
-	PTR,         // Variant pointer.
-	// Real types.
-	REF,         // Name reference.
-	NONE,        // Monostate data.
-	BOOL,        // Boolean data.
-	INT,         // Int32 data.
-	FLOAT,       // Float64 data.
-	STR,         // String data.
-	ARR,         // Array of Variants.
-	MAP,         // Unordered String:Variant pairs.
-};
-
-
-const std::unordered_map<const VariantType, const std::string> VARIANT_TYPE_NAMES = {
-	// Meta types.
-	{PLACEHOLDER,  "PLACEHOLDER"},
-	{INTERNAL,     "INTERNAL"},
-	{INFERRED,     "*"},
-	{ANY,          "ANY"},
-	{OP,           "OP"},
-	{TREF,         "TREF"},
-	{PTR,          "PTR"},
-	// Real types.
-	{REF,          "REF"},
-	{NONE,         "NONE"},
-	{BOOL,         "BOOL"},
-	{INT,          "INT"},
-	{FLOAT,        "FLOAT"},
-	{STR,          "STR"},
-	{ARR,          "ARR"},
-	{MAP,          "MAP"},
-};
-
-
-enum VariantMode : uint8_t {
-	VariantMode_dynamic_type,  // Variant can have any type.
-	VariantMode_constant,      // Variant data should never change.
-	VariantMode_locked_type,   // Variant type should never change.
-};
 
 
 // Get string representation of a VariantType.
@@ -493,12 +447,6 @@ Variant operator%(const Variant& a, const Variant& b) {
 // ----------
 
 
-enum ExprTokenType : uint8_t {
-	ExprTokenType_variant,
-	ExprTokenType_sequence,
-};
-
-
 #pragma pack(1)
 struct ExprToken {
 	unsigned int ln = 0;
@@ -532,6 +480,7 @@ struct InstToken {
 	unsigned int i = 0;
 	unsigned int ln = 0;
 	unsigned int col = 0;
+	InstSymbol symbol = InstSymbol__;
 	std::vector<std::string> args;
 	const Instruction* inst = nullptr;
 	ExprToken expr;
@@ -539,7 +488,7 @@ struct InstToken {
 	uint16_t composite_size = 0; // How large the composite instruction is. If `0`, is not a composite instruction.
 	bool declarative_composite = false; // If true, the composite instruction contains variable declarations. This info is used to optimize scoping.
 
-	std::string linked_inst = "";
+	InstSymbol linked_inst = InstSymbol__;
 	int32_t linked_inst_pos = 0;
 
 	std::vector<VariantData> meta;
@@ -551,7 +500,7 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 	if (not s.args.empty()) os << ", args=" << s.args;
 	if (not s.expr.seq.empty()) os << ", expr=" << s.expr;
 	if (s.composite_size > 0) {os << ", composite_size=" << s.composite_size;}
-	if (not s.linked_inst.empty()) {
+	if (s.linked_inst != InstSymbol__) {
 		os << ", linked_inst=" << s.linked_inst;
 		os << ", linked_inst_pos=" << s.linked_inst_pos;
 	}
@@ -580,7 +529,8 @@ struct ScopeState {
 
 #pragma pack(1)
 struct Instruction {
-	const uint8_t REQUIRED; // Required argument count,
+	const std::vector<InstSymbol> valid_symbols = {};
+	const uint8_t REQUIRED = 0;
 	void (*exec)(ScopeState&, InstToken&) = nullptr;
 	const bool is_composite = false;
 	const bool has_expr = false;
@@ -598,6 +548,26 @@ struct CompositeItem {
 	unsigned int col = 0;
 	bool declarative = false;
 };
+
+
+std::vector<const Instruction*> INSTRUCTIONS = {};
+
+
+const Instruction* find_matching_instruction(const InstSymbol& symbol) {
+	for (const Instruction*& inst : INSTRUCTIONS) {
+		if (exists_in_vec(inst->valid_symbols, symbol)) return inst;
+	}
+	return nullptr;
+}
+
+
+// Get string representation of an InstSymbol.
+inline std::string InstSymbol_to_string(const InstSymbol& symbol) {
+	for (const auto& it : InstSymbolStrs) {
+		if (it.second == symbol) return it.first;
+	}
+	return "";
+}
 
 
 

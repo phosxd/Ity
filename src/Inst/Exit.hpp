@@ -3,7 +3,7 @@
 
 void INST_Exit_exec(ScopeState& state, InstToken& token) {
 	// Exit with status code.
-	if (token.args[0] == "exit") {
+	if (token.symbol == InstSymbol_exit) {
 		if (token.expr.seq.empty()) {
 			exit(0);
 			return;
@@ -19,7 +19,7 @@ void INST_Exit_exec(ScopeState& state, InstToken& token) {
 	}
 
 	// Throw error.
-	else if (token.args[0] == "throw") {
+	else if (token.symbol == InstSymbol_throw) {
 		if (token.expr.seq.empty()) {
 			emit_error(ERR_custom, {"Exception thrown."});
 			return;
@@ -36,7 +36,11 @@ void INST_Exit_exec(ScopeState& state, InstToken& token) {
 }
 
 
-const auto* INST_Exit = new Instruction{
+
+
+const Instruction* INST_Exit = new Instruction{
+	// Valid symbols.
+	{InstSymbol_exit, InstSymbol_throw},
 	1,                // Required arg count.
 	INST_Exit_exec,   // Function.
 	false,            // Is composite.

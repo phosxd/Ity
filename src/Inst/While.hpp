@@ -2,7 +2,6 @@
 
 
 void INST_While_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
-	const std::string& symbol = token.args[0];
 	token.meta = {
 		false,     // Multi.
 
@@ -15,7 +14,7 @@ void INST_While_processor(InstToken& token, const AnyMap_t& _extra, const unsign
 	};
 
 
-	if (symbol == "for") {
+	if (token.symbol == InstSymbol_for) {
 		// Throw error if not enough args, or third arg is not the required keyword.
 		if (token.args.size() < 4 || token.args[2] != "in") {
 			emit_error(ERR_invalid_syntax, {"Expected keyword \"in\""}, ln, col);
@@ -34,7 +33,7 @@ void INST_While_processor(InstToken& token, const AnyMap_t& _extra, const unsign
 	}
 
 
-	else if (symbol == "while") {
+	else if (token.symbol == InstSymbol_while) {
 		token.args = tokenize_expr_from_inst_args(token, token.inst->REQUIRED);
 	}
 }
@@ -109,12 +108,11 @@ void INST_While_for_loop(ScopeState& state, InstToken& token, bool& value) {
 
 
 void INST_While_exec(ScopeState& state, InstToken& token) {
-	const std::string& symbol = token.args[0];
 	bool value = false;
 
 
 	// While loop.
-	if (symbol == "while") {
+	if (token.symbol == InstSymbol_while) {
 		// Get value from expression.
 		const Variant* var = expr_exec(state, token.expr);
 		// Throw error if not boolean.
@@ -127,12 +125,12 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 
 
 	// For loop.
-	else if (symbol == "for") {
+	else if (token.symbol == InstSymbol_for) {
 		INST_While_for_loop(state, token, value);
 	}
 
 
-	const bool multi = (token.declarative_composite || symbol == "for");
+	const bool multi = (token.declarative_composite || token.symbol == InstSymbol_for);
 
 	// Jump past instructions in this composite if failed.
 	if (not value) {
@@ -156,7 +154,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 		scope_in(state);
 		scoped_tokens.push_back(&token);
 
-		if (symbol == "for") {
+		if (token.symbol == InstSymbol_for) {
 			// Give warning if the var name is shadowing another var name.
 			if (not is_name_globally_free(*(state.p), AnyCast(STR_t,token.meta[1]))) {
 				emit_warn(ERR_name_is_shadowed, {AnyCast(STR_t,token.meta[1])});
@@ -166,7 +164,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 
 
 	// If for loop, set the variable.
-	if (symbol == "for" && value) {
+	if (token.symbol == InstSymbol_for && value) {
 		set_data(state, AnyCast(STR_t,token.meta[1]), AnyCastV(ARR_t,token.meta[2])[1].t, std::move(AnyCastV(ARR_t,token.meta[2])[1]), VariantMode_dynamic_type);
 		AnyCastV(ARR_t,token.meta[2])[1] = VariantPresets.empty;
 		token.meta[3] = AnyCast(unsigned int,token.meta[3]) + 1;
@@ -185,7 +183,9 @@ void INST_While_emergency_scope_exit(InstToken*& token) {
 
 
 
-const auto* INST_While = new Instruction{
+const Instruction* INST_While = new Instruction{
+	// Valid symbols.
+	{InstSymbol_while, InstSymbol_for},
 	1,                // Required arg count.
 	INST_While_exec,  // Function.
 	true,             // Is composite.

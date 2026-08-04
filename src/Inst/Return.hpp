@@ -6,7 +6,7 @@ void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const unsign
 	std::vector<CompositeItem> reverse_nest = *AnyCast(std::vector<CompositeItem>*,extra.at("cn"));
 	std::reverse(reverse_nest.begin(), reverse_nest.end());
 	for (const CompositeItem& comp_item : reverse_nest) {
-		if (comp_item.token.args[0] != "func") continue;
+		if (comp_item.token.symbol != InstSymbol_func) continue;
 		found = true;
 		break;
 	}
@@ -27,13 +27,17 @@ void INST_Return_exec(ScopeState& state, InstToken& token) {
 
 	// Get value from expression & set return value.
 	const Variant* var = expr_exec(state, token.expr);
-	set_data(state, "__RT__", var->t, *var, VariantMode_dynamic_type);
+	set_data(state, "__R", var->t, *var, VariantMode_dynamic_type);
 
 	exec_jump_out = true;
 }
 
 
-const auto* INST_Return = new Instruction{
+
+
+const Instruction* INST_Return = new Instruction{
+	// Valid symbols.
+	{InstSymbol_return},
 	1,                 // Required arg count.
 	INST_Return_exec,  // Function.
 	false,             // Is composite.

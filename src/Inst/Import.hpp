@@ -2,7 +2,6 @@
 
 
 void INST_Import_exec(ScopeState& state, InstToken& token) {
-	const std::string& symbol = token.args[0];
 	std::string lib_name = token.args[1];
 	std::string applied_name = lib_name;
 
@@ -59,13 +58,17 @@ void INST_Import_exec(ScopeState& state, InstToken& token) {
 	const MAP_t& lib_map = AnyCast(MAP_t,lib->d);
 	//std::any_cast<NativeFunc_t>(lib_map.at("__init").d) (state, {}); // Call init function.
 	// Merge all public members of the library into the scope.
-	if (symbol == "merge") merge_module(state, lib_map);
+	if (token.symbol == InstSymbol_merge) merge_module(state, lib_map);
 	// Add library to scope with the given name.
 	else import_module(state, applied_name, lib_map);
 }
 
 
-const auto* INST_Import = new Instruction{
+
+
+const Instruction* INST_Import = new Instruction{
+	// Valid symbols.
+	{InstSymbol_import, InstSymbol_merge},
 	2,                 // Required arg count.
 	INST_Import_exec,  // Function.
 	false,             // Is composite.

@@ -42,8 +42,8 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 	// Create an alternate scope, for use inside the function.
 	ScopeState func_state = create_new_scope_state(
 		(MAP_t){
-			{"__AG__",  std::move(args)},
-			{"__RT__",  Variant{func_return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
+			{"__AG",  std::move(args)},
+			{"__R",  Variant{func_return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
 		},
 		get_state_at_depth(state, AnyCast(INT_t,func.at("__si").d)) // Use function definition scope as the parent.
 	);
@@ -59,7 +59,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 
 
 	// Get result & check if return type matches.
-	const Variant& func_result = func_state.d["__RT__"];
+	const Variant& func_result = func_state.d["__R"];
 	if (func_result.t != func_return_type && func_return_type != ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func_return_type)});
 	// Return result.
 	//call_trace.pop_back(); call_trace.pop_back();
@@ -68,7 +68,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 	if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
 	#endif
 
-	args = std::move(func_state.d["__AG__"]);
+	args = std::move(func_state.d["__AG"]);
 	return func_result;
 }
 

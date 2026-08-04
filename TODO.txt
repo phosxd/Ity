@@ -1,7 +1,4 @@
 - Add ability to import other scripts as modules.
-
-- Fix crash when printing debug for InstToken & ExprToken. I think it has loosely something to do with pointer variants.
-	Note: was able to mitigate the frustration of this a little bit by detecting it then disabling certain debug in the test script if needed.
  
 
 Add more FileAccess methods:

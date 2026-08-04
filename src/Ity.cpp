@@ -8,6 +8,7 @@
 #include <sstream>
 #include <chrono>
 
+#include "Registry.hpp"
 #include "Util.hpp"
 #include "ScriptErrors.hpp"
 #include "Common.hpp"
@@ -25,6 +26,7 @@ const Variant LIBS[] = {
 //BUILDER_INSERT: Lib Names
 };
 
+
 // Instruction imports...
 #include "Inst/Import.hpp"
 #include "Inst/Exit.hpp"
@@ -37,44 +39,25 @@ const Variant LIBS[] = {
 #include "Inst/Return.hpp"
 
 
-const std::unordered_map<std::string, const Instruction*> INSTRUCTIONS = {
-	{"import",   INST_Import},
-	{"merge",    INST_Import},
-
-	{"exit",     INST_Exit},
-	{"throw",    INST_Exit},
-
-	{"var",      INST_Var},
-	{"const",    INST_Var},
-	{"arg",      INST_Var},
-
-	{"/",        INST_End},
-	{"if",       INST_If},
-	{"elif",     INST_If},
-	{"else",     INST_If},
-
-	{"while",    INST_While},
-	{"for",      INST_While},
-	{"continue", INST_Continue},
-	{"break",    INST_Continue},
-
-	{"func",     INST_Func},
-	{"return",   INST_Return},
-};
-
-constexpr std::string DECL_INSTRUCTIONS[] = {"import","merge","var","const","func"};
-constexpr size_t DECL_INSTRUCTIONS_size = 5;
-
-constexpr char COMMENT_SYMBOL = '#';
-constexpr char INST_END_SYMBOL = ';';
-constexpr std::string COMP_INST_END_SYMBOL = "/";
-constexpr std::string ITY_FILE_EXT = ".ity";
-
-
 Variant last_expr_result = VariantPresets.empty;
 
 
 namespace Ity {
+
+
+void init() {
+	INSTRUCTIONS = {
+		INST_Import,
+		INST_Exit,
+		INST_Var,
+		INST_End,
+		INST_If,
+		INST_While,
+		INST_Continue,
+		INST_Func,
+		INST_Return,
+	};
+}
 
 
 std::vector<InstToken> tokenize(const std::string& src) {
@@ -170,6 +153,10 @@ std::vector<InstToken> tokenize(const std::string& src) {
 				}
 
 				const size_t& args_len = item.args.size();
+				InstSymbol inst_symbol = InstSymbol__;
+				if (args_len > 0) {
+					if (const auto it = InstSymbolStrs.find(item.args[0]); it != InstSymbolStrs.end()) inst_symbol = it->second;
+				}
 
 				// Handle composite instructions.
 				for (CompositeItem& comp_item : composite_nest) {
@@ -180,13 +167,12 @@ std::vector<InstToken> tokenize(const std::string& src) {
 					}
 					comp_item.size += 1;
 					// Flag composite as declarative, if a declarative instruction is found inside it.
-					if (&comp_item == &composite_nest.back() && args_len > 0 && exists_in_arr(DECL_INSTRUCTIONS, DECL_INSTRUCTIONS_size, item.args[0])) comp_item.declarative = true;
+					if (&comp_item == &composite_nest.back() && args_len > 0 && exists_in_arr(DECL_INSTRUCTIONS, DECL_INSTRUCTIONS_size, inst_symbol)) comp_item.declarative = true;
 				}
 				if (args_len > 0) {
-					const std::string& inst_name = item.args[0];
 					// If is a valid instruction...
-					if (INSTRUCTIONS.find(inst_name) != INSTRUCTIONS.end()) {
-						const Instruction* inst = INSTRUCTIONS.at(inst_name); // Get instruction specifications.
+					if (const Instruction* inst = find_matching_instruction(inst_symbol); inst) {
+						item.symbol = inst_symbol;
 						item.inst = inst;
 
 						// Check arguments.
@@ -214,7 +200,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 							composite_nest.push_back(CompositeItem{item, (unsigned int)sequence.size(), 0, ln, col});
 						}
 						// End composite item...
-						else if (inst_name == COMP_INST_END_SYMBOL) {
+						else if (inst_symbol == InstSymbol_end) {
 							if (composite_nest.size() > 0) {
 								// Get & remove most recent composite item.
 								CompositeItem comp_item = composite_nest.back();
@@ -222,11 +208,11 @@ std::vector<InstToken> tokenize(const std::string& src) {
 								// Apply updated token to sequence.
 								comp_item.token.composite_size = comp_item.size;
 								comp_item.token.declarative_composite = comp_item.declarative;
-								if (comp_item.token.args[0] == "func") {
+								if (comp_item.token.symbol == InstSymbol_func) {
 									comp_item.token.meta = {(unsigned int)sequence.size()};
 								}
 								sequence[comp_item.index] = comp_item.token;
-								item.linked_inst = comp_item.token.args[0];
+								item.linked_inst = comp_item.token.symbol;
 								item.linked_inst_pos = -comp_item.size;
 								item.declarative_composite = comp_item.declarative; // End instruction should also easily know if the composite is declarative.
 								// Save composite item for later.
@@ -284,7 +270,7 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 		? std::min((int)InstTokenSeq.size(), end_idx+1)
 		: InstTokenSeq.size()
 	;
-	for (unsigned int i = start_idx; i < seq_len; i++) {
+	for (size_t i = start_idx; i < seq_len; i++) {
 		InstToken& item = InstTokenSeq[i];
 		current_line = item.ln;
 		current_column = item.col;
@@ -299,7 +285,7 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 
 		// If has an expression but no args, run as expression.
 		if (item.args.size() == 0) {
-			if (not item.expr.seq.empty()) last_expr_result = *expr_exec(state, item.expr, false, current_line, current_column);
+			last_expr_result = *expr_exec(state, item.expr, false, current_line, current_column);
 			continue;
 		}
 

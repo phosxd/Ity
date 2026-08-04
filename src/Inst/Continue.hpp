@@ -2,14 +2,14 @@
 
 
 void INST_Continue_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
-	if (token.args[0] == "continue" || token.args[0] == "break") {
+	if (token.symbol == InstSymbol_continue || token.symbol == InstSymbol_break) {
 		bool found = false;
 		std::vector<CompositeItem> reverse_nest = *AnyCast(std::vector<CompositeItem>*,extra.at("cn"));
 		std::reverse(reverse_nest.begin(), reverse_nest.end());
 		for (const CompositeItem& comp_item : reverse_nest) {
-			if (comp_item.token.args[0] != "while" && comp_item.token.args[0] != "for") continue;
+			if (comp_item.token.symbol != InstSymbol_while && comp_item.token.symbol != InstSymbol_for) continue;
 			found = true;
-			token.linked_inst = comp_item.token.args[0];
+			token.linked_inst = comp_item.token.symbol;
 			token.linked_inst_pos = -(int32_t)(token.i - comp_item.token.i);
 			break;
 		}
@@ -24,10 +24,10 @@ void INST_Continue_processor(InstToken& token, const AnyMap_t& extra, const unsi
 
 
 void INST_Continue_exec(ScopeState& state, InstToken& token) {
-	if (token.linked_inst == "while" || token.linked_inst == "for") {
+	if (token.linked_inst == InstSymbol_while || token.linked_inst == InstSymbol_for) {
 		InstToken& linked_token = InstTokenSeq[token.i + token.linked_inst_pos];
 		exec_jump_value += linked_token.composite_size + token.linked_inst_pos;
-		if (token.args[0] == "continue") exec_jump_value -= 1;
+		if (token.symbol == InstSymbol_continue) exec_jump_value -= 1;
 		else {
 			// Scope out if previously scoped in.
 			if (linked_token.declarative_composite && linked_token.meta.size() > 0) {
@@ -40,7 +40,10 @@ void INST_Continue_exec(ScopeState& state, InstToken& token) {
 }
 
 
-const auto* INST_Continue = new Instruction{
+
+const Instruction* INST_Continue = new Instruction{
+	// Valid symbols.
+	{InstSymbol_continue, InstSymbol_break},
 	1,                   // Required arg count.
 	INST_Continue_exec,  // Function.
 	false,               // Is composite.

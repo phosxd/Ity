@@ -36,7 +36,11 @@ void INST_Func_exec(ScopeState& state, InstToken& token) {
 }
 
 
-const auto* INST_Func = new Instruction{
+
+
+const Instruction* INST_Func = new Instruction{
+	// Valid symbols.
+	{InstSymbol_func},
 	3,               // Required arg count.
 	INST_Func_exec,  // Function.
 	true,            // Is composite.

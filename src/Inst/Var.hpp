@@ -60,7 +60,7 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 
 	VariantType type = get_variant_type_from_name(type_name);
 	VariantMode mode = VariantMode_locked_type;
-	if (token.args[0] == "const") mode = VariantMode_constant;
+	if (token.symbol == InstSymbol_const) mode = VariantMode_constant;
 	if (type == ANY) {
 		if (mode == 1) {
 			emit_error(ERR_constant_type_not_explicit);
@@ -78,7 +78,6 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 
 
 void INST_Var_exec(ScopeState& state, InstToken& token) {
-	const std::string& symbol = token.args[0];
 	const std::string& name = AnyCast(std::string,token.meta[0]);
 	//const std::string& op = AnyCast(std::string,token.meta[1]);
 
@@ -97,14 +96,14 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 	Variant var = *expr_exec(state, token.expr);
 
 
-	if (symbol == "arg") {
+	if (token.symbol == InstSymbol_arg) {
 		// Throw error if this scope holds no arguments.
-		if (is_name_free(state, "__AG__")) {
+		if (is_name_free(state, "__AG")) {
 			emit_error(ERR_no_args_available);
 			return;
 		}
 		// Get argument if available.
-		ARR_t& scope_args = AnyCastV(ARR_t,get_data(state, "__AG__")->d);
+		ARR_t& scope_args = AnyCastV(ARR_t,get_data(state, "__AG")->d);
 		if (not scope_args.empty()) {
 			var = scope_args.front();
 			scope_args.erase(scope_args.begin());
@@ -118,12 +117,12 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 	else if (var.t == NONE && var.t != type) {
 		switch (type) {
 			case REF:    {var = Variant{REF, (STR_t)"noneref"}; break;}
-			case BOOL:   {var = VariantPresets.bool_false; break;}
-			case INT:    {var = Variant{INT, (INT_t)0}; break;}
-			case FLOAT:  {var = Variant{FLOAT, (FLOAT_t)0}; break;}
-			case STR:    {var = Variant{STR, (STR_t)""}; break;}
-			case ARR:    {var = Variant{ARR, (ARR_t){}}; break;}
-			case MAP:    {var = Variant{MAP, (MAP_t){}}; break;}
+			case BOOL:   {var = VariantPresets.bool_false;      break;}
+			case INT:    {var = Variant{INT, (INT_t)0};         break;}
+			case FLOAT:  {var = Variant{FLOAT, (FLOAT_t)0};     break;}
+			case STR:    {var = Variant{STR, (STR_t)""};        break;}
+			case ARR:    {var = Variant{ARR, (ARR_t){}};        break;}
+			case MAP:    {var = Variant{MAP, (MAP_t){}};        break;}
 			default: break;
 		}
 	}
@@ -132,7 +131,11 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 }
 
 
-const auto* INST_Var = new Instruction{
+
+
+const Instruction* INST_Var = new Instruction{
+	// Valid symbols.
+	{InstSymbol_var, InstSymbol_const, InstSymbol_arg},
 	2,              // Required arg count.
 	INST_Var_exec,  // Function.
 	false,          // Is composite.
