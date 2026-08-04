@@ -155,7 +155,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 		case ERR_invalid_assignment_op:             return "Invalid assignment operator \"" + args[0] + "\" for instruction \"" + args[1] + "\".";
 		case ERR_missing_operand:                   return "Operator is missing an operand.";
 		case ERR_invalid_cast:                      return "Cannot type cast from \"" + args[0] + " to \"" + args[1] + "\".";
-		case ERR_unexpected_inst:                   return "Unexpected \"" + args[0] + "\"instruction. No valid previous.";
+		case ERR_unexpected_inst:                   return "Unexpected \"" + args[0] + "\" instruction. No valid previous.";
 
 		case ERR_operand_type_mismatch: {
 			std::string part = "\".";

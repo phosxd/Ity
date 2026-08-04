@@ -454,8 +454,8 @@ void start_shell(int argc, char* argv[]) {
 	if (debug_flags.result) {
 		const auto total_end = std::chrono::high_resolution_clock::now();
 		const std::vector<std::vector<long int>> times = {
-			{DurCast_ms(total_end-clock_start).count(), DurCast_us(total_end-clock_start).count()},
-			{DurCast_ms(timers[1]-timers[0]).count(), DurCast_us(timers[1]-timers[0]).count()},
+			{DurCast_us(total_end-clock_start).count(), DurCast_ms(total_end-clock_start).count()},
+			{DurCast_us(timers[1]-timers[0]).count(),   DurCast_ms(timers[1]-timers[0]).count()},
 		};
 		std::cout << "\n\n" << "Program results...\n------------------\n";
 		if (not source_script_path.empty()) {std::cout << "TIME (Token):    " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}

@@ -15,8 +15,8 @@ const std::vector<std::string> illegal_print_names = {
 // ------------------
 
 
-#define DurCast_us(diff) std::chrono::duration_cast<std::chrono::milliseconds>(diff)
-#define DurCast_ms(diff) std::chrono::duration_cast<std::chrono::microseconds>(diff)
+#define DurCast_us(diff) std::chrono::duration_cast<std::chrono::microseconds>(diff)
+#define DurCast_ms(diff) std::chrono::duration_cast<std::chrono::milliseconds>(diff)
 #define DurCast_s(diff)  std::chrono::duration_cast<std::chrono::seconds>(diff)
 #define DurCast_m(diff)  std::chrono::duration_cast<std::chrono::minutes>(diff)
 #define DurCast_h(diff)  std::chrono::duration_cast<std::chrono::hours>(diff)

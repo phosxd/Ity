@@ -21,7 +21,7 @@ Variant LIB_Math_math(ScopeState& _state, const ARR_t& args, const std::string& 
 	if (var.t == INT) {
 		const INT_t& d = AnyCast(INT_t,var.d);
 		type = INT;
-		if (func == "abs") data = std::abs(d);
+		if (func == "abs")         data = std::abs(d);
 		else if (func == "floor")  data = (INT_t)std::floor(d);
 		else if (func == "ceil")   data = (INT_t)std::ceil(d);
 		else if (func == "log")    data = (INT_t)std::log(d);
@@ -37,15 +37,15 @@ Variant LIB_Math_math(ScopeState& _state, const ARR_t& args, const std::string& 
 		else if (func == "sqrt")   data = (FLOAT_t)std::sqrtf(d);
 	}
 
-	return Variant{type, std::move(data)};
+	return Variant{std::move(type), std::move(data)};
 }
 
 
-Variant LIB_Math_abs(ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "abs");}
-Variant LIB_Math_floor(ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "floor");}
-Variant LIB_Math_ceil(ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "ceil");}
-Variant LIB_Math_log(ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "log");}
-Variant LIB_Math_sqrt(ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "sqrt");}
+Variant LIB_Math_abs   (ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "abs");}
+Variant LIB_Math_floor (ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "floor");}
+Variant LIB_Math_ceil  (ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "ceil");}
+Variant LIB_Math_log   (ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "log");}
+Variant LIB_Math_sqrt  (ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "sqrt");}
 
 
 Variant LIB_Math_pow(ScopeState& _state, const ARR_t& args) {

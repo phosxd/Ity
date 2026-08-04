@@ -99,12 +99,12 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 
 	if (symbol == "arg") {
 		// Throw error if this scope holds no arguments.
-		if (is_name_free(state, "__ARGS__")) {
+		if (is_name_free(state, "__AG__")) {
 			emit_error(ERR_no_args_available);
 			return;
 		}
 		// Get argument if available.
-		ARR_t& scope_args = AnyCastV(ARR_t,get_data(state, "__ARGS__")->d);
+		ARR_t& scope_args = AnyCastV(ARR_t,get_data(state, "__AG__")->d);
 		if (not scope_args.empty()) {
 			var = scope_args.front();
 			scope_args.erase(scope_args.begin());

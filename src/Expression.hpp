@@ -9,7 +9,13 @@ std::vector<std::vector<Variant>> temporary_pool_stack;
 
 
 
+// Call a native function.
+inline Variant call_native_function(ScopeState& state, const NativeFunc_t& func, const ARR_t& args) {
+	return func(state, args);
+}
 
+
+// Call a script function.
 Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args) {
 	// Throw error if maximum execution depth is reached.
 	if (execution_depth > execution_depth_max) {
@@ -24,7 +30,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 	// Throw error if token is not a function token.
 	// The only time this should happen is if the tokens are corrupted in some way.
 	if (func_token.args[0] != "func") {
-		emit_error(ERR_unexpected, {"FunctionHandler", "Missing function: " + std::to_string(func_token_index) + " isn't a \"func\" token."});
+		emit_error(ERR_unexpected, {"FunctionHandler", "Missing function: " + std::to_string(func_token_index) + " isn't a \"fn\" token."});
 		return VariantPresets.none;
 	}
 
@@ -36,8 +42,8 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 	// Create an alternate scope, for use inside the function.
 	ScopeState func_state = create_new_scope_state(
 		(MAP_t){
-			{"__ARGS__", std::move(args)},
-			{"__RET__", Variant{func_return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
+			{"__AG__",  std::move(args)},
+			{"__RT__",  Variant{func_return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
 		},
 		get_state_at_depth(state, AnyCast(INT_t,func.at("__si").d)) // Use function definition scope as the parent.
 	);
@@ -53,7 +59,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 
 
 	// Get result & check if return type matches.
-	const Variant& func_result = func_state.d["__RET__"];
+	const Variant& func_result = func_state.d["__RT__"];
 	if (func_result.t != func_return_type && func_return_type != ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func_return_type)});
 	// Return result.
 	//call_trace.pop_back(); call_trace.pop_back();
@@ -62,7 +68,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 	if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
 	#endif
 
-	args = std::move(func_state.d["__ARGS__"]);
+	args = std::move(func_state.d["__AG__"]);
 	return func_result;
 }
 
@@ -436,13 +442,12 @@ Variant* resolve_variant(ScopeState& state, Variant& item) {
 			return &item;
 		}
 
-		// Create named ref.
-		if (name[0] == '@') {temporary_pool.push_back(Variant{REF, real_name}); return &temporary_pool.back();}
-
 		// Get variable.
 		Variant* ptr = get_data_globally(state, real_name);
+		// Create named ref.
+		if (name[0] == '@') {temporary_pool.push_back(Variant{REF, real_name}); return &temporary_pool.back();}
 		// Deref pointer or named reference.
-		if (name[0] == '~') {
+		else if (name[0] == '~') {
 			switch (ptr->t) {
 				case REF: return get_data_globally(state, AnyCast(STR_t,ptr->d), &none_var);
 				case PTR: return AnyCast(Variant*,ptr->d);
@@ -462,7 +467,7 @@ Variant* resolve_variant(ScopeState& state, Variant& item) {
 
 
 // Execute a sequence of ExprTokens. `token` itself is an ExprToken which should contain a sequence in `ExprToken.seq`.
-Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=false, const unsigned int ln=0, const unsigned int col=0) {
+Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=false, const unsigned int& ln=0, const unsigned int& col=0) {
 	// Output sequence in debug mode.
 	#ifdef RUNTIME_DEBUG
 	if (debug_flags.expr_seq && not subexpr) {
@@ -495,7 +500,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 		// Throw error if there are an odd number of elements.
 		if (token.seq.size() % 2 != 0) {
 			emit_error(ERR_invalid_syntax, {"Map literal expects key-value pairs. ( {'a', 1, 'b', 2} )"});
-			return new Variant{};
+			return &none_var;
 		}
 		MAP_t map; map.reserve(token.seq.size()/2);
 		bool is_key = true;
@@ -509,7 +514,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 				// Throw error if key is not a string.
 				if (var->t != STR) {
 					emit_error(ERR_invalid_syntax, {"Map key must be a string"});
-					return new Variant{};
+					return &none_var;
 				}
 				// Apply key.
 				key = AnyCast(STR_t,var->d);
@@ -590,7 +595,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 		else if (item.t == ExprTokenType_variant) {
 			// Get operator.
 			if (item.var.t == OP) {
-				op_symbol = AnyCast(std::string,item.var.d);
+				op_symbol = AnyCast(STR_t,item.var.d);
 				// Find the Operation object from the symbol.
 				if (const auto& it = OPERATIONS.find(op_symbol); it != OPERATIONS.end()) {
 					op = it->second;

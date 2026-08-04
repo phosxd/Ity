@@ -97,8 +97,7 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 				+ ( (second->t == ARR) ? AnyCast(ARR_t,second->d) : (ARR_t){*second} ); // Using "second" instead of "o2" is not a mistake, if it's a `REF`/`PTR` we don't want to use the referenced value. Pass the actual ref/ptr.
 				// Call native function...
 				if (const MAP_t::iterator& it = map.find("__nc"); it != map.end()) {
-					const NativeFunc_t& n_func = AnyCast(NativeFunc_t,it->second.d);
-					result = n_func(state, args_arr);
+					result = call_native_function(state, AnyCast(NativeFunc_t,it->second.d), args_arr);
 				}
 				// Call script function...
 				else {

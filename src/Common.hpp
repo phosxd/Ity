@@ -178,20 +178,20 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 
 	switch (var.t) {
 		// Meta types.
-		case OP:   {os << "OP:" << AnyCast(STR_t,var.d); break;}
+		case OP:   {os << "OP:"   << AnyCast(STR_t,var.d); break;}
 		case TREF: {os << "TREF:" << AnyCast(STR_t,var.d); break;}
 
 		// Real types.
-		case REF:   {os << "REF:" << AnyCast(STR_t,var.d); break;}
-		case NONE:  {os << "none"; break;}
-		case BOOL:  {os << (AnyCast(bool,var.d) ? "true" : "false"); break;}
-		case INT:   {os << AnyCast(INT_t,var.d); break;}
+		case NONE:  {os << "none";                                 break;}
+		case REF:   {os << "REF:" << AnyCast(STR_t,var.d);         break;}
+		case BOOL:  {os << (AnyCast(bool,var.d) ? "true":"false"); break;}
+		case INT:   {os << AnyCast(INT_t,var.d);                   break;}
 		case FLOAT: {os << std::to_string(AnyCast(FLOAT_t,var.d)); break;} // `std::cout` wont show the full precision by default, so we convert to string.
-		case STR:   {os << AnyCast(STR_t,var.d); break;}
+		case STR:   {os << AnyCast(STR_t,var.d);                   break;}
 
 		case ARR: {
 			os << '[';
-			unsigned int i = 0;
+			size_t i = 0;
 			for (const Variant& it : AnyCast(ARR_t,var.d)) {
 				if (i != 0) os << ", ";
 				if (it.t == STR) os << '"' << it << '"';
@@ -204,7 +204,7 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 
 		case MAP: {
 			os << '{';
-			unsigned int idx = 0;
+			size_t idx = 0;
 			for (auto& i : AnyCast(MAP_t,var.d)) {
 				if (exists_in_vec(illegal_print_names, i.first)) continue;
 				if (idx != 0) {os << ", ";}
@@ -745,10 +745,10 @@ const VariantPresets_struct VariantPresets;
 const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t& native_func) {
 	return Variant{
 		MAP, (MAP_t){
-			{"__t",   VariantPresets.obj_type_f}, // Map type.
+			{"__t",   VariantPresets.obj_type_f},                            // Map type.
 			{"__rt",  Variant{INTERNAL, return_type, VariantMode_constant}}, // Return type.
-			{"__nc",  Variant{INTERNAL, native_func}}, // Native call.
-			{"__ba",  Variant{ARR, (ARR_t){}}}, // Bound args.
+			{"__nc",  Variant{INTERNAL, native_func}},                       // Native callable.
+			{"__ba",  Variant{ARR, (ARR_t){}}},                              // Bound args.
 		},
 		VariantMode_constant,
 	};

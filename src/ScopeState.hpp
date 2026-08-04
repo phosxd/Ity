@@ -27,7 +27,7 @@ ScopeState* get_state_at_depth(ScopeState& state, const unsigned int target_dept
 		current = current->p;
 	}
 
-	emit_error(ERR_unexpected, {"ScopeState.get_state_at_depth", "No state at depth " + std::to_string(target_depth) + '.'});
+	emit_error(ERR_unexpected, {"GetStateAtDepth", "No state at depth " + std::to_string(target_depth) + '.'});
 	return &state;
 }
 
@@ -58,7 +58,7 @@ void scope_out(ScopeState& state) {
 	ScopeState* p = nullptr;
 	if (state.p) p = state.p;
 	else {
-		emit_error(ERR_unexpected, {"ScopeState.scope_out", "Minimum depth reached."});
+		emit_error(ERR_unexpected, {"ScopeOut", "Minimum depth reached."});
 		return;
 	}
 	state.p = std::move(p->p);
@@ -130,9 +130,12 @@ const bool is_name_globally_free(const ScopeState& state, const std::string& nam
 
 
 // Gets the data for name in the current scope. Ensure the name exists in the current scope first.
-Variant* get_data(ScopeState& state, const std::string& name) {
+Variant* get_data(ScopeState& state, const std::string& name, Variant* default_value=nullptr) {
 	const auto& it = state.d.find(name);
-	if (it == state.d.end()) emit_error(ERR_unexpected, {"GetData", "Failed."});
+	if (it == state.d.end()) {
+		if (not default_value) emit_error(ERR_unexpected, {"GetData", "Failed."});
+		return default_value;
+	}
 	return &it->second;
 }
 
@@ -141,7 +144,7 @@ Variant* get_data(ScopeState& state, const std::string& name) {
 Variant* get_data_globally(ScopeState& state, const std::string& name, Variant* default_value=nullptr) {
 	if (not is_name_free(state, name)) return get_data(state, name);
 	else if (not state.p) {
-		if (default_value == nullptr) emit_error(ERR_unexpected, {"GetDataG", "Failed."});
+		if (not default_value) emit_error(ERR_unexpected, {"GetDataG", "Failed."});
 		return default_value;
 	}
 	return get_data_globally(*state.p, name);
