@@ -189,6 +189,7 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 
 		case ARR: {
 			// TODO: fix bad variant data when printing from an expression sequence.
+			if (not std::holds_alternative<ARR_t>(var.d)) {os << "INVALID_ARR"; break;}
 			os << '[';
 			unsigned int i = 0;
 			for (const Variant& it : AnyCast(ARR_t,var.d)) {
@@ -203,6 +204,7 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 
 		case MAP: {
 			// TODO: fix bad variant data when printing from an expression sequence.
+			if (not std::holds_alternative<MAP_t>(var.d)) {os << "INVALID_MAP"; break;}
 			os << '{';
 			unsigned int idx = 0;
 			for (auto& i : AnyCast(MAP_t,var.d)) {

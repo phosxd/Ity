@@ -153,7 +153,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 			}
 
 			// Add argument to args.
-			if (ch == ' ' || ch == '\n') {
+			if (ch == ' ') {
 				item.args.push_back(buffer);
 				buffer.clear();
 				continue;
@@ -244,7 +244,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 					else {
 						std::string expr_string; expr_string.reserve(item.args.size());
 						for (const std::string& arg : item.args) expr_string += ' '+arg;
-						item.expr = expr_tokenize(expr_string, item.ln, item.col-1);
+						item.expr = expr_tokenize(std::move(expr_string), item.ln, item.col-1);
 						item.args.clear();
 					}
 				}
@@ -299,7 +299,7 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 
 		// If has an expression but no args, run as expression.
 		if (item.args.size() == 0) {
-			if (not item.expr.seq.empty()) last_expr_result = *expr_exec(state, item.expr);
+			if (not item.expr.seq.empty()) last_expr_result = *expr_exec(state, item.expr, false, current_line, current_column);
 			continue;
 		}
 
@@ -334,29 +334,32 @@ void start_shell(int argc, char* argv[]) {
 		else script_args.push_back(Variant{STR, (STR_t)arg_str, VariantMode_constant});
 	}
 
-	// Set debug flags
-	#ifdef RUNTIME_DEBUG
-	debug_flags.result = exists_in_vec(flags, "-d-result");
-	debug_flags.inst_seq = exists_in_vec(flags, "-d-inst-seq");
-	debug_flags.expr_seq = exists_in_vec(flags, "-d-expr-seq");
-	debug_flags.expr_result = exists_in_vec(flags, "-d-expr-result");
-	debug_flags.data_assign = exists_in_vec(flags, "-d-data-assign");
-	debug_flags.scoping = exists_in_vec(flags, "-d-scoping");
-	if (exists_in_vec(flags, "-d-full")) {
-		debug_flags.result = true;
-		debug_flags.inst_seq = true;
-		debug_flags.expr_seq = true;
-		debug_flags.expr_result = true;
-		debug_flags.data_assign = true;
-		debug_flags.scoping = true;
-	}
-	#endif
+	for (const std::string& flag : flags) {
+		// Set debug flags
+		if (flag == "-d-result")            debug_flags.result = true;
+		#ifdef RUNTIME_DEBUG
+		else if (flag == "-d-inst-seq")     debug_flags.inst_seq = true;
+		else if (flag == "-d-expr-seq")     debug_flags.expr_seq = true;
+		else if (flag == "-d-expr-result")  debug_flags.expr_result = true;
+		else if (flag == "-d-data-assign")  debug_flags.data_assign = true;
+		else if (flag == "-d-scoping")      debug_flags.scoping = true;
+		else if (flag == "-d-full") {
+			debug_flags.result = true;
+			debug_flags.inst_seq = true;
+			debug_flags.expr_seq = true;
+			debug_flags.expr_result = true;
+			debug_flags.data_assign = true;
+			debug_flags.scoping = true;
+		}
+		else if (str_starts_with(flag, std::string("-tabs="))) {tab_col_value = std::stoi(flag.substr(flag.size()-1));}
+		#endif
 
-	// Set other flags.
-	emit_just_codes = exists_in_vec(flags, "-codes");
-	emit_warnings = not exists_in_vec(flags, "-nowarn");
-	safe_mode = exists_in_vec(flags, "-safe");
-	step_mode = exists_in_vec(flags, "-step");
+		// Set other flags.
+		else if (flag == "-codes")        emit_just_codes = true;
+		else if (flag == "-nowarn")  emit_warnings = false;
+		else if (flag == "-safe")    safe_mode = true;
+		else if (flag == "-step")    step_mode = true;
+	}
 
 	std::vector<std::string> split_source_script = {""};
 	for (const std::string& i : (split_str(source_script_path, '/')) ) {split_source_script.push_back(i);}
@@ -368,7 +371,7 @@ void start_shell(int argc, char* argv[]) {
 		{"__VERSION_STRING__",         Variant{STR,  (STR_t)ItyVersionString, VariantMode_constant}},
 		{"__OS_NAME__",                Variant{STR,  (STR_t)OSName, VariantMode_constant}},
 		{"__SCRIPT_FILE_NAME__",       Variant{STR,  (STR_t)split_source_script.back(), VariantMode_constant}},
-		{"__SCRIPT_START_TIME_MS__",   Variant{INT,  (INT_t)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
+		{"__SCRIPT_START_TIME_MS__",   Variant{INT,  (INT_t)DurCast_us(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
 		{"__CMD_ARGS__",               Variant{ARR,  (ARR_t)script_args, VariantMode_constant}},
 		{"__HAS_RUNTIME_DEBUG__",      Variant(BOOL, (bool)has_runtime_debug, VariantMode_constant)},
 	});
@@ -378,7 +381,7 @@ void start_shell(int argc, char* argv[]) {
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 	std::srand(
-		std::chrono::duration_cast<std::chrono::microseconds>(Clock::now()
+		DurCast_ms(Clock::now()
 		- std::chrono::time_point<std::chrono::high_resolution_clock>()
 	).count());
 
@@ -438,9 +441,7 @@ void start_shell(int argc, char* argv[]) {
 				Ity::exec(state, sequence, 0,-1);
 
 				// Print expression result if there is one.
-				if (last_expr_result.t != PLACEHOLDER) {
-					std::cout << last_expr_result;
-				}
+				if (last_expr_result.t != PLACEHOLDER) std::cout << last_expr_result;
 			}
 			current_line += 1;
 			current_column = 1;
@@ -453,13 +454,13 @@ void start_shell(int argc, char* argv[]) {
 	if (debug_flags.result) {
 		const auto total_end = std::chrono::high_resolution_clock::now();
 		const std::vector<std::vector<long int>> times = {
-			{std::chrono::duration_cast<std::chrono::microseconds>(total_end-clock_start).count(), std::chrono::duration_cast<std::chrono::milliseconds>(total_end-clock_start).count()},
-			{std::chrono::duration_cast<std::chrono::microseconds>(timers[1]-timers[0]).count(), std::chrono::duration_cast<std::chrono::milliseconds>(timers[1]-timers[0]).count()},
+			{DurCast_ms(total_end-clock_start).count(), DurCast_us(total_end-clock_start).count()},
+			{DurCast_ms(timers[1]-timers[0]).count(), DurCast_us(timers[1]-timers[0]).count()},
 		};
 		std::cout << "\n\n" << "Program results...\n------------------\n";
-		if (not source_script_path.empty()) {std::cout << "TIME (Tokenization):    " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
-		std::cout <<                                      "TIME (Total):           " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
-		std::cout <<                                      "STATE SIZE:             " << get_state_size(state) << " bytes." << '\n';
+		if (not source_script_path.empty()) {std::cout << "TIME (Token):    " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
+		std::cout <<                                      "TIME (Total):    " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
+		std::cout <<                                      "STATE SIZE:      " << get_state_size(state) << " bytes." << '\n';
 		std::cout << '\n';
 	}
 	#endif

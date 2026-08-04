@@ -17,18 +17,16 @@ Variant LIB_Time_get_time(ScopeState& _state, const ARR_t& args, const unsigned 
 	if (mode == 1) clock_2 = clock_start;
 
 	// Get value.
-	int result = 0;
-	if (precision == "us") {
-		result = std::chrono::duration_cast<std::chrono::microseconds>(clock_1-clock_2).count();
-	}
-	else if (precision == "ms") result = std::chrono::duration_cast<std::chrono::milliseconds>(clock_1-clock_2).count();
-	else if (precision == "s") result = std::chrono::duration_cast<std::chrono::seconds>(clock_1-clock_2).count();
-	else if (precision == "m") result = std::chrono::duration_cast<std::chrono::minutes>(clock_1-clock_2).count();
-	else if (precision == "h") result = std::chrono::duration_cast<std::chrono::hours>(clock_1-clock_2).count();
-	else if (precision == "d") result = std::chrono::duration_cast<std::chrono::days>(clock_1-clock_2).count();
-	else if (precision == "w") result = std::chrono::duration_cast<std::chrono::weeks>(clock_1-clock_2).count();
-	else if (precision == "M") result = std::chrono::duration_cast<std::chrono::months>(clock_1-clock_2).count();
-	else if (precision == "y") result = std::chrono::duration_cast<std::chrono::years>(clock_1-clock_2).count();
+	INT_t result = 0;
+	if (precision == "us")      result = DurCast_us(clock_1-clock_2).count();
+	else if (precision == "ms") result = DurCast_ms(clock_1-clock_2).count();
+	else if (precision == "s")  result = DurCast_s(clock_1-clock_2).count();
+	else if (precision == "m")  result = DurCast_m(clock_1-clock_2).count();
+	else if (precision == "h")  result = DurCast_h(clock_1-clock_2).count();
+	else if (precision == "d")  result = DurCast_d(clock_1-clock_2).count();
+	else if (precision == "w")  result = DurCast_w(clock_1-clock_2).count();
+	else if (precision == "M")  result = DurCast_M(clock_1-clock_2).count();
+	else if (precision == "y")  result = DurCast_y(clock_1-clock_2).count();
 
 	return Variant{INT, std::move(result)};
 }

@@ -15,6 +15,17 @@ const std::vector<std::string> illegal_print_names = {
 // ------------------
 
 
+#define DurCast_us(diff) std::chrono::duration_cast<std::chrono::milliseconds>(diff)
+#define DurCast_ms(diff) std::chrono::duration_cast<std::chrono::microseconds>(diff)
+#define DurCast_s(diff)  std::chrono::duration_cast<std::chrono::seconds>(diff)
+#define DurCast_m(diff)  std::chrono::duration_cast<std::chrono::minutes>(diff)
+#define DurCast_h(diff)  std::chrono::duration_cast<std::chrono::hours>(diff)
+#define DurCast_d(diff)  std::chrono::duration_cast<std::chrono::days>(diff)
+#define DurCast_w(diff)  std::chrono::duration_cast<std::chrono::weeks>(diff)
+#define DurCast_M(diff)  std::chrono::duration_cast<std::chrono::months>(diff)
+#define DurCast_y(diff)  std::chrono::duration_cast<std::chrono::years>(diff)
+
+
 #define is_vec_equal(a, b) \
 	(a.size() == b.size() \
 	&& std::equal(a.begin(), a.end(), b.begin()))
@@ -22,6 +33,10 @@ const std::vector<std::string> illegal_print_names = {
 
 #define str_ends_with(text, suffix) \
 	(text.size() >= suffix.size() && (text.compare(text.size()-suffix.size(), suffix.size(), suffix) == 0))
+
+
+#define str_starts_with(text, prefix) \
+	(text.size() >= prefix.size() && (text.compare(0, prefix.size(), prefix) == 0))
 
 
 // Returns the string with all instances of `ch` removed from the start of it.

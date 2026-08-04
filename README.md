@@ -132,6 +132,9 @@ Flags:
 - `-d-scoping`:
 	Print scope in/out/alt calls.
 
+- `-tabs=*`:
+	(Default: 4). Change this to the tab width you use in your text editor for more accurate error column counting.
+
 
 # Language usage
 The full documentation is available [here](Docs/Main.md). This explains the syntax of the language in great detail. It also goes over all built-in types & how to use them.
