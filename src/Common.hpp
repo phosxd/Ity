@@ -174,6 +174,8 @@ const size_t get_variant_size(const Variant& var) {
 
 
 std::ostream& operator<<(std::ostream& os, const Variant& var) {
+	if (var.d.index() == 0) return os << "none"; // Print "none" if unset.
+
 	switch (var.t) {
 		// Meta types.
 		case OP:   {os << "OP:" << AnyCast(STR_t,var.d); break;}
@@ -188,8 +190,6 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 		case STR:   {os << AnyCast(STR_t,var.d); break;}
 
 		case ARR: {
-			// TODO: fix bad variant data when printing from an expression sequence.
-			if (not std::holds_alternative<ARR_t>(var.d)) {os << "INVALID_ARR"; break;}
 			os << '[';
 			unsigned int i = 0;
 			for (const Variant& it : AnyCast(ARR_t,var.d)) {
@@ -203,14 +203,12 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 		}
 
 		case MAP: {
-			// TODO: fix bad variant data when printing from an expression sequence.
-			if (not std::holds_alternative<MAP_t>(var.d)) {os << "INVALID_MAP"; break;}
 			os << '{';
 			unsigned int idx = 0;
 			for (auto& i : AnyCast(MAP_t,var.d)) {
 				if (exists_in_vec(illegal_print_names, i.first)) continue;
 				if (idx != 0) {os << ", ";}
-				os << "\"" << i.first << "\"" << ": ";
+				os << '"' << i.first << "\": ";
 				if (i.second.t == STR) os << '"' << i.second << '"';
 				else os << i.second;
 				idx++;
