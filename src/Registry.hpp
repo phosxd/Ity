@@ -71,8 +71,11 @@ constexpr size_t DECL_INSTRUCTIONS_size = 5;
 constexpr InstSymbol DECL_INSTRUCTIONS[] = {
 	InstSymbol_import,
 	InstSymbol_merge,
+
 	InstSymbol_var,
 	InstSymbol_const,
+	InstSymbol_arg,
+
 	InstSymbol_func,
 };
 
@@ -85,6 +88,66 @@ constexpr InstSymbol DECL_INSTRUCTIONS[] = {
 enum ExprTokenType : uint8_t {
 	ExprTokenType_variant,
 	ExprTokenType_sequence,
+};
+
+
+enum OpSymbol : uint8_t {
+	OpSymbol__,
+
+	OpSymbol_add,
+	OpSymbol_sub,
+	OpSymbol_mul,
+	OpSymbol_div,
+	OpSymbol_mod,
+
+	OpSymbol_set,
+	OpSymbol_add_set,
+	OpSymbol_sub_set,
+	OpSymbol_mul_set,
+	OpSymbol_div_set,
+	OpSymbol_mod_set,
+	OpSymbol_mov_set,
+
+	OpSymbol_cmp_eq,
+	OpSymbol_cmp_neq,
+	OpSymbol_cmp_gt,
+	OpSymbol_cmp_lt,
+	OpSymbol_cmp_gteq,
+	OpSymbol_cmp_lteq,
+	OpSymbol_cmp_and,
+	OpSymbol_cmp_or,
+
+	OpSymbol_type_cast,
+	OpSymbol_access,
+};
+
+
+const std::unordered_map<std::string, const OpSymbol> OpSymbolStrs = {
+	{"+",   OpSymbol_add},
+	{"-",   OpSymbol_sub},
+	{"*",   OpSymbol_mul},
+	{"/",   OpSymbol_div},
+	{"%",   OpSymbol_mod},
+
+	{"=",    OpSymbol_set},
+	{"+=",   OpSymbol_add_set},
+	{"-=",   OpSymbol_sub_set},
+	{"*=",   OpSymbol_mul_set},
+	{"/=",   OpSymbol_div_set},
+	{"%=",   OpSymbol_mod_set},
+	{"<<=",  OpSymbol_mov_set},
+
+	{"==",   OpSymbol_cmp_eq},
+	{"!=",   OpSymbol_cmp_neq},
+	{">",    OpSymbol_cmp_gt},
+	{"<",    OpSymbol_cmp_lt},
+	{">=",   OpSymbol_cmp_gteq},
+	{"<=",   OpSymbol_cmp_lteq},
+	{"&&",   OpSymbol_cmp_and},
+	{"||",   OpSymbol_cmp_or},
+
+	{"->",   OpSymbol_type_cast},
+	{":",    OpSymbol_access},
 };
 
 

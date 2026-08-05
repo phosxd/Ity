@@ -132,7 +132,7 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 
 	switch (var.t) {
 		// Meta types.
-		case OP:   {os << "OP:"   << AnyCast(STR_t,var.d); break;}
+		case OP:   {os << "OP:"   << AnyCast(INT_t,var.d); break;}
 		case TREF: {os << "TREF:" << AnyCast(STR_t,var.d); break;}
 
 		// Real types.
@@ -529,7 +529,6 @@ struct ScopeState {
 
 #pragma pack(1)
 struct Instruction {
-	const std::vector<InstSymbol> valid_symbols = {};
 	const uint8_t REQUIRED = 0;
 	void (*exec)(ScopeState&, InstToken&) = nullptr;
 	const bool is_composite = false;
@@ -550,17 +549,6 @@ struct CompositeItem {
 };
 
 
-std::vector<const Instruction*> INSTRUCTIONS = {};
-
-
-const Instruction* find_matching_instruction(const InstSymbol& symbol) {
-	for (const Instruction*& inst : INSTRUCTIONS) {
-		if (exists_in_vec(inst->valid_symbols, symbol)) return inst;
-	}
-	return nullptr;
-}
-
-
 // Get string representation of an InstSymbol.
 inline std::string InstSymbol_to_string(const InstSymbol& symbol) {
 	for (const auto& it : InstSymbolStrs) {
@@ -578,9 +566,18 @@ inline std::string InstSymbol_to_string(const InstSymbol& symbol) {
 
 
 struct Operation {
-	void (*exec)(ScopeState&, Variant*& first, Variant*& second, const std::string& symbol, Variant& result, Variant*& result_ptr) = nullptr;
-	void (*pre_exec)(ScopeState&, Variant*& first, const std::string& symbol, bool& eval_second_operand, Variant& result, Variant*& result_ptr) = nullptr;
+	void (*exec)(ScopeState&, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& result_ptr) = nullptr;
+	void (*pre_exec)(ScopeState&, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& result_ptr) = nullptr;
 };
+
+
+// Get string representation of an OpSymbol.
+inline std::string OpSymbol_to_string(const OpSymbol& symbol) {
+	for (const auto& it : OpSymbolStrs) {
+		if (it.second == symbol) return it.first;
+	}
+	return "";
+}
 
 
 

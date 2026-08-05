@@ -42,8 +42,6 @@ void INST_Continue_exec(ScopeState& state, InstToken& token) {
 
 
 const Instruction* INST_Continue = new Instruction{
-	// Valid symbols.
-	{InstSymbol_continue, InstSymbol_break},
 	1,                   // Required arg count.
 	INST_Continue_exec,  // Function.
 	false,               // Is composite.

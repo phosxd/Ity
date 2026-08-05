@@ -20,8 +20,6 @@ void INST_End_exec(ScopeState& state, InstToken& token) {
 
 
 const Instruction* INST_End = new Instruction{
-	// Valid symbols.
-	{InstSymbol_end},
 	1,              // Required arg count.
 	INST_End_exec,  // Function.
 	false,          // Is composite.

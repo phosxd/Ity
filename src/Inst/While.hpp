@@ -184,8 +184,6 @@ void INST_While_emergency_scope_exit(InstToken*& token) {
 
 
 const Instruction* INST_While = new Instruction{
-	// Valid symbols.
-	{InstSymbol_while, InstSymbol_for},
 	1,                // Required arg count.
 	INST_While_exec,  // Function.
 	true,             // Is composite.

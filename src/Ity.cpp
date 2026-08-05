@@ -38,6 +38,26 @@ const Variant LIBS[] = {
 #include "Inst/Func.hpp"
 #include "Inst/Return.hpp"
 
+const std::unordered_map<InstSymbol, const Instruction*> INSTRUCTIONS = {
+	{InstSymbol_import,   INST_Import},
+	{InstSymbol_merge,    INST_Import},
+	{InstSymbol_exit,     INST_Exit},
+	{InstSymbol_throw,    INST_Exit},
+	{InstSymbol_var,      INST_Var},
+	{InstSymbol_const,    INST_Var},
+	{InstSymbol_arg,      INST_Var},
+	{InstSymbol_end,      INST_End},
+	{InstSymbol_if,       INST_If},
+	{InstSymbol_elif,     INST_If},
+	{InstSymbol_else,     INST_If},
+	{InstSymbol_while,    INST_While},
+	{InstSymbol_for,      INST_While},
+	{InstSymbol_continue, INST_Continue},
+	{InstSymbol_break,    INST_Continue},
+	{InstSymbol_func,     INST_Func},
+	{InstSymbol_return,   INST_Return},
+};
+
 
 Variant last_expr_result = VariantPresets.empty;
 
@@ -45,19 +65,7 @@ Variant last_expr_result = VariantPresets.empty;
 namespace Ity {
 
 
-void init() {
-	INSTRUCTIONS = {
-		INST_Import,
-		INST_Exit,
-		INST_Var,
-		INST_End,
-		INST_If,
-		INST_While,
-		INST_Continue,
-		INST_Func,
-		INST_Return,
-	};
-}
+void init() {}
 
 
 std::vector<InstToken> tokenize(const std::string& src) {
@@ -171,7 +179,9 @@ std::vector<InstToken> tokenize(const std::string& src) {
 				}
 				if (args_len > 0) {
 					// If is a valid instruction...
-					if (const Instruction* inst = find_matching_instruction(inst_symbol); inst) {
+					const auto& inst_it = INSTRUCTIONS.find(inst_symbol);
+					if (inst_it != INSTRUCTIONS.end()) {
+						const Instruction* inst = inst_it->second;
 						item.symbol = inst_symbol;
 						item.inst = inst;
 

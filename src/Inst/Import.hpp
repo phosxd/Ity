@@ -67,8 +67,6 @@ void INST_Import_exec(ScopeState& state, InstToken& token) {
 
 
 const Instruction* INST_Import = new Instruction{
-	// Valid symbols.
-	{InstSymbol_import, InstSymbol_merge},
 	2,                 // Required arg count.
 	INST_Import_exec,  // Function.
 	false,             // Is composite.

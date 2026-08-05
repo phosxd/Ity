@@ -134,8 +134,6 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 
 
 const Instruction* INST_Var = new Instruction{
-	// Valid symbols.
-	{InstSymbol_var, InstSymbol_const, InstSymbol_arg},
 	2,              // Required arg count.
 	INST_Var_exec,  // Function.
 	false,          // Is composite.

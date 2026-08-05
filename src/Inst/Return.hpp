@@ -36,8 +36,6 @@ void INST_Return_exec(ScopeState& state, InstToken& token) {
 
 
 const Instruction* INST_Return = new Instruction{
-	// Valid symbols.
-	{InstSymbol_return},
 	1,                 // Required arg count.
 	INST_Return_exec,  // Function.
 	false,             // Is composite.

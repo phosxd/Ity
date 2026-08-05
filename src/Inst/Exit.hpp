@@ -39,8 +39,6 @@ void INST_Exit_exec(ScopeState& state, InstToken& token) {
 
 
 const Instruction* INST_Exit = new Instruction{
-	// Valid symbols.
-	{InstSymbol_exit, InstSymbol_throw},
 	1,                // Required arg count.
 	INST_Exit_exec,   // Function.
 	false,            // Is composite.

@@ -29,8 +29,8 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 
 	// Throw error if token is not a function token.
 	// The only time this should happen is if the tokens are corrupted in some way.
-	if (func_token.args[0] != "func") {
-		emit_error(ERR_unexpected, {"FunctionHandler", "Missing function: " + std::to_string(func_token_index) + " isn't a \"fn\" token."});
+	if (func_token.symbol != InstSymbol_func) {
+		emit_error(ERR_unexpected, {"FunctionHandler", "Missing function: " + std::to_string(func_token_index) + " isn't a `func` token."});
 		return VariantPresets.none;
 	}
 
@@ -95,32 +95,32 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 
 constexpr std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
 constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}@~" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
-const std::unordered_map<std::string, const Operation*> OPERATIONS = {
-	{"+",  &OP_Arith},
-	{"-",  &OP_Arith},
-	{"*",  &OP_Arith},
-	{"/",  &OP_Arith},
-	{"%",  &OP_Arith},
+const std::unordered_map<OpSymbol, const Operation*> OPERATIONS = {
+	{OpSymbol_add,  OP_Arith},
+	{OpSymbol_sub,  OP_Arith},
+	{OpSymbol_mul,  OP_Arith},
+	{OpSymbol_div,  OP_Arith},
+	{OpSymbol_mod,  OP_Arith},
 
-	{"=",   &OP_Set},
-	{"+=",  &OP_Set},
-	{"-=",  &OP_Set},
-	{"*=",  &OP_Set},
-	{"/=",  &OP_Set},
-	{"%=",  &OP_Set},
-	{"<<=", &OP_Set},
+	{OpSymbol_set,      OP_Set},
+	{OpSymbol_add_set,  OP_Set},
+	{OpSymbol_sub_set,  OP_Set},
+	{OpSymbol_mul_set,  OP_Set},
+	{OpSymbol_div_set,  OP_Set},
+	{OpSymbol_mod_set,  OP_Set},
+	{OpSymbol_mov_set,  OP_Set},
 
-	{"==",  &OP_Compare},
-	{"!=",  &OP_Compare},
-	{">",   &OP_Compare},
-	{">=",  &OP_Compare},
-	{"<",   &OP_Compare},
-	{"<=",  &OP_Compare},
-	{"&&",  &OP_Compare},
-	{"||",  &OP_Compare},
+	{OpSymbol_cmp_eq,    OP_Compare},
+	{OpSymbol_cmp_neq,   OP_Compare},
+	{OpSymbol_cmp_gt,    OP_Compare},
+	{OpSymbol_cmp_lt,    OP_Compare},
+	{OpSymbol_cmp_gteq,  OP_Compare},
+	{OpSymbol_cmp_lteq,  OP_Compare},
+	{OpSymbol_cmp_and,   OP_Compare},
+	{OpSymbol_cmp_or,    OP_Compare},
 
-	{":",   &OP_Access},
-	{"->",  &OP_TypeCast}
+	{OpSymbol_access,     OP_Access},
+	{OpSymbol_type_cast,  OP_TypeCast},
 };
 
 std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
@@ -394,7 +394,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 						result_token.seq.push_back(ExprToken{
 							ln_offset, col_offset,
 							ExprTokenType_variant,
-							{OP, (STR_t)":"},
+							{OP, (INT_t)OpSymbol_access},
 						});
 						buffer.clear();
 						next_ref_is_str = true;
@@ -406,10 +406,17 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 
 			// End operator.
 			if (is_operator == true && expr_len > i+1 && (expr[i+1] == ' ' or not is_special_symbol(expr[i+1])) ) {
+				const auto& op_symbol_it = OpSymbolStrs.find(buffer+ch);
+				// Throw error if invalid operator.
+				if (op_symbol_it == OpSymbolStrs.end()) {
+					emit_error(ERR_invalid_op, {OpSymbol_to_string(op_symbol_it->second)});
+					return result_token;
+				}
+				// Append operator token.
 				result_token.seq.push_back(ExprToken{
 					ln_offset, col_offset+1,
 					ExprTokenType_variant,
-					{OP, buffer+ch},
+					{OP, (INT_t)op_symbol_it->second},
 				});
 				buffer.clear();
 				is_operator = false;
@@ -540,7 +547,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 	Variant op_result = VariantPresets.empty;
 
 	const Operation* op = nullptr;
-	std::string op_symbol;
+	OpSymbol op_symbol;
 
 	for (size_t i = 0; i < seq_len; i++) {
 		ExprToken& item = token.seq[i];
@@ -595,15 +602,8 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 		else if (item.t == ExprTokenType_variant) {
 			// Get operator.
 			if (item.var.t == OP) {
-				op_symbol = AnyCast(STR_t,item.var.d);
-				// Find the Operation object from the symbol.
-				if (const auto& it = OPERATIONS.find(op_symbol); it != OPERATIONS.end()) {
-					op = it->second;
-					continue;
-				}
-				// Throw error if invalid operator.
-				emit_error(ERR_invalid_op, {op_symbol});
-				return result;
+				op_symbol = (OpSymbol)AnyCast(INT_t,item.var.d);
+				op = OPERATIONS.at(op_symbol);
 			}
 			// Get variant.
 			else result = resolve_variant(state, item.var);

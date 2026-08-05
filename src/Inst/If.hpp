@@ -67,8 +67,6 @@ void INST_If_exec(ScopeState& state, InstToken& token) {
 
 
 const Instruction* INST_If = new Instruction{
-	// Valid symbols.
-	{InstSymbol_if, InstSymbol_elif, InstSymbol_else},
 	1,             // Required arg count.
 	INST_If_exec,  // Function.
 	true,          // Is composite.

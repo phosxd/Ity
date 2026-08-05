@@ -24,7 +24,7 @@ const bool OP_Access_type_method(const std::string& type_name, const STR_t& meth
 
 
 
-void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const std::string& _symbol, Variant& result, Variant*& result_ptr) {
+void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const OpSymbol& _symbol, Variant& result, Variant*& result_ptr) {
 	Variant* o1 = resovlve_potential_ref(state, first);
 	Variant* o2 = resovlve_potential_ref(state, second);
 
@@ -131,6 +131,8 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 }
 
 
-const Operation OP_Access {
+
+
+const auto OP_Access = new Operation{
 	OP_Access_exec,
 };
