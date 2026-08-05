@@ -13,7 +13,7 @@ Ity is a work-in-progress, light-weight interpreted programming language built w
 # Table of contents
 - [Overview](#overview)
 - [Build](#build)
-  - [Flags](#flags)
+  - [Build flags](#build-flags)
   - [Optimization profiles](#optimization-profiles)
   - [Installation](#installation)
 - [Usage](#usage)
@@ -22,6 +22,8 @@ Ity is a work-in-progress, light-weight interpreted programming language built w
   - [Interpreter flags](#interpreter-flags)
 - [Language](#language)
   - [Docs](Docs/Main.md)
+  - [Rundown](#rundown)
+  - [Examples](Scripts/)
 
 
 # Overview
@@ -151,4 +153,71 @@ Flags:
 
 
 # Language
-The full documentation is available [here](Docs/Main.md). This explains the syntax of the language in great detail. It also goes over all built-in types & how to use them.
+The full documentation is available [here](Docs/Main.md). This explains everything in great detail.
+
+## Rundown
+
+### Declare
+```python
+# Types:
+# 	ANY, NONE, BOOL, INT, FLOAT, STR, ARR, MAP, REF.
+
+var a = 0; # Type is inferred as INT.
+var INT b; # Value defaults to 0.
+
+var ANY c;     # Value defaults to none.
+print:(type:c)
+c = 99;        # Type is now INT, because he's can be whatever he wants. If he wants to grow up to be a string, god damn it let him be string.
+print:(type:c)
+```
+
+### Loop
+```python
+merge IO;
+
+# Based af loop.
+var i=0; while i < 100; i+=1;
+	print:i;
+/;
+
+# Loop for Python kiddies.
+for i in 100;
+	print:i;
+/;
+
+# Loop through an array like a based person.
+const arr = [1,'2',3,'4',5];
+var i=-1; while i < (length:[arr]-1); i+=1;
+	print:[(arr:i)];
+/;
+
+# Actually, maybe this is better to read...
+for item in arr;
+	print:[item];
+/;
+```
+
+### Reuse
+```python
+func INT add; arg a=0; arg b=0;
+	return a + b;
+/;
+
+add:[1,1];
+add:[4,5];
+```
+
+### Calculate
+```python
+#fibonacci.ity
+import IO;
+const n = IO.prompt:'Number: ' -> INT;
+
+var a=0.0; var b=1.0;
+
+for i in n;
+	const c = a+b;
+	a = b; b = c;
+	IO.print:a;
+/;
+```

@@ -6,9 +6,8 @@ const ARR args = __CMD_ARGS__;
 var FLOAT sum = 0.0;
 print:[args];
 
-var INT i = 0; while i < (length:[args]);
-	sum += (args:i -> FLOAT);
-	i += 1;
+for arg in args;
+	sum += (arg -> FLOAT);
 /;
 
 

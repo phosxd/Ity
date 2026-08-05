@@ -40,6 +40,7 @@ void OP_Set_exec(ScopeState& state, Variant*& first, Variant*& second, const OpS
 	// Throw error if types do not match & target variant's type is not dynamic.
 	if (not variant_type_matches(var, *o1)) return;
 
+	var.m = o1->m; // Make sure the mode is kept in-tact.
 	*o1 = var;
 	result_ptr = first;
 }

@@ -165,34 +165,39 @@ print:[( {'a',[10,20,30]} : 'a' : 0 )];
 # Mathematical Expression
 # -----------------------
 
+const exprs = [
+	(0 + 0),
+	(1+1),
+	(1   +   1),
+	(1.0 + 1.0),
+
+	(0 - 0),
+	(1-1),
+	(1.4328 - 10),
+
+	(4*4),
+	(2 *2.5),
+
+	(8/2),
+	(8/1.5),
+
+	(10 % 4),
+];
+
 merge IO;
-
-print:[ (0 + 0) ];
-print:[ (1 + 1) ];
-print:[ (1+1) ];
-print:[ (1    +   1) ];
-print:[ (1.0 + 1.0) ];
-
-print:[ (0 - 0) ];
-print:[ (1 - 1) ];
-
-print:[ (2 * 4) ];
-print:[ (2 * 2.5) ];
-
-print:[ (8 / 2) ];
-print:[ (8 / 1.5) ];
-
-print:[ (10 % 4) ];
+for i in exprs;
+	print:i;
+/;
 "
 
 "0
 2
 2
 2
-2
 0
 0
-8
+-8.5672
+16
 5
 4
 5.333333333333333
@@ -206,9 +211,9 @@ print:[ (10 % 4) ];
 
 merge IO;
 
-print:[ ('Hello' + ' World')];
-print:[ ('Hello' + ' ' + 'World' + '!') ];
-print:[ ('abc ' * 3) ];
+print:('Hello' + ' World');
+print:('Hello' + ' ' + 'World' + '!');
+print:('abc ' * 3);
 "
 
 "Hello World
@@ -223,24 +228,24 @@ abc abc abc "
 
 merge IO;
 
-print:[ (true == true) ];
-print:[ (true == false) ];
-print:[ (true != true) ];
+print:(true == true);
+print:(true == false);
+print:(true != true);
 print:[];
-print:[ (1 == 1) ];
-print:[ (0 == 1) ];
-print:[ (1.3 == 1.4) ];
+print:(1 == 1);
+print:(0 == 1);
+print:(1.3 == 1.4);
 print:[];
-print:[ (2 > 1) ];
-print:[ (2 < 1) ];
-print:[ (2 >= 2) ];
+print:(2 > 1);
+print:(2 < 1);
+print:(2 >= 2);
 print:[];
-print:[ (2 >= 1) ];
-print:[ (2 <= 2) ];
-print:[ (2 <= 1) ];
+print:(2 >= 1);
+print:(2 <= 2);
+print:(2 <= 1);
 print:[];
-print:[ ('Hello' == 'World') ];
-print:[ ('Hello' != 'World') ];
+print:('Hello' == 'World');
+print:('Hello' != 'World');
 "
 
 "true
@@ -310,7 +315,7 @@ if true == true;
 			if 2 == 2;
 				if 1 == 0; throw; /;
 				elif 'A' != 'B';
-					print:['passed'];
+					print:'passed';
 				/; else; throw; /;
 			/; else; throw; /;
 		/; else; throw; /;
@@ -368,7 +373,7 @@ merge IO;
 
 if true;
 	var INT x = 1;
-	print:[x];
+	print:x;
 /;
 
 x; # Should throw error
@@ -390,10 +395,10 @@ while i < 10;
 	i += 1;
 /;
 
-print:[i];
+print:i;
 
 
-# Should not run
+# Should not run.
 while false;
 	throw 'That\'s not right.';
 /;
@@ -418,7 +423,7 @@ while i < 10;
 	i += 1;
 /;
 
-print:[i];
+print:i;
 "
 
 "10"
@@ -478,7 +483,7 @@ func INT add; arg INT a; arg INT b;
 	return a+b;
 /;
 
-print:[ (add:[4,5]) ];
+print:(add:[4,5]);
 "
 
 "Hello there!
@@ -499,7 +504,7 @@ func NONE test; arg ANY a;
 
 
 var INT a = 1;
-test:[a];
+test:a;
 
 
 
@@ -511,7 +516,7 @@ func NONE test_2; arg ANY b;
 
 if true;
 	var INT b = 5;
-	test_2:[b];
+	test_2:b;
 /;
 "
 
@@ -536,10 +541,10 @@ func BOOL test2;
 
 merge IO;
 
-print:[( (1 == 0) && (test:[]) )];
-print:[( (1 == 1) && (test2:[]) )];
-print:[( (1 == 0) || (test2:[]) )];
-print:[( (1 == 1) || (test:[]) )];
+print:( (1 == 0) && (test:[]) );
+print:( (1 == 1) && (test2:[]) );
+print:( (1 == 0) || (test2:[]) );
+print:( (1 == 1) || (test:[]) );
 "
 
 "false
@@ -555,14 +560,14 @@ merge IO;
 # Type casting
 # ------------
 
-print:[( 'true' -> BOOL )];
-print:[( 'false' -> BOOL )];
-print:[( 'invalid representation' -> BOOL )];
-print:[( '12.76' -> INT )];
-print:[( '12.78' -> FLOAT )];
-print:[( 'invalid representation' -> FLOAT )];
-print:[( (100 -> STR) + '.' )];
-print:[( (10.8760 -> STR) + '.' )];
+print:( 'true' -> BOOL );
+print:( 'false' -> BOOL );
+print:( 'invalid representation' -> BOOL );
+print:( '12.76' -> INT );
+print:( '12.78' -> FLOAT );
+print:( 'invalid representation' -> FLOAT );
+print:( (100 -> STR) + '.' );
+print:( (10.8760 -> STR) + '.' );
 "
 
 "true
@@ -586,7 +591,7 @@ var INT i = 0; while i < 10;
 	if i == 4;
 		exit;
 	/;
-	out:[i];
+	out:i;
 	i += 1;
 /;
 "
@@ -615,10 +620,10 @@ print:[];
 
 # Map...
 var MAP b = {'a',1, 'b',2, 'c',3};
-print:[b];
+print:b;
 
 b.a = 'hello';
-print:[b];
+print:b;
 "
 
 "[1, 2, 3, 4]
@@ -649,10 +654,10 @@ print:[];
 
 # Map...
 var MAP b = {'a',1, 'b',2, 'c',{'key','value'}};
-print:[b];
+print:b;
 
 b.c.key = [1,2,3];
-print:[b];
+print:b;
 "
 
 "[1, 2, 3, [4, 5, 6]]
@@ -671,14 +676,14 @@ merge IO;
 
 
 var INT i = 0; while true; i+=1;
-	print:[i];
+	print:i;
 	if i == 5; break; /;
 
 	continue;
 	throw 'This should be skipped';
 /;
 
-print:['Done'];
+print:'Done';
 "
 
 "1
@@ -702,10 +707,10 @@ var INT i = 0; while i < 5; i+=1;
 		if j%2 == 0; continue; /; # Skip every other number, meaning we skip half of all iterations.
 		total += 1;
 	/;
-	print:[i];
+	print:i;
 /;
 
-print:[total];
+print:total;
 "
 
 "1
@@ -741,7 +746,7 @@ print:[arr];
 
 var MAP map = {'a',1};
 map += {'b',2};
-print:[map];
+print:map;
 "
 
 "[1, 2, 3, 4, 5, 6]
@@ -756,12 +761,12 @@ print:[map];
 merge IO;
 
 var ARR arr = [1,2,3];
-arr.erase:[0];
+arr.erase:0;
 print:[arr];
 
 var MAP map = {'a',1, 'b',2};
-map.erase:['a'];
-print:[map];
+map.erase:'a';
+print:map;
 "
 
 "[2, 3]
@@ -779,7 +784,7 @@ var MAP map = {'a',1, 'b',2, 'c',3};
 const ARR keys = map.keys:[];
 
 var INT i = 0; while i < (length:[keys]);
-	print:[(map:(keys:i))];
+	print:(map:(keys:i));
 	i+=1;
 /;
 "
@@ -799,8 +804,8 @@ merge IO;
 var STR string = 'ab';
 string += 99; # ASCII character for 'c'.
 
-print:[string];
-print:[( 'a'.raw:[] )]; # Print the integer representation of 'a'.
+print:string;
+print:( 'a'.raw:[] ); # Print the integer representation of 'a'.
 "
 
 "abc
@@ -815,19 +820,19 @@ print:[( 'a'.raw:[] )]; # Print the integer representation of 'a'.
 merge IO;
 
 for i in [1,2,3];
-	print:[i];
+	print:i;
 /;
 
 
 for i in 'abc';
-	print:[i];
+	print:i;
 /;
 
 
 # Shadowed var name.
 var INT i = 0;
 for i in 3;
-	print:[(i+4)];
+	print:(i+4);
 /;
 "
 
@@ -852,9 +857,9 @@ merge IO;
 
 for i in 2;
 	for i in 2;
-		var INT i2 = 0; while i2 < 2;
+		var i2=0; while i2 < 2;
 			for i3 in 2;
-				print:[(i+i2+i3)];
+				print:(i + i2 + i3);
 			/;
 			i2 += 1;
 		/;
@@ -999,7 +1004,7 @@ func INT f2;
 
 func NONE f;
 	var n = f2:[];
-	for i in range:[n];
+	for i in range:n;
 		return;
 	/;
 	1+1;
@@ -1053,16 +1058,16 @@ a = 10;
 b = 5;
 
 # Use refs just like it were the real value.
-print:[( a_ref + b_ref )];
+print:( a_ref + b_ref );
 
 # Setting the value on a ref sets the referenced variant, doesn't overwrite the ref
 a_ref = 99;
-print:[a];
+print:a;
 
 var copy_of_a = ~a_ref;
 copy_of_a = 0; # 'a' & 'a_ref' unchanged.
-print:[copy_of_a];
-print:[a];
+print:copy_of_a;
+print:a;
 
 "
 
@@ -1083,9 +1088,9 @@ const a = 10;
 const b = 20;
 
 var ref = @a;
-print:[~ref];
-ref.reassign:[@b];
-print:[~ref];
+print:~ref;
+ref.reassign:@b;
+print:~ref;
 "
 
 "10
@@ -1100,7 +1105,7 @@ print:[~ref];
 var a = 1;
 var b = 2;
 const ref = @a;
-ref.reassign:[@b]; # Should throw const value error.
+ref.reassign:@b; # Should throw const value error.
 "
 
 "Error: 29"
@@ -1114,19 +1119,19 @@ ref.reassign:[@b]; # Should throw const value error.
 merge IO;
 
 # Safe.
-print:[(
+print:(
 	(true == true) && (true == true) && (true == true) && (true == true)
 	&& (true == true) && (true == true) && (true == true)
-)];
+);
 
 print:['Passed'];
 
 # Unsafe.
-print:[(
+print:(
 	(true == true) && (true == true) && (true == true) && (true == true)
 	&& (true == true) && (true == true) && (true == true) && (true == true)
 	&& (true == true) && (true == true) && (true == true) && (true == true)
-)];
+);
 "
 
 "true
