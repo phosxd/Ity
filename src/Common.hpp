@@ -64,6 +64,7 @@ using VariantData = std::variant<
 	VariantType,
 	VariantMode,
 	NativeFunc_t,
+	OpSymbol,
 
 	CompositeItem*,
 	std::vector<CompositeItem>*
@@ -132,7 +133,7 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 
 	switch (var.t) {
 		// Meta types.
-		case OP:   {os << "OP:"   << AnyCast(INT_t,var.d); break;}
+		case OP:   {os << "OP:"   << (uint8_t)AnyCast(OpSymbol,var.d); break;}
 		case TREF: {os << "TREF:" << AnyCast(STR_t,var.d); break;}
 
 		// Real types.

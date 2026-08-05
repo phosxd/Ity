@@ -394,7 +394,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 						result_token.seq.push_back(ExprToken{
 							ln_offset, col_offset,
 							ExprTokenType_variant,
-							{OP, (INT_t)OpSymbol_access},
+							{OP, OpSymbol_access},
 						});
 						buffer.clear();
 						next_ref_is_str = true;
@@ -416,7 +416,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				result_token.seq.push_back(ExprToken{
 					ln_offset, col_offset+1,
 					ExprTokenType_variant,
-					{OP, (INT_t)op_symbol_it->second},
+					{OP, op_symbol_it->second},
 				});
 				buffer.clear();
 				is_operator = false;
@@ -602,7 +602,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 		else if (item.t == ExprTokenType_variant) {
 			// Get operator.
 			if (item.var.t == OP) {
-				op_symbol = (OpSymbol)AnyCast(INT_t,item.var.d);
+				op_symbol = AnyCast(OpSymbol,item.var.d);
 				op = OPERATIONS.at(op_symbol);
 			}
 			// Get variant.

@@ -10,6 +10,20 @@ Ity is a work-in-progress, light-weight interpreted programming language built w
 ---
 
 
+# Table of contents
+- [Overview](#overview)
+- [Build](#build)
+  - [Flags](#flags)
+  - [Optimization profiles](#optimization-profiles)
+  - [Installation](#installation)
+- [Usage](#usage)
+  - [Source mode](#source-mode)
+  - [Interactive mode](#interactive-mode)
+  - [Interpreter flags](#interpreter-flags)
+- [Language](#language)
+  - [Docs](Docs/Main.md)
+
+
 # Overview
 - **Tiny & portable.** < 150KB executable. All self-contained.
 - **Efficient memory usage.** 400KB runtime (Python: 11.2MB, Node: 45MB, Bash: 3.2MB).
@@ -23,7 +37,7 @@ This is my first project in C++, I'm sure there are things that I have done wron
 	AI assisted issues or PRs will be rejected.
 
 
-# Build interpreter
+# Build
 The build process for the Ity interpreter is very straight-forward. After cloning this repository you should notice a `build.sh` bash script inside the root directory.
 Run the build script by typing `./build.sh` in your terminal, doing so will build the source code using the GCC compiler on your system.
 
@@ -42,7 +56,7 @@ If the final build size is larger than 150,000 bytes it will give you a warning 
 Binary size is over the goal of 150000.
 ```
 
-## Flags
+## Build flags
 You can pass flags to the build script.
 
 - `-o=` or `--optimize=`:
@@ -70,7 +84,7 @@ The overall differences between each profile is largely insignificant in most re
 You can install Ity on your system as a command called `ity` by running the `install.sh` script.
 
 
-# Interpreter usage
+# Usage
 After building the interpreter, you should see a file called `ity.bin` which is the standalone interpreter executable.
 You can run this in your terminal with `./ity.bin`.
 
@@ -97,7 +111,7 @@ Entering "quit" or "q" will stop the interpreter.
 
 The last expression that gets executed in your line will be printed to the console automatically.
 
-## Flags
+## Interpreter flags
 You can pass flags to the interpreter to change how it behaves & select what information it will output.
 
 Flags:
@@ -136,5 +150,5 @@ Flags:
 	(Default: 4). Change this to the tab width you use in your text editor for more accurate error column counting.
 
 
-# Language usage
+# Language
 The full documentation is available [here](Docs/Main.md). This explains the syntax of the language in great detail. It also goes over all built-in types & how to use them.

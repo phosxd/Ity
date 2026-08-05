@@ -36,6 +36,7 @@ void OP_Compare_exec(ScopeState& state, Variant*& first, Variant*& second, const
 		case OpSymbol_cmp_or:   {test = *o1 == VariantPresets.bool_true || *o2 == VariantPresets.bool_true; break;}
 		default: break;
 	}
+
 	result = Variant{BOOL, std::move(test)};
 }
 
