@@ -1,6 +1,8 @@
 #pragma once
 
 
+constexpr unsigned int uint16_max = 65535;
+
 constexpr char COMMENT_SYMBOL = '#';
 constexpr char INST_END_SYMBOL = ';';
 constexpr std::string ITY_FILE_EXT = ".ity";

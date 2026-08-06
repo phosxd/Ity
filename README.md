@@ -1,9 +1,9 @@
 
 <div align="middle">
 
-**Version:** 0.1.0
+**Version:** 0.1.1
 
-Ity is a work-in-progress, light-weight interpreted programming language built with C++.
+Ity is a work-in-progress, light-weight & embeddable interpreted programming language built with C++.
 
 </div>
 

@@ -3,7 +3,7 @@ import Time;
 import Math;
 
 
-const FPS = 18;
+const FPS = 8;
 const FPS_ms = 1000 / FPS;
 const WORLD_SIZE = {'x',60, 'y',20};
 const SEED = prompt:'Set seed (default 0): ' -> INT;

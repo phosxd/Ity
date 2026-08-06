@@ -42,7 +42,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 	// Create an alternate scope, for use inside the function.
 	ScopeState func_state = create_new_scope_state(
 		(MAP_t){
-			{"__AG",  std::move(args)},
+			{"__AG", std::move(args)},
 			{"__R",  Variant{func_return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
 		},
 		get_state_at_id(state, AnyCast(UINT_t,func.at("__si").d)) // Use function definition scope as the parent.
@@ -87,7 +87,6 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 
 
 // Operator imports...
-const std::string OpSymbol_to_string(const OpSymbol& symbol);
 #include "Op/Arith.hpp"
 #include "Op/Set.hpp"
 #include "Op/Compare.hpp"
@@ -95,46 +94,46 @@ const std::string OpSymbol_to_string(const OpSymbol& symbol);
 #include "Op/TypeCast.hpp"
 
 struct OpDef {
-	const OpSymbol symbol;
+	const OpSymbol sym;
+	const std::string str;
 	const Operation* op;
 };
-const std::unordered_map<std::string, const OpDef> OPERATIONS = {
-	{"+",   {OpSymbol_add,  OP_Arith}},
-	{"-",   {OpSymbol_sub,  OP_Arith}},
-	{"*",   {OpSymbol_mul,  OP_Arith}},
-	{"/",   {OpSymbol_div,  OP_Arith}},
-	{"%",   {OpSymbol_mod,  OP_Arith}},
+const OpDef OPERATIONS[] = {
+	{OpSymbol_add, "+",  OP_Arith},
+	{OpSymbol_sub, "-",  OP_Arith},
+	{OpSymbol_mul, "*",  OP_Arith},
+	{OpSymbol_div, "/",  OP_Arith},
+	{OpSymbol_mod, "%",  OP_Arith},
 
-	{"=",    {OpSymbol_set,      OP_Set}},
-	{"+=",   {OpSymbol_add_set,  OP_Set}},
-	{"-=",   {OpSymbol_sub_set,  OP_Set}},
-	{"*=",   {OpSymbol_mul_set,  OP_Set}},
-	{"/=",   {OpSymbol_div_set,  OP_Set}},
-	{"%=",   {OpSymbol_mod_set,  OP_Set}},
-	{"<<=",  {OpSymbol_mov_set,  OP_Set}},
+	{OpSymbol_set,     "=",    OP_Set},
+	{OpSymbol_add_set, "+=",   OP_Set},
+	{OpSymbol_sub_set, "-=",   OP_Set},
+	{OpSymbol_mul_set, "*=",   OP_Set},
+	{OpSymbol_div_set, "/=",   OP_Set},
+	{OpSymbol_mod_set, "%=",   OP_Set},
+	{OpSymbol_mov_set, "<<=",  OP_Set},
 
-	{"==",   {OpSymbol_cmp_eq,    OP_Compare}},
-	{"!=",   {OpSymbol_cmp_neq,   OP_Compare}},
-	{">",    {OpSymbol_cmp_gt,    OP_Compare}},
-	{"<",    {OpSymbol_cmp_lt,    OP_Compare}},
-	{">=",   {OpSymbol_cmp_gteq,  OP_Compare}},
-	{"<=",   {OpSymbol_cmp_lteq,  OP_Compare}},
-	{"&&",   {OpSymbol_cmp_and,   OP_Compare}},
-	{"||",   {OpSymbol_cmp_or,    OP_Compare}},
+	{OpSymbol_cmp_eq,   "==",  OP_Compare},
+	{OpSymbol_cmp_neq,  "!=",  OP_Compare},
+	{OpSymbol_cmp_gt,   ">",   OP_Compare},
+	{OpSymbol_cmp_lt,   "<",   OP_Compare},
+	{OpSymbol_cmp_gteq, ">=",  OP_Compare},
+	{OpSymbol_cmp_lteq, "<=",  OP_Compare},
+	{OpSymbol_cmp_and,  "&&",  OP_Compare},
+	{OpSymbol_cmp_or,   "||",  OP_Compare},
 
-	{"->",   {OpSymbol_type_cast,  OP_TypeCast}},
-	{":",    {OpSymbol_access,     OP_Access}},
+	{OpSymbol_type_cast, "->",  OP_TypeCast},
+	{OpSymbol_access,    ":",   OP_Access},
 };
-// Get string representation of an OpSymbol.
-const std::string OpSymbol_to_string(const OpSymbol& symbol) {
-	for (const auto& it : OPERATIONS) {
-		if (it.second.symbol == symbol) return it.first;
+const OpDef* find_OpDef_from_sym(const OpSymbol& sym) {
+	for (const OpDef& def : OPERATIONS) {
+		if (def.sym == sym) return &def;
 	}
-	return "";
+	return nullptr;
 }
-const OpDef* find_OpDef_from_symbol(const OpSymbol& symbol) {
-	for (const auto& it : OPERATIONS) {
-		if (it.second.symbol == symbol) return &it.second;
+const OpDef* find_OpDef_from_str(const std::string& str) {
+	for (const OpDef& def : OPERATIONS) {
+		if (def.str == str) return &def;
 	}
 	return nullptr;
 }
@@ -426,9 +425,9 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 			// End operator.
 			if (is_operator == true && expr_len > i+1 && (expr[i+1] == ' ' or not is_special_symbol(expr[i+1])) ) {
 				const std::string op_symbol_str = (buffer+ch);
-				const auto& op_symbol_it = OPERATIONS.find(op_symbol_str);
+				const OpDef* op_def = find_OpDef_from_str(op_symbol_str);
 				// Throw error if invalid operator.
-				if (op_symbol_it == OPERATIONS.end()) {
+				if (not op_def) {
 					emit_error(ERR_invalid_op, {op_symbol_str});
 					return result_token;
 				}
@@ -436,7 +435,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				result_token.seq.push_back(ExprToken{
 					ln_offset, col_offset+1,
 					ExprTokenType_variant,
-					{OP, op_symbol_it->second.symbol},
+					{OP, op_def->sym},
 				});
 				buffer.clear();
 				is_operator = false;
@@ -506,10 +505,6 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 	const unsigned int col_ = col-1;
 	current_line = line_;
 	current_column = col_;
-
-
-	// `std::vector` invalidates all references to items inside it when it reallocates, reserve an upper-limit to make sure we wont reallocate.
-	if (temporary_pool.capacity() < MAX_TEMPORARY_POOL_RESERVE) temporary_pool.reserve(MAX_TEMPORARY_POOL_RESERVE);
 
 	// Resolve array.
 	if (token.var.t == ARR) {
@@ -623,7 +618,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 			// Get operator.
 			if (item.var.t == OP) {
 				op_symbol = AnyCast(OpSymbol,item.var.d);
-				op = find_OpDef_from_symbol(op_symbol)->op;
+				op = find_OpDef_from_sym(op_symbol)->op;
 			}
 			// Get variant.
 			else result = resolve_variant(state, item.var);
@@ -655,6 +650,9 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 
 Variant* expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false, const unsigned int ln=0, const unsigned int col=0) {
 	temporary_pool.clear();
+	// `std::vector` invalidates all references to items inside it when it reallocates, reserve an upper-limit to make sure we wont reallocate.
+	if (temporary_pool.capacity() < MAX_TEMPORARY_POOL_RESERVE) temporary_pool.reserve(MAX_TEMPORARY_POOL_RESERVE);
+
 	Variant* result = expr_exec_(state, token, subexpr, ln,col);
 
 	// Throw error if we go over the temporary variant limit.

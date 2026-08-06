@@ -78,17 +78,16 @@ Variant LIB_BI_type(ScopeState& _state, const ARR_t& args) {
 
 // Return the length of the given array or string.
 Variant LIB_BI_length(ScopeState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR,ARR}, 0)) return VariantPresets.none;
-	const Variant& var = args[0];
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR,ARR}, 0)) return VariantPresets.none;;
 	size_t size = 0;
 
-	switch (var.t) {
-		case ARR: {size = AnyCast(ARR_t,var.d).size(); break;}
-		case STR: {size = AnyCast(STR_t,var.d).size(); break;}
+	switch (args[0].t) {
+		case ARR: {size = AnyCast(ARR_t,args[0].d).size(); break;}
+		case STR: {size = AnyCast(STR_t,args[0].d).size(); break;}
 		default: return VariantPresets.none;
 	}
 
-	return Variant{INT, (int)size};
+	return Variant{INT, (INT_t)size};
 }
 
 

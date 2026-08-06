@@ -729,12 +729,12 @@ const bool expect_arg_types(const Variant& arg, std::vector<VariantType> types, 
 // Constants.
 // ----------
 
-constexpr STR_t ItyVersionString = "0.1.0";
+constexpr STR_t ItyVersionString = "0.1.1";
 // Last number indicates release type:
 //	0 = release.
 //	1 = beta / pre-release.
 //	2 = experimental / custom.
-constexpr INT_t ItyVersion[4] = {0,1,0, 0};
+constexpr INT_t ItyVersion[4] = {0,1,1, 0};
 
 constexpr STR_t OSName =
 #if _WIN32
@@ -756,9 +756,6 @@ constexpr STR_t OSName =
 	"unknown"
 #endif
 ;
-
-
-constexpr unsigned int uint16_max = 65535;
 
 
 

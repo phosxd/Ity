@@ -289,6 +289,9 @@ std::vector<InstToken> tokenize(const std::string& src) {
 	}
 	#endif
 
+	// Clear expression cache in `Expression.hpp`, we no longer need it all the expressions have been tokenized.
+	expr_cache.clear();
+
 	return sequence;
 }
 
