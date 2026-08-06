@@ -1,0 +1,126 @@
+merge IO;
+import Time;
+import Math;
+
+
+const FPS = 18;
+const FPS_ms = 1000 / FPS;
+const WORLD_SIZE = {'x',60, 'y',20};
+const SEED = prompt:'Set seed (default 0): ' -> INT;
+set_seed:SEED;
+
+const CELL_ON = '█';
+const CELL_OFF = ' ';
+
+
+
+func NONE _game_init;
+	# Populate the world...
+	for y in WORLD_SIZE.y;
+		for x in WORLD_SIZE.x;
+			GAME.cells += [ (rand:[0,1]) ];
+		/;
+	/;
+	GAME.cell_count = (length:[(GAME.cells)]);
+/;
+
+
+func NONE _game_next;
+	const w = WORLD_SIZE.x;
+	var i = -1;
+	var x = 0;
+	# Iterate on every cell (loop iterates on a copy no matter what, so it's safe to modify the original array).
+	for cell in GAME.cells; i += 1;
+		# Check boundaries & get neighboring cells...
+		x = i % w;
+		var l = 0; var r = 0;
+		var t = 0; var b = 0;
+		var tl = 0; var tr = 0;
+		var bl = 0; var br = 0;
+		if x != 0;
+			l = (get_cell:(i-1));
+			if i >= w; tl = (get_cell:(i-w-1)); /;
+			if i+w < (GAME.cell_count); bl = (get_cell:(i+w-1)); /;
+		/;
+		if x != (w-1);
+			r = (get_cell:(i+1));
+			if i >= w; tr = (get_cell:(i-w+1)); /;
+			if i+w < (GAME.cell_count); br = (get_cell:(i+w+1)); /;
+		/;
+		if i >= w;
+			t = (get_cell:(i-w));
+		/;
+		if i+w < (GAME.cell_count);
+			b = (get_cell:(i+w));
+		/;
+
+		# Apply rules...
+		const neighbors = (l+r+t+tl+tr+b+bl+br);
+		if cell == 1;
+			if (neighbors < 2) || (neighbors > 3);
+				GAME.cells:i = 0;
+			/;
+		/;
+		elif neighbors == 3;
+			GAME.cells:i = 1;
+		/;
+	/;
+/;
+
+
+func INT get_cell; arg INT index;
+	if (index < (GAME.cell_count)) && (index >= 0);
+		return GAME.cells:index;
+	/;
+	return 0;
+/;
+
+
+
+const GAME = {
+	'init', _game_init,
+	'next', _game_next,
+	'cells', [],
+	'cell_count', 0,
+};
+
+
+GAME.init:[];
+
+
+func NONE on_interrupt;
+	exit;
+/;
+signal:[(SIGNAL.interrupt), on_interrupt];
+
+
+
+
+while true;
+	const start_time = Time.now:'ms';
+	# Tick once.
+	GAME.next:[];
+
+	# Clear screen.
+	out:'\e[H\e[0J';
+
+	# Print world...
+	var i = -1;
+	for cell in GAME.cells; i+=1;
+		if cell == 1; out:CELL_ON;  /;
+		else;         out:CELL_OFF; /;
+		if (i % (WORLD_SIZE.x)) == 0;
+			out:'\n';
+		/;
+	/;
+
+	out:'\n';
+
+	# Calculate time taken to run, then sleep for the remainder of the frame time.
+	const delta = (Time.now:'ms' - start_time);
+	print:['Delta: ', (delta/1_000.0)];
+	const sleep_time = (FPS_ms-delta / 1_000.0);
+	if sleep_time > 0;
+		sleep:(FPS_ms-delta / 1_000.0);
+	/;
+/;

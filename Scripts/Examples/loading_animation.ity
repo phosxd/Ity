@@ -21,7 +21,7 @@ func NONE do_animation;
 # Called when the program is interrupted or finished.
 func NONE done;
 	IO.out:(ANSI.cursor_on); # Show the terminal cursor.
-	IO.out:'\e[2K\e[1g'; # Clear the line & set the cursor to the beginning.
+	IO.out:'\e[2K\e[1G'; # Clear the line & set the cursor to the beginning.
 	IO.print:'Done!';
 
 	exit;

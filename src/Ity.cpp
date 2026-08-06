@@ -14,7 +14,7 @@
 #include "Common.hpp"
 #include "ScopeState.hpp"
 #include "Ity.hpp"
-
+const unsigned int RANDOM_SEED = DurCast_ms(Clock::now() - std::chrono::time_point<std::chrono::high_resolution_clock>()).count();
 #include "Expression.hpp"
 
 // Lib imports...
@@ -399,10 +399,7 @@ void start_shell(int argc, char* argv[]) {
 	merge_module(state, AnyCast(MAP_t,LIB_BI.d));
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
-	std::srand(
-		DurCast_ms(Clock::now()
-		- std::chrono::time_point<std::chrono::high_resolution_clock>()
-	).count());
+	std::srand(RANDOM_SEED);
 
 
 	// Parse & execute script file...

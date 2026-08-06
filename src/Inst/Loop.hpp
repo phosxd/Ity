@@ -46,7 +46,7 @@ void INST_Loop_for_loop(ScopeState& state, InstToken& token, bool& value) {
 	// Get iterable.
 	Variant& iterable = AnyCastV(ARR_t,token.meta[2])[0];
 	if (iterable.t == PLACEHOLDER) {
-		iterable = Variant(*expr_exec(state, token.expr));
+		iterable = *expr_exec(state, token.expr);
 		AnyCastV(ARR_t,token.meta[2])[0] = iterable;
 	}
 

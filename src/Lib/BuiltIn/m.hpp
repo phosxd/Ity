@@ -144,6 +144,17 @@ Variant LIB_BI_rand(ScopeState& _state, const ARR_t& args) {
 }
 
 
+// Return a random number in range of `min` & `max` integer arguments.
+Variant LIB_BI_set_seed(ScopeState& _state, const ARR_t& args) {
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT}, 0)) return VariantPresets.none;
+
+	const INT_t& seed = AnyCast(INT_t,args[0].d);
+	std::srand(seed);
+
+	return VariantPresets.none;
+}
+
+
 
 
 // Type methods.
@@ -325,5 +336,6 @@ const Variant LIB_BI {
 		{"size",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)},
 		{"range",      NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_range)},
 		{"rand",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_rand)},
+		{"set_seed",   NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_set_seed)},
 
 }, VariantMode_constant };
