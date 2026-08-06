@@ -40,7 +40,7 @@ Variant LIB_BI_signal(ScopeState& state, const ARR_t& args) {
 		return VariantPresets.none;
 	}
 
-	LIB_BI_state = get_state_at_depth(state, 1); // Always run the function in the global state, even if it wasnt defined there.
+	LIB_BI_state = get_state_at_id(state, 1); // Always run the function in the global state, even if it wasnt defined there.
 	LIB_BI_signal_functions[signal_number].push_back(func); // Add function to array.
 
 	// Connect signal...

@@ -1141,9 +1141,21 @@ Error: 42"
 
 # 49
 
-""
+"
+# Copying functions & function integrity
+# --------------------------------------
 
-""
+merge IO;
+
+func MAP get_f;
+	func INT f; return 99; /;
+	return f;
+/;
+
+print:( (get_f:[]):[] );
+"
+
+"99"
 
 # 50
 

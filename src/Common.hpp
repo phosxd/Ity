@@ -41,7 +41,8 @@ struct Variant;
 struct ScopeState;
 struct CompositeItem;
 
-using INT_t = int;
+using INT_t = int32_t;
+using UINT_t = uint32_t;
 using FLOAT_t = double;
 using STR_t = std::string;
 using ARR_t = std::vector<Variant>;
@@ -53,13 +54,13 @@ using VariantData = std::variant<
 	std::monostate,
 	bool,
 	INT_t,
+	UINT_t,
 	FLOAT_t,
 	STR_t,
 	ARR_t,
 	MAP_t,
 
 	// Internal types.
-	unsigned int,
 	uint16_t,
 	VariantType,
 	VariantMode,
@@ -519,6 +520,7 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 struct ScopeState {
 	ScopeState* p = nullptr;  // Parent scope state.
 	MAP_t d;                  // Scope data.
+	uint64_t id;
 };
 
 

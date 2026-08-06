@@ -67,7 +67,7 @@ const std::unordered_map<std::string, const InstSymbol> InstSymbolStrs = {
 
 
 // Declarative instructions.
-constexpr size_t DECL_INSTRUCTIONS_size = 5;
+constexpr size_t DECL_INSTRUCTIONS_size = 6;
 constexpr InstSymbol DECL_INSTRUCTIONS[] = {
 	InstSymbol_import,
 	InstSymbol_merge,
@@ -170,6 +170,7 @@ enum VariantType : uint8_t {
 	REF,         // Name reference.
 	NONE,        // Monostate data.
 	BOOL,        // Boolean data.
+	UINT,        // UInt32 data.
 	INT,         // Int32 data.
 	FLOAT,       // Float64 data.
 	STR,         // String data.
@@ -191,6 +192,7 @@ const std::unordered_map<const VariantType, const std::string> VARIANT_TYPE_NAME
 	{REF,          "REF"},
 	{NONE,         "NONE"},
 	{BOOL,         "BOOL"},
+	{UINT,         "UINT"},
 	{INT,          "INT"},
 	{FLOAT,        "FLOAT"},
 	{STR,          "STR"},

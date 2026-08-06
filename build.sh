@@ -124,7 +124,7 @@ cd src
 
 result=0
 if [[ $DEBUG == 0 ]]; then
-	g++ $BUILD_ARGS
+	g++ $BUILD_ARGS 2> log.txt
 	result=$?
 	strip ity.bin # Better results than "-s" flag for gcc.
 	objcopy \

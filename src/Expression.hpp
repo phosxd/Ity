@@ -45,7 +45,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 			{"__AG",  std::move(args)},
 			{"__R",  Variant{func_return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
 		},
-		get_state_at_depth(state, AnyCast(INT_t,func.at("__si").d)) // Use function definition scope as the parent.
+		get_state_at_id(state, AnyCast(UINT_t,func.at("__si").d)) // Use function definition scope as the parent.
 	);
 
 	#ifdef RUNTIME_DEBUG

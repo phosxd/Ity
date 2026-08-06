@@ -3,40 +3,35 @@
 #include "Common.hpp"
 #include "ScriptErrors.hpp"
 
+UINT_t ScopeState_current_id = 0;
+// Bunch of scopes that can be used for later.
+std::vector<ScopeState> ScopeState_pool = {};
 
-unsigned int get_state_depth(const ScopeState& state) {
-	unsigned int depth = 1;
+
+ScopeState* get_state_at_id(ScopeState& state, unsigned int target_id) {
+	if (state.id == target_id) return &state;
 	ScopeState* current = state.p;
 	while (true) {
 		if (not current) break;
-		current = current->p;
-		depth += 1;
-	}
-	return depth;
-}
-
-
-ScopeState* get_state_at_depth(ScopeState& state, const unsigned int target_depth) {
-	unsigned int depth = get_state_depth(state);
-	if (target_depth == depth) return &state;
-	ScopeState* current = state.p;
-	while (true) {
-		if (not current) break;
-		depth -= 1;
-		if (depth == target_depth) return current;
+		if (current->id <= target_id) return current;
 		current = current->p;
 	}
 
-	emit_error(ERR_unexpected, {"GetStateAtDepth", "No state at depth " + std::to_string(target_depth) + '.'});
 	return &state;
 }
 
 
 // Create a new scope state.
-ScopeState create_new_scope_state(const MAP_t& data = {}, ScopeState* parent = nullptr) {
+ScopeState create_new_scope_state(const MAP_t& data = {}, ScopeState* parent = nullptr, UINT_t id = 0) {
+	if (id == 0) {
+		ScopeState_current_id += 1;
+		id = ScopeState_current_id;
+	}
+
 	return ScopeState{
 		(parent) ? std::move(parent) : nullptr, // Moving `parent` is safe since it's already a copy of the pointer.
-		std::move(data) // Yes, it is intentional that we move the referenced data, unsetting the original passed value.
+		std::move(data), // Yes, it is intentional that we move the referenced data, unsetting the original passed value.
+		id,
 	};
 }
 
@@ -44,11 +39,13 @@ ScopeState create_new_scope_state(const MAP_t& data = {}, ScopeState* parent = n
 // Transforms "state" into a empty state & copies the current state into the new state's parent.
 // This will effectively change the depth of the current scope while preserving the state reference.
 void scope_in(ScopeState& state) {
-	state.p = new ScopeState(create_new_scope_state(state.d, state.p));
+	state.p = new ScopeState(create_new_scope_state(state.d, state.p, state.id));
 	state.d.clear();
+	ScopeState_current_id += 1;
+	state.id = ScopeState_current_id;
 
 	#ifdef RUNTIME_DEBUG
-	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope In (" + std::to_string(get_state_depth(state)) + ")\n" << ANSI::reset;
+	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope In (" + std::to_string(state.id) + ")\n" << ANSI::reset;
 	#endif
 }
 
@@ -61,13 +58,14 @@ void scope_out(ScopeState& state) {
 		emit_error(ERR_unexpected, {"ScopeOut", "Minimum depth reached."});
 		return;
 	}
+
 	state.p = std::move(p->p);
-	state.d.clear();
 	state.d = std::move(p->d);
+	state.id =std::move(p->id);
 	delete p;
 
 	#ifdef RUNTIME_DEBUG
-	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope Out (" + std::to_string(get_state_depth(state)) + ")\n" << ANSI::reset;
+	if (debug_flags.scoping) std::cout << ANSI::orange << "Scope Out (" + std::to_string(state.id) + ")\n" << ANSI::reset;
 	#endif
 }
 
