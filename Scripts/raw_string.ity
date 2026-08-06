@@ -1,4 +1,4 @@
-import IO;
+merge IO;
 
 
 var STR string = '';
@@ -10,10 +10,10 @@ else;
 /;
 
 
-IO.print:[('You entered: ' + string)];
-IO.print:[( (ANSI.bold)+'Here is what that is made of:'+(ANSI.reset) )];
+print:[('You entered: ' + string)];
+print:[( (ANSI.bold)+'Here is what that is made of:'+(ANSI.reset) )];
 
 
 for ch in string;
-	IO.print:[(ch.raw:[])];
+	print:[(ch.raw:[])];
 /;

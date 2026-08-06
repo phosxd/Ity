@@ -1,11 +1,55 @@
 #pragma once
 
+#include <csignal>
+
 
 // Called whenever the module is imported.
 // This can be called multiple times.
 Variant LIB_IO_init(ScopeState& _state, const ARR_t& args) {
 	return VariantPresets.none;
 }
+
+
+
+std::unordered_map<uint8_t, std::vector<MAP_t>> LIB_IO_signal_functions;
+ScopeState* LIB_IO_state = nullptr; // NOTE: Would prefer not to store this here, it's ugly & prone to breaking if/when async becomes a thing.
+
+// Calls all script functions in `LIB_IO_signal_functions`.
+// Gets executed when we receive a system signal.
+void LIB_IO_on_signal_received(const int sig) {
+	// Iterate on each connected function for this signal & call it...
+	for (const MAP_t& func : LIB_IO_signal_functions[sig]) {
+		Variant args = Variant{ARR, (ARR_t){}};
+		call_script_function(*LIB_IO_state, func, args);
+	}
+};
+
+
+// Connect a system signal to a function.
+Variant LIB_IO_signal(ScopeState& state, const ARR_t& args) {
+	if (not expect_arg_count(args, 2)) return VariantPresets.none;
+	if (not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {MAP}, 1)) return VariantPresets.none;
+
+	const uint8_t signal_number = (uint8_t)AnyCast(INT_t,args[0].d);
+	const MAP_t& func = AnyCast(MAP_t,args[1].d);
+	// Emit error if not a function object.
+	if (AnyCast(STR_t,func.at("__t").d) != "f") {
+		emit_error(ERR_invalid_func_arg_type, {"1", "MAP(f)", get_variant_type_name(args[1].t)});
+		return VariantPresets.none;
+	}
+
+	LIB_IO_state = get_state_at_id(state, 1); // Always run the function in the global state, even if it wasnt defined there.
+	LIB_IO_signal_functions[signal_number].push_back(func); // Add function to array.
+
+	// Connect signal...
+	switch (signal_number) {
+		case 2: signal(SIGINT, LIB_IO_on_signal_received); break;
+		case 15: signal(SIGTERM, LIB_IO_on_signal_received); break;
+	}
+	return VariantPresets.none;
+}
+
+
 
 
 // Wait for then return a response.
@@ -81,12 +125,43 @@ const Variant LIB_IO {
 	MAP, (MAP_t){
 		{"__name",       Variant{STR, (STR_t)"IO", VariantMode_constant}},
 		{"__init",       NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_init)},
-		{"in",           NativeFuncTrans(STR,    (NativeFunc_t)LIB_IO_in)},
-		{"key_in",       NativeFuncTrans(STR,    (NativeFunc_t)LIB_IO_key_in)},
-		{"out",          NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_out)},
-		{"print",        NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_print)},
-		{"print_err",    NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_print_err)},
-		{"prompt",       NativeFuncTrans(STR,    (NativeFunc_t)LIB_IO_prompt)},
+
+		// System signals.
+		{"SIGNAL", Variant{
+			MAP, (MAP_t){
+				{"interrupt",   Variant{INT, (INT_t)2, VariantMode_constant}},   // Program interupt request.
+				{"terminate",   Variant{INT, (INT_t)15, VariantMode_constant}},  // Program termination request.
+			}, VariantMode_constant }},
+
+		// ANSI codes.
+		{"ANSI", Variant{
+			MAP, (MAP_t){
+				{"reset",    Variant{STR, ANSI::reset,   VariantMode_constant}},
+				{"bold",     Variant{STR, ANSI::bold,    VariantMode_constant}},
+				{"black",    Variant{STR, ANSI::black,   VariantMode_constant}},
+				{"red",      Variant{STR, ANSI::red,     VariantMode_constant}},
+				{"green",    Variant{STR, ANSI::green,   VariantMode_constant}},
+				{"orange",   Variant{STR, ANSI::orange,  VariantMode_constant}},
+				{"blue",     Variant{STR, ANSI::blue,    VariantMode_constant}},
+				{"purple",   Variant{STR, ANSI::purple,  VariantMode_constant}},
+				{"white",    Variant{STR, ANSI::white,   VariantMode_constant}},
+				{"yellow",   Variant{STR, ANSI::yellow,  VariantMode_constant}},
+				// Extra sequences.
+				{"cursor_off",    Variant{STR, ANSI::cursor_off,    VariantMode_constant}},
+				{"cursor_on",     Variant{STR, ANSI::cursor_on,     VariantMode_constant}},
+				{"clear_screen",  Variant{STR, ANSI::clear_screen,  VariantMode_constant}},
+			}, VariantMode_constant }},
+
+
+		// Functions.
+		{"signal",      NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_signal)},
+
+		{"in",          NativeFuncTrans(STR,    (NativeFunc_t)LIB_IO_in)},
+		{"key_in",      NativeFuncTrans(STR,    (NativeFunc_t)LIB_IO_key_in)},
+		{"out",         NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_out)},
+		{"print",       NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_print)},
+		{"print_err",   NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_print_err)},
+		{"prompt",      NativeFuncTrans(STR,    (NativeFunc_t)LIB_IO_prompt)},
 	},
 	VariantMode_constant
 };

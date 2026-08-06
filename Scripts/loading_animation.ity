@@ -1,5 +1,6 @@
 #!/usr/local/bin/ity
 import IO;
+const ANSI = IO.ANSI;
 
 
 const ARR frames = ['|','/','-','\\'];
@@ -27,6 +28,6 @@ func NONE done;
 /;
 
 
-signal:[(SIGNAL.interrupt), done];
+IO.signal:[(IO.SIGNAL.interrupt), done];
 do_animation:[];
 done:[];

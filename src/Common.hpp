@@ -520,7 +520,7 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 struct ScopeState {
 	ScopeState* p = nullptr;  // Parent scope state.
 	MAP_t d;                  // Scope data.
-	uint64_t id;
+	UINT_t id;
 };
 
 

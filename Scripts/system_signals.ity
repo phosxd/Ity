@@ -9,7 +9,7 @@ func NONE interrupt_handler;
 
 
 # Connect signal to our `interrupt_handler` function.
-signal:[(SIGNAL.interrupt), interrupt_handler];
+IO.signal:[(IO.SIGNAL.interrupt), interrupt_handler];
 
 
 # Sleep...

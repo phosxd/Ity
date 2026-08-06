@@ -46,12 +46,6 @@ func INT find; arg PTR S; arg STR substr; arg INT start = 0; arg INT end = -1;
 /;
 
 
-func NONE VarMap_set; arg PTR S; arg ANY key; arg ANY value;
-	const STR key_str = ((type:key->STR)+':'+(key->STR));
-	S.data += {key_str, value};
-/;
-
-
 const MAP __module__ = {
 	'__name', 'StrUtil',
 	'__tm', {

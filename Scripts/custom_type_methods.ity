@@ -6,7 +6,7 @@ func NONE my_STR_method; arg PTR obj; arg INT times = 1;
 	# Pointer to the object the method was called on can be used.
 	# If you know for certain that you will only be calling this function as a method for a specific type, you can skip the type check.
 
-	if type:[~obj] != STR; # Very important: `obj` is of type `PTR`, we need to get the actual value it is holding & check *that* type. We use `~` to do that.
+	if type:~obj != STR; # Very important: `obj` is of type `PTR`, we need to get the actual value it is holding & check *that* type. We use `~` to do that.
 		throw 'Invalid type.';
 	/;;
 
@@ -25,6 +25,6 @@ __tm__ += {'STR:add_hello_world', my_STR_method};
 # Create a new STR.
 var my_str = 'Yoo!';
 # Call our custom method on it.
-my_str.add_hello_world:[2];
+my_str.add_hello_world:2;
 # Print the changes it made to our STR.
-IO.print:[my_str];
+IO.print:my_str;

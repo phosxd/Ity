@@ -380,8 +380,8 @@ void start_shell(int argc, char* argv[]) {
 		else if (flag == "-step")    step_mode = true;
 	}
 
-	std::vector<std::string> split_source_script = {""};
-	for (const std::string& i : (split_str(source_script_path, '/')) ) {split_source_script.push_back(i);}
+	std::vector<std::string> split_source_script = split_str(source_script_path, '/');
+	split_source_script.insert(split_source_script.begin(), "");
 
 
 	// Initialize state.
@@ -433,6 +433,7 @@ void start_shell(int argc, char* argv[]) {
 
 
 	// Run interactive interpreter...
+	#ifdef INCLUDE_SHELL
 	else {
 		std::cout << "* " << ANSI::yellow << "Ity (" << ItyVersionString << ")" << ANSI::reset << '\n'
 		<< "* " << ANSI::purple << "Running interactive mode interpreter." << ANSI::reset << '\n'
@@ -450,22 +451,23 @@ void start_shell(int argc, char* argv[]) {
 			if (command == "quit" || command == "q") {
 				break;
 			}
-			else {
-				command += ';';
-				last_expr_result = VariantPresets.empty;
 
-				// Tokenize the command.
-				std::vector<InstToken> sequence = Ity::tokenize(command);
-				// Execute tokens.
-				Ity::exec(state, sequence, 0,-1);
+			command += ';';
+			last_expr_result = VariantPresets.empty;
 
-				// Print expression result if there is one.
-				if (last_expr_result.t != PLACEHOLDER) std::cout << last_expr_result;
-			}
+			// Tokenize the command.
+			std::vector<InstToken> sequence = Ity::tokenize(command);
+			// Execute tokens.
+			Ity::exec(state, sequence, 0,-1);
+
+			// Print expression result if there is one.
+			if (last_expr_result.t != PLACEHOLDER) std::cout << last_expr_result;
+
 			current_line += 1;
 			current_column = 1;
 		}
 	}
+	#endif
 
 
 	// Output program results in debug mode.

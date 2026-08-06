@@ -68,12 +68,15 @@ std::string join_str(const std::vector<std::string>& vec, const std::string& sep
 
 // Splits the `text` into a vector of strings, with each element separated by the given `sep`.
 std::vector<std::string> split_str(const std::string& text, const char sep) {
+	if (text.empty()) return {};
+
 	std::stringstream ss (text);
 	std::vector<std::string> result;
 	std::string item;
 	while (std::getline(ss, item, sep)) {
 		result.push_back(item);
 	}
+
 	return result;
 }
 
