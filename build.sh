@@ -11,6 +11,7 @@ COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-rtti -fno-unwin
 DO_TEST=0
 DEBUG=0
 RUNTIME_DEBUG=1
+DO_CAPTURE=0
 OPTIM="balanced"
 OPTIM_balanced="-O2 -finline-limit=4"
 OPTIM_speed="-Ofast"
@@ -30,7 +31,6 @@ for line in "${LibrariesFile[@]}"; do
 
 	lib_name=${line:1} # Get line with "." prefix excluded.
 	LibNames+=(${lib_name})
-	#LINKS+=" Lib/${lib_name}/m.cpp -o LIB_${lib_name}.o" # Add to links.
 done
 
 echo "${LINKS}"
@@ -53,6 +53,9 @@ for i in "$@"; do
 		;;
 		-srd|--strip-runtime-debug)
 			RUNTIME_DEBUG=0
+		;;
+		--capture)
+			DO_CAPTURE=1
 		;;
 		*)
 			echo "${RED}Unknown option \"$i\"."
@@ -124,7 +127,11 @@ cd src
 
 result=0
 if [[ $DEBUG == 0 ]]; then
-	g++ $BUILD_ARGS 2> log.txt
+	if [[ $DO_CAPTURE -eq 1 ]]; then
+		g++ $BUILD_ARGS 2> log.txt
+	else
+		g++ $BUILD_ARGS
+	fi
 	result=$?
 	strip ity.bin # Better results than "-s" flag for gcc.
 	objcopy \

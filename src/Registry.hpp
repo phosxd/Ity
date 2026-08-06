@@ -5,6 +5,9 @@ constexpr char COMMENT_SYMBOL = '#';
 constexpr char INST_END_SYMBOL = ';';
 constexpr std::string ITY_FILE_EXT = ".ity";
 
+constexpr std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
+constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}@~" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
+
 
 
 // -------------------------------------------
@@ -37,32 +40,6 @@ enum InstSymbol : uint8_t {
 
 	InstSymbol_func,
 	InstSymbol_return,
-};
-
-
-const std::unordered_map<std::string, const InstSymbol> InstSymbolStrs = {
-	{"import",     InstSymbol_import},
-	{"merge",      InstSymbol_merge},
-
-	{"exit",       InstSymbol_exit},
-	{"throw",      InstSymbol_throw},
-
-	{"var",        InstSymbol_var},
-	{"const",      InstSymbol_const},
-	{"arg",        InstSymbol_arg},
-
-	{"/",          InstSymbol_end},
-	{"if",         InstSymbol_if},
-	{"elif",       InstSymbol_elif},
-	{"else",       InstSymbol_else},
-
-	{"while",      InstSymbol_while},
-	{"for",        InstSymbol_for},
-	{"continue",   InstSymbol_continue},
-	{"break",      InstSymbol_break},
-
-	{"func",       InstSymbol_func},
-	{"return",     InstSymbol_return},
 };
 
 
@@ -119,35 +96,6 @@ enum OpSymbol : uint8_t {
 
 	OpSymbol_type_cast,
 	OpSymbol_access,
-};
-
-
-const std::unordered_map<std::string, const OpSymbol> OpSymbolStrs = {
-	{"+",   OpSymbol_add},
-	{"-",   OpSymbol_sub},
-	{"*",   OpSymbol_mul},
-	{"/",   OpSymbol_div},
-	{"%",   OpSymbol_mod},
-
-	{"=",    OpSymbol_set},
-	{"+=",   OpSymbol_add_set},
-	{"-=",   OpSymbol_sub_set},
-	{"*=",   OpSymbol_mul_set},
-	{"/=",   OpSymbol_div_set},
-	{"%=",   OpSymbol_mod_set},
-	{"<<=",  OpSymbol_mov_set},
-
-	{"==",   OpSymbol_cmp_eq},
-	{"!=",   OpSymbol_cmp_neq},
-	{">",    OpSymbol_cmp_gt},
-	{"<",    OpSymbol_cmp_lt},
-	{">=",   OpSymbol_cmp_gteq},
-	{"<=",   OpSymbol_cmp_lteq},
-	{"&&",   OpSymbol_cmp_and},
-	{"||",   OpSymbol_cmp_or},
-
-	{"->",   OpSymbol_type_cast},
-	{":",    OpSymbol_access},
 };
 
 

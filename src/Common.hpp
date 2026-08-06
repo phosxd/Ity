@@ -552,15 +552,6 @@ struct CompositeItem {
 };
 
 
-// Get string representation of an InstSymbol.
-inline std::string InstSymbol_to_string(const InstSymbol& symbol) {
-	for (const auto& it : InstSymbolStrs) {
-		if (it.second == symbol) return it.first;
-	}
-	return "";
-}
-
-
 
 
 
@@ -572,15 +563,6 @@ struct Operation {
 	void (*exec)(ScopeState&, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& result_ptr) = nullptr;
 	void (*pre_exec)(ScopeState&, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& result_ptr) = nullptr;
 };
-
-
-// Get string representation of an OpSymbol.
-inline std::string OpSymbol_to_string(const OpSymbol& symbol) {
-	for (const auto& it : OpSymbolStrs) {
-		if (it.second == symbol) return it.first;
-	}
-	return "";
-}
 
 
 

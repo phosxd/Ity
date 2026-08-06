@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_While_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
+void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
 	token.meta = {
 		false,     // Multi.
 
@@ -41,7 +41,7 @@ void INST_While_processor(InstToken& token, const AnyMap_t& _extra, const unsign
 
 
 
-void INST_While_for_loop(ScopeState& state, InstToken& token, bool& value) {
+void INST_Loop_for_loop(ScopeState& state, InstToken& token, bool& value) {
 	const unsigned int& index = AnyCast(unsigned int,token.meta[3]);
 	// Get iterable.
 	Variant& iterable = AnyCastV(ARR_t,token.meta[2])[0];
@@ -107,7 +107,7 @@ void INST_While_for_loop(ScopeState& state, InstToken& token, bool& value) {
 
 
 
-void INST_While_exec(ScopeState& state, InstToken& token) {
+void INST_Loop_exec(ScopeState& state, InstToken& token) {
 	bool value = false;
 
 
@@ -126,7 +126,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 
 	// For loop.
 	else if (token.symbol == InstSymbol_for) {
-		INST_While_for_loop(state, token, value);
+		INST_Loop_for_loop(state, token, value);
 	}
 
 
@@ -173,7 +173,7 @@ void INST_While_exec(ScopeState& state, InstToken& token) {
 
 
 
-void INST_While_emergency_scope_exit(InstToken*& token) {
+void INST_Loop_emergency_scope_exit(InstToken*& token) {
 	// Reset token state.
 	token->meta[0] = false;
 	token->meta[2] = (ARR_t){VariantPresets.empty, VariantPresets.empty};
@@ -183,11 +183,11 @@ void INST_While_emergency_scope_exit(InstToken*& token) {
 
 
 
-const Instruction* INST_While = new Instruction{
+const Instruction* INST_Loop = new Instruction{
 	1,                // Required arg count.
-	INST_While_exec,  // Function.
+	INST_Loop_exec,   // Function.
 	true,             // Is composite.
 	false,            // Has expression.
-	INST_While_processor,
-	INST_While_emergency_scope_exit,
+	INST_Loop_processor,
+	INST_Loop_emergency_scope_exit,
 };

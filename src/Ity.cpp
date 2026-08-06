@@ -28,35 +28,58 @@ const Variant LIBS[] = {
 
 
 // Instruction imports...
+const std::string InstSymbol_to_string(const InstSymbol& symbol);
 #include "Inst/Import.hpp"
 #include "Inst/Exit.hpp"
 #include "Inst/Var.hpp"
 #include "Inst/End.hpp"
 #include "Inst/If.hpp"
-#include "Inst/While.hpp"
+#include "Inst/Loop.hpp"
 #include "Inst/Continue.hpp"
 #include "Inst/Func.hpp"
 #include "Inst/Return.hpp"
 
-const std::unordered_map<InstSymbol, const Instruction*> INSTRUCTIONS = {
-	{InstSymbol_import,   INST_Import},
-	{InstSymbol_merge,    INST_Import},
-	{InstSymbol_exit,     INST_Exit},
-	{InstSymbol_throw,    INST_Exit},
-	{InstSymbol_var,      INST_Var},
-	{InstSymbol_const,    INST_Var},
-	{InstSymbol_arg,      INST_Var},
-	{InstSymbol_end,      INST_End},
-	{InstSymbol_if,       INST_If},
-	{InstSymbol_elif,     INST_If},
-	{InstSymbol_else,     INST_If},
-	{InstSymbol_while,    INST_While},
-	{InstSymbol_for,      INST_While},
-	{InstSymbol_continue, INST_Continue},
-	{InstSymbol_break,    INST_Continue},
-	{InstSymbol_func,     INST_Func},
-	{InstSymbol_return,   INST_Return},
+struct InstDef {
+	const InstSymbol symbol;
+	const Instruction* inst;
 };
+const std::unordered_map<std::string, const InstDef> INSTRUCTIONS = {
+	{"import",     {InstSymbol_import, INST_Import}},
+	{"merge",      {InstSymbol_merge,  INST_Import}},
+
+	{"exit",       {InstSymbol_exit,   INST_Exit}},
+	{"throw",      {InstSymbol_throw,  INST_Exit}},
+
+	{"var",        {InstSymbol_var,    INST_Var}},
+	{"const",      {InstSymbol_const,  INST_Var}},
+	{"arg",        {InstSymbol_arg,    INST_Var}},
+
+	{"/",          {InstSymbol_end,    INST_End}},
+	{"if",         {InstSymbol_if,     INST_If}},
+	{"elif",       {InstSymbol_elif,   INST_If}},
+	{"else",       {InstSymbol_else,   INST_If}},
+
+	{"while",      {InstSymbol_while,     INST_Loop}},
+	{"for",        {InstSymbol_for,       INST_Loop}},
+	{"continue",   {InstSymbol_continue,  INST_Continue}},
+	{"break",      {InstSymbol_break,     INST_Continue}},
+
+	{"func",       {InstSymbol_func,   INST_Func}},
+	{"return",     {InstSymbol_return, INST_Return}},
+};
+// Get string representation of an InstSymbol.
+const std::string InstSymbol_to_string(const InstSymbol& symbol) {
+	for (const auto& it : INSTRUCTIONS) {
+		if (it.second.symbol == symbol) return it.first;
+	}
+	return "";
+}
+const InstDef* find_InstDef_from_symbol(const InstSymbol& symbol) {
+	for (const auto& it : INSTRUCTIONS) {
+		if (it.second.symbol == symbol) return &it.second;
+	}
+	return nullptr;
+}
 
 
 Variant last_expr_result = VariantPresets.empty;
@@ -163,7 +186,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 				const size_t& args_len = item.args.size();
 				InstSymbol inst_symbol = InstSymbol__;
 				if (args_len > 0) {
-					if (const auto it = InstSymbolStrs.find(item.args[0]); it != InstSymbolStrs.end()) inst_symbol = it->second;
+					if (const auto it = INSTRUCTIONS.find(item.args[0]); it != INSTRUCTIONS.end()) inst_symbol = it->second.symbol;
 				}
 
 				// Handle composite instructions.
@@ -179,9 +202,9 @@ std::vector<InstToken> tokenize(const std::string& src) {
 				}
 				if (args_len > 0) {
 					// If is a valid instruction...
-					const auto& inst_it = INSTRUCTIONS.find(inst_symbol);
-					if (inst_it != INSTRUCTIONS.end()) {
-						const Instruction* inst = inst_it->second;
+					const InstDef* inst_def = find_InstDef_from_symbol(inst_symbol);
+					if (inst_def) {
+						const Instruction* inst = inst_def->inst;
 						item.symbol = inst_symbol;
 						item.inst = inst;
 
