@@ -29,7 +29,7 @@ func NONE _game_next;
 	const w = WORLD_SIZE.x;
 	var i = -1;
 	var x = 0;
-	# Iterate on every cell (loop iterates on a copy no matter what, so it's safe to modify the original array).
+	var buf = GAME.cells;
 	for cell in GAME.cells; i += 1;
 		# Check boundaries & get neighboring cells...
 		x = i % w;
@@ -58,13 +58,14 @@ func NONE _game_next;
 		const neighbors = (l+r+t+tl+tr+b+bl+br);
 		if cell == 1;
 			if (neighbors < 2) || (neighbors > 3);
-				GAME.cells:i = 0;
+				buf:i = 0;
 			/;
 		/;
 		elif neighbors == 3;
-			GAME.cells:i = 1;
+			buf:i = 1;
 		/;
 	/;
+	GAME.cells = buf;
 /;
 
 
