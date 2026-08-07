@@ -39,7 +39,7 @@ void INST_If_exec(ScopeState& state, InstToken& token) {
 	if (token.linked_inst == InstSymbol_if || token.linked_inst == InstSymbol_elif) {
 		const InstToken& linked_token = InstTokenSeq[token.i + token.linked_inst_pos];
 		if (linked_token.meta.size() == 0) {
-			emit_error(ERR_unexpected_inst, {InstSymbol_to_string(token.symbol)});
+			emit_error(ERR_unexpected_inst, {find_InstDef_from_symbol(token.symbol)->str});
 			return;
 		}
 		previous_conditional_passed = AnyCast(bool,linked_token.meta[0]);

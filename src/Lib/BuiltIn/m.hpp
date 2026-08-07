@@ -302,15 +302,17 @@ Variant LIB_BI_tm_map_set(ScopeState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 3)) return VariantPresets.none;
 	if (not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
 
-	// Get data & key.
-	MAP_t& data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d );
-	const STR_t& key = AnyCast(STR_t,args[1].d);
+	Variant* var = AnyCastV(Variant*,args[0].d);
 
 	// Throw error if the variant is a constant.
 	if (var->m == VariantMode_constant) {
 		emit_error(ERR_cannot_change_constant);
 		return VariantPresets.none;
 	}
+
+	// Get data & key.
+	MAP_t& data = AnyCast(MAP_t, var->d );
+	const STR_t& key = AnyCast(STR_t,args[1].d);
 
 	// Set new key-value pair.
 	data[key] = args[2];

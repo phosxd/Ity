@@ -28,9 +28,6 @@ inline const VariantType get_variant_type_from_name(const std::string& name) {
 }
 
 
-std::ostream& operator<<(std::ostream& os, const VariantType& s) {return os << get_variant_type_name(s);}
-
-
 
 
 // VariantData.

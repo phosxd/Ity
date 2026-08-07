@@ -28,7 +28,12 @@ const Variant LIBS[] = {
 
 
 // Instruction imports...
-const std::string InstSymbol_to_string(const InstSymbol& symbol);
+struct InstDef {
+	const InstSymbol sym;
+	const std::string str;
+	const Instruction* inst;
+};
+const InstDef* find_InstDef_from_symbol(const InstSymbol& sym);
 #include "Inst/Import.hpp"
 #include "Inst/Exit.hpp"
 #include "Inst/Var.hpp"
@@ -39,44 +44,40 @@ const std::string InstSymbol_to_string(const InstSymbol& symbol);
 #include "Inst/Func.hpp"
 #include "Inst/Return.hpp"
 
-struct InstDef {
-	const InstSymbol symbol;
-	const Instruction* inst;
-};
-const std::unordered_map<std::string, const InstDef> INSTRUCTIONS = {
-	{"import",     {InstSymbol_import, INST_Import}},
-	{"merge",      {InstSymbol_merge,  INST_Import}},
+const InstDef INSTRUCTIONS[] = {
+	{InstSymbol_import,   "import",    INST_Import},
+	{InstSymbol_merge,    "merge",     INST_Import},
 
-	{"exit",       {InstSymbol_exit,   INST_Exit}},
-	{"throw",      {InstSymbol_throw,  INST_Exit}},
+	{InstSymbol_exit,     "exit",      INST_Exit},
+	{InstSymbol_throw,    "throw",     INST_Exit},
 
-	{"var",        {InstSymbol_var,    INST_Var}},
-	{"const",      {InstSymbol_const,  INST_Var}},
-	{"arg",        {InstSymbol_arg,    INST_Var}},
+	{InstSymbol_var,      "var",       INST_Var},
+	{InstSymbol_const,    "const",     INST_Var},
+	{InstSymbol_arg,      "arg",       INST_Var},
 
-	{"/",          {InstSymbol_end,    INST_End}},
-	{"if",         {InstSymbol_if,     INST_If}},
-	{"elif",       {InstSymbol_elif,   INST_If}},
-	{"else",       {InstSymbol_else,   INST_If}},
+	{InstSymbol_end,      "/",         INST_End},
+	{InstSymbol_if,       "if",        INST_If},
+	{InstSymbol_elif,     "elif",      INST_If},
+	{InstSymbol_else,     "else",      INST_If},
 
-	{"while",      {InstSymbol_while,     INST_Loop}},
-	{"for",        {InstSymbol_for,       INST_Loop}},
-	{"continue",   {InstSymbol_continue,  INST_Continue}},
-	{"break",      {InstSymbol_break,     INST_Continue}},
+	{InstSymbol_while,    "while",     INST_Loop},
+	{InstSymbol_for,      "for",       INST_Loop},
+	{InstSymbol_continue, "continue",  INST_Continue},
+	{InstSymbol_break,    "break",     INST_Continue},
 
-	{"func",       {InstSymbol_func,   INST_Func}},
-	{"return",     {InstSymbol_return, INST_Return}},
+	{InstSymbol_func,     "func",      INST_Func},
+	{InstSymbol_return,   "return",    INST_Return},
 };
 // Get string representation of an InstSymbol.
-const std::string InstSymbol_to_string(const InstSymbol& symbol) {
-	for (const auto& it : INSTRUCTIONS) {
-		if (it.second.symbol == symbol) return it.first;
+const InstDef* find_InstDef_from_symbol(const InstSymbol& sym) {
+	for (const InstDef& def : INSTRUCTIONS) {
+		if (def.sym == sym) return &def;
 	}
-	return "";
+	return nullptr;
 }
-const InstDef* find_InstDef_from_symbol(const InstSymbol& symbol) {
-	for (const auto& it : INSTRUCTIONS) {
-		if (it.second.symbol == symbol) return &it.second;
+const InstDef* find_InstDef_from_string(const std::string& str) {
+	for (const InstDef& def : INSTRUCTIONS) {
+		if (def.str == str) return &def;
 	}
 	return nullptr;
 }
@@ -186,7 +187,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 				const size_t& args_len = item.args.size();
 				InstSymbol inst_symbol = InstSymbol__;
 				if (args_len > 0) {
-					if (const auto it = INSTRUCTIONS.find(item.args[0]); it != INSTRUCTIONS.end()) inst_symbol = it->second.symbol;
+					if (const InstDef* inst_def = find_InstDef_from_string(item.args[0]); inst_def != nullptr) inst_symbol = inst_def->sym;
 				}
 
 				// Handle composite instructions.
@@ -319,8 +320,8 @@ void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t star
 		}
 		#endif
 
-		// If has an expression but no args, run as expression.
-		if (item.args.size() == 0) {
+		// Run as expression if not an instruction.
+		if (not item.inst) {
 			last_expr_result = *expr_exec(state, item.expr, false, current_line, current_column);
 			continue;
 		}
@@ -377,7 +378,7 @@ void start_shell(int argc, char* argv[]) {
 		#endif
 
 		// Set other flags.
-		else if (flag == "-codes")        emit_just_codes = true;
+		else if (flag == "-codes")   emit_just_codes = true;
 		else if (flag == "-nowarn")  emit_warnings = false;
 		else if (flag == "-safe")    safe_mode = true;
 		else if (flag == "-step")    step_mode = true;

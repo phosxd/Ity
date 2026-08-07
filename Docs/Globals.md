@@ -40,49 +40,7 @@ Every built-in data type, represented as a string. They share the same names as 
 
 E.g. `NONE` = "NONE"
 
-The only types that are not included here are meta types like `ANY` & `*` (inferred).
-
-### (MAP) SIGNAL
-A map of all supported system signals represented as an `INT`.
-
-Map keys:
-- `interrupt`: `2`
-- `terminate`: `15`
-
-### (MAP) ANSI
-A map of common [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) escape codes represented as a string. This is useful for printing stylized text in the terminal.
-
-Map keys:
-- `reset`
-- `bold`
-- `black`
-- `red`
-- `green`
-- `orange`
-- `blue`
-- `purple`
-- `white`
-- `yellow`
-
 # Standard Global Functions
-
-### NONE signal (INT signal_code, MAP(f) function)
-A function that connects the given function to a system signal. Refer to the [SIGNAL](#map-signal) member for valid signal codes.
-
-```python
-func NONE on_signal_interrupt_reveived;
-	print:'Received interrupt signal!';
-	exit;
-/;
-
-
-signal:[(SIGNAL.interrupt), on_signal_interrupt_reveived];
-sleep:999;
-
-# Program will end when given the interrupt signal, but it will call the connected function first.
-```
-
-Note: connecting to a signal will override it's system default behavior. Which means connecting to signals which would normally exit the program, will no longer do so, the functionality needs to be recreated. In simpler terms, always manually exit the program in your connected signal function for signals that would normally do so.
 
 ### INT system (STR command)
 A function that runs a system command string then returns the exit status code.
@@ -178,6 +136,14 @@ A function that returns an `INT`, which is a random number between the given min
 rand:[0, 10]; # Some random value from 0 to 10.
 ```
 
+### NONE set_seed (INT seed)
+A function that overrides the randomization seed for use in `rand`. The seed is by default set to the script start time according to the host system.
+
+```python
+set_seed:0;
+rand:[0,100_000]; # ALWAYS returns 71_341 on first call.
+```
+
 
 # Standard Global Type Methods
 
@@ -207,18 +173,36 @@ string.raw:[]; # Returns 97.
 Delete an item inside the array.
 
 ```python
-const ARR array = [1,2,3];
+var ARR array = [1,2,3];
 array.erase:0;
 # array = [2,3]
+```
+
+### NONE `ARR`.append (ANY var)
+Add a variant to the end of the array.
+
+```python
+var ARR array = [1,2,3];
+array.append:4;
+# array = [1,2,3,4]
 ```
 
 ### NONE `MAP`.erase (STR key)
 Delete a key-value pair inside the map.
 
 ```python
-const MAP map = {'a',1, 'b',2, 'c',3};
+var MAP map = {'a',1, 'b',2, 'c',3};
 map.erase:'a';
 # map = {'b'2, 'c',3}
+```
+
+### NONE `MAP`.set (STR key, ANY var)
+Add or overwrite a key-value pair to the map.
+
+```python
+var MAP map = {'a',1, 'b',2};
+map.set:['c',3];
+# map = {'c',3, 'b',2, 'a',1}
 ```
 
 ### ARR `MAP`.keys ()
