@@ -9,9 +9,7 @@ Variant LIB_FileAccess_init(ScopeState& _state, const ARR_t& args) {
 
 
 Variant LIB_FileAccess_read_file_text(ScopeState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.empty;
-	const std::vector<VariantType> valid_types = {STR};
-	if (not expect_arg_types(args[0], valid_types, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 	const STR_t& path = AnyCast(STR_t,args[0].d);
 
 	std::ifstream f (path, std::ios::in | std::ios::binary);
@@ -32,6 +30,7 @@ const Variant LIB_FileAccess {
 	MAP, (MAP_t){
 		{"__name",       Variant{STR, (STR_t)"FileAccess", VariantMode_constant}},
 		{"__init",       NativeFuncTrans(NONE,   (NativeFunc_t)LIB_FileAccess_init)},
+
 		{"read_file_text",   NativeFuncTrans(STR,    (NativeFunc_t)LIB_FileAccess_read_file_text)},
 		//{"read_file_bytes",   NativeFuncTrans(STR,    (NativeFunc_t)LIB_FileAccess_read_file_bytes)},
 	},

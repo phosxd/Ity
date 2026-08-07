@@ -5,12 +5,20 @@ import Math;
 
 const FPS = 8;
 const FPS_ms = 1000 / FPS;
-const WORLD_SIZE = {'x',60, 'y',20};
-const SEED = prompt:'Set seed (default 0): ' -> INT;
-set_seed:SEED;
 
 const CELL_ON = '█';
 const CELL_OFF = ' ';
+
+# Allow user defined world size.
+const WORLD_SIZE = {'x',60, 'y',20};
+if length:[__CMD_ARGS__] > 1;
+	WORLD_SIZE.x = (__CMD_ARGS__:0 -> INT);
+	WORLD_SIZE.y = (__CMD_ARGS__:1 -> INT);
+/;
+
+# Get world seed.
+const SEED = prompt:'Set seed (default 0): ' -> INT;
+set_seed:SEED;
 
 
 
@@ -89,12 +97,6 @@ const GAME = {
 GAME.init:[];
 
 
-func NONE on_interrupt;
-	exit;
-/;
-signal:[(SIGNAL.interrupt), on_interrupt];
-
-
 
 
 while true;
@@ -103,19 +105,19 @@ while true;
 	GAME.next:[];
 
 	# Clear screen.
-	out:'\e[H\e[0J';
+	buff_out:'\e[H\e[0J';
 
 	# Print world...
 	var i = -1;
 	for cell in GAME.cells; i+=1;
-		if cell == 1; out:CELL_ON;  /;
-		else;         out:CELL_OFF; /;
+		if cell == 1; buff_out:CELL_ON;  /;
+		else;         buff_out:CELL_OFF; /;
 		if (i % (WORLD_SIZE.x)) == 0;
-			out:'\n';
+			buff_out:'\n';
 		/;
 	/;
 
-	out:'\n';
+	out:'\n'; # Prints new line & flushes buffered output from `buff_out`.
 
 	# Calculate time taken to run, then sleep for the remainder of the frame time.
 	const delta = (Time.now:'ms' - start_time);

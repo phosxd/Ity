@@ -1,4 +1,7 @@
 - Add ability to import other scripts as modules.
+
+- Replace variable name string lookup in scope data, with unsigned integer ID lookup by converting every declared name to an ID during tokenization, only reverting back to a string for errors.
+  This is the single largest performance improvement I could make right now & through CPU profiling it was revealed that hash lookup in scope is (directly) responsible for 21.8% of CPU time.
  
 
 Add more FileAccess methods:

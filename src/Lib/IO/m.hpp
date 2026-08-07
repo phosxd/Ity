@@ -93,6 +93,13 @@ Variant LIB_IO_out(ScopeState& state, const ARR_t& args) {
 }
 
 
+// Output text.
+Variant LIB_IO_buff_out(ScopeState& state, const ARR_t& args) {
+	for (const Variant& var : args) std::cout << var;
+	return VariantPresets.none;
+}
+
+
 // Output text with a leading new line.
 Variant LIB_IO_print(ScopeState& state, const ARR_t& args) {
 	LIB_IO_out(state, args);
@@ -123,29 +130,29 @@ Variant LIB_IO_prompt(ScopeState& state, const ARR_t& args) {
 
 const Variant LIB_IO {
 	MAP, (MAP_t){
-		{"__name",       Variant{STR, (STR_t)"IO", VariantMode_constant}},
-		{"__init",       NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_init)},
+		{"__name",  Variant{STR, (STR_t)"IO", VariantMode_constant}},
+		{"__init",  NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_init)},
 
 		// System signals.
 		{"SIGNAL", Variant{
 			MAP, (MAP_t){
-				{"interrupt",   Variant{INT, (INT_t)2, VariantMode_constant}},   // Program interupt request.
-				{"terminate",   Variant{INT, (INT_t)15, VariantMode_constant}},  // Program termination request.
+				{"interrupt",  Variant{INT, (INT_t)2, VariantMode_constant}},   // Program interupt request.
+				{"terminate",  Variant{INT, (INT_t)15, VariantMode_constant}},  // Program termination request.
 			}, VariantMode_constant }},
 
 		// ANSI codes.
 		{"ANSI", Variant{
 			MAP, (MAP_t){
-				{"reset",    Variant{STR, ANSI::reset,   VariantMode_constant}},
-				{"bold",     Variant{STR, ANSI::bold,    VariantMode_constant}},
-				{"black",    Variant{STR, ANSI::black,   VariantMode_constant}},
-				{"red",      Variant{STR, ANSI::red,     VariantMode_constant}},
-				{"green",    Variant{STR, ANSI::green,   VariantMode_constant}},
-				{"orange",   Variant{STR, ANSI::orange,  VariantMode_constant}},
-				{"blue",     Variant{STR, ANSI::blue,    VariantMode_constant}},
-				{"purple",   Variant{STR, ANSI::purple,  VariantMode_constant}},
-				{"white",    Variant{STR, ANSI::white,   VariantMode_constant}},
-				{"yellow",   Variant{STR, ANSI::yellow,  VariantMode_constant}},
+				{"reset",   Variant{STR, ANSI::reset,   VariantMode_constant}},
+				{"bold",    Variant{STR, ANSI::bold,    VariantMode_constant}},
+				{"black",   Variant{STR, ANSI::black,   VariantMode_constant}},
+				{"red",     Variant{STR, ANSI::red,     VariantMode_constant}},
+				{"green",   Variant{STR, ANSI::green,   VariantMode_constant}},
+				{"orange",  Variant{STR, ANSI::orange,  VariantMode_constant}},
+				{"blue",    Variant{STR, ANSI::blue,    VariantMode_constant}},
+				{"purple",  Variant{STR, ANSI::purple,  VariantMode_constant}},
+				{"white",   Variant{STR, ANSI::white,   VariantMode_constant}},
+				{"yellow",  Variant{STR, ANSI::yellow,  VariantMode_constant}},
 				// Extra sequences.
 				{"cursor_off",    Variant{STR, ANSI::cursor_off,    VariantMode_constant}},
 				{"cursor_on",     Variant{STR, ANSI::cursor_on,     VariantMode_constant}},
@@ -154,14 +161,15 @@ const Variant LIB_IO {
 
 
 		// Functions.
-		{"signal",      NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_signal)},
+		{"signal",     NativeFuncTrans(NONE,  (NativeFunc_t)LIB_IO_signal)},
 
-		{"in",          NativeFuncTrans(STR,    (NativeFunc_t)LIB_IO_in)},
-		{"key_in",      NativeFuncTrans(STR,    (NativeFunc_t)LIB_IO_key_in)},
-		{"out",         NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_out)},
-		{"print",       NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_print)},
-		{"print_err",   NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_print_err)},
-		{"prompt",      NativeFuncTrans(STR,    (NativeFunc_t)LIB_IO_prompt)},
+		{"in",         NativeFuncTrans(STR,   (NativeFunc_t)LIB_IO_in)},
+		{"key_in",     NativeFuncTrans(STR,   (NativeFunc_t)LIB_IO_key_in)},
+		{"out",        NativeFuncTrans(NONE,  (NativeFunc_t)LIB_IO_out)},
+		{"buff_out",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_IO_buff_out)},
+		{"print",      NativeFuncTrans(NONE,  (NativeFunc_t)LIB_IO_print)},
+		{"print_err",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_IO_print_err)},
+		{"prompt",     NativeFuncTrans(STR,   (NativeFunc_t)LIB_IO_prompt)},
 	},
 	VariantMode_constant
 };
