@@ -61,6 +61,26 @@ Variant LIB_Math_pow(ScopeState& _state, const ARR_t& args) {
 }
 
 
+Variant LIB_Math_sum(ScopeState& _state, const ARR_t& args) {
+	FLOAT_t sum = 0.0;
+	VariantType type = INT;
+	for (size_t i = 0; i < args.size(); i++) {
+		const Variant& arg = args[i];
+		switch (arg.t) {
+			case INT:   {sum += AnyCast(INT_t,arg.d);   break;}
+			case FLOAT: {
+				sum += AnyCast(FLOAT_t,arg.d);
+				type = FLOAT;
+				break;
+			}
+			default: expect_arg_types(arg, {INT,FLOAT}, i);
+		}
+	}
+	if (type == INT) return Variant{INT, (INT_t)sum};
+	else return Variant{FLOAT, (FLOAT_t)sum};
+}
+
+
 
 
 // DEFINE MAPPINGS
@@ -76,6 +96,7 @@ const Variant LIB_Math {
 		{"log",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_log)},
 		{"sqrt",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_sqrt)},
 		{"pow",        NativeFuncTrans(FLOAT,  (NativeFunc_t)LIB_Math_pow)},
+		{"sum",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_sum)},
 	},
 	VariantMode_constant
 };

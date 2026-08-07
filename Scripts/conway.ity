@@ -6,11 +6,11 @@ import Math;
 const FPS = 8;
 const FPS_ms = 1000 / FPS;
 
-const CELL_ON = '█';
-const CELL_OFF = ' ';
+const CELL_ON =  '⬜';
+const CELL_OFF = '⬛';
 
 # Allow user defined world size.
-const WORLD_SIZE = {'x',60, 'y',20};
+const WORLD_SIZE = {'x',25, 'y',20};
 if length:[__CMD_ARGS__] > 1;
 	WORLD_SIZE.x = (__CMD_ARGS__:0 -> INT);
 	WORLD_SIZE.y = (__CMD_ARGS__:1 -> INT);
@@ -26,31 +26,35 @@ func NONE _game_init;
 	# Populate the world...
 	for y in WORLD_SIZE.y;
 		for x in WORLD_SIZE.x;
-			GAME.cells += [ (rand:[0,1]) ];
+			GAME.cells.append:(rand:[0,1]);
 		/;
 	/;
+	# Precalculate edges.
 	GAME.cell_count = (length:[(GAME.cells)]);
+	for i in GAME.cell_count+1;
+		GAME.cell_x.append:(i % (WORLD_SIZE.x));
+	/;
 /;
 
 
 func NONE _game_next;
 	const w = WORLD_SIZE.x;
-	var i = -1;
 	var x = 0;
-	var buf = GAME.cells;
-	for cell in GAME.cells; i += 1;
+	var buf = GAME.cells; # Copy cells into writable buffer.
+	for i in GAME.cell_count;
+		const cell = GAME.cells:i;
+
 		# Check boundaries & get neighboring cells...
-		x = i % w;
 		var l = 0; var r = 0;
 		var t = 0; var b = 0;
 		var tl = 0; var tr = 0;
 		var bl = 0; var br = 0;
-		if x != 0;
+		if GAME.cell_x:i != 0;
 			l = (get_cell:(i-1));
 			if i >= w; tl = (get_cell:(i-w-1)); /;
 			if i+w < (GAME.cell_count); bl = (get_cell:(i+w-1)); /;
 		/;
-		if x != (w-1);
+		if GAME.cell_x:i != (w-1);
 			r = (get_cell:(i+1));
 			if i >= w; tr = (get_cell:(i-w+1)); /;
 			if i+w < (GAME.cell_count); br = (get_cell:(i+w+1)); /;
@@ -73,7 +77,8 @@ func NONE _game_next;
 			buf:i = 1;
 		/;
 	/;
-	GAME.cells = buf;
+	# Move buffer to the main game cell array, overwriting the data previously there.
+	GAME.cells <<= buf;
 /;
 
 
@@ -90,6 +95,7 @@ const GAME = {
 	'init', _game_init,
 	'next', _game_next,
 	'cells', [],
+	'cell_x', [],
 	'cell_count', 0,
 };
 
@@ -112,16 +118,15 @@ while true;
 	for cell in GAME.cells; i+=1;
 		if cell == 1; buff_out:CELL_ON;  /;
 		else;         buff_out:CELL_OFF; /;
-		if (i % (WORLD_SIZE.x)) == 0;
+		if GAME.cell_x:(i+1) == 0 && (i != (GAME.cell_count-1));
 			buff_out:'\n';
 		/;
 	/;
 
-	out:'\n'; # Prints new line & flushes buffered output from `buff_out`.
+	out:''; # Flushes buffered output from `buff_out`.
 
 	# Calculate time taken to run, then sleep for the remainder of the frame time.
 	const delta = (Time.now:'ms' - start_time);
-	print:['Delta: ', (delta/1_000.0)];
 	const sleep_time = (FPS_ms-delta / 1_000.0);
 	if sleep_time > 0;
 		sleep:(FPS_ms-delta / 1_000.0);

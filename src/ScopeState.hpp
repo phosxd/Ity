@@ -129,12 +129,11 @@ const bool is_name_globally_free(const ScopeState& state, const std::string& nam
 
 // Gets the data for name in the current scope. Ensure the name exists in the current scope first.
 Variant* get_data(ScopeState& state, const std::string& name, Variant* default_value=nullptr) {
-	const auto& it = state.d.find(name);
-	if (it == state.d.end()) {
-		if (not default_value) emit_error(ERR_unexpected, {"GetData", "Failed."});
-		return default_value;
+	if (const auto& it = state.d.find(name); it != state.d.end()) {
+		return &it->second;
 	}
-	return &it->second;
+	if (not default_value) emit_error(ERR_unexpected, {"GetData", "Failed."});
+	return default_value;
 }
 
 

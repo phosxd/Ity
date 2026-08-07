@@ -201,6 +201,7 @@ Variant LIB_BI_tm_arr_map_erase(ScopeState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 
 	Variant* var = AnyCastV(Variant*,args[0].d);
+
 	// Throw error if the variant is a constant.
 	if (var->m == VariantMode_constant) {
 		emit_error(ERR_cannot_change_constant);
@@ -225,6 +226,39 @@ Variant LIB_BI_tm_arr_map_erase(ScopeState& _state, ARR_t& args) {
 		data.erase(key);
 	}
 
+	return VariantPresets.none;
+}
+
+
+Variant LIB_BI_tm_arr_append(ScopeState& _state, ARR_t& args) {
+	if (not expect_arg_count(args, 2)) return VariantPresets.none;
+	Variant* var = AnyCast(Variant*,args[0].d);
+
+	// Throw error if the variant is a constant.
+	if (var->m == VariantMode_constant) {
+		emit_error(ERR_cannot_change_constant);
+		return VariantPresets.none;
+	}
+
+	ARR_t& data = AnyCastV(ARR_t,var->d);
+	data.push_back(args[1]);
+	return VariantPresets.none;
+}
+
+
+Variant LIB_BI_tm_arr_reserve(ScopeState& _state, ARR_t& args) {
+	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {INT}, 1)) return VariantPresets.none;
+	Variant* var = AnyCast(Variant*,args[0].d);
+	const INT_t& count = AnyCast(INT_t,args[1].d);
+
+	// Throw error if the variant is a constant.
+	if (var->m == VariantMode_constant) {
+		emit_error(ERR_cannot_change_constant);
+		return VariantPresets.none;
+	}
+
+	ARR_t& data = AnyCastV(ARR_t,var->d);
+	data.reserve(count);
 	return VariantPresets.none;
 }
 
@@ -263,6 +297,27 @@ Variant LIB_BI_tm_map_has(ScopeState& _state, ARR_t& args) {
 }
 
 
+// Set key-value pair in the `MAP`.
+Variant LIB_BI_tm_map_set(ScopeState& _state, ARR_t& args) {
+	if (not expect_arg_count(args, 3)) return VariantPresets.none;
+	if (not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
+
+	// Get data & key.
+	MAP_t& data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d );
+	const STR_t& key = AnyCast(STR_t,args[1].d);
+
+	// Throw error if the variant is a constant.
+	if (var->m == VariantMode_constant) {
+		emit_error(ERR_cannot_change_constant);
+		return VariantPresets.none;
+	}
+
+	// Set new key-value pair.
+	data[key] = args[2];
+	return VariantPresets.none;
+}
+
+
 // Function.
 // ---------
 
@@ -296,11 +351,15 @@ const Variant LIB_BI {
 			MAP, (MAP_t){
 				{"REF:reassign", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_tm_ref_reassign)},
 
-				{"STR:raw",    NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_tm_str_raw)},
-				{"ARR:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
-				{"MAP:erase",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
-				{"MAP:keys",   NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_tm_map_keys)},
-				{"MAP:has",    NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_BI_tm_map_has)},
+				{"STR:raw",     NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_tm_str_raw)},
+				{"ARR:erase",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
+				{"ARR:append",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_append)},
+				{"ARR:reserve", NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_reserve)},
+
+				{"MAP:erase",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
+				{"MAP:keys",    NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_tm_map_keys)},
+				{"MAP:has",     NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_BI_tm_map_has)},
+				{"MAP:set",     NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_map_set)},
 
 				{"MAP(f):bind",  NativeFuncTrans(MAP,  (NativeFunc_t)LIB_BI_tm_func_bind)},
 		}, VariantMode_locked_type }},

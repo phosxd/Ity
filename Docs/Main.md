@@ -137,7 +137,7 @@ my_arr: -1; # Get last element. Same as this: my_arr:(length:[my_arr]-1)
 
 Similarly to the method for getting, you can overwrite an element using the accessor operator, but in conjunction with an assignment operator.
 
-Adding a brand new item, instead of overwriting an existing one is also straight forward. Just use the `+=` assignment operator on it with an array containing the item or multiple items your want to add.
+Adding a brand new item, instead of overwriting an existing one is also straight forward. Use the `append` type method to add an item to the end of the `ARR`. You can also use the `+=` assignment operator to add multiple items at once. However for single or few items `append` is more efficient, the assignment operator should not be used in frequent loops.
 
 ```python
 var ARR my_arr = [1,2,3]
@@ -147,15 +147,16 @@ my_arr:0 = 1;
 # my_arr = [-1, 2, 3]
 
 # Add to array.
-my_arr += [4];
-# my_arr = [-1, 2, 3, 4]
+my_arr.append:4;
+my_arr += [5, 6];
+# my_arr = [-1, 2, 3, 4, 5, 6]
 ```
 
 The final thing you need to be able to do with an array is to remove an element. This cannot be done with any operators, for this you must call the `erase` type method on the array.
 
 ```python
 var ARR my_arr = [1,2,3,4];
-my_arr.erase:[0]; # Remove first item.
+my_arr.erase:0; # Remove first item.
 # my_arr = [2,3,4]
 ```
 
@@ -186,7 +187,7 @@ my_map:'a'; # Does the same thing.
 
 To set the value of a key in a map, you can use the accessor operator in conjunction with the assignment operator if the key is already in the map. If the key-value pair does not already exist, this will not work.
 
-To add a brand new pair, instead of overwriting an existing one, use the `+=` assignment operator on it with a map containing the pair or multiple pairs your want to add. If there are any overlapping keys, they will be replaced.
+To add a brand new pair, instead of overwriting an existing one, use the `set` type method or the `+=` assignment operator to add multiple pairs. However for single or few elements `set` is more efficient, the assignment operator should not be used in frequent loops.
 
 ```python
 var MAP my_map = {'a',1, 'b',2};
@@ -196,21 +197,22 @@ my_map.a = 100;
 # my_map = {'a',100, 'b',2}
 
 # Add to map.
-my_map += {'c', 3};
-# my_map = {'a',100, 'b',2, 'c',3}
+my_map.set:['c',3];
+my_map += {'d',4, 'e',5};
+# my_map = {'a',100, 'b',2, 'c',3, 'd',4, 'e',5}
 ```
 
 If you want to check if a key exists in the map, you will need to use the `has` type method on the map.
 
 ```python
 const MAP my_map = {'a',1, 'b',2};
-my_map.has:['a']; # Returns true.
+my_map.has:'a'; # Returns true.
 ```
 
 Removing a key-value pair from a map also requires a type method. Use `erase` to do this.
 
 ```python
-my_map.erase:['a'];
+my_map.erase:'a';
 # my_map = {'b',2, 'c',3}
 ```
 
@@ -227,11 +229,11 @@ merge IO;
 var my_var = 100;
 const my_ref = @my_var; # "@" symbol indicates "point to this name in the scope".
 
-print:[~my_ref]; # Prints 100.
+print:~my_ref; # Prints 100.
 my_var = 101;
-print:[~my_ref]; # Prints 101.
+print:~my_ref; # Prints 101.
 my_ref = 99;
-print:[my_var]; # Prints 99.
+print:my_var; # Prints 99.
 
 # my_ref & my_var are essentially interchangable.
 ```
