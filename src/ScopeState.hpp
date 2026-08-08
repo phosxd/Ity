@@ -118,17 +118,18 @@ ScopeStateItem* raw_get_data(ScopeState& state, const size_t& hashed_name, Scope
 
 
 // Gets the data for name in the current scope. Returns `nullptr` or `default_value` if no data found.
-Variant* get_data(ScopeState& state, const std::string& name, Variant* default_value=nullptr) {
-	if (ScopeStateItem* item = raw_get_data(state, string_hasher(name)); item) return &item->var;
+Variant* get_data(ScopeState& state, const std::string& name, Variant* default_value=nullptr, size_t hashed_name=0) {
+	if (hashed_name == 0) hashed_name = string_hasher(name);
+	if (ScopeStateItem* item = raw_get_data(state, hashed_name); item) return &item->var;
 	return default_value;
 }
 
 
 // Gets the data for name in this scope or any scope above it. Returns `nullptr` or `default_value` if no data found.
-Variant* get_data_globally(ScopeState& state, const std::string& name, Variant* default_value=nullptr) {
-	if (Variant* var = get_data(state, name); var) return var;
+Variant* get_data_globally(ScopeState& state, const std::string& name, Variant* default_value=nullptr, size_t hashed_name=0) {
+	if (Variant* var = get_data(state, name, nullptr, hashed_name); var) return var;
 	else if (not state.p) return default_value;
-	return get_data_globally(*state.p, name);
+	return get_data_globally(*state.p, name, default_value, hashed_name);
 }
 
 
@@ -142,23 +143,25 @@ inline void raw_set_data(ScopeState& state, const size_t& hashed_name, const Var
 // If mode is dynamic type, the set "type" & the actual type of "data" can be different.
 // If mode is constant, will throw an error when if the name is already taken in the current scope.
 // If mode is locked type, will throw an error if the data type does not match the given type.
-void set_data(ScopeState& state, const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode) {
+void set_data(ScopeState& state, const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode, size_t hashed_name=0) {
 	// Output function call in debug mode...
 	#ifdef RUNTIME_DEBUG
 	if (debug_flags.data_assign && not exists_in_vec(illegal_print_names, name)) {
 		std::cout << ANSI::blue << "Data Assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
 	}
 	#endif
+	if (hashed_name == 0) hashed_name = string_hasher(name);
 
-	if (const Variant* var = get_data(state, name); var && var->m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
+	if (const Variant* var = get_data(state, name, nullptr, hashed_name); var && var->m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
 	if (mode != VariantMode_dynamic_type && type != data.t) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data.t), get_variant_type_name(type)}); // Throw error if data is not applicable.
-	raw_set_data(state, string_hasher(name), Variant{data.t, data.d, mode});
+
+	raw_set_data(state, hashed_name, Variant{data.t, data.d, mode});
 }
 
 
-void set_data_globally(ScopeState& state, const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode) {
-	if (get_data(state, name)) set_data(state, name, type, data, mode);
-	else if (state.p) return set_data_globally(*state.p, name, type, data, mode);
+void set_data_globally(ScopeState& state, const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode, const size_t& hashed_name=0) {
+	if (get_data(state, name)) set_data(state, name, type, data, mode, hashed_name);
+	else if (state.p) return set_data_globally(*state.p, name, type, data, mode, hashed_name);
 }
 
 

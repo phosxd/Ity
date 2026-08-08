@@ -6,6 +6,7 @@ void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const unsigne
 		false,     // Multi.
 
 		(STR_t)"", // For loop item var name.
+		(size_t)0, // For loop item hashed var name.
 		(ARR_t){
 			VariantPresets.empty, // For loop iterable.
 			VariantPresets.empty, // For loop current item in iterable.
@@ -28,6 +29,7 @@ void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const unsigne
 			return;
 		}
 
+		token.meta[2] = string_hasher(name);
 		token.meta[1] = std::move(name);
 		token.args = tokenize_expr_from_inst_args(token, 3);
 	}
@@ -42,19 +44,19 @@ void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const unsigne
 
 
 void INST_Loop_for_loop(ScopeState& state, InstToken& token, bool& value) {
-	const unsigned int& index = AnyCast(unsigned int,token.meta[3]);
+	const unsigned int& index = AnyCast(unsigned int,token.meta[4]);
 	// Get iterable.
-	Variant& iterable = AnyCastV(ARR_t,token.meta[2])[0];
+	Variant& iterable = AnyCastV(ARR_t,token.meta[3])[0];
 	if (iterable.t == PLACEHOLDER) {
 		iterable = *expr_exec(state, token.expr);
-		AnyCastV(ARR_t,token.meta[2])[0] = iterable;
+		AnyCastV(ARR_t,token.meta[3])[0] = iterable;
 	}
 
 	// Get item from integer.
 	if (iterable.t == INT) {
 		if (AnyCast(INT_t,iterable.d) > (INT_t)index) {
 			value = true;
-			AnyCastV(ARR_t,token.meta[2])[1] = Variant{INT, (INT_t)index};
+			AnyCastV(ARR_t,token.meta[3])[1] = Variant{INT, (INT_t)index};
 		}
 	}
 
@@ -63,7 +65,7 @@ void INST_Loop_for_loop(ScopeState& state, InstToken& token, bool& value) {
 		const STR_t& data = AnyCast(STR_t,iterable.d);
 		if (data.size() > index) {
 			value = true;
-			AnyCastV(ARR_t,token.meta[2])[1] = Variant{STR, (STR_t)(std::string(1,data[index]))};
+			AnyCastV(ARR_t,token.meta[3])[1] = Variant{STR, (STR_t)(std::string(1,data[index]))};
 		}
 	}
 
@@ -72,7 +74,7 @@ void INST_Loop_for_loop(ScopeState& state, InstToken& token, bool& value) {
 		ARR_t& data = AnyCastV(ARR_t,iterable.d);
 		if (data.size() > index) {
 			value = true;
-			AnyCastV(ARR_t,token.meta[2])[1] = data[index];
+			AnyCastV(ARR_t,token.meta[3])[1] = data[index];
 		}
 	}
 
@@ -91,7 +93,7 @@ void INST_Loop_for_loop(ScopeState& state, InstToken& token, bool& value) {
 			if (result.t == ARR) {
 				if (const ARR_t& arr = AnyCast(ARR_t,result.d); arr.size() == 2 && arr[0].t == BOOL) {
 					value = AnyCast(bool,arr[0].d);
-					AnyCastV(ARR_t,token.meta[2])[1] = arr[1];
+					AnyCastV(ARR_t,token.meta[3])[1] = arr[1];
 				}
 			}
 		}
@@ -130,6 +132,7 @@ void INST_Loop_exec(ScopeState& state, InstToken& token) {
 	}
 
 
+	const STR_t& var_name = AnyCast(STR_t,token.meta[1]);
 	const bool multi = (token.declarative_composite || token.symbol == InstSymbol_for);
 
 	// Jump past instructions in this composite if failed.
@@ -143,8 +146,8 @@ void INST_Loop_exec(ScopeState& state, InstToken& token) {
 		}
 
 		// Reset token state.
-		token.meta[2] = (ARR_t){VariantPresets.empty, VariantPresets.empty};
-		token.meta[3] = (unsigned int)0;
+		token.meta[3] = (ARR_t){VariantPresets.empty, VariantPresets.empty};
+		token.meta[4] = (unsigned int)0;
 		return;
 	}
 
@@ -156,8 +159,8 @@ void INST_Loop_exec(ScopeState& state, InstToken& token) {
 
 		if (token.symbol == InstSymbol_for) {
 			// Give warning if the var name is shadowing another var name.
-			if (get_data_globally(*(state.p), AnyCast(STR_t,token.meta[1]))) {
-				emit_warn(ERR_name_is_shadowed, {AnyCast(STR_t,token.meta[1])});
+			if (get_data_globally(*(state.p), var_name, nullptr, AnyCast(size_t,token.meta[2]))) {
+				emit_warn(ERR_name_is_shadowed, {var_name});
 			}
 		}
 	}
@@ -165,9 +168,10 @@ void INST_Loop_exec(ScopeState& state, InstToken& token) {
 
 	// If for loop, set the variable.
 	if (token.symbol == InstSymbol_for && value) {
-		set_data(state, AnyCast(STR_t,token.meta[1]), AnyCastV(ARR_t,token.meta[2])[1].t, std::move(AnyCastV(ARR_t,token.meta[2])[1]), VariantMode_dynamic_type);
-		AnyCastV(ARR_t,token.meta[2])[1] = VariantPresets.empty;
-		token.meta[3] = AnyCast(unsigned int,token.meta[3]) + 1;
+		Variant& var = AnyCastV(ARR_t,token.meta[3])[1];
+		set_data(state, var_name, var.t, std::move(var), VariantMode_dynamic_type, AnyCast(size_t,token.meta[2]));
+		AnyCastV(ARR_t,token.meta[3])[1] = VariantPresets.empty;
+		token.meta[4] = AnyCast(unsigned int,token.meta[4]) + 1;
 	}
 }
 
@@ -176,8 +180,8 @@ void INST_Loop_exec(ScopeState& state, InstToken& token) {
 void INST_Loop_emergency_scope_exit(InstToken*& token) {
 	// Reset token state.
 	token->meta[0] = false;
-	token->meta[2] = (ARR_t){VariantPresets.empty, VariantPresets.empty};
-	token->meta[3] = (unsigned int)0;
+	token->meta[3] = (ARR_t){VariantPresets.empty, VariantPresets.empty};
+	token->meta[4] = (unsigned int)0;
 }
 
 

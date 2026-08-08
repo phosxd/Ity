@@ -70,7 +70,7 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 	}
 
 	// Set token properties.
-	token.meta = {name, op, type, mode};
+	token.meta = {name, string_hasher(name), op, type, mode};
 	token.expr = expr_tokenize(expr, ln-ln_, col-col_);
 }
 
@@ -78,16 +78,16 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 
 
 void INST_Var_exec(ScopeState& state, InstToken& token) {
-	const std::string& name = AnyCast(std::string,token.meta[0]);
+	const std::string name = AnyCast(std::string,token.meta[0]);
+	const size_t& hashed_name = AnyCast(size_t,token.meta[1]);
 
-	// Give error if the var name is not free on the current scope.
-	if (get_data(state, name)) {
-		emit_error(ERR_name_is_taken, {name});
-		return;
-	}
-
-	// Give warning if the var name is shadowing another var name.
-	if (get_data_globally(state, name)) {
+	if (get_data_globally(state, name, nullptr, hashed_name)) {
+		// Give error if the var name is not free on the current scope.
+		if (raw_get_data(state, hashed_name)) {
+			emit_error(ERR_name_is_taken, {name});
+			return;
+		}
+		// Give warning if the var name is shadowing another var name.
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
@@ -112,7 +112,7 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 	}
 
 	// Get variable type & infer it if needed.
-	VariantType type = AnyCastV(VariantType,token.meta[2]);
+	VariantType type = AnyCastV(VariantType,token.meta[3]);
 	if (type == INFERRED) type = var.t;
 	// Set value to sane default if not explicitly set.
 	else if (var.t == NONE && var.t != type) {
@@ -128,7 +128,7 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 		}
 	}
 	// Set data.
-	set_data(state, name, type, var, AnyCast(VariantMode,token.meta[3]));
+	set_data(state, name, type, var, AnyCast(VariantMode,token.meta[4]), hashed_name);
 }
 
 

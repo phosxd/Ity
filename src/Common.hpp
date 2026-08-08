@@ -58,6 +58,7 @@ using VariantData = std::variant<
 	MAP_t,
 
 	// Internal types.
+	size_t,
 	uint16_t,
 	VariantType,
 	VariantMode,
