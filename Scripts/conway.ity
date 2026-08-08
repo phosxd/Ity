@@ -112,20 +112,23 @@ while true;
 	# Tick once.
 	GAME.next:[];
 
-	# Clear screen.
-	buff_out:'\e[H\e[0J';
-	buff_out:(ANSI.reset);
-
-	# Print world...
+	# Render world...
+	var STR frame;
 	var i = -1;
 	for cell in GAME.cells; i+=1;
 		if is_cell_border:i; continue; /;
-		if cell == 1; buff_out:CELL_ON;  /;
-		else;         buff_out:CELL_OFF; /;
+		if cell == 1; frame += CELL_ON;  /;
+		else;         frame += CELL_OFF; /;
 		if GAME.cell_x:(i+2) == 0;
-			buff_out:'\n';
+			frame += '\n';
 		/;
 	/;
+	# Clear screen then print frame.
+	out:[
+		'\e[H\e[0J',
+		(ANSI.reset),
+		frame,
+	];
 
 
 	# Calculate time taken to run.

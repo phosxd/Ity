@@ -37,6 +37,7 @@ inline const VariantType get_variant_type_from_name(const std::string& name) {
 struct Variant;
 struct ScopeState;
 struct CompositeItem;
+struct OpDef;
 
 using INT_t = int32_t;
 using UINT_t = uint32_t;
@@ -63,10 +64,10 @@ using VariantData = std::variant<
 	VariantType,
 	VariantMode,
 	NativeFunc_t,
-	OpSymbol,
 
 	CompositeItem*,
-	std::vector<CompositeItem>*
+	std::vector<CompositeItem>*,
+	const OpDef*
 >;
 
 using AnyMap_t = std::unordered_map<std::string, VariantData>;
@@ -132,7 +133,7 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 
 	switch (var.t) {
 		// Meta types.
-		case OP:   {os << "OP:"   << (uint8_t)AnyCast(OpSymbol,var.d); break;}
+		case OP:   {os << "OP:"   << AnyCast(const OpDef*,var.d); break;}
 		case TREF: {os << "TREF:" << AnyCast(STR_t,var.d); break;}
 
 		// Real types.

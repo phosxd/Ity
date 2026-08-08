@@ -411,7 +411,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 						result_token.seq.push_back(ExprToken{
 							ln_offset, col_offset,
 							ExprTokenType_variant,
-							{OP, OpSymbol_access},
+							{OP, find_OpDef_from_sym(OpSymbol_access)},
 						});
 						buffer.clear();
 						next_ref_is_str = true;
@@ -434,7 +434,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				result_token.seq.push_back(ExprToken{
 					ln_offset, col_offset+1,
 					ExprTokenType_variant,
-					{OP, op_def->sym},
+					{OP, std::move(op_def)},
 				});
 				buffer.clear();
 				is_operator = false;
@@ -561,8 +561,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 	Variant pre_exec_result = VariantPresets.empty;
 	Variant op_result = VariantPresets.empty;
 
-	const Operation* op = nullptr;
-	OpSymbol op_symbol;
+	const OpDef* op_def = nullptr;
 
 	for (size_t i = 0; i < seq_len; i++) {
 		ExprToken& item = token.seq[i];
@@ -570,24 +569,24 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 		current_column = col_ + item.col;
 
 		// Execute operator.
-		if (op) {
+		if (op_def) {
 			// Throw error if there is no first operand.
 			if (not result) {
 				emit_error(ERR_missing_operand);
 				return result;
 			}
 			// Run operator pre-exec.
-			if (op->pre_exec) {
+			if (op_def->op->pre_exec) {
 				// Skip evaluation of second Variant if pre_exec says so...
 				bool eval_second_operand = true;
 				pre_exec_result.t = PLACEHOLDER; // Reset the type for reuse.
 				// Run pre-executor.
-				op->pre_exec(state, result, op_symbol, eval_second_operand, pre_exec_result, result);
+				op_def->op->pre_exec(state, result, op_def->sym, eval_second_operand, pre_exec_result, result);
 				if (not eval_second_operand) {
 					if (pre_exec_result.t != PLACEHOLDER) {
 						temporary_pool.push_back(pre_exec_result); result = &temporary_pool.back();
 					}
-					op = nullptr;
+					op_def = nullptr;
 					continue;
 				}
 			}
@@ -603,13 +602,13 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 			}
 
 			op_result.t = PLACEHOLDER; // Reset the type for reuse.
-			op->exec(state, result, second, op_symbol, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
+			op_def->op->exec(state, result, second, op_def->sym, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
 			// If we reveive a direct value, set the result to that.
 			if (op_result.t != PLACEHOLDER) {
 				temporary_pool.push_back(op_result); result = &temporary_pool.back();
 			}
 
-			op = nullptr;
+			op_def = nullptr;
 			continue;
 		}
 
@@ -617,8 +616,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 		else if (item.t == ExprTokenType_variant) {
 			// Get operator.
 			if (item.var.t == OP) {
-				op_symbol = AnyCast(OpSymbol,item.var.d);
-				op = find_OpDef_from_sym(op_symbol)->op;
+				op_def = AnyCast(const OpDef*,item.var.d);
 			}
 			// Get variant.
 			else result = resolve_variant(state, item.var);
