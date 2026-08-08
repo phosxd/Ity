@@ -97,9 +97,9 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 
 	if (token.symbol == InstSymbol_arg) {
 		// Throw error if this scope holds no arguments.
-		if (Variant* args_ptr = get_data(state, "__AG"); args_ptr) {
+		if (ScopeStateItem* args_it = raw_get_data(state, HASHED_NAMES.__AG); args_it) {
 			// Get argument if available.
-			ARR_t& scope_args = AnyCastV(ARR_t,args_ptr->d);
+			ARR_t& scope_args = AnyCastV(ARR_t,args_it->var.d);
 			if (not scope_args.empty()) {
 				var = scope_args.front();
 				scope_args.erase(scope_args.begin());

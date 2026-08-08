@@ -20,7 +20,7 @@ ScopeState* get_state_at_id(ScopeState& state, unsigned int target_id) {
 
 
 // Create a new scope state.
-ScopeState create_new_scope_state(const MAP_t& data={}, ScopeState* parent=nullptr, UINT_t id=0) {
+ScopeState create_new_scope_state(const ScopeMap_t& data={}, ScopeState* parent=nullptr, UINT_t id=0) {
 	if (id == 0) {
 		ScopeState_current_id += 1;
 		id = ScopeState_current_id;
@@ -102,18 +102,24 @@ void restore_ongoing_scopes() {
 // This does *not* account for the data inside the state's parent.
 const unsigned int get_state_size(const ScopeState& state) {
 	unsigned int final_size = 0;
-	for (const auto& i : state.d) {
-		final_size += i.first.size() + sizeof(i.second.t) + sizeof(i.second.m) + get_variant_size(i.second);
+	for (const ScopeStateItem& i : state.d) {
+		final_size += sizeof(i.key) + sizeof(i.var.t) + sizeof(i.var.m) + get_variant_size(i.var);
 	}
 	return final_size;
 }
 
 
+ScopeStateItem* raw_get_data(ScopeState& state, const size_t& hashed_name, ScopeStateItem* default_value=nullptr) {
+	for (ScopeStateItem& item : state.d) {
+		if (item.key == hashed_name) return &item;
+	}
+	return default_value;
+}
+
+
 // Gets the data for name in the current scope. Returns `nullptr` or `default_value` if no data found.
 Variant* get_data(ScopeState& state, const std::string& name, Variant* default_value=nullptr) {
-	if (const auto& it = state.d.find(name); it != state.d.end()) {
-		return &it->second;
-	}
+	if (ScopeStateItem* item = raw_get_data(state, string_hasher(name)); item) return &item->var;
 	return default_value;
 }
 
@@ -123,6 +129,12 @@ Variant* get_data_globally(ScopeState& state, const std::string& name, Variant* 
 	if (Variant* var = get_data(state, name); var) return var;
 	else if (not state.p) return default_value;
 	return get_data_globally(*state.p, name);
+}
+
+
+inline void raw_set_data(ScopeState& state, const size_t& hashed_name, const Variant& data) {
+	if (ScopeStateItem* item = raw_get_data(state, hashed_name); item) item->var = data;
+	else state.d.push_back(ScopeStateItem(hashed_name, data));
 }
 
 
@@ -140,7 +152,7 @@ void set_data(ScopeState& state, const std::string& name, const VariantType& typ
 
 	if (const Variant* var = get_data(state, name); var && var->m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
 	if (mode != VariantMode_dynamic_type && type != data.t) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data.t), get_variant_type_name(type)}); // Throw error if data is not applicable.
-	state.d[name] = Variant{data.t, data.d, mode};
+	raw_set_data(state, string_hasher(name), Variant{data.t, data.d, mode});
 }
 
 
@@ -158,8 +170,9 @@ void merge_module(ScopeState& state, const MAP_t& map) {
 		const std::string& prop_name = i.first;
 
 		if (prop_name == "__tm") {
-			if (not get_data(state, "__tm__")) state.d["__tm__"] = i.second;
-			else state.d["__tm__"].d = (AnyCast(MAP_t,get_data(state, "__tm__")->d) + AnyCast(MAP_t,i.second.d));
+			Variant* data = get_data(state, "__tm__");
+			if (not data) raw_set_data(state, HASHED_NAMES.__tm__, i.second);
+			else data->d = (AnyCast(MAP_t,data->d) + AnyCast(MAP_t,i.second.d));
 		}
 
 		if (prop_name.starts_with("__")) continue; // Skip private members.
@@ -171,8 +184,9 @@ void merge_module(ScopeState& state, const MAP_t& map) {
 void import_module(ScopeState& state, const std::string& name, const MAP_t& map) {
 	const auto& it = map.find("__tm");
 	if (it != map.end()) {
-		if (get_data(state, "__tm__")) state.d["__tm__"] = it->second;
-		else state.d["__tm__"].d = (AnyCast(MAP_t,get_data(state, "__tm__")->d) + AnyCast(MAP_t,it->second.d));
+		Variant* data = get_data(state, "__tm__");
+		if (not data) raw_set_data(state, HASHED_NAMES.__tm__, it->second);
+		else data->d = (AnyCast(MAP_t,data->d) + AnyCast(MAP_t,it->second.d));
 	}
 
 	set_data(state, name, MAP, Variant{MAP, map}, VariantMode_constant);

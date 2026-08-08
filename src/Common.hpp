@@ -514,10 +514,35 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 
 
 #pragma pack(1)
+struct ScopeStateItem {
+	const size_t key;
+	Variant var;
+};
+
+
+using ScopeMap_t = std::vector<ScopeStateItem>;
+
+
+#pragma pack(1)
 struct ScopeState {
 	ScopeState* p = nullptr;  // Parent scope state.
-	MAP_t d;                  // Scope data.
+	ScopeMap_t d;             // Scope data.
 	UINT_t id;
+};
+
+
+const std::hash<std::string> string_hasher;
+
+
+struct HASHED_NAMES_struct {
+	const size_t __AG;
+	const size_t __R;
+	const size_t __tm__;
+};
+const HASHED_NAMES_struct HASHED_NAMES {
+	string_hasher("__AG"),
+	string_hasher("__R"),
+	string_hasher("__tm__"),
 };
 
 

@@ -390,13 +390,13 @@ void start_shell(int argc, char* argv[]) {
 
 	// Initialize state.
 	ScopeState state = create_new_scope_state({
-		{"__VERSION__",                Variant{ARR,  (ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}}, VariantMode_constant}},
-		{"__VERSION_STRING__",         Variant{STR,  (STR_t)ItyVersionString, VariantMode_constant}},
-		{"__OS_NAME__",                Variant{STR,  (STR_t)OSName, VariantMode_constant}},
-		{"__SCRIPT_FILE_NAME__",       Variant{STR,  (STR_t)split_source_script.back(), VariantMode_constant}},
-		{"__SCRIPT_START_TIME_MS__",   Variant{INT,  (INT_t)DurCast_us(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
-		{"__CMD_ARGS__",               Variant{ARR,  (ARR_t)script_args, VariantMode_constant}},
-		{"__HAS_RUNTIME_DEBUG__",      Variant(BOOL, (bool)has_runtime_debug, VariantMode_constant)},
+		{string_hasher("__VERSION__"),                Variant{ARR,  (ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}}, VariantMode_constant}},
+		{string_hasher("__VERSION_STRING__"),         Variant{STR,  (STR_t)ItyVersionString, VariantMode_constant}},
+		{string_hasher("__OS_NAME__"),                Variant{STR,  (STR_t)OSName, VariantMode_constant}},
+		{string_hasher("__SCRIPT_FILE_NAME__"),       Variant{STR,  (STR_t)split_source_script.back(), VariantMode_constant}},
+		{string_hasher("__SCRIPT_START_TIME_MS__"),   Variant{INT,  (INT_t)DurCast_us(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
+		{string_hasher("__CMD_ARGS__"),               Variant{ARR,  (ARR_t)script_args, VariantMode_constant}},
+		{string_hasher("__HAS_RUNTIME_DEBUG__"),      Variant(BOOL, (bool)has_runtime_debug, VariantMode_constant)},
 	});
 	// Merge built-in module.
 	LIB_BI_init(state, (ARR_t){});

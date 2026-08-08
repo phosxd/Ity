@@ -40,9 +40,9 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 
 	// Create an alternate scope, for use inside the function.
 	ScopeState func_state = create_new_scope_state(
-		(MAP_t){
-			{"__AG", std::move(args)},
-			{"__R",  Variant{func_return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
+		(ScopeMap_t){
+			{HASHED_NAMES.__AG, std::move(args)},
+			{HASHED_NAMES.__R,  Variant{func_return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
 		},
 		get_state_at_id(state, AnyCast(UINT_t,func.at("__si").d)) // Use function definition scope as the parent.
 	);
@@ -58,7 +58,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 
 
 	// Get result & check if return type matches.
-	const Variant& func_result = func_state.d["__R"];
+	const Variant& func_result = raw_get_data(func_state, HASHED_NAMES.__R)->var;
 	if (func_result.t != func_return_type && func_return_type != ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func_return_type)});
 	// Return result.
 	//call_trace.pop_back(); call_trace.pop_back();
@@ -67,7 +67,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 	if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
 	#endif
 
-	args = std::move(func_state.d["__AG"]);
+	args = std::move(raw_get_data(func_state, HASHED_NAMES.__AG)->var);
 	return func_result;
 }
 
@@ -461,14 +461,15 @@ Variant* resolve_variant(ScopeState& state, Variant& item) {
 		const STR_t& name = AnyCast(STR_t,item.d);
 		const STR_t& real_name = trim_left(trim_left(name,'@'),'~');
 
+		// Get variable.
+		Variant* ptr = get_data_globally(state, real_name);
+
 		// Throw error if variable is undefined.
-		if (not get_data_globally(state, real_name)) {
+		if (not ptr) {
 			emit_error(ERR_name_does_not_exist, {real_name});
 			return &item;
 		}
 
-		// Get variable.
-		Variant* ptr = get_data_globally(state, real_name);
 		// Create named ref.
 		if (name[0] == '@') {temporary_pool.push_back(Variant{REF, real_name}); return &temporary_pool.back();}
 		// Deref pointer or named reference.
