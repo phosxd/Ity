@@ -156,7 +156,7 @@ void INST_Loop_exec(ScopeState& state, InstToken& token) {
 
 		if (token.symbol == InstSymbol_for) {
 			// Give warning if the var name is shadowing another var name.
-			if (not is_name_globally_free(*(state.p), AnyCast(STR_t,token.meta[1]))) {
+			if (get_data_globally(*(state.p), AnyCast(STR_t,token.meta[1]))) {
 				emit_warn(ERR_name_is_shadowed, {AnyCast(STR_t,token.meta[1])});
 			}
 		}

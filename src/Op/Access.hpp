@@ -30,16 +30,18 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 
 
 	// Try to access type method.
-	if (o2->t == STR && not is_name_globally_free(state, "__tm__")) {
-		// Find & return method.
-		MAP_t& methods = AnyCastV(MAP_t,get_data_globally(state, "__tm__")->d);
-		const STR_t& method_name = AnyCast(STR_t,second->d);
-		// Try pointer/reference type methods first.
-		if (first->t == PTR || first->t == REF) {
-			if (OP_Access_type_method(get_variant_type_name(first->t), method_name, methods, first, result)) return;
+	if (o2->t == STR) {
+		if (Variant* type_methods = get_data_globally(state, "__tm__"); type_methods) {
+			// Find & return method.
+			MAP_t& methods = AnyCastV(MAP_t,type_methods->d);
+			const STR_t& method_name = AnyCast(STR_t,second->d);
+			// Try pointer/reference type methods first.
+			if (first->t == PTR || first->t == REF) {
+				if (OP_Access_type_method(get_variant_type_name(first->t), method_name, methods, first, result)) return;
+			}
+			// Try.
+			if (OP_Access_type_method(get_variant_type_name(o1->t), method_name, methods, o1, result)) return;
 		}
-		// Try.
-		if (OP_Access_type_method(get_variant_type_name(o1->t), method_name, methods, o1, result)) return;
 	}
 
 

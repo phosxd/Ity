@@ -11,13 +11,13 @@ void INST_Func_exec(ScopeState& state, InstToken& token) {
 	}
 
 	// Give error if the var name is not free on the current scope.
-	if (not is_name_free(state, name)) {
+	if (get_data(state, name)) {
 		emit_error(ERR_name_is_taken, {name});
 		return;
 	}
 
 	// Give warning if the var name is shadowing another var name.
-	if (not is_name_globally_free(state, name)) {
+	if (get_data_globally(state, name)) {
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 

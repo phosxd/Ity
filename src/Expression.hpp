@@ -462,7 +462,7 @@ Variant* resolve_variant(ScopeState& state, Variant& item) {
 		const STR_t& real_name = trim_left(trim_left(name,'@'),'~');
 
 		// Throw error if variable is undefined.
-		if (is_name_globally_free(state, real_name)) {
+		if (not get_data_globally(state, real_name)) {
 			emit_error(ERR_name_does_not_exist, {real_name});
 			return &item;
 		}

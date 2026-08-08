@@ -81,13 +81,13 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 	const std::string& name = AnyCast(std::string,token.meta[0]);
 
 	// Give error if the var name is not free on the current scope.
-	if (not is_name_free(state, name)) {
+	if (get_data(state, name)) {
 		emit_error(ERR_name_is_taken, {name});
 		return;
 	}
 
 	// Give warning if the var name is shadowing another var name.
-	if (not is_name_globally_free(state, name)) {
+	if (get_data_globally(state, name)) {
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
@@ -97,15 +97,17 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 
 	if (token.symbol == InstSymbol_arg) {
 		// Throw error if this scope holds no arguments.
-		if (is_name_free(state, "__AG")) {
+		if (Variant* args_ptr = get_data(state, "__AG"); args_ptr) {
+			// Get argument if available.
+			ARR_t& scope_args = AnyCastV(ARR_t,args_ptr->d);
+			if (not scope_args.empty()) {
+				var = scope_args.front();
+				scope_args.erase(scope_args.begin());
+			}
+		}
+		else {
 			emit_error(ERR_no_args_available);
 			return;
-		}
-		// Get argument if available.
-		ARR_t& scope_args = AnyCastV(ARR_t,get_data(state, "__AG")->d);
-		if (not scope_args.empty()) {
-			var = scope_args.front();
-			scope_args.erase(scope_args.begin());
 		}
 	}
 

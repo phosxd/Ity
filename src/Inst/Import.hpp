@@ -11,15 +11,15 @@ void INST_Import_exec(ScopeState& state, InstToken& token) {
 	// Get lib name from variable.
 	if (lib_name[0] == '@') {
 		const std::string& var_name = lib_name.substr(1);
-		// Throw error if variable name is bogus.
-		if (is_name_globally_free(state, var_name)) {
+		Variant* var_ptr = get_data_globally(state, var_name);
+		// Throw error if var name is bogus.
+		if (not var_ptr) {
 			emit_error(ERR_name_does_not_exist, {var_name});
 			return;
 		}
-		// Get variable.
-		Variant var = *get_data_globally(state, var_name);
-		// Convert to string if variable is not a string.
-		if (var.t != STR) var.d = var_to_str(var);
+		Variant var = *var_ptr;
+		// Convert to string if var is not a string.
+		if (var_ptr->t != STR) var.d = var_to_str(var);
 		// Set lib name to look for as the variable value.
 		lib_name = AnyCast(STR_t,var.d);
 	}
@@ -34,7 +34,7 @@ void INST_Import_exec(ScopeState& state, InstToken& token) {
 	}
 
 	// Throw error if the name is already declared in this scope.
-	if (not is_name_free(state, applied_name)) {
+	if (get_data(state, applied_name)) {
 		emit_error(ERR_name_is_taken, {applied_name});
 		return;
 	}

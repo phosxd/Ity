@@ -4,8 +4,6 @@
 #include "ScriptErrors.hpp"
 
 UINT_t ScopeState_current_id = 0;
-// Bunch of scopes that can be used for later.
-std::vector<ScopeState> ScopeState_pool = {};
 
 
 ScopeState* get_state_at_id(ScopeState& state, unsigned int target_id) {
@@ -22,7 +20,7 @@ ScopeState* get_state_at_id(ScopeState& state, unsigned int target_id) {
 
 
 // Create a new scope state.
-ScopeState create_new_scope_state(const MAP_t& data = {}, ScopeState* parent = nullptr, UINT_t id = 0) {
+ScopeState create_new_scope_state(const MAP_t& data={}, ScopeState* parent=nullptr, UINT_t id=0) {
 	if (id == 0) {
 		ScopeState_current_id += 1;
 		id = ScopeState_current_id;
@@ -111,39 +109,19 @@ const unsigned int get_state_size(const ScopeState& state) {
 }
 
 
-// Checks if the name is available in this scope.
-const bool is_name_free(const ScopeState& state, const std::string& name) {
-	return state.d.find(name) == state.d.end();
-}
-
-
-// Checks if the name is available in this scope or any scopes above it.
-const bool is_name_globally_free(const ScopeState& state, const std::string& name) {
-	if (state.d.find(name) == state.d.end()) {
-		if (state.p) return is_name_globally_free(*(state.p), name);
-		return true;
-	}
-	return false;
-}
-
-
-// Gets the data for name in the current scope. Ensure the name exists in the current scope first.
+// Gets the data for name in the current scope. Returns `nullptr` or `default_value` if no data found.
 Variant* get_data(ScopeState& state, const std::string& name, Variant* default_value=nullptr) {
 	if (const auto& it = state.d.find(name); it != state.d.end()) {
 		return &it->second;
 	}
-	if (not default_value) emit_error(ERR_unexpected, {"GetData", "Failed."});
 	return default_value;
 }
 
 
-// Gets the data for name in this scope or any scope above it. Ensure the name exists in one of the scopes (use is_name_globally_free).
+// Gets the data for name in this scope or any scope above it. Returns `nullptr` or `default_value` if no data found.
 Variant* get_data_globally(ScopeState& state, const std::string& name, Variant* default_value=nullptr) {
-	if (not is_name_free(state, name)) return get_data(state, name);
-	else if (not state.p) {
-		if (not default_value) emit_error(ERR_unexpected, {"GetDataG", "Failed."});
-		return default_value;
-	}
+	if (Variant* var = get_data(state, name); var) return var;
+	else if (not state.p) return default_value;
 	return get_data_globally(*state.p, name);
 }
 
@@ -160,14 +138,14 @@ void set_data(ScopeState& state, const std::string& name, const VariantType& typ
 	}
 	#endif
 
-	if (not is_name_free(state, name) && get_data(state, name)->m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
+	if (const Variant* var = get_data(state, name); var && var->m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
 	if (mode != VariantMode_dynamic_type && type != data.t) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data.t), get_variant_type_name(type)}); // Throw error if data is not applicable.
 	state.d[name] = Variant{data.t, data.d, mode};
 }
 
 
 void set_data_globally(ScopeState& state, const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode) {
-	if (not is_name_free(state, name)) set_data(state, name, type, data, mode);
+	if (get_data(state, name)) set_data(state, name, type, data, mode);
 	else if (state.p) return set_data_globally(*state.p, name, type, data, mode);
 }
 
@@ -180,7 +158,7 @@ void merge_module(ScopeState& state, const MAP_t& map) {
 		const std::string& prop_name = i.first;
 
 		if (prop_name == "__tm") {
-			if (is_name_free(state, "__tm__")) state.d["__tm__"] = i.second;
+			if (not get_data(state, "__tm__")) state.d["__tm__"] = i.second;
 			else state.d["__tm__"].d = (AnyCast(MAP_t,get_data(state, "__tm__")->d) + AnyCast(MAP_t,i.second.d));
 		}
 
@@ -193,7 +171,7 @@ void merge_module(ScopeState& state, const MAP_t& map) {
 void import_module(ScopeState& state, const std::string& name, const MAP_t& map) {
 	const auto& it = map.find("__tm");
 	if (it != map.end()) {
-		if (is_name_free(state, "__tm__")) state.d["__tm__"] = it->second;
+		if (get_data(state, "__tm__")) state.d["__tm__"] = it->second;
 		else state.d["__tm__"].d = (AnyCast(MAP_t,get_data(state, "__tm__")->d) + AnyCast(MAP_t,it->second.d));
 	}
 

@@ -55,13 +55,6 @@ Variant LIB_BI_sleep(ScopeState& _state, const ARR_t& args) {
 }
 
 
-// Return a copy of the current scope state.
-Variant LIB_BI_get_state(ScopeState& state, const ARR_t& args) {
-	if (not expect_arg_count(args, 0)) return VariantPresets.none;
-	return Variant{MAP, state.d};
-}
-
-
 // Return the type of the given Variant, in string form.
 Variant LIB_BI_type_name(ScopeState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
@@ -389,7 +382,6 @@ const Variant LIB_BI {
 
 		{"system",     NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_system)},
 		{"sleep",      NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_sleep)},
-		{"get_state",  NativeFuncTrans(MAP,   (NativeFunc_t)LIB_BI_get_state)},
 		{"type_name",  NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_type_name)},
 		{"type",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type)},
 		{"length",     NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_length)},
