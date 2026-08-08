@@ -17,7 +17,13 @@ if length:[__CMD_ARGS__] > 1;
 /;
 
 # Get world seed.
-const SEED = prompt:'Set seed (default 0): ' -> INT;
+var INT SEED;
+var SEED_in = prompt:'Set seed (default 0): ';
+if length:SEED_in == 0; SEED_in = '0'; /;
+for ch in SEED_in;
+	SEED += 1;
+	SEED *= (ch.raw:[]); # Convert character to ASCII code & multiply that with the seed.
+/;
 set_seed:SEED;
 
 
@@ -26,7 +32,13 @@ func NONE _game_init;
 	# Populate the world...
 	for y in WORLD_SIZE.y;
 		for x in WORLD_SIZE.x;
-			GAME.cells.append:(rand:[0,1]);
+			# If boundary, always set to 0.
+			if x == 0 || (x == (WORLD_SIZE.x-1))
+			|| (y == 0) || (y == (WORLD_SIZE.y-1));
+				GAME.cells.append:0;
+			/;
+			# Otherwise set to random state.
+			else; GAME.cells.append:(rand:[0,1]); /;
 		/;
 	/;
 	# Precalculate edges.
@@ -42,33 +54,22 @@ func NONE _game_next;
 	var x = 0;
 	var buf = GAME.cells; # Copy cells into writable buffer.
 	for i in GAME.cell_count;
-		const cell = GAME.cells:i;
+		if is_cell_border:i; continue; /;
 
-		# Check boundaries & get neighboring cells...
-		var l = 0; var r = 0;
-		var t = 0; var b = 0;
-		var tl = 0; var tr = 0;
-		var bl = 0; var br = 0;
-		if GAME.cell_x:i != 0;
-			l = (get_cell:(i-1));
-			if i >= w; tl = (get_cell:(i-w-1)); /;
-			if i+w < (GAME.cell_count); bl = (get_cell:(i+w-1)); /;
-		/;
-		if GAME.cell_x:i != (w-1);
-			r = (get_cell:(i+1));
-			if i >= w; tr = (get_cell:(i-w+1)); /;
-			if i+w < (GAME.cell_count); br = (get_cell:(i+w+1)); /;
-		/;
-		if i >= w;
-			t = (get_cell:(i-w));
-		/;
-		if i+w < (GAME.cell_count);
-			b = (get_cell:(i+w));
-		/;
+		# Count neighboring cells...
+		const neighbors = Math.sum:[
+			(GAME.cells:(i-1)),
+			(GAME.cells:(i-w-1)),
+			(GAME.cells:(i+w-1)),
+			(GAME.cells:(i+1)),
+			(GAME.cells:(i-w+1)),
+			(GAME.cells:(i+w+1)),
+			(GAME.cells:(i-w)),
+			(GAME.cells:(i+w)),
+		];
 
 		# Apply rules...
-		const neighbors = (l+r+t+tl+tr+b+bl+br);
-		if cell == 1;
+		if GAME.cells:i == 1;
 			if (neighbors < 2) || (neighbors > 3);
 				buf:i = 0;
 			/;
@@ -82,11 +83,11 @@ func NONE _game_next;
 /;
 
 
-func INT get_cell; arg INT index;
-	if (index < (GAME.cell_count)) && (index >= 0);
-		return GAME.cells:index;
-	/;
-	return 0;
+func BOOL is_cell_border; arg INT i;
+	return (WORLD_SIZE.x > i)
+	|| (GAME.cell_x:i == 0)
+	|| (GAME.cell_x:(i+1) == 0)
+	|| (i > (GAME.cell_count-(WORLD_SIZE.x)));
 /;
 
 
@@ -107,27 +108,41 @@ GAME.init:[];
 
 while true;
 	const start_time = Time.now:'ms';
+
 	# Tick once.
 	GAME.next:[];
 
 	# Clear screen.
 	buff_out:'\e[H\e[0J';
+	buff_out:(ANSI.reset);
 
 	# Print world...
 	var i = -1;
 	for cell in GAME.cells; i+=1;
+		if is_cell_border:i; continue; /;
 		if cell == 1; buff_out:CELL_ON;  /;
 		else;         buff_out:CELL_OFF; /;
-		if GAME.cell_x:(i+1) == 0 && (i != (GAME.cell_count-1));
+		if GAME.cell_x:(i+2) == 0;
 			buff_out:'\n';
 		/;
 	/;
 
-	out:''; # Flushes buffered output from `buff_out`.
 
-	# Calculate time taken to run, then sleep for the remainder of the frame time.
+	# Calculate time taken to run.
 	const delta = (Time.now:'ms' - start_time);
 	const sleep_time = (FPS_ms-delta / 1_000.0);
+
+	# Print seed.
+	out:['Seed: ',SEED_in,'  |  '];
+	# Print frame time info.
+	out:'Frame time: ';
+	if sleep_time <= 0; out:(ANSI.red); /;
+	else; out:(ANSI.green); /;
+	out:(delta/1_000.0);
+	out:(ANSI.reset);
+	out:[' / ',(FPS_ms/1_000.0)];
+
+	# Sleep for the remainder of the frame time.
 	if sleep_time > 0;
 		sleep:(FPS_ms-delta / 1_000.0);
 	/;

@@ -1,7 +1,6 @@
 #pragma once
 
 
-constexpr unsigned int MAX_TEMPORARY_POOL_RESERVE = 16;
 // This is a pool of all temporaries created in an expression.
 // Systems have exactly until the next expr exec call to use the data of a temporary, before it gets deleted.
 std::vector<Variant> temporary_pool;
