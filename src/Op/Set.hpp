@@ -14,7 +14,7 @@ void OP_Set_exec(ScopeState& state, Variant*& first, Variant*& second, const OpS
 	Variant var;
 
 	switch (symbol) {
-		case OpSymbol_set:     {var = *o2; break;}
+		case OpSymbol_set:     {var = *o2;       break;}
 		case OpSymbol_add_set: {var = *o1 + *o2; break;}
 		case OpSymbol_sub_set: {var = *o1 - *o2; break;}
 		case OpSymbol_mul_set: {var = *o1 * *o2; break;}
@@ -41,7 +41,7 @@ void OP_Set_exec(ScopeState& state, Variant*& first, Variant*& second, const OpS
 	if (not variant_type_matches(var, *o1)) return;
 
 	var.m = o1->m; // Make sure the mode is kept in-tact.
-	*o1 = var;
+	*o1 = std::move(var);
 	result_ptr = first;
 }
 

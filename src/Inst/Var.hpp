@@ -58,7 +58,7 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 		return;
 	}
 
-	VariantType type = get_variant_type_from_name(type_name);
+	const VariantType type = get_variant_type_from_name(type_name);
 	VariantMode mode = VariantMode_locked_type;
 	if (token.symbol == InstSymbol_const) mode = VariantMode_constant;
 	if (type == ANY) {
@@ -79,7 +79,6 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 
 void INST_Var_exec(ScopeState& state, InstToken& token) {
 	const std::string& name = AnyCast(std::string,token.meta[0]);
-	//const std::string& op = AnyCast(std::string,token.meta[1]);
 
 	// Give error if the var name is not free on the current scope.
 	if (not is_name_free(state, name)) {
