@@ -372,10 +372,7 @@ Variant operator*(const Variant& a, const Variant& b) {
 		case STR: {
 			if (b.t == INT) {
 				const INT_t& b_val = AnyCast(INT_t,b.d);
-				if (b_val < 0) {
-					emit_error(ERR_cannot_multiply_by_negative, {"STR"});
-					return a;
-				}
+				if (b_val < 1) return Variant{STR, (STR_t)""};
 				return Variant{STR, (AnyCast(STR_t,a.d) * b_val)};
 			}
 			break;
@@ -384,10 +381,7 @@ Variant operator*(const Variant& a, const Variant& b) {
 		case ARR: {
 			if (b.t == INT) {
 				const INT_t& b_val = AnyCast(INT_t,b.d);
-				if (b_val < 0) {
-					emit_error(ERR_cannot_multiply_by_negative, {"ARR"});
-					return a;
-				}
+				if (b_val < 1) return Variant{ARR, ARR_t()};
 				ARR_t a_val = AnyCastV(ARR_t,a.d);
 				ARR_t sum; sum.reserve(a_val.size()*b_val);
 				for (INT_t i = 0; i < b_val; i++) {
@@ -605,7 +599,7 @@ const std::string multiple_types_str(const std::vector<VariantType>& types) {
 
 
 VariantData get_literal_from_str(const VariantType& type, const std::string& str_val) {
-	if (type == OP || type == TREF || type == REF || type == STR) return str_val;
+	if (type == TREF || type == REF || type == STR) return str_val;
 	else if (type == BOOL) return str_val == "true";
 	else if (type == INT) {
 		if (is_int_str_32_in_range(str_val)) return (INT_t)std::stoi(str_val);
@@ -677,8 +671,8 @@ STR_t var_to_str(const Variant& var) {
 // Get the type of a `MAP` object.
 const STR_t var_get_obj_type(const MAP_t& map) {
 	STR_t obj_type = "m";
-	if (map.find("__t") != map.end()) {
-		const Variant& obj_type_var = map.at("__t");
+	if (const auto& it = map.find("__t"); it != map.end()) {
+		const Variant& obj_type_var = it->second;
 		if (obj_type_var.t != STR) {
 			emit_error(ERR_unexpected, {"var_get_obj_type", "Improper type of \"__t\" property."});
 			return obj_type;

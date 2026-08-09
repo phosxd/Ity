@@ -453,7 +453,7 @@ void start_shell(int argc, char* argv[]) {
 				break;
 			}
 
-			command += ';';
+			command += INST_END_SYMBOL;
 			last_expr_result = VariantPresets.empty;
 
 			// Tokenize the command.

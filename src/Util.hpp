@@ -149,9 +149,9 @@ const bool exists_in_arr(const T v[], const size_t& size, const T& val) {
 
 
 // String multiplication.
-inline const std::string operator*(const std::string& a, const int& b) {
+inline const std::string operator*(const std::string& a, const size_t& b) {
 	std::string sum = a; sum.reserve(a.size()*b);
-	for (int i=1; i<b; i++) sum += a;
+	for (size_t i=1; i<b; i++) sum += a;
 	return sum;
 }
 

@@ -27,7 +27,7 @@ void INST_Return_exec(ScopeState& state, InstToken& token) {
 
 	// Get value from expression & set return value.
 	const Variant* var = expr_exec(state, token.expr);
-	set_data(state, "__R", var->t, *var, VariantMode_dynamic_type);
+	set_data(state, "__R", var->t, *var, VariantMode_dynamic_type, HASHED_NAMES.__R);
 
 	exec_jump_out = true;
 }

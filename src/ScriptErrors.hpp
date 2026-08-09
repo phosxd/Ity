@@ -51,8 +51,6 @@ enum ERR_CODE : uint8_t {
 	ERR_no_args_available,
 
 	// 38
-	ERR_cannot_multiply_by_negative,
-
 	ERR_unexpected_char_at_expr_end,
 	ERR_invalid_character_for_construct,
 	ERR_cannot_dereference,
@@ -186,8 +184,6 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 		case ERR_invalid_func_arg_count:            return "Function expected " + args[0] + " arguments, not " + args[1] + ".";
 		case ERR_invalid_func_arg_type:             return "Function argument " + args[0] + " expected vaue of type \"" + args[1] + "\", not \"" + args[2] + "\"";
 		case ERR_no_args_available:                 return "No arguments available in this scope.";
-
-		case ERR_cannot_multiply_by_negative:       return "Cannot multiply \"" + args[0] + "\" by a negative number.";
 
 		case ERR_unexpected_char_at_expr_end:       return "Unexpected character \"" + args[0] + "\" at end of expression.";
 		case ERR_invalid_character_for_construct:   return "Invalid character for " + args[0] + " construct: \"" + args[1] + "\".";
