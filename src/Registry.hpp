@@ -115,7 +115,7 @@ enum VariantType : uint8_t {
 	INTERNAL,    // Data not meant for in-script usage.
 	INFERRED,    // Inferred type. Should not contain data.
 	ANY,         // Any type. Should not contain data.
-	OP,          // Operator string identifier.
+	OP,          // Operation definition pointer.
 	TREF,        // Literally typed name reference.
 	PTR,         // Variant pointer.
 	// Real types.

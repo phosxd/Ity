@@ -27,6 +27,7 @@ ScopeState create_new_scope_state(const ScopeMap_t& data={}, ScopeState* parent=
 	}
 
 	return ScopeState{
+		{},
 		(parent) ? std::move(parent) : nullptr, // Moving `parent` is safe since it's already a copy of the pointer.
 		std::move(data), // Yes, it is intentional that we move the referenced data, unsetting the original passed value.
 		std::move(id),

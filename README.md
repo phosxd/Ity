@@ -1,7 +1,7 @@
 
 <div align="middle">
 
-**Version:** 0.1.1
+**Version:** 0.2.0
 
 Ity is a work-in-progress, light-weight & embeddable interpreted programming language built with C++.
 
@@ -49,7 +49,7 @@ After compilation has finished, the build script will display the time it took t
 (Optimization: balanced)
 Building prodution binary...
 Done in 4s.
-Final size: 116384 bytes. (+0)
+Final size: 124384 bytes. (+0)
 ```
 
 If the final build size is larger than 150,000 bytes it will give you a warning message.
@@ -72,6 +72,8 @@ You can pass flags to the build script.
 	Remove runtime error strings & debug flag branches.
 	Error codes & ln/col tracking are still kept.
 	Use this to save an extra few kilobytes.
+- `-nosh` or `--no-shell`
+	Remove interactive capability.
 - `-t` or `--test`:
 	Run tests after compilation.
 
@@ -100,7 +102,7 @@ Running the interpreter without passing a script file path will run it in "inter
 
 ```bash
 ./ity.bin
-* Ity (0.1.0)
+* Ity (0.2.0)
 * Runing interactive mode interpreter.
 * Type "quit" or "q" to stop.
 

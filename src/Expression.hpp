@@ -24,7 +24,7 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 
 	const INT_t& func_token_index = AnyCast(INT_t,func.at("__i").d);
 	const VariantType& func_return_type = static_cast<VariantType>(AnyCast(INT_t,func.at("__rt").d));
-	const InstToken& func_token = InstTokenSeq[func_token_index];
+	const InstToken& func_token = state.seq[func_token_index];
 
 	// Throw error if token is not a function token.
 	// The only time this should happen is if the tokens are corrupted in some way.
@@ -51,7 +51,9 @@ Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args
 	if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;
 	#endif
 
-	Ity::exec(func_state, InstTokenSeq, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
+	func_state.seq = std::move(state.seq);
+	Ity::exec(func_state, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
+	state.seq = std::move(func_state.seq);
 	restore_ongoing_scopes(); // Restore previously ongoing scopes, now that we are out of the function.
 	temporary_pool = std::move(temporary_pool_stack.back());
 	temporary_pool_stack.pop_back();

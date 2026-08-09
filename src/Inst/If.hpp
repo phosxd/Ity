@@ -39,7 +39,7 @@ void INST_If_exec(ScopeState& state, InstToken& token) {
 
 	bool previous_conditional_passed = true;
 	if (token.linked_inst == InstSymbol_if || token.linked_inst == InstSymbol_elif) {
-		const InstToken& linked_token = InstTokenSeq[token.i + token.linked_inst_pos];
+		const InstToken& linked_token = state.seq[token.i + token.linked_inst_pos];
 		previous_conditional_passed = AnyCast(bool,linked_token.meta[0]);
 	}
 
@@ -52,7 +52,6 @@ void INST_If_exec(ScopeState& state, InstToken& token) {
 	}
 
 	token.meta[0] = (token.symbol == InstSymbol_elif && not passed) ? previous_conditional_passed : passed;
-	InstTokenSeq[token.i] = token;
 	// Jump past instructions in this composite if failed.
 	if (not passed) exec_jump_value += token.composite_size;
 

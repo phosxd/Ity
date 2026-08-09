@@ -24,15 +24,22 @@ void INST_Continue_processor(InstToken& token, const AnyMap_t& extra, const unsi
 
 
 void INST_Continue_exec(ScopeState& state, InstToken& token) {
+	// If loop token...
 	if (token.linked_inst == InstSymbol_while || token.linked_inst == InstSymbol_for) {
-		InstToken& linked_token = InstTokenSeq[token.i + token.linked_inst_pos];
+		InstToken& linked_token = state.seq[token.i + token.linked_inst_pos];
+
+		// Jump over the "end" instruction for this loop.
 		exec_jump_value += linked_token.composite_size + token.linked_inst_pos;
+
+		// If is "continue", jump to the end instruction, not over it.
 		if (token.symbol == InstSymbol_continue) exec_jump_value -= 1;
+		// If is "break", properly scope out.
 		else {
 			// Scope out if previously scoped in.
 			if (linked_token.declarative_composite && linked_token.meta.size() > 0) {
 				scope_out(state);
-				linked_token.meta.clear();
+				InstToken* linked_token_ptr = &linked_token;
+				linked_token.inst->emergency_scope_exit(linked_token_ptr);
 				scoped_tokens.pop_back();
 			}
 		}

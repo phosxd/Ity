@@ -300,15 +300,14 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 
 // Execute a sequence of instruction tokens.
-void exec(ScopeState& state, std::vector<InstToken>& sequence, const size_t start_idx, const int end_idx) {
-	InstTokenSeq = sequence;
+void exec(ScopeState& state, const size_t start_idx, const int end_idx) {
 	execution_depth += 1;
 	const size_t seq_len = (end_idx > 0)
-		? std::min((int)InstTokenSeq.size(), end_idx+1)
-		: InstTokenSeq.size()
+		? std::min((int)state.seq.size(), end_idx+1)
+		: state.seq.size()
 	;
 	for (size_t i = start_idx; i < seq_len; i++) {
-		InstToken& item = InstTokenSeq[i];
+		InstToken& item = state.seq[i];
 		current_line = item.ln;
 		current_column = item.col;
 
@@ -429,7 +428,8 @@ void start_shell(int argc, char* argv[]) {
 		timers[1] = Clock::now();
 
 		// Execute tokens.
-		Ity::exec(state, sequence, 0,-1);
+		state.seq = std::move(sequence);
+		Ity::exec(state, 0,-1);
 	}
 
 
@@ -459,7 +459,8 @@ void start_shell(int argc, char* argv[]) {
 			// Tokenize the command.
 			std::vector<InstToken> sequence = Ity::tokenize(command);
 			// Execute tokens.
-			Ity::exec(state, sequence, 0,-1);
+			state.seq = std::move(sequence);
+			Ity::exec(state, 0,-1);
 
 			// Print expression result if there is one.
 			if (last_expr_result.t != PLACEHOLDER) std::cout << last_expr_result;

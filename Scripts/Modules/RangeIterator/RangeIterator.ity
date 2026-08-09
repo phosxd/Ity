@@ -10,6 +10,10 @@
 #   RangeIterator just implements an iterable object with a counter instead.
 #
 #
+# Initializing a range iterator still costs time & iterations are slightly slower.
+# For performance dependant code, a while loop will be much better suited.
+#
+#
 # PART OF THE STANDARD SET OF ITY MODULES.
 
 
@@ -26,7 +30,7 @@ func MAP RangeIterator_new; arg INT start; arg INT end; arg INT step=1;
 
 func ARR RangeIterator_iter; arg PTR obj;
 	obj.i += (obj.s);
-	if obj.i == (obj.e); return [false, none]; /;
+	if obj.i >= (obj.e); return [false, none]; /;
 	return [true, (obj.i)];
 /;
 

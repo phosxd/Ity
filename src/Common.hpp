@@ -410,17 +410,13 @@ Variant operator/(const Variant& a, const Variant& b) {
 	switch (a.t) {
 		// If a is int...
 		case INT: {
-			// If b is int...
 			if (b.t == INT) return Variant{INT, (AnyCast(INT_t,a.d) / AnyCast(INT_t,b.d))};
-			// If b is float...
 			else if (b.t == FLOAT) return Variant{FLOAT, (AnyCast(INT_t,a.d) / AnyCast(FLOAT_t,b.d))};
 			break;
 		}
 		// If a is float...
 		case FLOAT: {
-			// If b is int...
 			if (b.t == INT) return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) / AnyCast(INT_t,b.d))};
-			// If b is float...
 			else if (b.t == FLOAT) return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) / AnyCast(FLOAT_t,b.d))};
 			break;
 		}
@@ -500,7 +496,7 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 	os << "{ln=" << s.ln << ", col=" << s.col;
 	if (not s.args.empty()) os << ", args=" << s.args;
 	if (not s.expr.seq.empty()) os << ", expr=" << s.expr;
-	if (s.composite_size > 0) {os << ", composite_size=" << s.composite_size;}
+	if (s.composite_size > 0) {os << ", comp_size=" << s.composite_size;}
 	if (s.linked_inst != InstSymbol__) {
 		os << ", linked_inst=" << s.linked_inst;
 		os << ", linked_inst_pos=" << s.linked_inst_pos;
@@ -527,6 +523,8 @@ using ScopeMap_t = std::vector<ScopeStateItem>;
 
 #pragma pack(1)
 struct ScopeState {
+	std::vector<InstToken> seq; // Instruction token sequence.
+
 	ScopeState* p = nullptr;  // Parent scope state.
 	ScopeMap_t d;             // Scope data.
 	UINT_t id;
@@ -753,12 +751,12 @@ const bool expect_arg_types(const Variant& arg, std::vector<VariantType> types, 
 // Constants.
 // ----------
 
-constexpr STR_t ItyVersionString = "0.1.1";
+constexpr STR_t ItyVersionString = "0.2.0";
 // Last number indicates release type:
 //	0 = release.
 //	1 = beta / pre-release.
 //	2 = experimental / custom.
-constexpr INT_t ItyVersion[4] = {0,1,1, 0};
+constexpr INT_t ItyVersion[4] = {0,2,0, 0};
 
 constexpr STR_t OSName =
 #if _WIN32
@@ -787,7 +785,6 @@ constexpr STR_t OSName =
 // Variables.
 // ----------
 
-std::vector<InstToken> InstTokenSeq;
 unsigned int execution_depth_max = 5000;
 unsigned int execution_depth = 0;
 

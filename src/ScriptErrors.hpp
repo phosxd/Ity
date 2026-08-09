@@ -127,13 +127,15 @@ const std::vector<std::string> safe_mode_allowed_libs = {"IO","Time","Math"};
 
 
 
-std::string make_err_message(const ERR_CODE code, const std::vector<std::string> args) {
+std::string make_err_message(const ERR_CODE code, const std::vector<std::string>& args) {
 	switch (code) {
 		case ERR_custom:                            return args[0];
 		#ifdef RUNTIME_DEBUG
 		case ERR_unexpected:                        return "Unexpected (" + args[0] + "): " + args[1] + " Please report bug.";
+		#ifdef INCLUDE_SHELL
 		case ERR_expected_ity_extension:            return "Expected file with \".ity\" extension.";
 		case ERR_unable_to_open_script:             return "Unable to open script at \"" + args[0] + "\".";
+		#endif
 		case ERR_unknown_module:                    return "No module with name \"" + args[0] + "\" is available.";
 		case ERR_disallowed_member_in_safe_mode:    return "Member \"" + args[0] + "\" is not allowed during safe mode (-safe).";
 
@@ -192,6 +194,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 		case ERR_cannot_dereference:                return "Cannot dereference \"" + args[0] + "\". Not a pointer.";
 		case ERR_max_temporaries_in_use:            return "Reduce one-off expression complexity; Maximum number of temporaries in use (" + args[0] + "/" + args[1] + "). This will cause corruption!";
 		#endif
+		default: break;
 	}
 
 	return "";
@@ -203,7 +206,7 @@ std::string get_script_pos(const std::string& script_name, const unsigned int ln
 }
 
 
-void emit_warn(const ERR_CODE code, std::vector<std::string> args={}) {
+void emit_warn(const ERR_CODE code, const std::vector<std::string> args={}) {
 	if (not emit_warnings) return;
 	if (emit_just_codes) {
 		std::cout << "Warning: " << std::to_string(code) << '\n';
@@ -216,7 +219,7 @@ void emit_warn(const ERR_CODE code, std::vector<std::string> args={}) {
 }
 
 
-void emit_error(const ERR_CODE code, std::vector<std::string> args={}, unsigned int ln_override=0, unsigned int col_override=0) {
+void emit_error(const ERR_CODE code, const std::vector<std::string> args={}, unsigned int ln_override=0, unsigned int col_override=0) {
 	if (emit_just_codes) {
 		std::cout << "Error: " << std::to_string(code) << '\n';
 		exit(1);

@@ -112,8 +112,7 @@ bool is_int_str_32_in_range(std::string int_str) {
 	if (int_str.size() == 0) return true;
 
 	const bool negative = (int_str[0] == '-');
-	size_t digits = int_str.size();
-	if (negative) digits--;
+	const size_t digits = (negative) ? int_str.size()-1 : int_str.size();
 	// If too many or not enough digits, return false.
 	if (digits > 10) return false;
 	else if (digits < 10) return true;
@@ -126,7 +125,7 @@ bool is_int_str_32_in_range(std::string int_str) {
 
 
 template<class T, class T2>
-bool exists_in_vec(const std::vector<T>& v, const T2& val) {
+const bool exists_in_vec(const std::vector<T>& v, const T2& val) {
 	for (const T& i:v) {
 		if (i == val) return true;
 	}
@@ -135,8 +134,8 @@ bool exists_in_vec(const std::vector<T>& v, const T2& val) {
 
 
 template<class T>
-bool exists_in_arr(const T v[], const size_t& size, const T& val) {
-	for (unsigned int i = 0; i < size; i++) {
+const bool exists_in_arr(const T v[], const size_t& size, const T& val) {
+	for (size_t i = 0; i < size; i++) {
 		if (v[i] == val) return true;
 	}
 	return false;
