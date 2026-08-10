@@ -48,7 +48,7 @@ These results were recordered using the following specs:
 |	3. Ity		0.2.0											0.256s AVG
 |	Disqualified (no byte count):
 |	NA. Bash	5.3.0(1)-release (x86_64-redhat-linux-gnu)		134.7s ONCE
-|	NA. Kal		0.1.0	(No byte count, disqualified)			0.243s AVG
+|	NA. Kal		0.1.0											0.243s AVG
 |
 [---------------------------------------------------------------------------]
 

@@ -283,7 +283,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				clean_up_buffer(result_token, item, buffer);
 				// Create expression sequence token.
 				item = ExprToken{
-					ln_offset, col_offset+1,
+					ln_offset, col_offset,
 					ExprTokenType_sequence, VariantPresets.empty,
 					expr_tokenize(subexpr, ln_offset, col_offset+1).seq
 				};
@@ -430,7 +430,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				}
 				// Append operator token.
 				result_token.seq.push_back(ExprToken{
-					ln_offset, col_offset+1,
+					ln_offset, col_offset,
 					ExprTokenType_variant,
 					{OP, std::move(op_def)},
 				});
@@ -491,24 +491,19 @@ Variant* resolve_variant(ScopeState& state, Variant& item) {
 
 
 // Execute a sequence of ExprTokens. `token` itself is an ExprToken which should contain a sequence in `ExprToken.seq`.
-Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=false, const unsigned int& ln=0, const unsigned int& col=0) {
+Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=false) {
 	// Output sequence in debug mode.
 	#ifdef RUNTIME_DEBUG
-	if (debug_flags.expr_seq && not subexpr) {
-		std::cout << ANSI::purple << "ExprToken Sequence: " << ANSI::reset << token.seq << "\n";
+	if (debug_flags.expr && not subexpr) {
+		std::cout << ANSI::purple << "ExprToken: " << ANSI::reset << token << "\n";
 	};
 	#endif
-
-	const unsigned int line_ = ln;
-	const unsigned int col_ = col-1;
-	current_line = line_;
-	current_column = col_;
 
 	// Resolve array.
 	if (token.var.t == ARR) {
 		ARR_t array; array.reserve(token.seq.size());
 		for (ExprToken& subtoken : token.seq) {
-			if (subtoken.t == ExprTokenType_sequence) array.push_back(*expr_exec_(state, subtoken, true, line_,col_));
+			if (subtoken.t == ExprTokenType_sequence) array.push_back(*expr_exec_(state, subtoken, true));
 			else array.push_back(*resolve_variant(state, subtoken.var));
 		}
 
@@ -529,7 +524,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 			if (is_key) {
 				// Get key.
 				const Variant* var = nullptr;
-				if (subtoken.t == ExprTokenType_sequence) var = expr_exec_(state, subtoken, true, line_,col_);
+				if (subtoken.t == ExprTokenType_sequence) var = expr_exec_(state, subtoken, true);
 				else var = resolve_variant(state, subtoken.var);
 				// Throw error if key is not a string.
 				if (var->t != STR) {
@@ -542,7 +537,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 			}
 			else {
 				// Apply value.
-				if (subtoken.t == ExprTokenType_sequence) map[key] = *expr_exec_(state, subtoken, true, line_,col_);
+				if (subtoken.t == ExprTokenType_sequence) map[key] = *expr_exec_(state, subtoken, true);
 				else map[key] = *resolve_variant(state, subtoken.var);
 				is_key = true;
 			}
@@ -552,6 +547,9 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 	}
 
 
+	const unsigned int ln_ = current_line;
+	const unsigned int col_ = current_column;
+
 	const size_t& seq_len = token.seq.size();
 	Variant* result = nullptr;
 	Variant* second = nullptr;
@@ -560,11 +558,10 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 	Variant op_result = VariantPresets.empty;
 
 	const OpDef* op_def = nullptr;
-
 	for (size_t i = 0; i < seq_len; i++) {
 		ExprToken& item = token.seq[i];
-		current_line = line_ + item.ln;
-		current_column = col_ + item.col;
+		current_line = ln_+item.ln;
+		current_column = col_+item.col;
 
 		// Execute operator.
 		if (op_def) {
@@ -590,7 +587,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 			}
 			// Get our second variant to operate on.
 			// If second is a sequence...
-			if (item.t == ExprTokenType_sequence) second = expr_exec_(state, item, true, current_line, current_column);
+			if (item.t == ExprTokenType_sequence) second = expr_exec_(state, item, true);
 			// If it's a normal var...
 			else second = resolve_variant(state, item.var);
 			// Throw error if second is an operator.
@@ -612,17 +609,13 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 
 
 		else if (item.t == ExprTokenType_variant) {
-			// Get operator.
-			if (item.var.t == OP) {
-				op_def = AnyCast(const OpDef*,item.var.d);
-			}
-			// Get variant.
-			else result = resolve_variant(state, item.var);
+			if (item.var.t == OP) op_def = AnyCast(const OpDef*,item.var.d); // Get operator.
+			else result = resolve_variant(state, item.var); // Get variant.
 		}
 
 		// Get value from sub-sequence
 		else if (item.t == ExprTokenType_sequence) {
-			result = expr_exec_(state, item, true, current_line, current_column);
+			result = expr_exec_(state, item, true);
 		}
 	}
 
@@ -644,12 +637,14 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 
 
 
-Variant* expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false, const unsigned int ln=0, const unsigned int col=0) {
+Variant* expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false) {
 	temporary_pool.clear();
 	// `std::vector` invalidates all references to items inside it when it reallocates, reserve an upper-limit to make sure we wont reallocate.
 	if (temporary_pool.capacity() < MAX_TEMPORARY_POOL_RESERVE) temporary_pool.reserve(MAX_TEMPORARY_POOL_RESERVE);
 
-	Variant* result = expr_exec_(state, token, subexpr, ln,col);
+	current_line = token.ln;
+	current_column = token.col;
+	Variant* result = expr_exec_(state, token, subexpr);
 
 	// Throw error if we go over the temporary variant limit.
 	if (temporary_pool.size() >= MAX_TEMPORARY_POOL_RESERVE) emit_error(ERR_max_temporaries_in_use, {std::to_string(temporary_pool.size()), std::to_string(MAX_TEMPORARY_POOL_RESERVE)});
@@ -671,7 +666,7 @@ Variant expr_run(ScopeState& state, const std::string& expr) {
 
 // Inserts a tokenized expression with proper meta data into the given `token.expr`.
 // Expression is assumed to start at `start_idx` in `token.args`.
-std::vector<std::string> tokenize_expr_from_inst_args(InstToken& token, const unsigned int& start_idx) {
+std::vector<std::string> tokenize_expr_from_inst_args(InstToken& token, const unsigned int& start_idx = 0) {
 	std::vector<std::string> new_args; new_args.reserve(start_idx);
 	std::string expr_string;
 	unsigned int i = 0;
@@ -682,10 +677,11 @@ std::vector<std::string> tokenize_expr_from_inst_args(InstToken& token, const un
 			for (const char& ch : arg) LN_COL_COUNTER(ch,ln,col);
 			new_args.push_back(arg);
 		}
-		else expr_string += ' '+token.args[i];
+		else {
+			expr_string += ' '+token.args[i];
+		}
 		i++;
 	}
-
 	token.expr = expr_tokenize(expr_string, token.ln+ln, token.col+col);
 	return new_args;
 }

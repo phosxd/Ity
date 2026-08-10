@@ -263,7 +263,11 @@ std::vector<InstToken> tokenize(const std::string& src) {
 					// Instruction is a standalone expression.
 					else {
 						std::string expr_string; expr_string.reserve(item.args.size());
-						for (const std::string& arg : item.args) expr_string += ' '+arg;
+						unsigned int i_ = 0; for (const std::string& arg : item.args) {
+							if (i_ > 0) expr_string += ' ';
+							expr_string += arg;
+							i_++;
+						}
 						item.expr = expr_tokenize(std::move(expr_string), item.ln, item.col-1);
 						item.args.clear();
 					}
@@ -284,11 +288,6 @@ std::vector<InstToken> tokenize(const std::string& src) {
 		const CompositeItem& comp_item = composite_nest[composite_nest.size()-1];
 		emit_error(ERR_no_composite_end, {}, comp_item.ln, comp_item.col);
 	}
-	#ifdef RUNTIME_DEBUG
-	if (debug_flags.inst_seq) {
-		std::cout << ANSI::purple << "Instruction Sequence: " << ANSI::reset << sequence << '\n';
-	}
-	#endif
 
 	// Clear expression cache in `Expression.hpp`, we no longer need it all the expressions have been tokenized.
 	expr_cache.clear();
@@ -313,6 +312,9 @@ void exec(ScopeState& state, const size_t start_idx, const int end_idx) {
 
 		// If in step mode, print token & wait for confirmation before continuing.
 		#ifdef RUNTIME_DEBUG
+		if (debug_flags.inst) {
+			std::cout << ANSI::purple << "InstToken: " << ANSI::reset << item << '\n';
+		}
 		if (step_mode) {
 			std::cout << ANSI::orange << item << ANSI::reset << '\n';
 			std::string _input; std::getline(std::cin, _input);
@@ -321,7 +323,7 @@ void exec(ScopeState& state, const size_t start_idx, const int end_idx) {
 
 		// Run as expression if not an instruction.
 		if (not item.inst) {
-			last_expr_result = *expr_exec(state, item.expr, false, current_line, current_column);
+			last_expr_result = *expr_exec(state, item.expr, false);
 			continue;
 		}
 
@@ -360,15 +362,15 @@ void start_shell(int argc, char* argv[]) {
 		// Set debug flags
 		if (flag == "-d-result")            debug_flags.result = true;
 		#ifdef RUNTIME_DEBUG
-		else if (flag == "-d-inst-seq")     debug_flags.inst_seq = true;
-		else if (flag == "-d-expr-seq")     debug_flags.expr_seq = true;
+		else if (flag == "-d-inst")         debug_flags.inst = true;
+		else if (flag == "-d-expr")         debug_flags.expr = true;
 		else if (flag == "-d-expr-result")  debug_flags.expr_result = true;
 		else if (flag == "-d-data-assign")  debug_flags.data_assign = true;
 		else if (flag == "-d-scoping")      debug_flags.scoping = true;
 		else if (flag == "-d-full") {
 			debug_flags.result = true;
-			debug_flags.inst_seq = true;
-			debug_flags.expr_seq = true;
+			debug_flags.inst = true;
+			debug_flags.expr = true;
 			debug_flags.expr_result = true;
 			debug_flags.data_assign = true;
 			debug_flags.scoping = true;
