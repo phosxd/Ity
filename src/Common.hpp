@@ -47,6 +47,19 @@ using ARR_t = std::vector<Variant>;
 using MAP_t = std::unordered_map<STR_t,Variant>;
 using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
 
+struct FUNC_t {
+	// Common parameters...
+	VariantType return_type = NONE;
+	ARR_t bound_args = {};
+
+	// Script functions only...
+	unsigned int token_index = 0;
+	UINT_t definition_state_id = 0;
+
+	// Native functions only...
+	NativeFunc_t native_callable = nullptr;
+};
+
 using VariantData = std::variant<
 	Variant*,
 	std::monostate,
@@ -57,6 +70,7 @@ using VariantData = std::variant<
 	STR_t,
 	ARR_t,
 	MAP_t,
+	FUNC_t,
 
 	// Internal types.
 	size_t,
@@ -690,7 +704,6 @@ struct VariantPresets_struct {
 	const Variant empty       {PLACEHOLDER, std::monostate(), VariantMode_constant};
 	const Variant none        = none_var;
 	const Variant obj_type_m  {STR, (STR_t)"m", VariantMode_constant};
-	const Variant obj_type_f  {STR, (STR_t)"f", VariantMode_constant};
 
 	const Variant any_type_int    {INT, (INT_t)ANY, VariantMode_constant};
 	const Variant ptr_type_int    {INT, (INT_t)PTR, VariantMode_constant};
@@ -712,11 +725,11 @@ const VariantPresets_struct VariantPresets;
 // Translate a native function to a usable function object.
 const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t& native_func) {
 	return Variant{
-		MAP, (MAP_t){
-			{"__t",   VariantPresets.obj_type_f},                            // Map type.
-			{"__rt",  Variant{INTERNAL, return_type, VariantMode_constant}}, // Return type.
-			{"__nc",  Variant{INTERNAL, native_func}},                       // Native callable.
-			{"__ba",  Variant{ARR, (ARR_t){}}},                              // Bound args.
+		FUNC, (FUNC_t){
+			return_type, // Return type.
+			(ARR_t){},   // Bound args.
+			0,0,         // Script func args, wont be used.
+			native_func  // Native callable.
 		},
 		VariantMode_constant,
 	};

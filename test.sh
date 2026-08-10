@@ -1148,7 +1148,7 @@ Error: 41"
 
 merge IO;
 
-func MAP get_f;
+func FUNC get_f;
 	func INT f; return 99; /;
 	return f;
 /;

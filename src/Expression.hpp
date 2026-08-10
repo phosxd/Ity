@@ -7,70 +7,66 @@ std::vector<Variant> temporary_pool;
 std::vector<std::vector<Variant>> temporary_pool_stack;
 
 
-
-// Call a native function.
-inline Variant call_native_function(ScopeState& state, const NativeFunc_t& func, const ARR_t& args) {
-	return func(state, args);
-}
-
-
-// Call a script function.
-Variant call_script_function(ScopeState& state, const MAP_t& func, Variant& args) {
-	// Throw error if maximum execution depth is reached.
-	if (execution_depth > execution_depth_max) {
-		emit_error(ERR_max_execution_depth, {std::to_string(execution_depth_max)});
-		return VariantPresets.none;
+// Call a function.
+Variant call_function(ScopeState& state, const FUNC_t& func, Variant& args) {
+	if (func.native_callable) {
+		return func.native_callable(state, AnyCast(ARR_t,args.d));
 	}
 
-	const INT_t& func_token_index = AnyCast(INT_t,func.at("__i").d);
-	const VariantType& func_return_type = static_cast<VariantType>(AnyCast(INT_t,func.at("__rt").d));
-	const InstToken& func_token = state.seq[func_token_index];
+	else {
+		// Throw error if maximum execution depth is reached.
+		if (execution_depth > execution_depth_max) {
+			emit_error(ERR_max_execution_depth, {std::to_string(execution_depth_max)});
+			return VariantPresets.none;
+		}
 
-	// Throw error if token is not a function token.
-	// The only time this should happen is if the tokens are corrupted in some way.
-	if (func_token.symbol != InstSymbol_func) {
-		emit_error(ERR_unexpected, {"FunctionHandler", "Missing function: " + std::to_string(func_token_index) + " isn't a `func` token."});
-		return VariantPresets.none;
+		// Throw error if token is not a function token.
+		// The only time this should happen is if the tokens are corrupted in some way.
+		const InstToken& func_token = state.seq[func.token_index];
+		if (func_token.symbol != InstSymbol_func) {
+			emit_error(ERR_unexpected, {"FunctionHandler", "Missing function: " + std::to_string(func.token_index) + " isn't a `func` token."});
+			return VariantPresets.none;
+		}
+
+		//call_trace.push_back(current_line); call_trace.push_back(current_column);
+		push_back_ongoing_scopes(); // Save ongoing scopes for later.
+		temporary_pool_stack.push_back(std::move(temporary_pool));
+		temporary_pool = {};
+
+		// Create an alternate scope, for use inside the function.
+		ScopeState func_state = create_new_scope_state(
+			(ScopeMap_t){
+				{HASHED_NAMES.__AG, std::move(args)},
+				{HASHED_NAMES.__R,  Variant{func.return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
+			},
+			get_state_at_id(state, func.definition_state_id) // Use function definition scope as the parent.
+		);
+
+		#ifdef RUNTIME_DEBUG
+		if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;
+		#endif
+
+		func_state.seq = std::move(state.seq);
+		Ity::exec(func_state, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
+		state.seq = std::move(func_state.seq);
+		restore_ongoing_scopes(); // Restore previously ongoing scopes, now that we are out of the function.
+		temporary_pool = std::move(temporary_pool_stack.back());
+		temporary_pool_stack.pop_back();
+
+
+		// Get result & check if return type matches.
+		const Variant& func_result = raw_get_data(func_state, HASHED_NAMES.__R)->var;
+		if (func_result.t != func.return_type && func.return_type != ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func.return_type)});
+		// Return result.
+		//call_trace.pop_back(); call_trace.pop_back();
+
+		#ifdef RUNTIME_DEBUG
+		if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
+		#endif
+
+		args = std::move(raw_get_data(func_state, HASHED_NAMES.__AG)->var);
+		return func_result;
 	}
-
-	//call_trace.push_back(current_line); call_trace.push_back(current_column);
-	push_back_ongoing_scopes(); // Save ongoing scopes for later.
-	temporary_pool_stack.push_back(std::move(temporary_pool));
-	temporary_pool = {};
-
-	// Create an alternate scope, for use inside the function.
-	ScopeState func_state = create_new_scope_state(
-		(ScopeMap_t){
-			{HASHED_NAMES.__AG, std::move(args)},
-			{HASHED_NAMES.__R,  Variant{func_return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
-		},
-		get_state_at_id(state, AnyCast(UINT_t,func.at("__si").d)) // Use function definition scope as the parent.
-	);
-
-	#ifdef RUNTIME_DEBUG
-	if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;
-	#endif
-
-	func_state.seq = std::move(state.seq);
-	Ity::exec(func_state, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
-	state.seq = std::move(func_state.seq);
-	restore_ongoing_scopes(); // Restore previously ongoing scopes, now that we are out of the function.
-	temporary_pool = std::move(temporary_pool_stack.back());
-	temporary_pool_stack.pop_back();
-
-
-	// Get result & check if return type matches.
-	const Variant& func_result = raw_get_data(func_state, HASHED_NAMES.__R)->var;
-	if (func_result.t != func_return_type && func_return_type != ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func_return_type)});
-	// Return result.
-	//call_trace.pop_back(); call_trace.pop_back();
-
-	#ifdef RUNTIME_DEBUG
-	if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
-	#endif
-
-	args = std::move(raw_get_data(func_state, HASHED_NAMES.__AG)->var);
-	return func_result;
 }
 
 

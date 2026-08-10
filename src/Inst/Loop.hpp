@@ -89,7 +89,7 @@ void INST_Loop_for_loop(ScopeState& state, InstToken& token, bool& value) {
 					Variant{INT, (INT_t)index},
 				}
 			};
-			const Variant& result = call_script_function(state, AnyCast(MAP_t,it->second.d), args);
+			const Variant& result = call_function(state, AnyCast(FUNC_t,it->second.d), args);
 			if (result.t == ARR) {
 				if (const ARR_t& arr = AnyCast(ARR_t,result.d); arr.size() == 2 && arr[0].t == BOOL) {
 					value = AnyCast(bool,arr[0].d);

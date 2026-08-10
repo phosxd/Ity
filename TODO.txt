@@ -1,5 +1,4 @@
 - Add ability to import other scripts as modules.
-- Store functions in a dedicated `FUNC` type instead of a `MAP`, avoids multiple hash table lookups per individual native or script function call & saves on memory.
  
 
 Add more FileAccess methods:

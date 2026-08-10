@@ -128,6 +128,7 @@ enum VariantType : uint8_t {
 	STR,         // String data.
 	ARR,         // Array of Variants.
 	MAP,         // Unordered String:Variant pairs.
+	FUNC,        // Script or native callable.
 };
 
 
@@ -150,6 +151,7 @@ const std::unordered_map<const VariantType, const std::string> VARIANT_TYPE_NAME
 	{STR,          "STR"},
 	{ARR,          "ARR"},
 	{MAP,          "MAP"},
+	{FUNC,         "FUNC"},
 };
 
 

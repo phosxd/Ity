@@ -11,16 +11,16 @@ Variant LIB_IO_init(ScopeState& _state, const ARR_t& args) {
 
 
 
-std::unordered_map<uint8_t, std::vector<MAP_t>> LIB_IO_signal_functions;
+std::unordered_map<uint8_t, std::vector<FUNC_t>> LIB_IO_signal_functions;
 ScopeState* LIB_IO_state = nullptr; // NOTE: Would prefer not to store this here, it's ugly & prone to breaking if/when async becomes a thing.
 
 // Calls all script functions in `LIB_IO_signal_functions`.
 // Gets executed when we receive a system signal.
 void LIB_IO_on_signal_received(const int sig) {
 	// Iterate on each connected function for this signal & call it...
-	for (const MAP_t& func : LIB_IO_signal_functions[sig]) {
+	for (const FUNC_t& func : LIB_IO_signal_functions[sig]) {
 		Variant args = Variant{ARR, (ARR_t){}};
-		call_script_function(*LIB_IO_state, func, args);
+		call_function(*LIB_IO_state, func, args);
 	}
 };
 
@@ -28,18 +28,12 @@ void LIB_IO_on_signal_received(const int sig) {
 // Connect a system signal to a function.
 Variant LIB_IO_signal(ScopeState& state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {MAP}, 1)) return VariantPresets.none;
+	if (not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {FUNC}, 1)) return VariantPresets.none;
 
 	const uint8_t signal_number = (uint8_t)AnyCast(INT_t,args[0].d);
-	const MAP_t& func = AnyCast(MAP_t,args[1].d);
-	// Emit error if not a function object.
-	if (AnyCast(STR_t,func.at("__t").d) != "f") {
-		emit_error(ERR_invalid_func_arg_type, {"1", "MAP(f)", get_variant_type_name(args[1].t)});
-		return VariantPresets.none;
-	}
 
 	LIB_IO_state = get_state_at_id(state, 1); // Always run the function in the global state, even if it wasnt defined there.
-	LIB_IO_signal_functions[signal_number].push_back(func); // Add function to array.
+	LIB_IO_signal_functions[signal_number].push_back(AnyCast(FUNC_t,args[1].d)); // Add function to array.
 
 	// Connect signal...
 	switch (signal_number) {

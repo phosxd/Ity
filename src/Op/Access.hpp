@@ -12,10 +12,10 @@ const bool OP_Access_type_method(const std::string& type_name, const STR_t& meth
 
 	// Return the method.
 	if (it != methods.end()) {
-		MAP_t func = AnyCast(MAP_t,it->second.d); // Copy function.
-		func["__ba"].d = AnyCast(ARR_t,func["__ba"].d) + (ARR_t){Variant{PTR, o1}}; // Bind first variant to the function copy.
+		FUNC_t func = AnyCast(FUNC_t,it->second.d); // Copy function.
+		func.bound_args = func.bound_args + (ARR_t){Variant{PTR, o1}}; // Bind first variant to the function copy.
 		// Return copied function.
-		result = Variant{MAP, func, VariantMode_constant};
+		result = Variant{FUNC, func, VariantMode_constant};
 		return true;
 	}
 	return false;
@@ -85,45 +85,37 @@ void OP_Access_exec(ScopeState& state, Variant*& first, Variant*& second, const 
 	}
 
 
-		// Access object property.
-		// For hash tables, functions, or other objects.
+		// Access map object property.
 		case MAP: {
 			MAP_t& map = AnyCastV(MAP_t,o1->d);
-			// Determine type of the object.
-			const STR_t& obj_type = var_get_obj_type(map);
 
-			// Access function...
-			if (obj_type == "f") {
-				// Construct arguments array with user passed & bound arguments.
-				const ARR_t args_arr = AnyCast(ARR_t,map.at("__ba").d)
-				+ ( (second->t == ARR) ? AnyCast(ARR_t,second->d) : (ARR_t){*second} ); // Using "second" instead of "o2" is not a mistake, if it's a `REF`/`PTR` we don't want to use the referenced value. Pass the actual ref/ptr.
-				// Call native function...
-				if (const MAP_t::iterator& it = map.find("__nc"); it != map.end()) {
-					result = call_native_function(state, AnyCast(NativeFunc_t,it->second.d), args_arr);
-				}
-				// Call script function...
-				else {
-					Variant args {ARR, args_arr};
-					result = call_script_function(state, map, args);
-				}
+			// Throw error if accessor is not a string.
+			if (o2->t != STR) {
+				emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
+				return;
 			}
-			// Access as map if type doesn't match any of the above...
-			else {
-				// Throw error if accessor is not a string.
-				if (o2->t != STR) {
-					emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
-					return;
-				}
-				// Find key.
-				const STR_t& key = AnyCast(STR_t,o2->d);
-				const MAP_t::iterator& it = map.find(key);
-				if (it == map.end()) {
-					emit_error(ERR_no_property_with_name, {key});
-					return;
-				}
-				// Return Variant at the key.
-				result_ptr = &it->second;
+			// Find key.
+			const STR_t& key = AnyCast(STR_t,o2->d);
+			const MAP_t::iterator& it = map.find(key);
+			if (it == map.end()) {
+				emit_error(ERR_no_property_with_name, {key});
+				return;
 			}
+			// Return Variant at the key.
+			result_ptr = &it->second;
+			return;
+		}
+
+
+		// Access function call.
+		case FUNC: {
+			const FUNC_t& func = AnyCast(FUNC_t,o1->d);
+			// Construct arguments array with user passed & bound arguments.
+			const ARR_t args_arr = func.bound_args
+			+ ( (second->t == ARR) ? AnyCast(ARR_t,second->d) : (ARR_t){*second} ); // Using "second" instead of "o2" is not a mistake, if it's a `REF`/`PTR` we don't want to use the referenced value. Pass the actual ref/ptr.
+			// Call function.
+			Variant args {ARR, args_arr};
+			result = call_function(state, func, args);
 			return;
 		}
 
