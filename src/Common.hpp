@@ -112,9 +112,9 @@ const bool variant_type_matches(const Variant& a, const Variant& b, const bool d
 const size_t get_variant_size(const Variant& var) {
 	size_t size = sizeof(var.t) + sizeof(var.m);
 	switch (var.t) {
-		case INT:    {size += sizeof(AnyCast(INT_t,var.d)); break;}
+		case INT:    {size += sizeof(AnyCast(INT_t,var.d));   break;}
 		case FLOAT:  {size += sizeof(AnyCast(FLOAT_t,var.d)); break;}
-		case STR:    {size += AnyCast(STR_t,var.d).size(); break;}
+		case STR:    {size += AnyCast(STR_t,var.d).size();    break;}
 
 		case ARR: {
 			const ARR_t& d = AnyCast(ARR_t,var.d);

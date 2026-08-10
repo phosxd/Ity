@@ -104,7 +104,7 @@ void restore_ongoing_scopes() {
 const unsigned int get_state_size(const ScopeState& state) {
 	unsigned int final_size = 0;
 	for (const ScopeStateItem& i : state.d) {
-		final_size += sizeof(i.key) + sizeof(i.var.t) + sizeof(i.var.m) + get_variant_size(i.var);
+		final_size += sizeof(i.key) + get_variant_size(i.var);
 	}
 	return final_size;
 }
@@ -136,7 +136,7 @@ Variant* get_data_globally(ScopeState& state, const std::string& name, Variant* 
 
 inline void raw_set_data(ScopeState& state, const size_t& hashed_name, const Variant& data) {
 	if (ScopeStateItem* item = raw_get_data(state, hashed_name); item) item->var = data;
-	else state.d.push_back(ScopeStateItem(hashed_name, data));
+	else state.d.push_back(ScopeStateItem(hashed_name, std::move(data)));
 }
 
 

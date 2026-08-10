@@ -45,7 +45,7 @@ These results were recordered using the following specs:
 |
 |	1. C++		(GCC) 15.2.1 20260123 (Red Hat 15.2.1-7)		0.027s AVG
 |	2. Python	3.14.5											0.029s AVG
-|	3. Ity		0.2.0											0.102s AVG
+|	3. Ity		0.2.0											0.190s AVG
 |	Disqualified (no byte count):
 |	NA. Bash	5.3.0(1)-release (x86_64-redhat-linux-gnu)		134.7s ONCE
 |	NA. Kal		0.1.0											0.243s AVG
