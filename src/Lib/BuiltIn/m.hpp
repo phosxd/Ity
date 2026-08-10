@@ -3,13 +3,6 @@
 #include <thread> // Needed for sleep.
 
 
-// Called whenever the module is imported.
-// This can be called multiple times.
-Variant LIB_BI_init(ScopeState& state, const ARR_t& args) {
-	return VariantPresets.none;
-}
-
-
 
 // Override maximum execution depth.
 Variant LIB_BI_set_max_depth(ScopeState* state, const ARR_t& args) {
@@ -338,7 +331,6 @@ Variant LIB_BI_tm_func_bind(ScopeState& _state, ARR_t& args) {
 const Variant LIB_BI {
 	MAP, (MAP_t){
 		{"__name", Variant{STR, (STR_t)"BI", VariantMode_constant}},
-		{"__init", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_init)},
 
 
 		// Type methods.

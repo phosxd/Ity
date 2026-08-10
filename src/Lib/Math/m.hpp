@@ -3,17 +3,8 @@
 #include <cmath>
 
 
-const std::vector<VariantType> valid_types = {INT, FLOAT};
-
-
-Variant LIB_Math_init(ScopeState& _state, const ARR_t& args) {
-	return VariantPresets.none;
-}
-
-
 Variant LIB_Math_math(ScopeState& _state, const ARR_t& args, const std::string& func) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.none;
-	if (not expect_arg_types(args[0], valid_types, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT,FLOAT}, 0)) return VariantPresets.none;
 	const Variant& var = args[0];
 
 	VariantType type;
@@ -49,8 +40,10 @@ Variant LIB_Math_sqrt  (ScopeState& state, const ARR_t& args) {return LIB_Math_m
 
 
 Variant LIB_Math_pow(ScopeState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (not expect_arg_types(args[0], valid_types, 0) || not expect_arg_types(args[1], valid_types, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 2)
+	|| not expect_arg_types(args[0], {INT,FLOAT}, 0)
+	|| not expect_arg_types(args[1], {INT,FLOAT}, 1))
+	return VariantPresets.none;
 
 	return Variant{
 		FLOAT, (FLOAT_t)std::pow(
@@ -89,7 +82,6 @@ Variant LIB_Math_sum(ScopeState& _state, const ARR_t& args) {
 const Variant LIB_Math {
 	MAP, (MAP_t){
 		{"__name",     Variant{STR, (STR_t)"Math", VariantMode_constant}},
-		{"__init__",   NativeFuncTrans(NONE,   (NativeFunc_t)LIB_Math_init)},
 		{"abs",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_abs)},
 		{"floor",      NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_floor)},
 		{"ceil",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_ceil)},

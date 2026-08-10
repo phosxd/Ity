@@ -3,13 +3,6 @@
 #include <csignal>
 
 
-// Called whenever the module is imported.
-// This can be called multiple times.
-Variant LIB_IO_init(ScopeState& _state, const ARR_t& args) {
-	return VariantPresets.none;
-}
-
-
 
 std::unordered_map<uint8_t, std::vector<FUNC_t>> LIB_IO_signal_functions;
 ScopeState* LIB_IO_state = nullptr; // NOTE: Would prefer not to store this here, it's ugly & prone to breaking if/when async becomes a thing.
@@ -125,7 +118,6 @@ Variant LIB_IO_prompt(ScopeState& state, const ARR_t& args) {
 const Variant LIB_IO {
 	MAP, (MAP_t){
 		{"__name",  Variant{STR, (STR_t)"IO", VariantMode_constant}},
-		{"__init",  NativeFuncTrans(NONE,   (NativeFunc_t)LIB_IO_init)},
 
 		// System signals.
 		{"SIGNAL", Variant{

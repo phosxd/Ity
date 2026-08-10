@@ -92,7 +92,7 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 	}
 
 	// Get value from expression.
-	Variant var = *expr_exec(state, token.expr);
+	Variant& var = *expr_exec(state, token.expr);
 
 
 	if (token.symbol == InstSymbol_arg) {
