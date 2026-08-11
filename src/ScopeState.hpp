@@ -136,7 +136,7 @@ Variant* get_data_globally(ScopeState& state, const std::string& name, Variant* 
 
 inline void raw_set_data(ScopeState& state, const size_t& hashed_name, const Variant& data) {
 	if (ScopeStateItem* item = raw_get_data(state, hashed_name); item) item->var = data;
-	else state.d.push_back(ScopeStateItem(hashed_name, std::move(data)));
+	else state.d.push_back(ScopeStateItem(hashed_name, data));
 }
 
 

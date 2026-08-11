@@ -207,12 +207,13 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 	unsigned int col_offset = 0;
 	unsigned int skip_chars = 0;
 
-	bool is_start = true;
-	bool is_operator = false;
-	bool is_string = false;
+	bool is_start        = true;
+	bool is_operator     = false;
+	bool is_string       = false;
 	bool is_escaped_char = false;
-	bool is_array = false;
-	bool is_map = false;
+	bool is_array        = false;
+	bool is_map          = false;
+	bool is_grouping     = false;
 	bool next_ref_is_str = false;
 
 	size_t idx = 0;
@@ -251,54 +252,41 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 		}
 
 		// Compile array of expressions into a Variant.
-		else if (is_array || is_map) {
+		else if (is_array || is_map || is_grouping) {
 			const std::string& subexpr = expr.substr(i);
 			if (not subexpr.empty()) {
 				// Tokenize sub-expression & add to sequence.
 				item.seq = expr_tokenize(subexpr, ln_offset, col_offset).seq;
 				result_token.seq.push_back(item);
-				// Throw error if operator token found.
-				for (const ExprToken& subtoken : item.seq) {
-					if (subtoken.var.t == OP) {
-						emit_error(ERR_operators_not_allowed);
-						return result_token;
+
+				if (!is_grouping) {
+					// Throw error if operator token found.
+					for (const ExprToken& subtoken : item.seq) {
+						if (subtoken.var.t == OP) {
+							emit_error(ERR_operators_not_allowed);
+							return result_token;
+						}
 					}
 				}
+
 				// Skip over characters inside the sub-expression.
 				skip_chars = final_char_count;
 			}
-			if (is_array) is_array = false;
-			if (is_map) is_map = false;
-			item = ExprToken{ln_offset, col_offset, ExprTokenType_variant, {PLACEHOLDER}};
+			if (is_array)    is_array    = false;
+			if (is_map)      is_map      = false;
+			if (is_grouping) is_grouping = false;
+			item = ExprToken{
+				.ln  = ln_offset,
+				.col = col_offset,
+				.t   = ExprTokenType_variant,
+				.var = {PLACEHOLDER},
+			};
 			continue;
 		}
 
 		else {
 			// Ignore spaces.
 			if (ch == ' ' || ch == '\n' || ch == '\t') continue;
-
-			// Start sub-expression.
-			if (ch == '(') {
-				if (expr_len <= i+1) {
-					emit_error(ERR_unexpected_char_at_expr_end, {"("});
-					return result_token;
-				}
-				const std::string& subexpr = expr.substr(i+1);
-				clean_up_buffer(result_token, item, buffer);
-				// Create expression sequence token.
-				item = ExprToken{
-					.ln  = ln_offset,
-					.col = col_offset,
-					.t   = ExprTokenType_sequence,
-					.var = VariantPresets.empty,
-					.seq = expr_tokenize(subexpr, ln_offset, col_offset+1).seq
-				};
-				// Add to sequence.
-				result_token.seq.push_back(item);
-				// Skip over characters inside the sub-expression.
-				skip_chars = final_char_count+1;
-				continue;
-			}
 
 			// End expression.
 			if (ch == ')' || ch == ']' || ch == '}') {
@@ -364,6 +352,12 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 					is_start = false;
 					continue;
 				}
+				else if (ch == '(') {
+					item.t = ExprTokenType_sequence;
+					is_grouping = true;
+					is_start = false;
+					continue;
+				}
 				is_start = false;
 			}
 
@@ -410,16 +404,18 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 					// Convert reference dot accessor to proper accessor.
 					if (ch == '.') {
 						result_token.seq.push_back(ExprToken{
-							ln_offset, col_offset,
-							ExprTokenType_variant,
-							{
+							.ln  = ln_offset,
+							.col = col_offset,
+							.t   = ExprTokenType_variant,
+							.var = {
 								(item.var.t == STR) ? STR : TREF,
 								buffer,
-							}
+							},
 						});
 						result_token.seq.push_back(ExprToken{
-							.ln = ln_offset, .col = col_offset,
-							.t = ExprTokenType_variant,
+							.ln  = ln_offset,
+							.col = col_offset,
+							.t   = ExprTokenType_variant,
 							.var = {OP, find_OpDef_from_sym(OpSymbol_access)},
 						});
 						buffer.clear();
@@ -441,8 +437,9 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				}
 				// Append operator token.
 				result_token.seq.push_back(ExprToken{
-					.ln = ln_offset, .col = col_offset,
-					.t = ExprTokenType_variant,
+					.ln  = ln_offset,
+					.col = col_offset,
+					.t   = ExprTokenType_variant,
 					.var = {OP, std::move(op_def)},
 				});
 				buffer.clear();
@@ -585,12 +582,12 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 			if (op_def->op->pre_exec) {
 				// Skip evaluation of second Variant if pre_exec says so...
 				bool eval_second_operand = true;
-				pre_exec_result.t = PLACEHOLDER; // Reset the type for reuse.
 				// Run pre-executor.
 				op_def->op->pre_exec(state, result, op_def->sym, eval_second_operand, pre_exec_result, result);
 				if (not eval_second_operand) {
 					if (pre_exec_result.t != PLACEHOLDER) {
 						temporary_pool.push_back(std::move(pre_exec_result)); result = &temporary_pool.back();
+						pre_exec_result.t = PLACEHOLDER; // Reset the type for reuse.
 					}
 					op_def = nullptr;
 					continue;
@@ -607,11 +604,11 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 				return result;
 			}
 
-			op_result.t = PLACEHOLDER; // Reset the type for reuse.
 			op_def->op->exec(state, result, second, op_def->sym, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
 			// If we reveive a direct value, set the result to that.
 			if (op_result.t != PLACEHOLDER) {
 				temporary_pool.push_back(std::move(op_result)); result = &temporary_pool.back();
+				op_result.t = PLACEHOLDER; // Reset the type for reuse.
 			}
 
 			op_def = nullptr;

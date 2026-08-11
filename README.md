@@ -22,6 +22,7 @@ Ity is a work-in-progress, light-weight & embeddable interpreted programming lan
   - [Interpreter flags](#interpreter-flags)
 - [Language](#language)
   - [Docs](Docs/Main.md)
+  - [Features](#features)
   - [Rundown](#rundown)
   - [Examples](Scripts/)
 
@@ -139,10 +140,10 @@ Flags:
 	Enable all debug flags.
 - `-d-result`:
 	Print program times & other information when completed.
-- `-d-inst-seq`:
-	Print instructions as InstTokens as soon as they are parsed.
-- `-d-expr-seq`:
-	Print expressions as ExprTokens as soon as they are parsed.
+- `-d-inst`:
+	Print instructions as InstTokens as they're executed.
+- `-d-expr`:
+	Print expressions as ExprTokens as they're executed.
 - `-d-expr-result`:
 	Print results from expressions as soon as they are executed.
 - `-d-assign-data`:
