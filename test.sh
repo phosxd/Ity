@@ -1160,6 +1160,49 @@ print:( (get_f:[]):[] );
 
 # 50
 
+"
+# Ternary syntax
+# --------------
+
+merge IO;
+
+print: (1==1 ? 'a' -- 'b'); # Succeeds, so prints 'a'.
+print: (1==2 ? 'a' -- 'b'); # Fails, so prints 'b'.
+print: (true ? 'a');        # No exception, but succeeded, so prints 'a'.
+print: (false ? 'a');       # No exception, but failed, so prints void (no print).
+
+# Conditional function calls...
+1==1 ? (print:'a') -- (print:'b')); # TODO: fix required extra ')', weird ahh bug.
+1==2 ? (print:'a') -- (print:'b');
+"
+
+"a
+b
+a
+
+a
+b"
+
+# 51
+
+""
+
+""
+
+# 52
+
+""
+
+""
+
+# 53
+
+""
+
+""
+
+# 54
+
 ""
 
 ""

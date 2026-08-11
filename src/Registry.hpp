@@ -98,6 +98,9 @@ enum OpSymbol : uint8_t {
 	OpSymbol_cmp_and,
 	OpSymbol_cmp_or,
 
+	OpSymbol_ternary,
+	OpSymbol_ternary_else,
+
 	OpSymbol_type_cast,
 	OpSymbol_access,
 };

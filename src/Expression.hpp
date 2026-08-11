@@ -87,6 +87,7 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 #include "Op/Arith.hpp"
 #include "Op/Set.hpp"
 #include "Op/Compare.hpp"
+#include "Op/Ternary.hpp"
 #include "Op/Access.hpp"
 #include "Op/TypeCast.hpp"
 
@@ -118,6 +119,9 @@ const OpDef OPERATIONS[] = {
 	{OpSymbol_cmp_lteq, "<=",  OP_Compare},
 	{OpSymbol_cmp_and,  "&&",  OP_Compare},
 	{OpSymbol_cmp_or,   "||",  OP_Compare},
+
+	{OpSymbol_ternary,      "?",   OP_Ternary},
+	{OpSymbol_ternary_else, "--",  OP_Ternary},
 
 	{OpSymbol_type_cast, "->",  OP_TypeCast},
 	{OpSymbol_access,    ":",   OP_Access},
@@ -283,9 +287,11 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				clean_up_buffer(result_token, item, buffer);
 				// Create expression sequence token.
 				item = ExprToken{
-					ln_offset, col_offset,
-					ExprTokenType_sequence, VariantPresets.empty,
-					expr_tokenize(subexpr, ln_offset, col_offset+1).seq
+					.ln  = ln_offset,
+					.col = col_offset,
+					.t   = ExprTokenType_sequence,
+					.var = VariantPresets.empty,
+					.seq = expr_tokenize(subexpr, ln_offset, col_offset+1).seq
 				};
 				// Add to sequence.
 				result_token.seq.push_back(item);
@@ -302,7 +308,12 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 			if (is_start) {
 				const bool next_ref_is_str_ = next_ref_is_str;
 				next_ref_is_str = false;
-				item = ExprToken{ln_offset, col_offset, ExprTokenType_variant, {PLACEHOLDER}};
+				item = ExprToken{
+					.ln  = ln_offset,
+					.col = col_offset,
+					.t   = ExprTokenType_variant,
+					.var = {PLACEHOLDER},
+				};
 				// Set type integer.
 				if ((NUM.find(ch) != std::string::npos) || (ch == '-' && (expr_len > i && NUM.find(expr[i+1]) != std::string::npos ))) {
 					item.var.t = INT;
@@ -407,9 +418,9 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 							}
 						});
 						result_token.seq.push_back(ExprToken{
-							ln_offset, col_offset,
-							ExprTokenType_variant,
-							{OP, find_OpDef_from_sym(OpSymbol_access)},
+							.ln = ln_offset, .col = col_offset,
+							.t = ExprTokenType_variant,
+							.var = {OP, find_OpDef_from_sym(OpSymbol_access)},
 						});
 						buffer.clear();
 						next_ref_is_str = true;
@@ -430,9 +441,9 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				}
 				// Append operator token.
 				result_token.seq.push_back(ExprToken{
-					ln_offset, col_offset,
-					ExprTokenType_variant,
-					{OP, std::move(op_def)},
+					.ln = ln_offset, .col = col_offset,
+					.t = ExprTokenType_variant,
+					.var = {OP, std::move(op_def)},
 				});
 				buffer.clear();
 				is_operator = false;

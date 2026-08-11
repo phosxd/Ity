@@ -49,8 +49,6 @@ a; # Resolves to 5
 ## NONE
 This type holds no value. You can pass it by typing `none`.
 
-This cannot be operated on in any way, the only operator this can be used with is the equality operator (`==`).
-
 ## BOOL
 Holds a binary value (0 or 1). You can pass it by typing `true` or `false`.
 
@@ -76,7 +74,7 @@ Holds a 64-bit signed floating point number.  It has a range of 1.7e−308 to 1.
 ```
 
 ## STR
-Holds a string of UTF-8 encoded characters.
+Holds an array of single-byte characters. UTF-8 characters can be represented as multiple bytes.
 
 ```python
 "This is a string";
@@ -388,6 +386,27 @@ The type-cast operator will attempt to translate the first value to the target t
 
 9_350 -> STR;    # Gives "9350"
 '10250' -> INT;  # Gives 10_250
+```
+
+### Ternary ( ?  -- )
+The ternary operation is split across 2 operator symbols. The first symbol (`?`) returns the second operand only if the first operand is `true`, otherwise an internal variant is returned, which cannot be used.
+
+The second symbol (`--`) returns the second operand only if the first operand is *not* an internal variant.
+
+In conjunction, these 2 operators form a [ternary conditional operator](https://en.wikipedia.org/wiki/Ternary_conditional_operator).
+
+```python
+const some_value = true ? 1 -- 2;
+# some_value = 1;
+
+# Condtional function calls with ternary...
+import IO;
+func NONE f1; IO.print:1 /;
+func NONE f2; IO.print:2; /;
+
+const x = 100;
+x==99 ? (f1:[]) -- (f2:[]);
+# 2
 ```
 
 ## Assignment

@@ -153,9 +153,32 @@ Flags:
 - `-tabs=*`:
 	(Default: 4). Change this to the tab width you use in your text editor for more accurate error column counting.
 
+---
 
 # Language
 The full documentation is available [here](Docs/Main.md). This explains everything in great detail.
+
+## Features
+
+- Implicit, explicit, & dynamic typing.
+- Nones, bools, integers, floats, strings, arrays, maps, references, pointers, & internals.
+- Extendable & overwritable type-specific methods.
+
+- Arithmetic operators: `+`, `-`, `*`, `/`, `%`.
+- Assignment operators: `=`, `+=`, `-=`, `*=`, `/=`, `%=`, `<<=` (move).
+- Conditional operators: `==`, `!=`, `>`, `>=`, `<`, `<=`, `&&`, `||`.
+- Ternary operators for one-liner conditionals: `?`, `--`.
+- Type-cast & accessor operators: `->`, `:`.
+
+- If-elif-else conditional blocks.
+- Repeatable blocks using "while" & "for".
+- User define-able iterators for use inside for-loops.
+
+- Callable blocks using "func".
+- Defaultable function arguments & dynamic argument counting+iteration.
+- Function binding via `.bind` function type method.
+
+- Error throwing / early exit using "throw \<error\>" or "exit \<code\>".
 
 ## Rundown
 

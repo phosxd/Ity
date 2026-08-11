@@ -311,15 +311,14 @@ Variant LIB_BI_tm_map_set(ScopeState& _state, ARR_t& args) {
 
 // Bind arguments to the function.
 Variant LIB_BI_tm_func_bind(ScopeState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (not expect_arg_types(args[1], {ARR}, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {ARR}, 1)) return VariantPresets.none;
 
 	// Get data.
-	MAP_t data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d ); // Copy the function.
+	FUNC_t data = AnyCast(FUNC_t, AnyCastV(Variant*,args[0].d)->d ); // Copy the function.
 	// Add the given array to the function's bounded arguments.
-	data["__ba"].d = AnyCast(ARR_t,data["__ba"].d) + AnyCast(ARR_t,args[1].d);
+	data.bound_args = data.bound_args + AnyCast(ARR_t,args[1].d);
 	// Return the new function.
-	return Variant{MAP, data};
+	return Variant{FUNC, data};
 }
 
 
@@ -348,7 +347,7 @@ const Variant LIB_BI {
 				{"MAP:has",     NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_BI_tm_map_has)},
 				{"MAP:set",     NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_map_set)},
 
-				{"MAP(f):bind",  NativeFuncTrans(MAP,  (NativeFunc_t)LIB_BI_tm_func_bind)},
+				{"FUNC:bind",  NativeFuncTrans(MAP,  (NativeFunc_t)LIB_BI_tm_func_bind)},
 		}, VariantMode_locked_type }},
 
 

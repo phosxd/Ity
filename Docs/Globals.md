@@ -60,7 +60,6 @@ sleep:1; # Pause for 1 second.
 sleep:0.5; # Pause for half of a second.
 ```
 
-
 ### STR type_name (ANY var)
 A function that returns a `STR` representing the active type of a given variable.
 
@@ -212,7 +211,7 @@ map.keys:[]; # Returns ["c", "b", "a"].
 ### BOOL `MAP`.has (STR key)
 Returns whether or not the given key exists inside the map.
 
-### MAP(f) `MAP(f)`.bind (ARR args)
+### FUNC `FUNC`.bind (ARR args)
 Returns a new function object with the given `ARR` added to it's bound arguments.
 
 Calling a function with bound arguments will pass them as the first arguments into the function, user specified arguments will be last.
@@ -224,6 +223,6 @@ func BOOL flip; arg BOOL value;
 /;
 
 
-const MAP bound_flip_function = ( flip.bind:[[true]] );
+const FUNC bound_flip_function = flip.bind:[[true]];
 bound_flip_function:[]; # Returns false, because we bound true to the first argument.
 ```
