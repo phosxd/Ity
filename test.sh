@@ -1027,7 +1027,7 @@ merge IO;
 
 func NONE do_modification; arg REF obj;
 	if type:[~obj] != ARR;
-		throw 'Invalid reference value, not an array.';
+		throw 'Invalid reference value, expected array, got ' + (type_name:~obj) + '.';
 	/;
 	obj += [3]; # Add an item to the referenced array.
 /;

@@ -403,14 +403,12 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				else if (item.var.t == TREF || (item.var.t == STR && not is_string)) {
 					// Convert reference dot accessor to proper accessor.
 					if (ch == '.') {
+						const VariantType type = (item.var.t == STR) ? STR : TREF;
 						result_token.seq.push_back(ExprToken{
 							.ln  = ln_offset,
 							.col = col_offset,
 							.t   = ExprTokenType_variant,
-							.var = {
-								(item.var.t == STR) ? STR : TREF,
-								buffer,
-							},
+							.var = {type, get_literal_from_str(type, buffer)},
 						});
 						result_token.seq.push_back(ExprToken{
 							.ln  = ln_offset,
@@ -464,27 +462,25 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 Variant* resolve_variant(ScopeState& state, Variant& item) {
 	// If typed reference...
 	if (item.t == TREF) {
-		const STR_t& name = AnyCast(STR_t,item.d);
-		const STR_t& real_name = trim_left(trim_left(name,'@'),'~');
-
+		const TREF_t& tref = AnyCast(TREF_t,item.d);
 		// Get variable.
-		Variant* ptr = get_data_globally(state, real_name);
+		Variant* ptr = get_data_globally(state, tref.str, nullptr, tref.hash);
 
 		// Throw error if variable is undefined.
 		if (not ptr) {
-			emit_error(ERR_name_does_not_exist, {real_name});
+			emit_error(ERR_name_does_not_exist, {tref.str});
 			return &item;
 		}
 
 		// Create named ref.
-		if (name[0] == '@') {temporary_pool.push_back(Variant{REF, real_name}); return &temporary_pool.back();}
+		if (tref.mode == 1) {temporary_pool.push_back(Variant{REF, tref.str}); return &temporary_pool.back();}
 		// Deref pointer or named reference.
-		else if (name[0] == '~') {
+		else if (tref.mode == 2) {
 			switch (ptr->t) {
 				case REF: return get_data_globally(state, AnyCast(STR_t,ptr->d), &none_var);
 				case PTR: return AnyCast(Variant*,ptr->d);
 				default: {
-					emit_error(ERR_cannot_dereference, {real_name});
+					emit_error(ERR_cannot_dereference, {tref.str});
 					return &item;
 				}
 			}

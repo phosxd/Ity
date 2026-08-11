@@ -47,6 +47,7 @@ using ARR_t = std::vector<Variant>;
 using MAP_t = std::unordered_map<STR_t,Variant>;
 using NativeFunc_t = Variant(*)(ScopeState& state, const ARR_t& args);
 
+#pragma pack(1)
 struct FUNC_t {
 	// Common parameters...
 	VariantType return_type = NONE;
@@ -58,6 +59,13 @@ struct FUNC_t {
 
 	// Native functions only...
 	NativeFunc_t native_callable = nullptr;
+};
+
+#pragma pack(1)
+struct TREF_t {
+	std::string str;
+	size_t hash = 0;
+	uint8_t mode = 0; // 0 = normal, 1 = create ref, 2 = resolve ref.
 };
 
 using VariantData = std::variant<
@@ -73,6 +81,7 @@ using VariantData = std::variant<
 	FUNC_t,
 
 	// Internal types.
+	TREF_t,
 	size_t,
 	uint16_t,
 	VariantType,
@@ -613,7 +622,19 @@ const std::string multiple_types_str(const std::vector<VariantType>& types) {
 
 
 VariantData get_literal_from_str(const VariantType& type, const std::string& str_val) {
-	if (type == TREF || type == REF || type == STR) return str_val;
+	if (type == TREF) {
+		const STR_t& real_name = trim_left(trim_left(str_val,'@'),'~');
+		uint8_t mode = 0;
+		if (str_val[0] == '@') mode = 1;
+		if (str_val[0] == '~') mode = 2;
+		return TREF_t{
+			.str  = real_name,
+			.hash = string_hasher(real_name),
+			.mode = mode,
+		};
+	}
+
+	else if (type == REF || type == STR) return str_val;
 	else if (type == BOOL) return str_val == "true";
 	else if (type == INT) {
 		if (is_int_str_32_in_range(str_val)) return (INT_t)std::stoi(str_val);
