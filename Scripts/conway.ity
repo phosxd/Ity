@@ -1,3 +1,5 @@
+#!/usr/local/bin/ity
+
 merge IO;
 import Time;
 import Math;
@@ -6,8 +8,8 @@ import Math;
 const FPS = 8;
 const FPS_ms = 1000 / FPS;
 
-const CELL_ON =  '⬜';
-const CELL_OFF = '⬛';
+const CELL_ON =  '██';
+const CELL_OFF = '  ';
 
 # Allow user defined world size.
 const WORLD_SIZE = {'x',25, 'y',20};
@@ -51,7 +53,6 @@ func NONE _game_init;
 
 func NONE _game_next;
 	const w = WORLD_SIZE.x;
-	var x = 0;
 	var buf = GAME.cells; # Copy cells into writable buffer.
 	for i in GAME.cell_count;
 		if is_cell_border:i; continue; /;
@@ -117,8 +118,7 @@ while true;
 	var i = -1;
 	for cell in GAME.cells; i+=1;
 		if is_cell_border:i; continue; /;
-		if cell == 1; frame += CELL_ON;  /;
-		else;         frame += CELL_OFF; /;
+		frame += (cell == 1 ? CELL_ON -- CELL_OFF);
 		if GAME.cell_x:(i+2) == 0;
 			frame += '\n';
 		/;
@@ -133,20 +133,19 @@ while true;
 
 	# Calculate time taken to run.
 	const delta = (Time.now:'ms' - start_time);
-	const sleep_time = (FPS_ms-delta / 1_000.0);
+	const sleep_time = (FPS_ms-delta) / 1_000.0;
 
 	# Print seed.
 	out:['Seed: ',SEED_in,'  |  '];
 	# Print frame time info.
 	out:'Frame time: ';
-	if sleep_time <= 0; out:(ANSI.red); /;
-	else; out:(ANSI.green); /;
+	(sleep_time <= 0) ? (out:(ANSI.red)) -- (out:(ANSI.green));
 	out:(delta/1_000.0);
 	out:(ANSI.reset);
 	out:[' / ',(FPS_ms/1_000.0)];
 
 	# Sleep for the remainder of the frame time.
 	if sleep_time > 0;
-		sleep:(FPS_ms-delta / 1_000.0);
+		sleep:sleep_time;
 	/;
 /;

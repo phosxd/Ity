@@ -123,6 +123,7 @@ const size_t get_variant_size(const Variant& var) {
 	switch (var.t) {
 		case INT:    {size += sizeof(AnyCast(INT_t,var.d));   break;}
 		case FLOAT:  {size += sizeof(AnyCast(FLOAT_t,var.d)); break;}
+		case REF:
 		case STR:    {size += AnyCast(STR_t,var.d).size();    break;}
 
 		case ARR: {
@@ -157,7 +158,7 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 	switch (var.t) {
 		// Meta types.
 		case OP:   {os << "OP:"   << AnyCast(const OpDef*,var.d); break;}
-		case TREF: {os << "TREF:" << AnyCast(STR_t,var.d); break;}
+		case TREF: {os << "TREF:" << AnyCast(TREF_t,var.d).str; break;}
 
 		// Real types.
 		case NONE:  {os << "none";                                 break;}

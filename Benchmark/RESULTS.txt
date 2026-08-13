@@ -11,13 +11,24 @@ These results were recordered using the following specs:
 
 [---------------------------------------------------------------------------]
 |
+|	IDLE START:
+|	-----------
+|
+|	Program shell startup memory.
+|
+|	1. Ity		0.2.0											407  KiB
+|	2. Python	3.14.5											10.8 MiB
+|	3. NodeJS	22.22.2											44.8 MiB
+|
+|
+|
 |	LOOP:
 |	-----
 |
 |	Input: 100000
 |
 |	1. C++		(GCC) 15.2.1 20260123 (Red Hat 15.2.1-7)		0.098s AVG
-|	2. Ity		0.2.0											0.182s AVG
+|	2. Ity		0.2.0											0.174s AVG
 |	3. Python	3.14.5											0.240s AVG
 |	4. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		0.332s AVG
 |	5. Kal		0.1.0											0.681s AVG
@@ -32,7 +43,7 @@ These results were recordered using the following specs:
 |	1. C++		(GCC) 15.2.1 20260123 (Red Hat 15.2.1-7)		0.014s AVG
 |	2. Python	3.14.5											0.105s AVG
 |	3. NodeJS	22.22.2											0.153s AVG
-|	4. Ity		0.2.0											0.568s AVG
+|	4. Ity		0.2.0											0.514s AVG
 |	5. Kal		0.1.0											24.46s AVG
 |	6. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		63.72s AVG
 |
@@ -49,6 +60,14 @@ These results were recordered using the following specs:
 |	Disqualified (no byte count):
 |	NA. Bash	5.3.0(1)-release (x86_64-redhat-linux-gnu)		134.7s ONCE
 |	NA. Kal		0.1.0											0.243s AVG
+|
+|	MEM (Prog. total):
+|
+|	1. C++		(GCC) 15.2.1 20260123 (Red Hat 15.2.1-7)		64.2 MIB
+|	2. Ity		0.2.0											64.4 MIB
+|	3. Kal		0.1.0											64.5 MIB
+|	4. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		66.0 MIB
+|	5. Python	3.14.5											67.8 MIB
 |
 [---------------------------------------------------------------------------]
 

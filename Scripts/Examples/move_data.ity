@@ -1,0 +1,25 @@
+merge IO;
+import Time;
+
+var all_the_data = [];
+const do_copy = prompt:'Do copy (true or false)? ' -> BOOL;
+print:['Picked: ', (do_copy->STR), '\n'];
+
+const start = Time.now:'ms';
+
+
+for i in 3;
+	print:i;
+	var big_data = range:1_000_000;
+	if do_copy;
+		all_the_data.append:[big_data];
+	/;
+	else;
+		all_the_data.append:none;
+		all_the_data:(-1) <<= big_data;
+	/;
+/;
+
+
+print:['\nDone in ', ((Time.now:'ms'-start) / 1000.0), 's.'];
+print:['Data size: ', (size:[all_the_data]), ' bytes.'];
