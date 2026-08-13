@@ -74,6 +74,31 @@ Variant LIB_Math_sum(ItyState& _state, const ARR_t& args) {
 }
 
 
+// Return a random number in range of `min` & `max` integer arguments.
+Variant LIB_Math_rand(ItyState& _state, const ARR_t& args) {
+	if (not expect_arg_count(args, 2)
+		|| not expect_arg_types(args[0], {INT}, 0)
+		|| not expect_arg_types(args[1], {INT}, 1)
+	) return VariantPresets.none;
+
+	const INT_t& min = AnyCast(INT_t,args[0].d);
+	const INT_t& max = AnyCast(INT_t,args[1].d);
+
+	return Variant{INT, (INT_t)(std::rand() % (max-min+1) + min)};
+}
+
+
+// Return a random number in range of `min` & `max` integer arguments.
+Variant LIB_Math_set_seed(ItyState& _state, const ARR_t& args) {
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT}, 0)) return VariantPresets.none;
+
+	const INT_t& seed = AnyCast(INT_t,args[0].d);
+	std::srand(seed);
+
+	return VariantPresets.none;
+}
+
+
 
 
 // DEFINE MAPPINGS
@@ -89,6 +114,8 @@ const Variant LIB_Math {
 		{"sqrt",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_sqrt)},
 		{"pow",        NativeFuncTrans(FLOAT,  (NativeFunc_t)LIB_Math_pow)},
 		{"sum",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_sum)},
+		{"rand",       NativeFuncTrans(INT,    (NativeFunc_t)LIB_Math_rand)},
+		{"set_seed",   NativeFuncTrans(INT,    (NativeFunc_t)LIB_Math_set_seed)},
 	},
 	VariantMode_constant
 };

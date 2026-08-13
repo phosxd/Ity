@@ -2,6 +2,11 @@
 
 UINT_t ItyScope_current_id = 0;
 
+// Modified by "While", "If", & "End" instructions.
+std::vector<InstToken*> scoped_tokens;
+// Managed by `ItyScope*_ongoing_scopes` functions.
+std::vector<std::vector<InstToken*>> scoped_tokens_stack;
+
 
 
 
@@ -13,11 +18,6 @@ struct ScopeItem {
 
 
 using ScopeMap_t = std::vector<ScopeItem>;
-
-// Modified by "While", "If", & "End" instructions.
-std::vector<InstToken*> scoped_tokens;
-// Managed by `ItyScope*_ongoing_scopes` functions.
-std::vector<std::vector<InstToken*>> scoped_tokens_stack;
 
 
 #pragma pack(1)
@@ -38,6 +38,17 @@ struct ItyScope {
 		}
 
 		return this;
+	}
+
+
+	// Returns the cumulative size of all Variants in the scope.
+	// This does *not* account for the data inside the scope's parent.
+	const unsigned int get_size() {
+		unsigned int final_size = 0;
+		for (const ScopeItem& i : d) {
+			final_size += sizeof(i.key) + get_variant_size(i.var);
+		}
+		return final_size;
 	}
 
 
@@ -78,17 +89,6 @@ struct ItyScope {
 	// Clears all data in the scope. Useful for loops that reuse the same scope.
 	inline void flush() {
 		d.clear();
-	}
-
-
-	// Returns the cumulative size of all Variants in the scope.
-	// This does *not* account for the data inside the scope's parent.
-	const unsigned int get_size() {
-		unsigned int final_size = 0;
-		for (const ScopeItem& i : d) {
-			final_size += sizeof(i.key) + get_variant_size(i.var);
-		}
-		return final_size;
 	}
 
 
@@ -147,6 +147,37 @@ struct ItyScope {
 		if (get_data(name)) set_data(name, type, data, mode, hashed_name);
 		else if (p) return p->set_data_globally(name, type, data, mode, hashed_name);
 	}
+
+
+
+
+	// Merge all public members of the `map` into the scope.
+	void merge_module(const MAP_t& map) {
+		for (const auto& i : map) {
+			const std::string& prop_name = i.first;
+
+			if (prop_name == "__tm") {
+				Variant* data = get_data("__tm__");
+				if (not data) raw_set_data(HASHED_NAMES.__tm__, i.second);
+				else data->d = (AnyCast(MAP_t,data->d) + AnyCast(MAP_t,i.second.d));
+			}
+
+			if (prop_name.starts_with("__")) continue; // Skip private members.
+			set_data(prop_name, i.second.t, i.second, i.second.m);
+		}
+	}
+
+
+	void import_module(const std::string& name, const MAP_t& map) {
+		const auto& it = map.find("__tm");
+		if (it != map.end()) {
+			Variant* data = get_data("__tm__");
+			if (not data) raw_set_data(HASHED_NAMES.__tm__, it->second);
+			else data->d = (AnyCast(MAP_t,data->d) + AnyCast(MAP_t,it->second.d));
+		}
+
+		set_data(name, MAP, Variant{MAP, map}, VariantMode_constant);
+	}
 };
 
 
@@ -188,37 +219,6 @@ void push_back_ongoing_scopes() {
 void restore_ongoing_scopes() {
 	scoped_tokens = scoped_tokens_stack.back();
 	scoped_tokens_stack.pop_back();
-}
-
-
-
-
-// Merge all public members of the `map` into the scope.
-void merge_module(ItyScope& scope, const MAP_t& map) {
-	for (const auto& i : map) {
-		const std::string& prop_name = i.first;
-
-		if (prop_name == "__tm") {
-			Variant* data = scope.get_data("__tm__");
-			if (not data) scope.raw_set_data(HASHED_NAMES.__tm__, i.second);
-			else data->d = (AnyCast(MAP_t,data->d) + AnyCast(MAP_t,i.second.d));
-		}
-
-		if (prop_name.starts_with("__")) continue; // Skip private members.
-		scope.set_data(prop_name, i.second.t, i.second, i.second.m);
-	}
-}
-
-
-void import_module(ItyScope& scope, const std::string& name, const MAP_t& map) {
-	const auto& it = map.find("__tm");
-	if (it != map.end()) {
-		Variant* data = scope.get_data("__tm__");
-		if (not data) scope.raw_set_data(HASHED_NAMES.__tm__, it->second);
-		else data->d = (AnyCast(MAP_t,data->d) + AnyCast(MAP_t,it->second.d));
-	}
-
-	scope.set_data(name, MAP, Variant{MAP, map}, VariantMode_constant);
 }
 
 

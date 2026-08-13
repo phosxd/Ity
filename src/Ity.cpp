@@ -401,7 +401,7 @@ void start_shell(int argc, char* argv[]) {
 		{string_hasher("__HAS_RUNTIME_DEBUG__"),      Variant(BOOL, (bool)has_runtime_debug, VariantMode_constant)},
 	}));
 	// Merge built-in module.
-	merge_module(state.scope, AnyCast(MAP_t,LIB_BI.d));
+	state.scope.merge_module(AnyCast(MAP_t,LIB_BI.d));
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 	std::srand(RANDOM_SEED);

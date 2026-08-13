@@ -26,7 +26,7 @@ for ch in SEED_in;
 	SEED += 1;
 	SEED *= (ch.raw:[]); # Convert character to ASCII code & multiply that with the seed.
 /;
-set_seed:SEED;
+Math.set_seed:SEED;
 
 
 
@@ -40,7 +40,7 @@ func NONE _game_init;
 				GAME.cells.append:0;
 			/;
 			# Otherwise set to random state.
-			else; GAME.cells.append:(rand:[0,1]); /;
+			else; GAME.cells.append:(Math.rand:[0,1]); /;
 		/;
 	/;
 	# Precalculate edges.

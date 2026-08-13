@@ -58,9 +58,9 @@ void INST_Import_exec(ItyState& state, InstToken& token) {
 	const MAP_t& lib_map = AnyCast(MAP_t,lib->d);
 	//std::any_cast<NativeFunc_t>(lib_map.at("__init").d) (state, {}); // Call init function.
 	// Merge all public members of the library into the scope.
-	if (token.symbol == InstSymbol_merge) merge_module(state.scope, lib_map);
+	if (token.symbol == InstSymbol_merge) state.scope.merge_module(lib_map);
 	// Add library to scope with the given name.
-	else import_module(state.scope, applied_name, lib_map);
+	else state.scope.import_module(applied_name, lib_map);
 }
 
 

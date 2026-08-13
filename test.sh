@@ -996,9 +996,11 @@ f2:[];
 # 43
 
 "
+import Math;
+
 func INT f2;
 	for i in 2;
-		return rand:[0,100];
+		return Math.rand:[0,100];
 	/;
 /;
 
