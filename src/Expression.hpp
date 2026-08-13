@@ -8,7 +8,7 @@ std::vector<std::vector<Variant>> temporary_pool_stack;
 
 
 // Call a function.
-Variant call_function(ScopeState& state, const FUNC_t& func, Variant& args) {
+Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 	if (func.native_callable) {
 		return func.native_callable(state, AnyCast(ARR_t,args.d));
 	}
@@ -34,13 +34,13 @@ Variant call_function(ScopeState& state, const FUNC_t& func, Variant& args) {
 		temporary_pool = {};
 
 		// Create an alternate scope, for use inside the function.
-		ScopeState func_state = create_new_scope_state(
+		ItyState func_state = create_new_state(create_new_scope(
 			(ScopeMap_t){
 				{HASHED_NAMES.__AG, std::move(args)},
 				{HASHED_NAMES.__R,  Variant{func.return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
 			},
-			get_state_at_id(state, func.definition_state_id) // Use function definition scope as the parent.
-		);
+			state.scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
+		));
 
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;
@@ -55,7 +55,7 @@ Variant call_function(ScopeState& state, const FUNC_t& func, Variant& args) {
 
 
 		// Get result & check if return type matches.
-		const Variant& func_result = raw_get_data(func_state, HASHED_NAMES.__R)->var;
+		const Variant& func_result = func_state.scope.raw_get_data(HASHED_NAMES.__R)->var;
 		if (func_result.t != func.return_type && func.return_type != ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func.return_type)});
 		// Return result.
 		//call_trace.pop_back(); call_trace.pop_back();
@@ -64,7 +64,7 @@ Variant call_function(ScopeState& state, const FUNC_t& func, Variant& args) {
 		if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
 		#endif
 
-		args = std::move(raw_get_data(func_state, HASHED_NAMES.__AG)->var);
+		args = std::move(func_state.scope.raw_get_data(HASHED_NAMES.__AG)->var);
 		return func_result;
 	}
 }
@@ -78,7 +78,7 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 }
 
 
-#define resovlve_potential_ref(state, var) (var->t == REF) ? get_data_globally(state, AnyCast(STR_t,var->d), &none_var) : ((var->t == PTR) ? AnyCast(Variant*,var->d) : var);
+#define resovlve_potential_ref(state, var) (var->t == REF) ? state.scope.get_data_globally(AnyCast(STR_t,var->d), &none_var) : ((var->t == PTR) ? AnyCast(Variant*,var->d) : var);
 
 
 
@@ -459,12 +459,12 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 
 
 
-Variant* resolve_variant(ScopeState& state, Variant& item) {
+Variant* resolve_variant(ItyState& state, Variant& item) {
 	// If typed reference...
 	if (item.t == TREF) {
 		const TREF_t& tref = AnyCast(TREF_t,item.d);
 		// Get variable.
-		Variant* ptr = get_data_globally(state, tref.str, nullptr, tref.hash);
+		Variant* ptr = state.scope.get_data_globally(tref.str, nullptr, tref.hash);
 
 		// Throw error if variable is undefined.
 		if (not ptr) {
@@ -477,7 +477,7 @@ Variant* resolve_variant(ScopeState& state, Variant& item) {
 		// Deref pointer or named reference.
 		else if (tref.mode == 2) {
 			switch (ptr->t) {
-				case REF: return get_data_globally(state, AnyCast(STR_t,ptr->d), &none_var);
+				case REF: return state.scope.get_data_globally(AnyCast(STR_t,ptr->d), &none_var);
 				case PTR: return AnyCast(Variant*,ptr->d);
 				default: {
 					emit_error(ERR_cannot_dereference, {tref.str});
@@ -495,7 +495,7 @@ Variant* resolve_variant(ScopeState& state, Variant& item) {
 
 
 // Execute a sequence of ExprTokens. `token` itself is an ExprToken which should contain a sequence in `ExprToken.seq`.
-Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=false) {
+Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false) {
 	// Output sequence in debug mode.
 	#ifdef RUNTIME_DEBUG
 	if (debug_flags.expr && not subexpr) {
@@ -641,7 +641,7 @@ Variant* expr_exec_(ScopeState& state, ExprToken& token, const bool subexpr=fals
 
 
 
-Variant* expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false) {
+Variant* expr_exec(ItyState& state, ExprToken& token, const bool subexpr=false) {
 	temporary_pool.clear();
 	// `std::vector` invalidates all references to items inside it when it reallocates, reserve an upper-limit to make sure we wont reallocate.
 	if (temporary_pool.capacity() < MAX_TEMPORARY_POOL_RESERVE) temporary_pool.reserve(MAX_TEMPORARY_POOL_RESERVE);
@@ -660,7 +660,7 @@ Variant* expr_exec(ScopeState& state, ExprToken& token, const bool subexpr=false
 
 
 // Tokenize then execute an expression.
-Variant expr_run(ScopeState& state, const std::string& expr) {
+Variant expr_run(ItyState& state, const std::string& expr) {
 	ExprToken tokens = expr_tokenize(expr, current_line, current_column);
 	return *expr_exec(state, tokens);
 }

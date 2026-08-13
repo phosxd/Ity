@@ -5,7 +5,7 @@
 
 
 std::unordered_map<uint8_t, std::vector<FUNC_t>> LIB_IO_signal_functions;
-ScopeState* LIB_IO_state = nullptr; // NOTE: Would prefer not to store this here, it's ugly & prone to breaking if/when async becomes a thing.
+ItyScope* LIB_IO_scope = nullptr; // NOTE: Would prefer not to store this here, it's ugly & prone to breaking if/when async becomes a thing.
 
 // Calls all script functions in `LIB_IO_signal_functions`.
 // Gets executed when we receive a system signal.
@@ -13,19 +13,20 @@ void LIB_IO_on_signal_received(const int sig) {
 	// Iterate on each connected function for this signal & call it...
 	for (const FUNC_t& func : LIB_IO_signal_functions[sig]) {
 		Variant args = Variant{ARR, (ARR_t){}};
-		call_function(*LIB_IO_state, func, args);
+		ItyState alt_state = create_new_state(*LIB_IO_scope);
+		call_function(alt_state, func, args);
 	}
 };
 
 
 // Connect a system signal to a function.
-Variant LIB_IO_signal(ScopeState& state, const ARR_t& args) {
+Variant LIB_IO_signal(ItyState& state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 	if (not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {FUNC}, 1)) return VariantPresets.none;
 
 	const uint8_t signal_number = (uint8_t)AnyCast(INT_t,args[0].d);
 
-	LIB_IO_state = get_state_at_id(state, 1); // Always run the function in the global state, even if it wasnt defined there.
+	LIB_IO_scope = state.scope.get_scope_at_id(1); // Always run the function in the global scope, even if it wasnt defined there.
 	LIB_IO_signal_functions[signal_number].push_back(AnyCast(FUNC_t,args[1].d)); // Add function to array.
 
 	// Connect signal...
@@ -40,7 +41,7 @@ Variant LIB_IO_signal(ScopeState& state, const ARR_t& args) {
 
 
 // Wait for then return a response.
-Variant LIB_IO_in(ScopeState& _state, const ARR_t& args) {
+Variant LIB_IO_in(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 0)) return VariantPresets.none;
 	std::string input_line;
 	std::getline(std::cin, input_line);
@@ -49,7 +50,7 @@ Variant LIB_IO_in(ScopeState& _state, const ARR_t& args) {
 
 
 // Wait for a key press then return it.
-Variant LIB_IO_key_in(ScopeState& _state, const ARR_t& args) {
+Variant LIB_IO_key_in(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 0)) return VariantPresets.none;
 
 	// These are both hacky solutions but it gets the job done.
@@ -73,7 +74,7 @@ Variant LIB_IO_key_in(ScopeState& _state, const ARR_t& args) {
 
 
 // Output text.
-Variant LIB_IO_out(ScopeState& state, const ARR_t& args) {
+Variant LIB_IO_out(ItyState& state, const ARR_t& args) {
 	for (const Variant& var : args) std::cout << var;
 	std::cout << std::flush; // Instantly print to the screen.
 	return VariantPresets.none;
@@ -81,14 +82,14 @@ Variant LIB_IO_out(ScopeState& state, const ARR_t& args) {
 
 
 // Output text.
-Variant LIB_IO_buff_out(ScopeState& state, const ARR_t& args) {
+Variant LIB_IO_buff_out(ItyState& state, const ARR_t& args) {
 	for (const Variant& var : args) std::cout << var;
 	return VariantPresets.none;
 }
 
 
 // Output text with a leading new line.
-Variant LIB_IO_print(ScopeState& state, const ARR_t& args) {
+Variant LIB_IO_print(ItyState& state, const ARR_t& args) {
 	LIB_IO_out(state, args);
 	std::cout << '\n';
 	return VariantPresets.none;
@@ -96,7 +97,7 @@ Variant LIB_IO_print(ScopeState& state, const ARR_t& args) {
 
 
 // Output text to the error pipe.
-Variant LIB_IO_print_err(ScopeState& _state, const ARR_t& args) {
+Variant LIB_IO_print_err(ItyState& _state, const ARR_t& args) {
 	for (const Variant& var : args) std::cerr << var;
 	std::cerr << '\n';
 	return VariantPresets.none;
@@ -104,7 +105,7 @@ Variant LIB_IO_print_err(ScopeState& _state, const ARR_t& args) {
 
 
 // Prompt the user with a message & return the response.
-Variant LIB_IO_prompt(ScopeState& state, const ARR_t& args) {
+Variant LIB_IO_prompt(ItyState& state, const ARR_t& args) {
 	LIB_IO_out(state, args);
 	return LIB_IO_in(state, {});
 }

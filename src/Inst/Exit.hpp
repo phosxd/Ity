@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Exit_exec(ScopeState& state, InstToken& token) {
+void INST_Exit_exec(ItyState& state, InstToken& token) {
 	// Exit with status code.
 	if (token.symbol == InstSymbol_exit) {
 		if (token.expr.seq.empty()) {

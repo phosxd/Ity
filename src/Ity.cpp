@@ -11,8 +11,9 @@
 #include "Registry.hpp"
 #include "Util.hpp"
 #include "ScriptErrors.hpp"
+#include "Variant.hpp"
 #include "Common.hpp"
-#include "ScopeState.hpp"
+#include "State.hpp"
 #include "Ity.hpp"
 const unsigned int RANDOM_SEED = DurCast_ms(Clock::now() - std::chrono::time_point<std::chrono::high_resolution_clock>()).count();
 #include "Expression.hpp"
@@ -299,7 +300,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 
 // Execute a sequence of instruction tokens.
-void exec(ScopeState& state, const size_t start_idx, const int end_idx) {
+void exec(ItyState& state, const size_t start_idx, const int end_idx) {
 	execution_depth += 1;
 	const size_t seq_len = (end_idx > 0)
 		? std::min((int)state.seq.size(), end_idx+1)
@@ -390,7 +391,7 @@ void start_shell(int argc, char* argv[]) {
 
 
 	// Initialize state.
-	ScopeState state = create_new_scope_state({
+	ItyState state = create_new_state(create_new_scope({
 		{string_hasher("__VERSION__"),                Variant{ARR,  (ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}}, VariantMode_constant}},
 		{string_hasher("__VERSION_STRING__"),         Variant{STR,  (STR_t)ItyVersionString, VariantMode_constant}},
 		{string_hasher("__OS_NAME__"),                Variant{STR,  (STR_t)OSName, VariantMode_constant}},
@@ -398,9 +399,9 @@ void start_shell(int argc, char* argv[]) {
 		{string_hasher("__SCRIPT_START_TIME_MS__"),   Variant{INT,  (INT_t)DurCast_us(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
 		{string_hasher("__CMD_ARGS__"),               Variant{ARR,  (ARR_t)script_args, VariantMode_constant}},
 		{string_hasher("__HAS_RUNTIME_DEBUG__"),      Variant(BOOL, (bool)has_runtime_debug, VariantMode_constant)},
-	});
+	}));
 	// Merge built-in module.
-	merge_module(state, AnyCast(MAP_t,LIB_BI.d));
+	merge_module(state.scope, AnyCast(MAP_t,LIB_BI.d));
 
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 	std::srand(RANDOM_SEED);
@@ -484,8 +485,8 @@ void start_shell(int argc, char* argv[]) {
 		std::cout << "\n\n" << "Program results...\n------------------\n";
 		if (not source_script_path.empty()) {std::cout << "TIME (Token):    " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
 		std::cout <<                                      "TIME (Total):    " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
-		std::cout <<                                      "STATE SIZE:      " << get_state_size(state) << " bytes." << '\n';
-		std::cout <<                                      "STATE MAXID:     " << ScopeState_current_id << '\n';
+		std::cout <<                                      "STATE SIZE:      " << state.scope.get_size() << " bytes." << '\n';
+		std::cout <<                                      "STATE MAXID:     " << ItyScope_current_id << '\n';
 		std::cout << '\n';
 	}
 	#endif

@@ -5,7 +5,7 @@
 
 
 // Override maximum execution depth.
-Variant LIB_BI_set_max_depth(ScopeState* state, const ARR_t& args) {
+Variant LIB_BI_set_max_depth(ItyState* _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	if (not expect_arg_types(args[0], {INT}, 0)) return VariantPresets.none;
 
@@ -16,7 +16,7 @@ Variant LIB_BI_set_max_depth(ScopeState* state, const ARR_t& args) {
 
 
 // Call a system comamnd. Returns the exit status code.
-Variant LIB_BI_system(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_system(ItyState& _state, const ARR_t& args) {
 	if (safe_mode) {
 		emit_error(ERR_disallowed_member_in_safe_mode, {"system"});
 		return VariantPresets.none;
@@ -31,7 +31,7 @@ Variant LIB_BI_system(ScopeState& _state, const ARR_t& args) {
 
 
 // Pause thread execution for the given number of seconds.
-Variant LIB_BI_sleep(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_sleep(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	if (not expect_arg_types(args[0], {INT, FLOAT}, 0)) return VariantPresets.none;
 	const Variant& var = args[0];
@@ -49,21 +49,21 @@ Variant LIB_BI_sleep(ScopeState& _state, const ARR_t& args) {
 
 
 // Return the type of the given Variant, in string form.
-Variant LIB_BI_type_name(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_type_name(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	return Variant{STR, get_variant_type_name(args[0].t)};
 }
 
 
 // Return the type of the given Variant.
-Variant LIB_BI_type(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_type(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	return Variant{INT, (INT_t)(args[0].t)};
 }
 
 
 // Return the length of the given array or string.
-Variant LIB_BI_length(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_length(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR,ARR}, 0)) return VariantPresets.none;;
 	size_t size = 0;
 
@@ -78,14 +78,14 @@ Variant LIB_BI_length(ScopeState& _state, const ARR_t& args) {
 
 
 // Return the number of bytes taken by the given variant.
-Variant LIB_BI_size(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_size(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	return Variant{INT, (INT_t)get_variant_size(args[0])};
 }
 
 
 // Return an array of integers from the given start, end, & step.
-Variant LIB_BI_range(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_range(ItyState& _state, const ARR_t& args) {
 	if (args.size() == 0) {
 		emit_error(ERR_invalid_func_arg_count, {"1+", "0"});
 		return VariantPresets.none;
@@ -116,7 +116,7 @@ Variant LIB_BI_range(ScopeState& _state, const ARR_t& args) {
 
 
 // Return a random number in range of `min` & `max` integer arguments.
-Variant LIB_BI_rand(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_rand(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)
 	|| not expect_arg_types(args[0], {INT}, 0)
 	|| not expect_arg_types(args[1], {INT}, 1)
@@ -130,7 +130,7 @@ Variant LIB_BI_rand(ScopeState& _state, const ARR_t& args) {
 
 
 // Return a random number in range of `min` & `max` integer arguments.
-Variant LIB_BI_set_seed(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_set_seed(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT}, 0)) return VariantPresets.none;
 
 	const INT_t& seed = AnyCast(INT_t,args[0].d);
@@ -150,7 +150,7 @@ Variant LIB_BI_set_seed(ScopeState& _state, const ARR_t& args) {
 // ----------
 
 // Reassign reference address.
-Variant LIB_BI_tm_ref_reassign(ScopeState& _state, const ARR_t& args) {
+Variant LIB_BI_tm_ref_reassign(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 	if (not expect_arg_types(args[1], {REF}, 1)) return VariantPresets.none;
 	// Get data.
@@ -170,7 +170,7 @@ Variant LIB_BI_tm_ref_reassign(ScopeState& _state, const ARR_t& args) {
 // -------
 
 // Returns the raw character code for the first character in the string.
-Variant LIB_BI_tm_str_raw(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_str_raw(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	// Get data.
 	const STR_t& data = AnyCast(STR_t, AnyCastV(Variant*,args[0].d)->d );
@@ -183,7 +183,7 @@ Variant LIB_BI_tm_str_raw(ScopeState& _state, ARR_t& args) {
 // Array.
 // ------
 
-Variant LIB_BI_tm_arr_map_erase(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_arr_map_erase(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 
 	Variant* var = AnyCastV(Variant*,args[0].d);
@@ -216,7 +216,7 @@ Variant LIB_BI_tm_arr_map_erase(ScopeState& _state, ARR_t& args) {
 }
 
 
-Variant LIB_BI_tm_arr_append(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_arr_append(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 	Variant* var = AnyCast(Variant*,args[0].d);
 
@@ -232,7 +232,7 @@ Variant LIB_BI_tm_arr_append(ScopeState& _state, ARR_t& args) {
 }
 
 
-Variant LIB_BI_tm_arr_reserve(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_arr_reserve(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {INT}, 1)) return VariantPresets.none;
 	Variant* var = AnyCast(Variant*,args[0].d);
 	const INT_t& count = AnyCast(INT_t,args[1].d);
@@ -254,7 +254,7 @@ Variant LIB_BI_tm_arr_reserve(ScopeState& _state, ARR_t& args) {
 
 
 // Return array of keys in the `MAP`.
-Variant LIB_BI_tm_map_keys(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_map_keys(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 
 	// Get data.
@@ -270,7 +270,7 @@ Variant LIB_BI_tm_map_keys(ScopeState& _state, ARR_t& args) {
 
 
 // Return whether or not the `MAP` has the given key.
-Variant LIB_BI_tm_map_has(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_map_has(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 	if (not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
 
@@ -284,7 +284,7 @@ Variant LIB_BI_tm_map_has(ScopeState& _state, ARR_t& args) {
 
 
 // Set key-value pair in the `MAP`.
-Variant LIB_BI_tm_map_set(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_map_set(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 3)) return VariantPresets.none;
 	if (not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
 
@@ -310,7 +310,7 @@ Variant LIB_BI_tm_map_set(ScopeState& _state, ARR_t& args) {
 // ---------
 
 // Bind arguments to the function.
-Variant LIB_BI_tm_func_bind(ScopeState& _state, ARR_t& args) {
+Variant LIB_BI_tm_func_bind(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {ARR}, 1)) return VariantPresets.none;
 
 	// Get data.

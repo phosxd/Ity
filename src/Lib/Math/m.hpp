@@ -3,7 +3,7 @@
 #include <cmath>
 
 
-Variant LIB_Math_math(ScopeState& _state, const ARR_t& args, const std::string& func) {
+Variant LIB_Math_math(ItyState& _state, const ARR_t& args, const std::string& func) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT,FLOAT}, 0)) return VariantPresets.none;
 	const Variant& var = args[0];
 
@@ -32,14 +32,14 @@ Variant LIB_Math_math(ScopeState& _state, const ARR_t& args, const std::string& 
 }
 
 
-Variant LIB_Math_abs   (ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "abs");}
-Variant LIB_Math_floor (ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "floor");}
-Variant LIB_Math_ceil  (ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "ceil");}
-Variant LIB_Math_log   (ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "log");}
-Variant LIB_Math_sqrt  (ScopeState& state, const ARR_t& args) {return LIB_Math_math(state, args, "sqrt");}
+Variant LIB_Math_abs   (ItyState& state, const ARR_t& args) {return LIB_Math_math(state, args, "abs");}
+Variant LIB_Math_floor (ItyState& state, const ARR_t& args) {return LIB_Math_math(state, args, "floor");}
+Variant LIB_Math_ceil  (ItyState& state, const ARR_t& args) {return LIB_Math_math(state, args, "ceil");}
+Variant LIB_Math_log   (ItyState& state, const ARR_t& args) {return LIB_Math_math(state, args, "log");}
+Variant LIB_Math_sqrt  (ItyState& state, const ARR_t& args) {return LIB_Math_math(state, args, "sqrt");}
 
 
-Variant LIB_Math_pow(ScopeState& _state, const ARR_t& args) {
+Variant LIB_Math_pow(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)
 	|| not expect_arg_types(args[0], {INT,FLOAT}, 0)
 	|| not expect_arg_types(args[1], {INT,FLOAT}, 1))
@@ -54,7 +54,7 @@ Variant LIB_Math_pow(ScopeState& _state, const ARR_t& args) {
 }
 
 
-Variant LIB_Math_sum(ScopeState& _state, const ARR_t& args) {
+Variant LIB_Math_sum(ItyState& _state, const ARR_t& args) {
 	FLOAT_t sum = 0.0;
 	VariantType type = INT;
 	for (size_t i = 0; i < args.size(); i++) {

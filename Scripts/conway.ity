@@ -5,11 +5,11 @@ import Time;
 import Math;
 
 
-const FPS = 8;
-const FPS_ms = 1000 / FPS;
+const INT FPS = 8;
+const INT FPS_ms = 1000 / FPS;
 
-const CELL_ON =  '██';
-const CELL_OFF = '  ';
+const STR CELL_ON =  '██';
+const STR CELL_OFF = '  ';
 
 # Allow user defined world size.
 const WORLD_SIZE = {'x',25, 'y',20};
@@ -20,7 +20,7 @@ if length:[__CMD_ARGS__] > 1;
 
 # Get world seed.
 var INT SEED;
-var SEED_in = prompt:'Set seed (default 0): ';
+var STR SEED_in = prompt:'Set seed (default 0): ';
 if length:SEED_in == 0; SEED_in = '0'; /;
 for ch in SEED_in;
 	SEED += 1;
@@ -52,8 +52,8 @@ func NONE _game_init;
 
 
 func NONE _game_next;
-	const w = WORLD_SIZE.x;
-	var buf = GAME.cells; # Copy cells into writable buffer.
+	const INT w = WORLD_SIZE.x;
+	var ARR buf = GAME.cells; # Copy cells into writable buffer.
 	for i in GAME.cell_count;
 		if is_cell_border:i; continue; /;
 
@@ -93,7 +93,7 @@ func BOOL is_cell_border; arg INT i;
 
 
 
-const GAME = {
+const MAP GAME = {
 	'init', _game_init,
 	'next', _game_next,
 	'cells', [],
@@ -108,7 +108,7 @@ GAME.init:[];
 
 
 while true;
-	const start_time = Time.now:'ms';
+	const INT start_time = Time.now:'ms';
 
 	# Tick once.
 	GAME.next:[];
@@ -132,8 +132,8 @@ while true;
 
 
 	# Calculate time taken to run.
-	const delta = (Time.now:'ms' - start_time);
-	const sleep_time = (FPS_ms-delta) / 1_000.0;
+	const INT delta = (Time.now:'ms' - start_time);
+	const FLOAT sleep_time = (FPS_ms-delta) / 1_000.0;
 
 	# Print seed.
 	out:['Seed: ',SEED_in,'  |  '];

@@ -23,7 +23,7 @@ void INST_Continue_processor(InstToken& token, const AnyMap_t& extra, const unsi
 }
 
 
-void INST_Continue_exec(ScopeState& state, InstToken& token) {
+void INST_Continue_exec(ItyState& state, InstToken& token) {
 	// If loop token...
 	if (token.linked_inst == InstSymbol_while || token.linked_inst == InstSymbol_for) {
 		InstToken& linked_token = state.seq[token.i + token.linked_inst_pos];
@@ -37,7 +37,7 @@ void INST_Continue_exec(ScopeState& state, InstToken& token) {
 		else {
 			// Scope out if previously scoped in.
 			if (linked_token.declarative_composite && linked_token.meta.size() > 0) {
-				scope_out(state);
+				state.scope.out();
 				InstToken* linked_token_ptr = &linked_token;
 				linked_token.inst->emergency_scope_exit(linked_token_ptr);
 				scoped_tokens.pop_back();

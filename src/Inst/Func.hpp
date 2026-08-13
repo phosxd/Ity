@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Func_exec(ScopeState& state, InstToken& token) {
+void INST_Func_exec(ItyState& state, InstToken& token) {
 	const std::string& type_name = token.args[1];
 	const std::string& name = token.args[2];
 
@@ -11,23 +11,23 @@ void INST_Func_exec(ScopeState& state, InstToken& token) {
 	}
 
 	// Give error if the var name is not free on the current scope.
-	if (get_data(state, name)) {
+	if (state.scope.get_data(name)) {
 		emit_error(ERR_name_is_taken, {name});
 		return;
 	}
 
 	// Give warning if the var name is shadowing another var name.
-	if (get_data_globally(state, name)) {
+	if (state.scope.get_data_globally(name)) {
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
-	set_data(
-		state, name, FUNC,
+	state.scope.set_data(
+		name, FUNC,
 		Variant{FUNC, (FUNC_t){
 			get_variant_type_from_name(type_name), // Return type.
-			(ARR_t){}, // Bound arguments.
-			token.i,   // Token index.
-			state.id,  // Scope state ID.
+			(ARR_t){},      // Bound arguments.
+			token.i,        // Token index.
+			state.scope.id, // Scope ID.
 		}},
 		VariantMode_constant
 	);

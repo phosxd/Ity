@@ -1,7 +1,7 @@
 #pragma once
 
 
-Variant LIB_FileAccess_read_file_text(ScopeState& _state, const ARR_t& args) {
+Variant LIB_FileAccess_read_file_text(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 	const STR_t& path = AnyCast(STR_t,args[0].d);
 

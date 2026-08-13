@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Import_exec(ScopeState& state, InstToken& token) {
+void INST_Import_exec(ItyState& state, InstToken& token) {
 	std::string lib_name = token.args[1];
 	std::string applied_name = lib_name;
 
@@ -11,7 +11,7 @@ void INST_Import_exec(ScopeState& state, InstToken& token) {
 	// Get lib name from variable.
 	if (lib_name[0] == '@') {
 		const std::string& var_name = lib_name.substr(1);
-		Variant* var_ptr = get_data_globally(state, var_name);
+		Variant* var_ptr = state.scope.get_data_globally(var_name);
 		// Throw error if var name is bogus.
 		if (not var_ptr) {
 			emit_error(ERR_name_does_not_exist, {var_name});
@@ -34,7 +34,7 @@ void INST_Import_exec(ScopeState& state, InstToken& token) {
 	}
 
 	// Throw error if the name is already declared in this scope.
-	if (get_data(state, applied_name)) {
+	if (state.scope.get_data(applied_name)) {
 		emit_error(ERR_name_is_taken, {applied_name});
 		return;
 	}
@@ -58,9 +58,9 @@ void INST_Import_exec(ScopeState& state, InstToken& token) {
 	const MAP_t& lib_map = AnyCast(MAP_t,lib->d);
 	//std::any_cast<NativeFunc_t>(lib_map.at("__init").d) (state, {}); // Call init function.
 	// Merge all public members of the library into the scope.
-	if (token.symbol == InstSymbol_merge) merge_module(state, lib_map);
+	if (token.symbol == InstSymbol_merge) merge_module(state.scope, lib_map);
 	// Add library to scope with the given name.
-	else import_module(state, applied_name, lib_map);
+	else import_module(state.scope, applied_name, lib_map);
 }
 
 

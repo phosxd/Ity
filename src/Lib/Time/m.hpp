@@ -1,7 +1,7 @@
 #pragma once
 
 
-Variant LIB_Time_get_time(ScopeState& _state, const ARR_t& args, const unsigned int mode) {
+Variant LIB_Time_get_time(ItyState& _state, const ARR_t& args, const unsigned int mode) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 
 	const STR_t& precision = AnyCast(STR_t,args[0].d);
@@ -27,12 +27,12 @@ Variant LIB_Time_get_time(ScopeState& _state, const ARR_t& args, const unsigned 
 }
 
 
-Variant LIB_Time_snow(ScopeState& state, const ARR_t& args) {
+Variant LIB_Time_snow(ItyState& state, const ARR_t& args) {
 	return LIB_Time_get_time(state, args, 0);
 }
 
 
-Variant LIB_Time_now(ScopeState& state, const ARR_t& args) {
+Variant LIB_Time_now(ItyState& state, const ARR_t& args) {
 	return LIB_Time_get_time(state, args, 1);
 }
 

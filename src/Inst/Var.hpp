@@ -8,6 +8,8 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 	std::string expr;
 	std::string buffer;
 	bool is_expr = false;
+	unsigned int expr_start_ln = 0;
+	unsigned int expr_start_col = 0;
 	unsigned int ln_ = 0;
 	unsigned int col_ = 0;
 	unsigned int arg_count = 0;
@@ -30,6 +32,8 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 				type_name = "*";
 			}
 			// Set `op`.
+			expr_start_ln = ln_;
+			expr_start_col = col_;
 			op = ch;
 			is_expr = true; // Expect everything after to be an expression.
 			continue;
@@ -71,19 +75,19 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 
 	// Set token properties.
 	token.meta = {name, string_hasher(name), op, type, mode};
-	token.expr = expr_tokenize(expr, ln-ln_, col-col_);
+	token.expr = expr_tokenize(expr, ln-expr_start_ln, col-expr_start_col);
 }
 
 
 
 
-void INST_Var_exec(ScopeState& state, InstToken& token) {
+void INST_Var_exec(ItyState& state, InstToken& token) {
 	const std::string name = AnyCast(std::string,token.meta[0]);
 	const size_t& hashed_name = AnyCast(size_t,token.meta[1]);
 
-	if (get_data_globally(state, name, nullptr, hashed_name)) {
+	if (state.scope.get_data_globally(name, nullptr, hashed_name)) {
 		// Give error if the var name is not free on the current scope.
-		if (raw_get_data(state, hashed_name)) {
+		if (state.scope.raw_get_data(hashed_name)) {
 			emit_error(ERR_name_is_taken, {name});
 			return;
 		}
@@ -97,7 +101,7 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 
 	if (token.symbol == InstSymbol_arg) {
 		// Throw error if this scope holds no arguments.
-		if (ScopeStateItem* args_it = raw_get_data(state, HASHED_NAMES.__AG); args_it) {
+		if (ScopeItem* args_it = state.scope.raw_get_data(HASHED_NAMES.__AG); args_it) {
 			// Get argument if available.
 			ARR_t& scope_args = AnyCastV(ARR_t,args_it->var.d);
 			if (not scope_args.empty()) {
@@ -128,7 +132,7 @@ void INST_Var_exec(ScopeState& state, InstToken& token) {
 		}
 	}
 	// Set data.
-	set_data(state, name, type, var, AnyCast(VariantMode,token.meta[4]), hashed_name);
+	state.scope.set_data(name, type, var, AnyCast(VariantMode,token.meta[4]), hashed_name);
 }
 
 

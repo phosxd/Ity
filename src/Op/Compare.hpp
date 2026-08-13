@@ -1,7 +1,7 @@
 #pragma once
 
 
-void OP_Compare_pre_exec(ScopeState& state, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
+void OP_Compare_pre_exec(ItyState& state, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
 	Variant* o1 = resovlve_potential_ref(state, first);
 
 	switch (symbol) {
@@ -20,7 +20,7 @@ void OP_Compare_pre_exec(ScopeState& state, Variant*& first, const OpSymbol& sym
 }
 
 
-void OP_Compare_exec(ScopeState& state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& _result_ptr) {
+void OP_Compare_exec(ItyState& state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& _result_ptr) {
 	Variant* o1 = resovlve_potential_ref(state, first);
 	Variant* o2 = resovlve_potential_ref(state, second);
 

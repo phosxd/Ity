@@ -43,7 +43,7 @@ void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const unsigne
 
 
 
-void INST_Loop_for_loop(ScopeState& state, InstToken& token, bool& value) {
+void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 	const unsigned int& index = AnyCast(unsigned int,token.meta[4]);
 	// Get iterable.
 	Variant& iterable = AnyCastV(ARR_t,token.meta[3])[0];
@@ -109,7 +109,7 @@ void INST_Loop_for_loop(ScopeState& state, InstToken& token, bool& value) {
 
 
 
-void INST_Loop_exec(ScopeState& state, InstToken& token) {
+void INST_Loop_exec(ItyState& state, InstToken& token) {
 	bool value = false;
 
 
@@ -140,7 +140,7 @@ void INST_Loop_exec(ScopeState& state, InstToken& token) {
 		exec_jump_value += token.composite_size; // Add 1 to skip the end instruction, otherwise will jump back to this instruction.
 		// Scope out if previously scoped in.
 		if (multi && AnyCast(bool,token.meta[0])) {
-			scope_out(state);
+			state.scope.out();
 			scoped_tokens.pop_back();
 			token.meta[0] = false;
 		}
@@ -154,12 +154,12 @@ void INST_Loop_exec(ScopeState& state, InstToken& token) {
 	// If entering loop for first time & (the composite is declarative or is a for loop), then scope in.
 	else if (multi && not AnyCast(bool,token.meta[0])) {
 		token.meta[0] = true;
-		scope_in(state);
+		state.scope.in();
 		scoped_tokens.push_back(&token);
 
 		if (token.symbol == InstSymbol_for) {
 			// Give warning if the var name is shadowing another var name.
-			if (get_data_globally(*(state.p), var_name, nullptr, AnyCast(size_t,token.meta[2]))) {
+			if (state.scope.p->get_data_globally(var_name, nullptr, AnyCast(size_t,token.meta[2]))) {
 				emit_warn(ERR_name_is_shadowed, {var_name});
 			}
 		}
@@ -169,7 +169,7 @@ void INST_Loop_exec(ScopeState& state, InstToken& token) {
 	// If for loop, set the variable.
 	if (token.symbol == InstSymbol_for && value) {
 		Variant& var = AnyCastV(ARR_t,token.meta[3])[1];
-		set_data(state, var_name, var.t, std::move(var), VariantMode_dynamic_type, AnyCast(size_t,token.meta[2]));
+		state.scope.set_data(var_name, var.t, std::move(var), VariantMode_dynamic_type, AnyCast(size_t,token.meta[2]));
 		AnyCastV(ARR_t,token.meta[3])[1] = VariantPresets.empty;
 		token.meta[4] = AnyCast(unsigned int,token.meta[4]) + 1;
 	}

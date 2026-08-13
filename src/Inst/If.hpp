@@ -23,7 +23,7 @@ void INST_If_processor(InstToken& token, const AnyMap_t& extra, const unsigned i
 
 
 
-void INST_If_exec(ScopeState& state, InstToken& token) {
+void INST_If_exec(ItyState& state, InstToken& token) {
 	// Get value from expression.
 	const Variant* var = expr_exec(state, token.expr);
 
@@ -57,7 +57,7 @@ void INST_If_exec(ScopeState& state, InstToken& token) {
 
 	// Scope in, if declarative.
 	else if (token.declarative_composite){
-		scope_in(state);
+		state.scope.in();
 		scoped_tokens.push_back(&token);
 	}
 }
