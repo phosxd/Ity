@@ -23,7 +23,7 @@ void OP_Set_exec(ItyState& state, Variant*& first, Variant*& second, const OpSym
 
 		// Move second into first, unsetting the second variant.
 		case OpSymbol_mov_set: {
-			if (not variant_type_matches(*o2, *o1)) return;
+			if (not o2->type_matches(*o1)) return;
 			// Throw error if source variant is constant.
 			if (second->m == VariantMode_constant) {
 				emit_error(ERR_cannot_change_constant);
@@ -38,7 +38,7 @@ void OP_Set_exec(ItyState& state, Variant*& first, Variant*& second, const OpSym
 	}
 
 	// Throw error if types do not match & target variant's type is not dynamic.
-	if (not variant_type_matches(var, *o1)) return;
+	if (not var.type_matches(*o1)) return;
 
 	var.m = o1->m; // Make sure the mode is kept in-tact.
 	*o1 = std::move(var);

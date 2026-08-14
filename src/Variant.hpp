@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 #define AnyCast(T, var) std::get<T>(var)
 #define AnyCastV(T, var) std::get<T>(var)
 
@@ -79,10 +81,8 @@ using VariantData = std::variant<
 	// Internal types.
 	TREF_t,
 	size_t,
-	uint16_t,
 	VariantType,
 	VariantMode,
-	NativeFunc_t,
 
 	CompositeItem*,
 	std::vector<CompositeItem>*,
@@ -97,55 +97,152 @@ using AnyMap_t = std::unordered_map<std::string, VariantData>;
 // --------
 
 
+inline void emit_operator_overload_error(const std::string& operation, const Variant& a, const Variant& b);
+
+
 #pragma pack(1)
 struct Variant {
 	VariantType t = NONE;
-	VariantData d;
+	VariantData d = std::monostate();
 	VariantMode m = VariantMode_dynamic_type;
+
+
+	// Return true if `data` is applicable to `var`.
+	const bool type_matches(const Variant& b, const bool do_emit_error = true) const {
+		if (b.m == VariantMode_dynamic_type || b.t == t) return true;
+		if (do_emit_error) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(t), get_variant_type_name(b.t)});
+		return false;
+	}
+
+
+	// Return the number of bytes that the Variant takes up.
+	const size_t get_size() const {
+		size_t size = sizeof(t) + sizeof(m);
+		switch (t) {
+			case INT:    {size += sizeof(AnyCast(INT_t,d));   break;}
+			case FLOAT:  {size += sizeof(AnyCast(FLOAT_t,d)); break;}
+			case REF:
+			case STR:    {size += AnyCast(STR_t,d).size();    break;}
+
+			case ARR: {
+				const ARR_t& d_ = AnyCast(ARR_t,d);
+				size_t sum = sizeof(d_);
+				for (const Variant& var : d_) {
+					sum += var.get_size();
+				}
+				size += sum;
+				break;
+			}
+
+			case MAP: {
+				const MAP_t& d_ = AnyCast(MAP_t,d);
+				size_t sum = sizeof(d_);
+				for (const auto& it : d_) {
+					sum += it.first.size() + it.second.get_size();
+				}
+				size += sum;
+				break;
+			}
+			default: break;
+		}
+
+		return size;
+	}
+
+
+
+	// COMPARISON OPERATORS
+
+
+	const bool operator==(const Variant& b) const {
+		switch (t) {
+			// If a is bool & b is bool...
+			case BOOL: {
+				if (b.t == BOOL) return AnyCast(bool,d) == AnyCast(bool,b.d);
+				break;
+			}
+			// If a is int...
+			case INT: {
+				if (b.t == INT)        return AnyCast(INT_t,d) == AnyCast(INT_t,b.d);
+				else if (b.t == FLOAT) return AnyCast(INT_t,d) == AnyCast(FLOAT_t,b.d);
+				break;
+			}
+			// If a is float...
+			case FLOAT: {
+				if (b.t == INT)        return AnyCast(FLOAT_t,d) == AnyCast(INT_t,b.d);
+				else if (b.t == FLOAT) return AnyCast(FLOAT_t,d) == AnyCast(FLOAT_t,b.d);
+				break;
+			}
+			// If a is string & b is string...
+			case STR: {
+				if (b.t == STR) return AnyCast(STR_t,d) == AnyCast(STR_t,b.d);
+				break;
+			}
+			// If a is array & b is array...
+			case ARR: {
+				if (b.t == ARR) return AnyCast(ARR_t,d) == AnyCast(ARR_t,b.d);
+				break;
+			}
+			// If a is map & b is map...
+			case MAP: {
+				if (b.t == MAP) return AnyCast(MAP_t,d) == AnyCast(MAP_t,b.d);
+				break;
+			}
+			default: break;
+		}
+
+		// Throw error is none matched.
+		emit_operator_overload_error("Compare(==)", *this,b);
+		return false;
+	}
+
+
+	const bool operator>(const Variant& b) const {
+		switch (t) {
+			// If a is int...
+			case INT: {
+				if (b.t == INT)        return AnyCast(INT_t,d) > AnyCast(INT_t,b.d);
+				else if (b.t == FLOAT) return AnyCast(INT_t,d) > AnyCast(FLOAT_t,b.d);
+				break;
+			}
+			// If a is float...
+			case FLOAT: {
+				if (b.t == INT)        return AnyCast(FLOAT_t,d) > AnyCast(INT_t,b.d);
+				else if (b.t == FLOAT) return AnyCast(FLOAT_t,d) > AnyCast(FLOAT_t,b.d);
+				break;
+			}
+			default: break;
+		}
+
+		// Throw error is none matched.
+		emit_operator_overload_error("Compare(>)", *this,b);
+		return false;
+	}
+
+
+	const bool operator<(const Variant& b) const {
+		switch (t) {
+			// If a is int...
+			case INT: {
+				if (b.t == INT)        return AnyCast(INT_t,d) < AnyCast(INT_t,b.d);
+				else if (b.t == FLOAT) return AnyCast(INT_t,d) < AnyCast(FLOAT_t,b.d);
+				break;
+			}
+			// If a is float...
+			case FLOAT: {
+				if (b.t == INT)        return AnyCast(FLOAT_t,d) < AnyCast(INT_t,b.d);
+				else if (b.t == FLOAT) return AnyCast(FLOAT_t,d) < AnyCast(FLOAT_t,b.d);
+			}
+			default: break;
+		}
+
+		// Throw error is none matched.
+		emit_operator_overload_error("Compare(<)", *this,b);
+		return false;
+	}
 };
 
 
-// Return true if `data` is applicable to `var`.
-const bool variant_type_matches(const Variant& a, const Variant& b, const bool do_emit_error = true) {
-	if (b.m == VariantMode_dynamic_type || b.t == a.t) return true;
-	if (do_emit_error) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(a.t), get_variant_type_name(b.t)});
-	return false;
-}
-
-
-// Return the number of bytes that Variant takes up.
-const size_t get_variant_size(const Variant& var) {
-	size_t size = sizeof(var.t) + sizeof(var.m);
-	switch (var.t) {
-		case INT:    {size += sizeof(AnyCast(INT_t,var.d));   break;}
-		case FLOAT:  {size += sizeof(AnyCast(FLOAT_t,var.d)); break;}
-		case REF:
-		case STR:    {size += AnyCast(STR_t,var.d).size();    break;}
-
-		case ARR: {
-			const ARR_t& d = AnyCast(ARR_t,var.d);
-			size_t sum = 0;
-			for (const Variant& var : d) {
-				sum += get_variant_size(var);
-			}
-			size += sizeof(d)+sum;
-			break;
-		}
-
-		case MAP: {
-			const MAP_t& d = AnyCast(MAP_t,var.d);
-			size_t sum = 0;
-			for (const auto& it : d) {
-				sum += it.first.size() + get_variant_size(it.second);
-			}
-			size += sizeof(d)+sum;
-			break;
-		}
-		default: break;
-	}
-
-	return size;
-}
 
 
 std::ostream& operator<<(std::ostream& os, const Variant& var) {
@@ -197,102 +294,9 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 }
 
 
-// COMPARISON OPERATORS
-
 inline void emit_operator_overload_error(const std::string& operation, const Variant& a, const Variant& b) {
 	emit_error(ERR_operand_type_mismatch, {operation, get_variant_type_name(a.t), get_variant_type_name(b.t)});
 }
-
-
-const bool operator==(const Variant& a, const Variant& b) {
-	switch (a.t) {
-		// If a is bool & b is bool...
-		case BOOL: {
-			if (b.t == BOOL) return AnyCast(bool,a.d) == AnyCast(bool,b.d);
-			break;
-		}
-		// If a is int...
-		case INT: {
-			if (b.t == INT)        return AnyCast(INT_t,a.d) == AnyCast(INT_t,b.d);
-			else if (b.t == FLOAT) return AnyCast(INT_t,a.d) == AnyCast(FLOAT_t,b.d);
-			break;
-		}
-		// If a is float...
-		case FLOAT: {
-			if (b.t == INT)        return AnyCast(FLOAT_t,a.d) == AnyCast(INT_t,b.d);
-			else if (b.t == FLOAT) return AnyCast(FLOAT_t,a.d) == AnyCast(FLOAT_t,b.d);
-			break;
-		}
-		// If a is string & b is string...
-		case STR: {
-			if (b.t == STR) return AnyCast(STR_t,a.d) == AnyCast(STR_t,b.d);
-			break;
-		}
-		// If a is array & b is array...
-		case ARR: {
-			if (b.t == ARR) return AnyCast(ARR_t,a.d) == AnyCast(ARR_t,b.d);
-			break;
-		}
-		// If a is map & b is map...
-		case MAP: {
-			if (b.t == MAP) return AnyCast(MAP_t,a.d) == AnyCast(MAP_t,b.d);
-			break;
-		}
-		default: break;
-	}
-
-	// Throw error is none matched.
-	emit_operator_overload_error("Compare(==)", a,b);
-	return false;
-}
-
-
-const bool operator>(const Variant& a, const Variant& b) {
-	switch (a.t) {
-		// If a is int...
-		case INT: {
-			if (b.t == INT)        return AnyCast(INT_t,a.d) > AnyCast(INT_t,b.d);
-			else if (b.t == FLOAT) return AnyCast(INT_t,a.d) > AnyCast(FLOAT_t,b.d);
-			break;
-		}
-		// If a is float...
-		case FLOAT: {
-			if (b.t == INT)        return AnyCast(FLOAT_t,a.d) > AnyCast(INT_t,b.d);
-			else if (b.t == FLOAT) return AnyCast(FLOAT_t,a.d) > AnyCast(FLOAT_t,b.d);
-			break;
-		}
-		default: break;
-	}
-
-	// Throw error is none matched.
-	emit_operator_overload_error("Compare(>)", a,b);
-	return false;
-}
-
-
-const bool operator<(const Variant& a, const Variant& b) {
-	switch (a.t) {
-		// If a is int...
-		case INT: {
-			if (b.t == INT)        return AnyCast(INT_t,a.d) < AnyCast(INT_t,b.d);
-			else if (b.t == FLOAT) return AnyCast(INT_t,a.d) < AnyCast(FLOAT_t,b.d);
-			break;
-		}
-		// If a is float...
-		case FLOAT: {
-			if (b.t == INT)        return AnyCast(FLOAT_t,a.d) < AnyCast(INT_t,b.d);
-			else if (b.t == FLOAT) return AnyCast(FLOAT_t,a.d) < AnyCast(FLOAT_t,b.d);
-		}
-		default: break;
-	}
-
-	// Throw error is none matched.
-	emit_operator_overload_error("Compare(<)", a,b);
-	return false;
-}
-
-
-// MATH OPERATORS
 
 
 ARR_t operator+(const ARR_t& a, const ARR_t& b) {
@@ -445,7 +449,11 @@ Variant operator/(const Variant& a, const Variant& b) {
 
 Variant operator%(const Variant& a, const Variant& b) {
 	// If a is int & b is int...
-	if (a.t == INT && b.t == INT) return Variant{INT, (AnyCast(INT_t,a.d) % AnyCast(INT_t,b.d))};
+	if (a.t == INT && b.t == INT) {
+		const INT_t& bd = AnyCast(INT_t,b.d);
+		if (bd == 0) return Variant{INT, (INT_t)0};
+		return Variant{INT, (AnyCast(INT_t,a.d) % bd)};
+	};
 
 	// Throw error is none matched.
 	emit_operator_overload_error("Arith(%)", a,b);

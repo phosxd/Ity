@@ -1,7 +1,6 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <variant>
 
 #include <iostream>
 #include <fstream>
@@ -112,7 +111,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 	std::vector<CompositeItem> composite_nest;
 	CompositeItem last_comp_item;
-	uint16_t last_comp_item_dist = 0;
+	UINT_t last_comp_item_dist = 0;
 
 	for (size_t i=0; i<src_len; i++) {
 		const char& ch = src[i];
