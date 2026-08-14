@@ -102,23 +102,22 @@ struct ItyScope {
 
 
 	// Gets the data for name in the current scope. Returns `nullptr` or `default_value` if no data found.
-	Variant* get_data(const std::string& name, Variant* default_value=nullptr, size_t hashed_name=0) {
-		if (hashed_name == 0) hashed_name = string_hasher(name);
-		if (ScopeItem* item = raw_get_data(hashed_name); item) return &item->var;
+	Variant* get_data(const std::string& name, Variant* default_value=nullptr, const size_t& hashed_name=0) {
+		if (ScopeItem* item = raw_get_data((hashed_name == 0) ? string_hasher(name) : hashed_name); item) return &item->var;
 		return default_value;
 	}
 
 
 	// Gets the data for name in this scope or any scope above it. Returns `nullptr` or `default_value` if no data found.
-	Variant* get_data_globally(const std::string& name, Variant* default_value=nullptr, size_t hashed_name=0) {
+	Variant* get_data_globally(const std::string& name, Variant* default_value=nullptr, const size_t& hashed_name=0) {
 		if (Variant* var = get_data(name, nullptr, hashed_name); var) return var;
 		else if (not p) return default_value;
 		return p->get_data_globally(name, default_value, hashed_name);
 	}
 
 
-	inline void raw_set_data(const size_t& hashed_name, const Variant& data) {
-		if (ScopeItem* item = raw_get_data(hashed_name); item) item->var = data;
+	inline void raw_set_data(const size_t& hashed_name, const Variant& data, ScopeItem* item) {
+		if (item) item->var = data;
 		else d.push_back(ScopeItem(hashed_name, data));
 	}
 
@@ -135,17 +134,20 @@ struct ItyScope {
 		}
 		#endif
 		if (hashed_name == 0) hashed_name = string_hasher(name);
+		ScopeItem* item = raw_get_data(hashed_name);
 
-		if (const Variant* var = get_data(name, nullptr, hashed_name); var && var->m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
+		if (item && item->var.m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
 		if (mode != VariantMode_dynamic_type && type != data.t) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data.t), get_variant_type_name(type)}); // Throw error if data is not applicable.
 
-		raw_set_data(hashed_name, Variant{data.t, data.d, mode});
+		raw_set_data(hashed_name, Variant{data.t, data.d, mode}, item);
 	}
 
 
 	void set_data_globally(const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode, const size_t& hashed_name=0) {
-		if (get_data(name)) set_data(name, type, data, mode, hashed_name);
-		else if (p) return p->set_data_globally(name, type, data, mode, hashed_name);
+		return (p)
+			? p->set_data_globally(name, type, data, mode, hashed_name)
+			: set_data(name, type, data, mode, hashed_name)
+		;
 	}
 
 
@@ -157,9 +159,9 @@ struct ItyScope {
 			const std::string& prop_name = i.first;
 
 			if (prop_name == "__tm") {
-				Variant* data = get_data("__tm__");
-				if (not data) raw_set_data(HASHED_NAMES.__tm__, i.second);
-				else data->d = (AnyCast(MAP_t,data->d) + AnyCast(MAP_t,i.second.d));
+				ScopeItem* item = raw_get_data(HASHED_NAMES.__tm__);
+				if (not item) raw_set_data(HASHED_NAMES.__tm__, i.second, nullptr);
+				else item->var.d = (AnyCast(MAP_t,item->var.d) + AnyCast(MAP_t,i.second.d));
 			}
 
 			if (prop_name.starts_with("__")) continue; // Skip private members.
@@ -171,9 +173,9 @@ struct ItyScope {
 	void import_module(const std::string& name, const MAP_t& map) {
 		const auto& it = map.find("__tm");
 		if (it != map.end()) {
-			Variant* data = get_data("__tm__");
-			if (not data) raw_set_data(HASHED_NAMES.__tm__, it->second);
-			else data->d = (AnyCast(MAP_t,data->d) + AnyCast(MAP_t,it->second.d));
+			ScopeItem* item = raw_get_data(HASHED_NAMES.__tm__);
+			if (not item) raw_set_data(HASHED_NAMES.__tm__, it->second, nullptr);
+			else item->var.d = (AnyCast(MAP_t,item->var.d) + AnyCast(MAP_t,it->second.d));
 		}
 
 		set_data(name, MAP, Variant{MAP, map}, VariantMode_constant);

@@ -29,6 +29,7 @@ const Variant LIBS[] = {
 
 
 // Instruction imports...
+#pragma pack(1)
 struct InstDef {
 	const InstSymbol sym;
 	const std::string str;

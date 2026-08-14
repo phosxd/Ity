@@ -91,6 +91,7 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 #include "Op/Access.hpp"
 #include "Op/TypeCast.hpp"
 
+#pragma pack(1)
 struct OpDef {
 	const OpSymbol sym;
 	const std::string str;
@@ -507,8 +508,10 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 	if (token.var.t == ARR) {
 		ARR_t array; array.reserve(token.seq.size());
 		for (ExprToken& subtoken : token.seq) {
-			if (subtoken.t == ExprTokenType_sequence) array.push_back(*expr_exec_(state, subtoken, true));
-			else array.push_back(*resolve_variant(state, subtoken.var));
+			array.push_back((subtoken.t == ExprTokenType_sequence)
+				? *expr_exec_(state, subtoken, true)
+				: *resolve_variant(state, subtoken.var)
+			);
 		}
 
 		temporary_pool.push_back(Variant{ARR, std::move(array)}); return &temporary_pool.back();
@@ -527,9 +530,10 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 		for (ExprToken& subtoken : token.seq) {
 			if (is_key) {
 				// Get key.
-				const Variant* var = nullptr;
-				if (subtoken.t == ExprTokenType_sequence) var = expr_exec_(state, subtoken, true);
-				else var = resolve_variant(state, subtoken.var);
+				const Variant* var = (subtoken.t == ExprTokenType_sequence)
+					? expr_exec_(state, subtoken, true)
+					: resolve_variant(state, subtoken.var)
+				;
 				// Throw error if key is not a string.
 				if (var->t != STR) {
 					emit_error(ERR_invalid_syntax, {"Map key must be a string"});
@@ -541,8 +545,10 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 			}
 			else {
 				// Apply value.
-				if (subtoken.t == ExprTokenType_sequence) map[key] = *expr_exec_(state, subtoken, true);
-				else map[key] = *resolve_variant(state, subtoken.var);
+				map[key] = (subtoken.t == ExprTokenType_sequence)
+					? *expr_exec_(state, subtoken, true)
+					: *resolve_variant(state, subtoken.var)
+				;
 				is_key = true;
 			}
 		}
@@ -590,10 +596,10 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 				}
 			}
 			// Get our second variant to operate on.
-			// If second is a sequence...
-			if (item.t == ExprTokenType_sequence) second = expr_exec_(state, item, true);
-			// If it's a normal var...
-			else second = resolve_variant(state, item.var);
+			second = (item.t == ExprTokenType_sequence)
+				? expr_exec_(state, item, true)
+				: resolve_variant(state, item.var)
+			;
 			// Throw error if second is an operator.
 			if (second->t == OP) {
 				emit_error(ERR_invalid_syntax, {"Operator cannot be used as operand"});
@@ -654,15 +660,6 @@ Variant* expr_exec(ItyState& state, ExprToken& token, const bool subexpr=false) 
 	if (temporary_pool.size() >= MAX_TEMPORARY_POOL_RESERVE) emit_error(ERR_max_temporaries_in_use, {std::to_string(temporary_pool.size()), std::to_string(MAX_TEMPORARY_POOL_RESERVE)});
 
 	return result;
-}
-
-
-
-
-// Tokenize then execute an expression.
-Variant expr_run(ItyState& state, const std::string& expr) {
-	ExprToken tokens = expr_tokenize(expr, current_line, current_column);
-	return *expr_exec(state, tokens);
 }
 
 
