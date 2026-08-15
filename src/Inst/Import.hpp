@@ -49,8 +49,8 @@ void INST_Import_exec(ItyState& state, InstToken& token) {
 		}
 	}
 
-	// Throw error if library doesn't exist or is not allowed in safe mode.
-	if (not lib || (safe_mode && not exists_in_vec(safe_mode_allowed_libs, lib_name))) {
+	// Throw error if library doesn't exist.
+	if (not lib) {
 		emit_error(ERR_unknown_module, {lib_name});
 		return;
 	}

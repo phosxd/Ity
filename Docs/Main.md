@@ -74,7 +74,8 @@ Holds a 64-bit signed floating point number.  It has a range of 1.7e−308 to 1.
 ```
 
 ## STR
-Holds an array of single-byte characters. UTF-8 characters can be represented as multiple bytes.
+Holds an array of bytes characters. UTF-8 characters can be represented as multiple bytes.
+This may be used as a container for storing raw bytes.
 
 ```python
 "This is a string";

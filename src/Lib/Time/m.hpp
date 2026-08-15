@@ -45,6 +45,7 @@ Variant LIB_Time_now(ItyState& state, const ARR_t& args) {
 const Variant LIB_Time {
 	MAP, (MAP_t){
 		{"__name",      Variant{STR, (STR_t)"Time", VariantMode_constant}},
+		{"__safe",      Variant{BOOL, true}},
 		{"snow",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_Time_snow)},
 		{"now",         NativeFuncTrans(INT,   (NativeFunc_t)LIB_Time_now)},
 	},

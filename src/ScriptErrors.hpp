@@ -120,7 +120,6 @@ bool emit_warnings = true;
 bool safe_mode = false;
 // If true. wait for confirmation to run the next instruction.
 bool step_mode = false;
-const std::vector<std::string> safe_mode_allowed_libs = {"IO","Time","Math"};
 
 
 

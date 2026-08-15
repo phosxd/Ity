@@ -119,6 +119,7 @@ Variant LIB_IO_prompt(ItyState& state, const ARR_t& args) {
 const Variant LIB_IO {
 	MAP, (MAP_t){
 		{"__name",  Variant{STR, (STR_t)"IO", VariantMode_constant}},
+		{"__safe",  Variant{BOOL, true}},
 
 		// System signals.
 		{"SIGNAL", Variant{

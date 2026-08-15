@@ -1,10 +1,7 @@
 - Add ability to import other scripts as modules.
  
 
-Add more FileAccess methods:
-	- read_file_bytes
-	- write_file_text
-	- write_file_bytes
+Add more FileSystem methods:
 	- file_exists
 	- dir_exists
 	- get_items_in_dir

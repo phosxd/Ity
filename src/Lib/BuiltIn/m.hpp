@@ -6,8 +6,11 @@
 
 // Override maximum execution depth.
 Variant LIB_BI_set_max_depth(ItyState* _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.none;
-	if (not expect_arg_types(args[0], {INT}, 0)) return VariantPresets.none;
+	if (safe_mode) {
+		emit_error(ERR_disallowed_member_in_safe_mode, {"set_max_depth"});
+		return VariantPresets.none;
+	}
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT}, 0)) return VariantPresets.none;
 
 	const INT_t& count = AnyCast(INT_t,args[0].d);
 	execution_depth_max = count;
@@ -21,9 +24,7 @@ Variant LIB_BI_system(ItyState& _state, const ARR_t& args) {
 		emit_error(ERR_disallowed_member_in_safe_mode, {"system"});
 		return VariantPresets.none;
 	}
-
-	if (not expect_arg_count(args, 1)) return VariantPresets.none;
-	if (not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 
 	const char* command = AnyCast(STR_t,args[0].d).c_str();
 	return Variant{INT, (INT_t)system(command)};
@@ -32,8 +33,7 @@ Variant LIB_BI_system(ItyState& _state, const ARR_t& args) {
 
 // Pause thread execution for the given number of seconds.
 Variant LIB_BI_sleep(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.none;
-	if (not expect_arg_types(args[0], {INT, FLOAT}, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT, FLOAT}, 0)) return VariantPresets.none;
 	const Variant& var = args[0];
 
 	FLOAT_t sleep_time = 0;
@@ -126,8 +126,7 @@ Variant LIB_BI_range(ItyState& _state, const ARR_t& args) {
 
 // Reassign reference address.
 Variant LIB_BI_tm_ref_reassign(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (not expect_arg_types(args[1], {REF}, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {REF}, 1)) return VariantPresets.none;
 	// Get data.
 	Variant* data = AnyCastV(Variant*,args[0].d);
 	// Throw error if data is constant.
@@ -246,8 +245,7 @@ Variant LIB_BI_tm_map_keys(ItyState& _state, ARR_t& args) {
 
 // Return whether or not the `MAP` has the given key.
 Variant LIB_BI_tm_map_has(ItyState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
 
 	// Get data & key.
 	const MAP_t& data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d );
@@ -260,8 +258,7 @@ Variant LIB_BI_tm_map_has(ItyState& _state, ARR_t& args) {
 
 // Set key-value pair in the `MAP`.
 Variant LIB_BI_tm_map_set(ItyState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 3)) return VariantPresets.none;
-	if (not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 3) || not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
 
 	Variant* var = AnyCastV(Variant*,args[0].d);
 
@@ -304,7 +301,8 @@ Variant LIB_BI_tm_func_bind(ItyState& _state, ARR_t& args) {
 
 const Variant LIB_BI {
 	MAP, (MAP_t){
-		{"__name", Variant{STR, (STR_t)"BI", VariantMode_constant}},
+		{"__name",  Variant{STR, (STR_t)"BI", VariantMode_constant}},
+		{"__safe",  Variant{BOOL, true}},
 
 
 		// Type methods.

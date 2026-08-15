@@ -158,6 +158,16 @@ struct ItyScope {
 		for (const auto& i : map) {
 			const std::string& prop_name = i.first;
 
+			// Check safety.
+			if (prop_name == "__safe") {
+				const bool& safe = AnyCast(bool,i.second.d);
+				if (not safe && safe_mode) {
+					emit_error(ERR_disallowed_member_in_safe_mode, {"(?)"});
+					return;
+				}
+			}
+
+			// Combine type methods.
 			if (prop_name == "__tm") {
 				ScopeItem* item = raw_get_data(HASHED_NAMES.__tm__);
 				if (not item) raw_set_data(HASHED_NAMES.__tm__, i.second, nullptr);
@@ -165,12 +175,22 @@ struct ItyScope {
 			}
 
 			if (prop_name.starts_with("__")) continue; // Skip private members.
+			// Copy member to a variable in the scope.
 			set_data(prop_name, i.second.t, i.second, i.second.m);
 		}
 	}
 
 
 	void import_module(const std::string& name, const MAP_t& map) {
+		bool safe = true;
+		const auto& safe_it = map.find("__safe");
+		if (safe_it != map.end()) safe = AnyCast(bool,safe_it->second.d);
+		if (not safe && safe_mode) {
+			emit_error(ERR_disallowed_member_in_safe_mode, {"(?)"});
+			return;
+		}
+
+		// Combine type methods.
 		const auto& it = map.find("__tm");
 		if (it != map.end()) {
 			ScopeItem* item = raw_get_data(HASHED_NAMES.__tm__);
@@ -178,6 +198,7 @@ struct ItyScope {
 			else item->var.d = (AnyCast(MAP_t,item->var.d) + AnyCast(MAP_t,it->second.d));
 		}
 
+		// Copy module to a variable in the scope.
 		set_data(name, MAP, Variant{MAP, map}, VariantMode_constant);
 	}
 };

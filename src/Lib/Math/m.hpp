@@ -107,6 +107,7 @@ Variant LIB_Math_set_seed(ItyState& _state, const ARR_t& args) {
 const Variant LIB_Math {
 	MAP, (MAP_t){
 		{"__name",     Variant{STR, (STR_t)"Math", VariantMode_constant}},
+		{"__safe",     Variant{BOOL, true}},
 		{"abs",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_abs)},
 		{"floor",      NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_floor)},
 		{"ceil",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_ceil)},
