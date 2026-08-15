@@ -11,7 +11,7 @@ Ity is a work-in-progress, light-weight & embeddable interpreted programming lan
 
 
 # Table of contents
-- [Overview](#overview)
+- [Features](#features)
 - [Build](#build)
   - [Build flags](#build-flags)
   - [Optimization profiles](#optimization-profiles)
@@ -22,17 +22,16 @@ Ity is a work-in-progress, light-weight & embeddable interpreted programming lan
   - [Interpreter flags](#interpreter-flags)
 - [Language](#language)
   - [Docs](Docs/Main.md)
-  - [Features](#features)
   - [Rundown](#rundown)
   - [Examples](Scripts/)
 
 
-# Overview
+# Features
 - **Tiny & portable.** < 150KB executable. All self-contained.
 - **Efficient memory usage.** 400KB runtime (Python: 11.2MB, Node: 45MB, Bash: 3.2MB).
 - **Platform agnostic.** No platform dependant code.
 - **No build setup.** Requires no third-party libraries.
-- **Practical.** I/O, ~~file management~~, time, & math modules all built-in.
+- **Practical.** I/O, file management, time, & math modules all built-in.
 
 This is my first project in C++, I'm sure there are things that I have done wrong or have messed up, don't be afraid to open an issue to tell me!
 

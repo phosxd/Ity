@@ -1,6 +1,24 @@
 #pragma once
 
 
+
+
+// Return whether or not a file exists or is readable.
+Variant LIB_FileSystem_file_exists(ItyState& _state, const ARR_t& args) {
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
+	const STR_t path = AnyCast(STR_t,args[0].d);
+	return Variant{BOOL, std::filesystem::exists(path) && not std::filesystem::is_directory(path)};
+}
+
+
+// Return whether or not a file exists or is readable.
+Variant LIB_FileSystem_dir_exists(ItyState& _state, const ARR_t& args) {
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
+	const STR_t& path = AnyCast(STR_t,args[0].d);
+	return Variant{BOOL, std::filesystem::exists(path) && std::filesystem::is_directory(path)};
+}
+
+
 // Read a file & return the bytes as a string. Returns `none` if failed.
 Variant LIB_FileSystem_read(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
@@ -40,8 +58,10 @@ const Variant LIB_FileSystem {
 		{"__name",  Variant{STR, (STR_t)"FileSystem", VariantMode_constant}},
 		{"__safe",  Variant{BOOL, false}},
 
-		{"read",    NativeFuncTrans(STR,  (NativeFunc_t)LIB_FileSystem_read)},
-		{"write",   NativeFuncTrans(BOOL, (NativeFunc_t)LIB_FileSystem_write)}
+		{"file_exists",  NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_file_exists)},
+		{"dir_exists",   NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_dir_exists)},
+		{"read",         NativeFuncTrans(STR,   (NativeFunc_t)LIB_FileSystem_read)},
+		{"write",        NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_write)}
 	},
 	VariantMode_constant
 };
