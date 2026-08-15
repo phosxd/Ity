@@ -318,7 +318,7 @@ void exec(ItyState& state, const size_t start_idx, const int end_idx) {
 			std::cout << ANSI::purple << "InstToken: " << ANSI::reset << item << '\n';
 		}
 		if (step_mode) {
-			std::cout << ANSI::orange << item << ANSI::reset << '\n';
+			std::cout << ANSI::orange << item << ANSI::reset;
 			std::string _input; std::getline(std::cin, _input);
 		}
 		#endif

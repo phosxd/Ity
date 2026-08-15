@@ -22,7 +22,6 @@ Ity is a work-in-progress, light-weight & embeddable interpreted programming lan
   - [Interpreter flags](#interpreter-flags)
 - [Language](#language)
   - [Docs](Docs/Main.md)
-  - [Rundown](#rundown)
   - [Examples](Scripts/)
 
 
@@ -42,21 +41,6 @@ This is my first project in C++, I'm sure there are things that I have done wron
 # Build
 The build process for the Ity interpreter is very straight-forward. After cloning this repository you should notice a `build.sh` bash script inside the root directory.
 Run the build script by typing `./build.sh` in your terminal, doing so will build the source code using the GCC compiler on your system.
-
-After compilation has finished, the build script will display the time it took to compile & the final build size along with the difference in size compared to the previous build.
-
-```
-(Optimization: balanced)
-Building prodution binary...
-Done in 4s.
-Final size: 124384 bytes. (+0)
-```
-
-If the final build size is larger than 150,000 bytes it will give you a warning message.
-
-```
-Binary size is over the goal of 150000.
-```
 
 ## Build flags
 You can pass flags to the build script.
@@ -89,16 +73,31 @@ You can install Ity on your system as a command called `ity` by running the `ins
 
 
 # Usage
-After building the interpreter, you should see a file called `ity.bin` which is the standalone interpreter executable.
+After building or downloading the interpreter, you should see a file called `ity.bin` which is the standalone interpreter executable.
 You can run this in your terminal with `./ity.bin`.
 
 ## Source mode
-If you run the interpreter with the path of an Ity script file, it will parse then execute it without printing anything (unless debug flags are set or manual print calls are executed inside the script).
+If you run the interpreter with the path of an Ity script, it will parse then execute it.
 
-Passing a command line argument after the file path, without using the "-" prefix (indicating interpreter option), will make that argument available to the script under the `__CMD_ARGS__` global.
+```
+~$: ity my_script.ity
+```
+
+Alternatively you can add a shebang to your script & execute it directly.
+
+```python
+#!/usr/local/bin/ity
+import IO;
+IO.print:'Hello World!';
+```
+
+```
+~$: ./hello_world.ity
+Hello World!
+```
 
 ## Interactive mode
-Running the interpreter without passing a script file path will run it in "interactive" mode, similar to the Python interpreter's interactive mode, it allows you to immediately parse & execute the code you give it.
+Running the interpreter without passing a script path will run it in "interactive" mode. It allows you to immediately parse & execute the code you give it.
 
 ```bash
 ./ity.bin
@@ -108,12 +107,12 @@ Running the interpreter without passing a script file path will run it in "inter
 
 >> 1+1
 2
->> 
+>> var a = 'Hello '; var b = 'World!'
+
+>> a+b
+Hello World!
+>>
 ```
-
-Entering "quit" or "q" will stop the interpreter.
-
-The last expression that gets executed in your line will be printed to the console automatically.
 
 ## Interpreter flags
 You can pass flags to the interpreter to change how it behaves & select what information it will output.
@@ -158,29 +157,7 @@ Flags:
 # Language
 The full documentation is available [here](Docs/Main.md). This explains everything in great detail.
 
-## Features
-
-- Implicit, explicit, & dynamic typing.
-- Nones, bools, integers, floats, strings, arrays, maps, references, pointers, & internals.
-- Extendable & overwritable type-specific methods.
-
-- Arithmetic operators: `+`, `-`, `*`, `/`, `%`.
-- Assignment operators: `=`, `+=`, `-=`, `*=`, `/=`, `%=`, `<<=` (move).
-- Conditional operators: `==`, `!=`, `>`, `>=`, `<`, `<=`, `&&`, `||`.
-- Ternary operators for one-liner conditionals: `?`, `--`.
-- Type-cast & accessor operators: `->`, `:`.
-
-- If-elif-else conditional blocks.
-- Repeatable blocks using "while" & "for".
-- User define-able iterators for use inside for-loops.
-
-- Callable blocks using "func".
-- Defaultable function arguments & dynamic argument counting+iteration.
-- Function binding via `.bind` function type method.
-
-- Error throwing / early exit using "throw \<error\>" or "exit \<code\>".
-
-## Rundown
+But if you prefer to be lazy, here are some quick examples:
 
 ### Declare
 ```python
@@ -201,7 +178,7 @@ print:(type:c)
 merge IO;
 
 # Based af loop.
-var i=0; while i < 100; i+=1;
+var INT i=0; while i < 100; i+=1;
 	print:i;
 /;
 
@@ -211,20 +188,20 @@ for i in 100;
 /;
 
 # Loop through an array like a based person.
-const arr = [1,'2',3,'4',5];
-var i=-1; while i < (length:[arr]-1); i+=1;
-	print:[(arr:i)];
+const ARR arr = [1,'2',3,'4',5];
+var INT i=-1; while i < (length:[arr]-1); i+=1;
+	print:(arr:i);
 /;
 
 # Actually, maybe this is better to read...
 for item in arr;
-	print:[item];
+	print:item;
 /;
 ```
 
 ### Reuse
 ```python
-func INT add; arg a=0; arg b=0;
+func INT add; arg INT a=0; arg INT b=0;
 	return a + b;
 /;
 
@@ -234,11 +211,11 @@ add:[4,5];
 
 ### Calculate
 ```python
-#fibonacci.ity
+# fibonacci.ity
 import IO;
 const n = IO.prompt:'Number: ' -> INT;
 
-var a=0.0; var b=1.0;
+var FLOAT a=0.0; var FLOAT b=1.0;
 
 for i in n;
 	const c = a+b;
