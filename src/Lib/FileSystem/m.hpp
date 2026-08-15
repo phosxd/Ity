@@ -33,7 +33,7 @@ Variant LIB_FileSystem_read(ItyState& _state, const ARR_t& args) {
 }
 
 
-// Write a string to a file. Returns `true` operation succeeded, otherwise `false`.
+// Write a string to a file. Returns `true` if succeeded, otherwise `false`.
 Variant LIB_FileSystem_write(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2) || not expect_arg_types(args[0], {STR}, 0) || not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
 	const STR_t& path = AnyCast(STR_t,args[0].d);
@@ -45,6 +45,21 @@ Variant LIB_FileSystem_write(ItyState& _state, const ARR_t& args) {
 	f.close();
 
 	return VariantPresets.bool_true;
+}
+
+
+// Creates a directory. Returns `true` if succeeded, otherwise `false`.
+Variant LIB_FileSystem_make_dir(ItyState& _state, const ARR_t& args) {
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
+	return Variant{BOOL, std::filesystem::create_directory(AnyCast(STR_t,args[0].d))};
+}
+
+
+// Removes a file or empty directory. Returns `true` if succeeded, otherwise `false`.
+Variant LIB_FileSystem_remove(ItyState& _state, const ARR_t& args) {
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
+	const STR_t& path = AnyCast(STR_t,args[0].d);
+	return Variant{BOOL, ((not std::filesystem::is_directory(path) || std::filesystem::is_empty(path)) && std::filesystem::remove(path))};
 }
 
 
@@ -61,7 +76,9 @@ const Variant LIB_FileSystem {
 		{"file_exists",  NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_file_exists)},
 		{"dir_exists",   NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_dir_exists)},
 		{"read",         NativeFuncTrans(STR,   (NativeFunc_t)LIB_FileSystem_read)},
-		{"write",        NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_write)}
+		{"write",        NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_write)},
+		{"make_dir",     NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_make_dir)},
+		{"remove",       NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_remove)}
 	},
 	VariantMode_constant
 };

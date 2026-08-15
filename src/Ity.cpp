@@ -360,16 +360,28 @@ void start_shell(int argc, char* argv[]) {
 		else script_args.push_back(Variant{STR, (STR_t)arg_str, VariantMode_constant});
 	}
 
-	for (const std::string& flag : flags) {
-		// Set debug flags
-		if (flag == "-d-result")            debug_flags.result = true;
+	for (const std::string& f : flags) {
+		// Version.
+		if (f == "-v" || f == "--version") {
+			std::cout << "Ity " << ItyVersionString << '\n';
+			return;
+		}
+
+		// Help.
+		else if (f == "-h" || f == "--help") {
+			std::cout << "Haha no. Go to github.com/phosxd/Ity for now.\n";
+			return;
+		}
+
+		// Set debug flags.
+		else if (f == "--d-result")            debug_flags.result = true;
 		#ifdef RUNTIME_DEBUG
-		else if (flag == "-d-inst")         debug_flags.inst = true;
-		else if (flag == "-d-expr")         debug_flags.expr = true;
-		else if (flag == "-d-expr-result")  debug_flags.expr_result = true;
-		else if (flag == "-d-data-assign")  debug_flags.data_assign = true;
-		else if (flag == "-d-scoping")      debug_flags.scoping = true;
-		else if (flag == "-d-full") {
+		else if (f == "--d-inst")         debug_flags.inst = true;
+		else if (f == "--d-expr")         debug_flags.expr = true;
+		else if (f == "--d-expr-result")  debug_flags.expr_result = true;
+		else if (f == "--d-data-assign")  debug_flags.data_assign = true;
+		else if (f == "--d-scoping")      debug_flags.scoping = true;
+		else if (f == "-d" || f == "--d-full") {
 			debug_flags.result = true;
 			debug_flags.inst = true;
 			debug_flags.expr = true;
@@ -377,14 +389,16 @@ void start_shell(int argc, char* argv[]) {
 			debug_flags.data_assign = true;
 			debug_flags.scoping = true;
 		}
-		else if (str_starts_with(flag, std::string("-tabs="))) {tab_col_value = std::stoi(flag.substr(flag.size()-1));}
+		else if (str_starts_with(f, std::string("-t=")) || str_starts_with(f, std::string("--tabs="))) {
+			tab_col_value = std::stoi(f.substr(f.size()-1));
+		}
 		#endif
 
 		// Set other flags.
-		else if (flag == "-codes")   emit_just_codes = true;
-		else if (flag == "-nowarn")  emit_warnings = false;
-		else if (flag == "-safe")    safe_mode = true;
-		else if (flag == "-step")    step_mode = true;
+		else if (f == "-c" || f == "--codes")   emit_just_codes = true;
+		else if (f == "--nowarn")  emit_warnings = false;
+		else if (f == "--safe")    safe_mode = true;
+		else if (f == "-s" || f == "--step")    step_mode = true;
 	}
 
 	std::vector<std::string> split_source_script = split_str(source_script_path, '/');

@@ -1228,7 +1228,7 @@ for (( idx=0; idx<${#tests[@]}; idx+=2 )); do
 	printf "${CLEAR_LINE}${RESET_POS}[Case ${case_num}] "
 
 	echo "$i" > .test.ity # Put test code in a file.
-	./ity.bin -codes .test.ity > .test_result.txt # Run test code, then output the result to a file.
+	./ity.bin -c .test.ity > .test_result.txt # Run test code, then output the result to a file.
 	code=$?
 
 	expected=${tests[(($idx+1))]} # Get expected test output.
@@ -1240,9 +1240,9 @@ for (( idx=0; idx<${#tests[@]}; idx+=2 )); do
 		echo "${i}"
 		echo "${BOLD}Test case debug results:${RESET}"
 		echo
-		try1=$(./ity.bin -d-full .test.ity)
+		try1=$(./ity.bin -d .test.ity)
 		if [[ $try1 == "" ]]; then
-			./ity.bin -d-result .test.ity
+			./ity.bin --d-result .test.ity
 		else
 			echo "$try1"
 		fi

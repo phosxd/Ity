@@ -134,7 +134,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 		case ERR_unable_to_open_script:             return "Unable to open script at \"" + args[0] + "\".";
 		#endif
 		case ERR_unknown_module:                    return "No module with name \"" + args[0] + "\" is available.";
-		case ERR_disallowed_member_in_safe_mode:    return "Member \"" + args[0] + "\" is not allowed during safe mode (-safe).";
+		case ERR_disallowed_member_in_safe_mode:    return "Member \"" + args[0] + "\" is not allowed during safe mode (--safe).";
 
 		case ERR_max_composite_size:                return "Exceeded maximum number of instructions under a composite (65,535). Nesting is not healthy.";
 		case ERR_no_composite_requiring_end:        return "There is no instruction requiring a composite end here.";
