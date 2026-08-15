@@ -63,20 +63,15 @@ using Clock_t = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 
 namespace ANSI {
-	static constexpr std::string reset         = "\e[0m";
-	static constexpr std::string bold          = "\e[1m";
-	static constexpr std::string black         = "\e[30m";
-	static constexpr std::string red           = "\e[31m";
-	static constexpr std::string green         = "\e[32m";
-	static constexpr std::string orange        = "\e[33m";
-	static constexpr std::string blue          = "\e[34m";
-	static constexpr std::string purple        = "\e[35m";
-	static constexpr std::string white         = "\e[37m";
-	static constexpr std::string yellow        = "\e[93m";
-	// Extras...
-	static constexpr std::string cursor_off    = "\e[?25l";
-	static constexpr std::string cursor_on     = "\e[?25h";
-	static constexpr std::string clear_screen  = "\e[2J\e[H";
+	static constexpr std::string reset        = "\e[0m";
+	static constexpr std::string bold         = "\e[1m";
+	static constexpr std::string red          = "\e[31m";
+	static constexpr std::string green        = "\e[32m";
+	static constexpr std::string orange       = "\e[33m";
+	static constexpr std::string blue         = "\e[34m";
+	static constexpr std::string purple       = "\e[35m";
+	static constexpr std::string yellow       = "\e[93m";
+	static constexpr std::string norm         = "\e[39m";
 }
 
 
@@ -209,7 +204,7 @@ void emit_warn(const ERR_CODE code, const std::vector<std::string> args={}) {
 	}
 
 	// Print pretty warning message.
-	std::cout << ANSI::yellow << "Warning " << std::to_string(code) << ": " << ANSI::white << make_err_message(code,args) << ANSI::reset << '\n';
+	std::cout << ANSI::yellow << "Warning " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
 	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos("", current_line, current_column)) << '\n';
 }
 
@@ -224,7 +219,7 @@ void emit_error(const ERR_CODE code, const std::vector<std::string> args={}, uns
 	if (col_override == 0) col_override = current_column;
 
 	// Print pretty error message.
-	std::cout << ANSI::red << "Error " << std::to_string(code) << ": " << ANSI::white << make_err_message(code,args) << ANSI::reset << '\n';
+	std::cout << ANSI::red << "Error " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
 	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos("", ln_override, col_override)) << '\n';
 
 	// Kill program.

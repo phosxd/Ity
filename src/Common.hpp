@@ -275,10 +275,11 @@ const VariantPresets_struct VariantPresets;
 const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t& native_func) {
 	return Variant{
 		FUNC, (FUNC_t){
-			return_type, // Return type.
-			(ARR_t){},   // Bound args.
-			0,0,         // Script func args, wont be used.
-			native_func  // Native callable.
+			.return_type = return_type,
+			.bound_args = (ARR_t){},
+			.token_index = 0,
+			.definition_state_id = 0,
+			.native_callable = native_func
 		},
 		VariantMode_constant,
 	};
@@ -312,7 +313,7 @@ constexpr STR_t ItyVersionString = "0.2.0";
 //	0 = release.
 //	1 = beta / pre-release.
 //	2 = experimental / custom.
-constexpr INT_t ItyVersion[4] = {0,2,0, 0};
+constexpr INT_t ItyVersion[4] = {0,2,0, 1};
 
 constexpr STR_t OSName =
 #if _WIN32

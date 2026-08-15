@@ -1,13 +1,7 @@
 - Add ability to import other scripts as modules.
- 
-
-Add more FileSystem methods:
-	- file_exists
-	- dir_exists
-	- get_items_in_dir
 
 
-Add opt-in libraries:
+Add opt-in C++ modules:
 	- JSON
 	- HTTP
 	- DBus (linux only)

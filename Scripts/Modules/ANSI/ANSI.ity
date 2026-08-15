@@ -1,0 +1,95 @@
+# ANSI
+# ----
+#
+# Defines most ANSI sequences accessible as human readable keys.
+#
+# This includes:
+#	- Styling (bold, italics, strike-through, etc).
+#	- Foreground/background coloring (16 colors).
+#	- Fg/Bg 8-bit RGB coloring (terminal must support it).
+#	- Cursor visibility.
+#	- Cursor movement.
+#	- Clear screen.
+#
+#
+# PART OF THE STANDARD SET OF ITY MODULES.
+
+
+func STR get_rgb_code; arg INT mode=0; arg INT r=0; arg INT g=0; arg INT b=0;
+	return '\e[' + (mode == 0 ? '3' -- '4') + '8;2;' + (r->STR) +';' + (g->STR) + ';' + (b->STR) + 'm';
+/;
+
+
+func STR move; arg INT x=0; arg INT y=0;
+	return '\e[' + (x->STR) + ';' + (y->STR) + 'H';
+/;
+
+
+func STR rel_move; arg INT mode=0; arg INT value=0;
+	var STR mode_str = 'A';
+	if mode == 1; mode_str = 'B'; /;
+	else if mode == 2; mode_str = 'C'; /;
+	else if mode == 3; mode_str = 'D'; /;
+	return '\e[' + (value->STR) + mode_str;
+/;
+
+
+
+const MAP __module__ = {
+	'__name', 'test_module',
+
+	'reset',     '\e[0m',
+	'bold',      '\e[1m',
+	'dim',       '\e[2m',
+	'italic',    '\e[3m',
+	'underline', '\e[4m',
+	'blinking',  '\e[5m',
+	'reverse',   '\e[7m',
+	'hideen',    '\e[8m',
+	'strike',    '\e[9m',
+
+	'reset_bold',      '\e[22m',
+	'reset_dim',       '\e[22m',
+	'reset_italic',    '\e[23m',
+	'reset_underline', '\e[24m',
+	'reset_blinking',  '\e[25m',
+	'reset_reverse',   '\e[27m',
+	'reset_hidden',    '\e[28m',
+	'reset_strike',    '\e[29m',
+
+	'fg_black',     '\e[30m',
+	'fg_red',       '\e[31m',
+	'fg_green',     '\e[32m',
+	'fg_orange',    '\e[33m',
+	'fg_blue',      '\e[34m',
+	'fg_yellow',    '\e[33m',
+	'fg_purple',    '\e[35m',
+	'fg_cyan',      '\e[36m',
+	'fg_white',     '\e[37m',
+	'fg_default',   '\e[39m',
+
+	'bg_black',     '\e[40m',
+	'bg_red',       '\e[41m',
+	'bg_green',     '\e[42m',
+	'bg_orange',    '\e[43m',
+	'bg_blue',      '\e[44m',
+	'bg_yellow',    '\e[43m',
+	'bg_purple',    '\e[45m',
+	'bg_cyan',      '\e[46m',
+	'bg_white',     '\e[47m',
+	'bg_default',   '\e[49m',
+
+	'fg_rgb',  (get_rgb_code.bind:[[0]]),
+	'bg_rgb',  (get_rgb_code.bind:[[1]]),
+
+	'clear_screen', '\e[2J',
+
+	'cursor_off',   '\e[?25l',
+	'cursor_on',    '\e[?25h',
+
+	'move',         move,
+	'move_up',      (rel_move.bind:[[0]]),
+	'move_down',    (rel_move.bind:[[1]]),
+	'move_right',   (rel_move.bind:[[2]]),
+	'move_left',    (rel_move.bind:[[3]]),
+};
