@@ -1,8 +1,5 @@
-- Fix functions imported form another script throwing an error on call.
 - Add global property that specifies whether or not a script is running as a module.
-
 - Update docs about global property changes.
-- Replace all usage of `iostream` with a manual solution.
 
 
 Add opt-in C++ modules:

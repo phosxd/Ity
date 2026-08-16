@@ -51,9 +51,13 @@ void INST_Import_exec(ItyState& state, InstToken& token) {
 
 	// Find module from file..
 	if (not mod) {
-		std::ifstream f (mod_name+ITY_FILE_EXT, std::ios::in | std::ios::binary);
+		std::string path = mod_name+ITY_FILE_EXT;
+		std::ifstream f (path, std::ios::in | std::ios::binary);
 		// If not in user defined path, check relative to global modules path.
-		if (not f.is_open()) {}
+		if (not f.is_open()) {
+			path = GLOBAL_SHARE_PATH+"Modules/"+path;
+			f = std::ifstream(path, std::ios::in | std::ios::binary);
+		}
 
 		// Run imported script & get defined module.
 		if (f.is_open()) {
@@ -61,11 +65,12 @@ void INST_Import_exec(ItyState& state, InstToken& token) {
 			f.close();
 			const std::vector<InstToken> tokens = Ity::tokenize(script);
 			state.alts.push_back(ItyState{
-				.path = mod_name,
+				.path = path,
 				.seq = tokens
 			});
 			ItyState& alt = state.alts.back(); alt.init();
 			Ity::exec(alt, 0,-1);
+			current_script_path = state.path; // Reset current script path.
 			mod = alt.scope.get_data("__module__");
 		}
 	}

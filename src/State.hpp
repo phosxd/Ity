@@ -249,7 +249,7 @@ void restore_ongoing_scopes() {
 
 #pragma pack(1)
 struct ItyState {
-	std::string path = "";
+	const std::string path = "";
 	std::vector<ItyState> alts = {}; // Alternate states (script modules).
 	std::vector<InstToken> seq = {}; // Instruction token sequence.
 	ItyScope scope;
@@ -265,5 +265,13 @@ struct ItyState {
 		scope.d.push_back({string_hasher("__CMD_ARGS__"),             Variant{ARR,  ARGS, VariantMode_constant}});
 		// Merge built-in library.
 		scope.merge_module(AnyCast(MAP_t,((Variant*)LIB_BI_G)->d));
+	}
+
+
+	ItyState* find_alt_from_path(std::string target_path) {
+		for (ItyState& alt : alts) {
+			if (alt.path == target_path) return &alt;
+		}
+		return nullptr;
 	}
 };

@@ -277,8 +277,6 @@ const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t
 		FUNC, (FUNC_t){
 			.return_type = return_type,
 			.bound_args = (ARR_t){},
-			.token_index = 0,
-			.definition_state_id = 0,
 			.native_callable = native_func
 		},
 		VariantMode_constant,
@@ -333,6 +331,22 @@ constexpr STR_t OSName =
 	"posix"
 #else
 	"unknown"
+#endif
+;
+
+
+const std::string GLOBAL_SHARE_PATH =
+#if _WIN32
+	"%LOCALAPPDATA%/ity/"
+#elif __APPLE__
+	#include "TargetConditionals.h"
+	#if TARGET_OS_MAC
+		"~/Library/Application Support/ity/"
+	#elif TARGET_OS_IPHONE
+		"Documents/ity/"
+	#endif
+#else
+	"/usr/local/share/ity/"
 #endif
 ;
 

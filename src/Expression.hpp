@@ -20,13 +20,17 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 			return VariantPresets.none;
 		}
 
-		// Throw error if token is not a function token.
-		// The only time this should happen is if the tokens are corrupted in some way.
-		const InstToken& func_token = state.seq[func.token_index];
-		if (func_token.symbol != InstSymbol_func) {
-			emit_error(ERR_unexpected, {"FunctionHandler", "Missing function: " + std::to_string(func.token_index) + " isn't a `func` token."});
+		// Find function definition state.
+		ItyState* source_state = nullptr;
+		if (func.script_path == state.path) source_state = &state;
+		else source_state = state.find_alt_from_path(func.script_path);
+		// Throw error if could not find state.
+		if (not source_state) {
+			emit_error(ERR_unexpected, {"CallFunc", "Cannot find function."});
 			return VariantPresets.none;
 		}
+		// Get function token.
+		const InstToken& func_token = source_state->seq[func.token_index];
 
 		//call_trace.push_back(current_line); call_trace.push_back(current_column);
 		push_back_ongoing_scopes(); // Save ongoing scopes for later.
@@ -34,21 +38,22 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 		temporary_pool = {};
 
 		// Create an alternate scope, for use inside the function.
-		ItyState func_state = ItyState{.scope = create_new_scope(
+		ItyState func_state = ItyState{.path=source_state->path, .scope=create_new_scope(
 			(ScopeMap_t){
 				{HASHED_NAMES.__AG, std::move(args)},
 				{HASHED_NAMES.__R,  Variant{func.return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
 			},
-			state.scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
+			source_state->scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
 		)};
 
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;
 		#endif
 
-		func_state.seq = std::move(state.seq);
+		func_state.seq = std::move(source_state->seq);
 		Ity::exec(func_state, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
-		state.seq = std::move(func_state.seq);
+		current_script_path = state.path; // Reset current script path.
+		source_state->seq = std::move(func_state.seq);
 		restore_ongoing_scopes(); // Restore previously ongoing scopes, now that we are out of the function.
 		temporary_pool = std::move(temporary_pool_stack.back());
 		temporary_pool_stack.pop_back();

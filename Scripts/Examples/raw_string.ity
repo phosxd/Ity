@@ -1,4 +1,5 @@
-merge IO;
+import IO;
+import ANSI;
 
 
 var STR string = '';
@@ -6,14 +7,14 @@ if (length:[__CMD_ARGS__] > 0);
 	string = (__CMD_ARGS__:0);
 /;
 else;
-	string = (IO.prompt:['Enter some text: ']);
+	string = (IO.prompt:'Enter some text: ');
 /;
 
 
-print:[('You entered: ' + string)];
-print:[( (ANSI.bold)+'Here is what that is made of:'+(ANSI.reset) )];
+IO.print:('You entered: ' + string);
+IO.print:((ANSI.bold)+'Here is what that is made of:'+(ANSI.reset));
 
 
 for ch in string;
-	print:[(ch.raw:[])];
+	IO.print:(ch.raw:[]);
 /;

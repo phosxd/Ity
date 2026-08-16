@@ -15,6 +15,13 @@
 # PART OF THE STANDARD SET OF ITY MODULES.
 
 
+# flag
+# 	ex:globals  # Exclude standard global members (version info, command arguments, etc).
+# 	ex:bi       # Exclude built-in library members.
+# 	in:bi_tm    # Include type methods from built-in.
+# ;
+
+
 func STR get_rgb_code; arg INT mode=0; arg INT r=0; arg INT g=0; arg INT b=0;
 	return '\e[' + (mode == 0 ? '3' -- '4') + '8;2;' + (r->STR) +';' + (g->STR) + ';' + (b->STR) + 'm';
 /;
@@ -60,9 +67,8 @@ const MAP __module__ = {
 	'fg_black',     '\e[30m',
 	'fg_red',       '\e[31m',
 	'fg_green',     '\e[32m',
-	'fg_orange',    '\e[33m',
-	'fg_blue',      '\e[34m',
 	'fg_yellow',    '\e[33m',
+	'fg_blue',      '\e[34m',
 	'fg_purple',    '\e[35m',
 	'fg_cyan',      '\e[36m',
 	'fg_white',     '\e[37m',
@@ -71,9 +77,8 @@ const MAP __module__ = {
 	'bg_black',     '\e[40m',
 	'bg_red',       '\e[41m',
 	'bg_green',     '\e[42m',
-	'bg_orange',    '\e[43m',
-	'bg_blue',      '\e[44m',
 	'bg_yellow',    '\e[43m',
+	'bg_blue',      '\e[44m',
 	'bg_purple',    '\e[45m',
 	'bg_cyan',      '\e[46m',
 	'bg_white',     '\e[47m',

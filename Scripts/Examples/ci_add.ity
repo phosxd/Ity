@@ -1,5 +1,6 @@
 #!/usr/local/bin/ity
 merge IO;
+import ANSI;
 
 
 const ARR args = __CMD_ARGS__;
@@ -11,4 +12,4 @@ for arg in args;
 /;
 
 
-print:[(ANSI.yellow), 'Sum: ', sum];
+print:[(ANSI.fg_yellow), 'Sum: ', sum];

@@ -1,7 +1,7 @@
 #!/usr/local/bin/ity
 
 merge IO;
-import Modules/ANSI/ANSI;
+import ANSI;
 import Time;
 import Math;
 
@@ -140,7 +140,7 @@ while true;
 	out:['Seed: ',SEED_in,'  |  '];
 	# Print frame time info.
 	out:'Frame time: ';
-	(sleep_time <= 0) ? (out:(ANSI.red)) -- (out:(ANSI.green));
+	(sleep_time <= 0) ? (out:(ANSI.fg_red)) -- (out:(ANSI.fg_green));
 	out:(delta/1_000.0);
 	out:(ANSI.reset);
 	out:[' / ',(FPS_ms/1_000.0)];

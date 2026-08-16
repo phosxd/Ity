@@ -91,7 +91,7 @@ debug_flags_struct debug_flags;
 
 Clock_t clock_start;
 unsigned int tab_col_value = 4;
-std::string current_script_name = "";
+std::string current_script_path = "";
 unsigned int current_line = 0;
 unsigned int current_column = 0;
 
@@ -193,7 +193,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 
 
 std::string get_script_pos(const unsigned int ln, const unsigned int col) {
-	return "(" + current_script_name + ") Ln/Col " + std::to_string(ln) + ':' + std::to_string(col);
+	return "(" + current_script_path + ") Ln/Col " + std::to_string(ln) + ':' + std::to_string(col);
 }
 
 

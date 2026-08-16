@@ -1,6 +1,6 @@
 #!/usr/local/bin/ity
 import IO;
-const ANSI = IO.ANSI;
+import ANSI;
 
 
 const ARR frames = ['|','/','-','\\'];

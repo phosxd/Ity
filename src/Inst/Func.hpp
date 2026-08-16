@@ -21,16 +21,19 @@ void INST_Func_exec(ItyState& state, InstToken& token) {
 		emit_warn(ERR_name_is_shadowed, {name});
 	}
 
+	// Create the function.
 	state.scope.set_data(
 		name, FUNC,
 		Variant{FUNC, (FUNC_t){
-			get_variant_type_from_name(type_name), // Return type.
-			(ARR_t){},      // Bound arguments.
-			token.i,        // Token index.
-			state.scope.id, // Scope ID.
+			.return_type = get_variant_type_from_name(type_name),
+			.bound_args = (ARR_t){},
+			.token_index = token.i,
+			.definition_state_id = state.scope.id,
+			.script_path = state.path
 		}},
 		VariantMode_constant
 	);
+	// Jump past function body.
 	exec_jump_value += token.composite_size;
 }
 

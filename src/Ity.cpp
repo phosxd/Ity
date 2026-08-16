@@ -105,8 +105,8 @@ std::vector<InstToken> tokenize(const std::string& src) {
 	std::vector<InstToken> sequence;
 	std::string buffer; buffer.reserve(src_len);
 	InstToken item;
-	unsigned int ln = current_line;
-	unsigned int col = current_column-1;
+	unsigned int ln = 1;
+	unsigned int col = 0;
 
 	bool is_start = true;
 	bool is_comment = false;
@@ -308,7 +308,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 // Execute a sequence of instruction tokens.
 void exec(ItyState& state, const size_t start_idx, const int end_idx) {
-	current_script_name = state.path;
+	current_script_path = state.path;
 	execution_depth += 1;
 	const size_t seq_len = (end_idx > 0)
 		? std::min((int)state.seq.size(), end_idx+1)
@@ -408,10 +408,8 @@ void start_shell(int argc, char* argv[]) {
 		else if (f == "-s" || f == "--step")    step_mode = true;
 	}
 
-	ARGS = script_args;
-
-
 	// Initialize state.
+	ARGS = script_args;
 	ItyState state = ItyState{.path = source_script_path}; state.init();
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 	std::srand(RANDOM_SEED);

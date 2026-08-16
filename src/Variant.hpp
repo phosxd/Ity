@@ -54,6 +54,7 @@ struct FUNC_t {
 	// Script functions only...
 	unsigned int token_index = 0;
 	UINT_t definition_state_id = 0;
+	STR_t script_path = "";
 
 	// Native functions only...
 	NativeFunc_t native_callable = nullptr;
