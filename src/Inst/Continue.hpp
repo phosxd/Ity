@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Continue_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+static void INST_Continue_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	if (token.symbol == InstSymbol_continue || token.symbol == InstSymbol_break) {
 		bool found = false;
 		std::vector<CompositeItem> reverse_nest = *AnyCast(std::vector<CompositeItem>*,extra.at("cn"));
@@ -23,7 +23,7 @@ void INST_Continue_processor(InstToken& token, const AnyMap_t& extra, const unsi
 }
 
 
-void INST_Continue_exec(ItyState& state, InstToken& token) {
+static void INST_Continue_exec(ItyState& state, InstToken& token) {
 	// If loop token...
 	if (token.linked_inst == InstSymbol_while || token.linked_inst == InstSymbol_for) {
 		InstToken& linked_token = state.seq[token.i + token.linked_inst_pos];
@@ -49,9 +49,7 @@ void INST_Continue_exec(ItyState& state, InstToken& token) {
 
 
 const Instruction* INST_Continue = new Instruction{
-	1,                   // Required arg count.
-	INST_Continue_exec,  // Function.
-	false,               // Is composite.
-	false,               // Has expression.
-	INST_Continue_processor,
+	.REQUIRED = 1,
+	.exec = INST_Continue_exec,
+	.processor = INST_Continue_processor
 };

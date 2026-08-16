@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Exit_exec(ItyState& state, InstToken& token) {
+static void INST_Exit_exec(ItyState& state, InstToken& token) {
 	// Exit with status code.
 	if (token.symbol == InstSymbol_exit) {
 		if (token.expr.seq.empty()) {
@@ -39,8 +39,7 @@ void INST_Exit_exec(ItyState& state, InstToken& token) {
 
 
 const Instruction* INST_Exit = new Instruction{
-	1,                // Required arg count.
-	INST_Exit_exec,   // Function.
-	false,            // Is composite.
-	true,             // Has expression.
+	.REQUIRED = 1,
+	.exec = INST_Exit_exec,
+	.has_expr = true,
 };

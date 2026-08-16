@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+static void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	bool found = false;
 	std::vector<CompositeItem> reverse_nest = *AnyCast(std::vector<CompositeItem>*,extra.at("cn"));
 	std::reverse(reverse_nest.begin(), reverse_nest.end());
@@ -21,7 +21,7 @@ void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const unsign
 
 
 
-void INST_Return_exec(ItyState& state, InstToken& token) {
+static void INST_Return_exec(ItyState& state, InstToken& token) {
 	// Cleanly exit all scopes in the function.
 	exit_ongoing_scopes(state.scope);
 
@@ -36,9 +36,8 @@ void INST_Return_exec(ItyState& state, InstToken& token) {
 
 
 const Instruction* INST_Return = new Instruction{
-	1,                 // Required arg count.
-	INST_Return_exec,  // Function.
-	false,             // Is composite.
-	true,              // Has expression.
-	INST_Return_processor,
+	.REQUIRED = 1,
+	.exec = INST_Return_exec,
+	.has_expr = true,
+	.processor = INST_Return_processor
 };

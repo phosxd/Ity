@@ -2,7 +2,7 @@
 
 
 
-void INST_If_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+static void INST_If_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	token.meta = {false};
 
 	if (token.symbol == InstSymbol_elif || token.symbol == InstSymbol_else) {
@@ -23,7 +23,7 @@ void INST_If_processor(InstToken& token, const AnyMap_t& extra, const unsigned i
 
 
 
-void INST_If_exec(ItyState& state, InstToken& token) {
+static void INST_If_exec(ItyState& state, InstToken& token) {
 	// Get value from expression.
 	const Variant* var = expr_exec(state, token.expr);
 
@@ -66,9 +66,9 @@ void INST_If_exec(ItyState& state, InstToken& token) {
 
 
 const Instruction* INST_If = new Instruction{
-	1,             // Required arg count.
-	INST_If_exec,  // Function.
-	true,          // Is composite.
-	true,          // Has expression.
-	INST_If_processor,
+	.REQUIRED = 1,
+	.exec = INST_If_exec,
+	.is_composite = true,
+	.has_expr = true,
+	.processor = INST_If_processor
 };

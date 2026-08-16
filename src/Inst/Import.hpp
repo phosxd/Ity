@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Import_exec(ItyState& state, InstToken& token) {
+static void INST_Import_exec(ItyState& state, InstToken& token) {
 	std::string mod_name = token.args[1];
 	if (mod_name.size() == 0) return;
 	std::string applied_name = split_str(mod_name,'/').back();
@@ -94,8 +94,6 @@ void INST_Import_exec(ItyState& state, InstToken& token) {
 
 
 const Instruction* INST_Import = new Instruction{
-	2,                 // Required arg count.
-	INST_Import_exec,  // Function.
-	false,             // Is composite.
-	false,             // Has expression.
+	.REQUIRED = 2,
+	.exec = INST_Import_exec
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_End_exec(ItyState& state, InstToken& token) {
+static void INST_End_exec(ItyState& state, InstToken& token) {
 	if (token.linked_inst == InstSymbol__) return;
 
 	if (token.linked_inst == InstSymbol_while || token.linked_inst == InstSymbol_for) {
@@ -20,8 +20,6 @@ void INST_End_exec(ItyState& state, InstToken& token) {
 
 
 const Instruction* INST_End = new Instruction{
-	1,              // Required arg count.
-	INST_End_exec,  // Function.
-	false,          // Is composite.
-	false,          // Has expression.
+	.REQUIRED = 1,
+	.exec = INST_End_exec
 };

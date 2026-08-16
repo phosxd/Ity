@@ -132,11 +132,11 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 		case ERR_unknown_module:                    return "No module with name \"" + args[0] + "\" is available.";
 		case ERR_disallowed_member_in_safe_mode:    return "Member \"" + args[0] + "\" is not allowed during safe mode (--safe).";
 
-		case ERR_max_composite_size:                return "Exceeded maximum number of instructions under a composite (65,535). Nesting is not healthy.";
+		case ERR_max_composite_size:                return "Exceeded maximum instructions under composite (65,535). Nesting is not healthy.";
 		case ERR_no_composite_requiring_end:        return "There is no instruction requiring a composite end here.";
 		case ERR_no_composite_end:                  return "Composite instruction has no end.";
 		case ERR_no_string_end:                     return "String literal has no end.";
-		case ERR_max_execution_depth:               return "Maximum execution depth reached (" + args[0] + "). Use the `set_max_depth` function to increase limit.";
+		case ERR_max_execution_depth:               return "Maximum exec-depth reached (" + args[0] + "). Use the `set_max_depth` function to increase limit.";
 
 		case ERR_invalid_syntax:                    return "Invalid syntax: " + args[0] + ".";
 		case ERR_invalid_inst_arg_count:            return "Invalid number of arguments for \"" + args[0] + "\". Expected at least " + args[1] + " separated by a space.";
@@ -183,7 +183,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 		case ERR_unexpected_char_at_expr_end:       return "Unexpected character \"" + args[0] + "\" at end of expression.";
 		case ERR_invalid_character_for_construct:   return "Invalid character for " + args[0] + " construct: \"" + args[1] + "\".";
 		case ERR_cannot_dereference:                return "Cannot dereference \"" + args[0] + "\". Not a pointer.";
-		case ERR_max_temporaries_in_use:            return "Reduce one-off expression complexity; Maximum number of temporaries in use (" + args[0] + "/" + args[1] + "). This will cause corruption!";
+		case ERR_max_temporaries_in_use:            return "Maximum temporaries in use (" + args[0] + "/" + args[1] + "); Reduce one-off expression complexity.";
 		#endif
 		default: break;
 	}
@@ -199,29 +199,24 @@ std::string get_script_pos(const unsigned int ln, const unsigned int col) {
 
 void emit_warn(const ERR_CODE code, const std::vector<std::string> args={}) {
 	if (not emit_warnings) return;
-	if (emit_just_codes) {
-		std::cout << "Warning: " << std::to_string(code) << '\n';
-		return;
+	if (emit_just_codes) std::cout << "Warning: " << std::to_string(code) << '\n';
+	else {
+		// Print pretty warning message.
+		std::cout << ANSI::yellow << "Warning " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
+		if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(current_line, current_column)) << '\n';
 	}
-
-	// Print pretty warning message.
-	std::cout << ANSI::yellow << "Warning " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
-	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(current_line, current_column)) << '\n';
 }
 
 
 void emit_error(const ERR_CODE code, const std::vector<std::string> args={}, unsigned int ln_override=0, unsigned int col_override=0) {
-	if (emit_just_codes) {
-		std::cout << "Error: " << std::to_string(code) << '\n';
-		exit(1);
-		return;
+	if (emit_just_codes) std::cout << "Error: " << std::to_string(code) << '\n';
+	else {
+		if (ln_override == 0) ln_override = current_line;
+		if (col_override == 0) col_override = current_column;
+		// Print pretty error message.
+		std::cout << ANSI::red << "Error " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
+		if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(ln_override, col_override)) << '\n';
 	}
-	if (ln_override == 0) ln_override = current_line;
-	if (col_override == 0) col_override = current_column;
-
-	// Print pretty error message.
-	std::cout << ANSI::red << "Error " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
-	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(ln_override, col_override)) << '\n';
 
 	// Kill program.
 	exit(1);

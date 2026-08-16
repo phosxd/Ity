@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
+static void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
 	std::string type_name = "*";
 	std::string name;
 	std::string op = "";
@@ -81,7 +81,7 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 
 
 
-void INST_Var_exec(ItyState& state, InstToken& token) {
+static void INST_Var_exec(ItyState& state, InstToken& token) {
 	const std::string& name = AnyCast(std::string,token.meta[0]);
 	const size_t& hashed_name = AnyCast(size_t,token.meta[1]);
 
@@ -139,9 +139,7 @@ void INST_Var_exec(ItyState& state, InstToken& token) {
 
 
 const Instruction* INST_Var = new Instruction{
-	2,              // Required arg count.
-	INST_Var_exec,  // Function.
-	false,          // Is composite.
-	false,          // Has expression. (Manually handled for this Instruction).
-	INST_Var_processor,
+	.REQUIRED = 2,
+	.exec = INST_Var_exec,
+	.processor = INST_Var_processor,
 };

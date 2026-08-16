@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Func_exec(ItyState& state, InstToken& token) {
+static void INST_Func_exec(ItyState& state, InstToken& token) {
 	const std::string& type_name = token.args[1];
 	const std::string& name = token.args[2];
 
@@ -41,8 +41,7 @@ void INST_Func_exec(ItyState& state, InstToken& token) {
 
 
 const Instruction* INST_Func = new Instruction{
-	3,               // Required arg count.
-	INST_Func_exec,  // Function.
-	true,            // Is composite.
-	false,           // Has expression.
+	.REQUIRED = 3,
+	.exec = INST_Func_exec,
+	.is_composite = true,
 };

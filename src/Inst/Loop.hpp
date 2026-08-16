@@ -1,7 +1,7 @@
 #pragma once
 
 
-void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
+static void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
 	token.meta = {
 		false,     // Multi.
 
@@ -43,7 +43,7 @@ void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const unsigne
 
 
 
-void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
+static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 	const unsigned int& index = AnyCast(unsigned int,token.meta[4]);
 	// Get iterable.
 	Variant& iterable = AnyCastV(ARR_t,token.meta[3])[0];
@@ -109,7 +109,7 @@ void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 
 
 
-void INST_Loop_exec(ItyState& state, InstToken& token) {
+static void INST_Loop_exec(ItyState& state, InstToken& token) {
 	bool value = false;
 
 
@@ -177,7 +177,7 @@ void INST_Loop_exec(ItyState& state, InstToken& token) {
 
 
 
-void INST_Loop_emergency_scope_exit(InstToken*& token) {
+static void INST_Loop_emergency_scope_exit(InstToken*& token) {
 	// Reset token state.
 	token->meta[0] = false;
 	token->meta[3] = (ARR_t){VariantPresets.empty, VariantPresets.empty};
@@ -188,10 +188,9 @@ void INST_Loop_emergency_scope_exit(InstToken*& token) {
 
 
 const Instruction* INST_Loop = new Instruction{
-	1,                // Required arg count.
-	INST_Loop_exec,   // Function.
-	true,             // Is composite.
-	false,            // Has expression.
-	INST_Loop_processor,
-	INST_Loop_emergency_scope_exit,
+	.REQUIRED = 1,
+	.exec = INST_Loop_exec,
+	.is_composite = true,
+	.processor = INST_Loop_processor,
+	.emergency_scope_exit = INST_Loop_emergency_scope_exit
 };
