@@ -1,0 +1,7 @@
+Code submitted to this repo should adhere to the following rules:
+  - Code cannot have been generated fully or in-part by an LLM or other form of AI.
+  - Contributor must explicitly state in their contribution request that they did not use AI in the contributed content.
+  - Code-style must closely conform to that of surrounding code in the repo. This is not strictly required, it will just be fixed afterwards.
+
+Before submitting new code, you are expected to have rebuilt, used, then tested the project to make sure you have not introduced new issues or broken anything.
+New code that cannot be compiled or fails automated tests will be rejected until fixed or will be reimplemented by a maintainer.
