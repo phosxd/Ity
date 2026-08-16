@@ -14,20 +14,17 @@
 # PART OF THE STANDARD SET OF ITY MODULES.
 
 
-merge IO;
-# Return the index at which the `substr` was found.
+# Return the index at which the `substr` was found. `-1` if not found.
 # Optional `start` & optional `end` arguments can be used to dictate the slice in which to search in.
-#
-# Returns `-1` if not found.
 func INT find; arg PTR S; arg STR substr; arg INT start = 0; arg INT end = -1;
-	var substr_idx = 0;
-	var found_at_idx = 0;
+	var INT substr_idx = 0;
+	var INT found_at_idx = 0;
 
 	if (end == -1) || (end > (length:~S));
 		end = (length:~S - 1);
 	/;
 
-	var i = (start-1); while i < end; i += 1;
+	var INT i = (start-1); while i < end; i += 1;
 		if (S:i) == (substr:substr_idx);
 			if substr_idx == 0; found_at_idx = i; /;
 			substr_idx += 1;
@@ -46,6 +43,8 @@ func INT find; arg PTR S; arg STR substr; arg INT start = 0; arg INT end = -1;
 /;
 
 
+
+
 const MAP __module__ = {
 	'__name', 'StrUtil',
 	'__tm', {
@@ -53,11 +52,3 @@ const MAP __module__ = {
 		#'STR:erase', erase,
 	},
 };
-
-
-
-# TEST
-
-const string = 'hello world!';
-#string.find('world');
-print:(find:[@string, 'world']);

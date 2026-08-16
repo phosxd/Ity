@@ -290,12 +290,13 @@ Variant LIB_BI_tm_map_set(ItyState& _state, ARR_t& args) {
 
 // Bind arguments to the function.
 Variant LIB_BI_tm_func_bind(ItyState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {ARR}, 1)) return VariantPresets.none;
-
 	// Get data.
 	FUNC_t data = AnyCast(FUNC_t, AnyCastV(Variant*,args[0].d)->d ); // Copy the function.
 	// Add the given array to the function's bounded arguments.
-	data.bound_args = data.bound_args + AnyCast(ARR_t,args[1].d);
+	for (unsigned int i = 0; i < args.size(); i++) {
+		if (i == 0) continue;
+		data.bound_args.push_back(args[i]);
+	}
 	// Return the new function.
 	return Variant{FUNC, data};
 }

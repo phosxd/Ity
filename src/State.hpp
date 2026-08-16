@@ -265,6 +265,7 @@ struct ItyState {
 		scope.d.push_back({string_hasher("__CMD_ARGS__"),             Variant{ARR,  ARGS, VariantMode_constant}});
 		// Merge built-in library.
 		scope.merge_module(AnyCast(MAP_t,((Variant*)LIB_BI_G)->d));
+		scope.in(); // Keep built-ins a scope higher than everything else.
 	}
 
 

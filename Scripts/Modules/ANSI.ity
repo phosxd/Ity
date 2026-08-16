@@ -15,13 +15,6 @@
 # PART OF THE STANDARD SET OF ITY MODULES.
 
 
-# flag
-# 	ex:globals  # Exclude standard global members (version info, command arguments, etc).
-# 	ex:bi       # Exclude built-in library members.
-# 	in:bi_tm    # Include type methods from built-in.
-# ;
-
-
 func STR get_rgb_code; arg INT mode=0; arg INT r=0; arg INT g=0; arg INT b=0;
 	return '\e[' + (mode == 0 ? '3' -- '4') + '8;2;' + (r->STR) +';' + (g->STR) + ';' + (b->STR) + 'm';
 /;
@@ -84,8 +77,8 @@ const MAP __module__ = {
 	'bg_white',     '\e[47m',
 	'bg_default',   '\e[49m',
 
-	'fg_rgb',  (get_rgb_code.bind:[[0]]),
-	'bg_rgb',  (get_rgb_code.bind:[[1]]),
+	'fg_rgb',  (get_rgb_code.bind:0),
+	'bg_rgb',  (get_rgb_code.bind:1),
 
 	'clear_screen', '\e[2J',
 
@@ -93,8 +86,8 @@ const MAP __module__ = {
 	'cursor_on',    '\e[?25h',
 
 	'move',         move,
-	'move_up',      (rel_move.bind:[[0]]),
-	'move_down',    (rel_move.bind:[[1]]),
-	'move_right',   (rel_move.bind:[[2]]),
-	'move_left',    (rel_move.bind:[[3]]),
+	'move_up',      (rel_move.bind:0),
+	'move_down',    (rel_move.bind:1),
+	'move_right',   (rel_move.bind:2),
+	'move_left',    (rel_move.bind:3),
 };

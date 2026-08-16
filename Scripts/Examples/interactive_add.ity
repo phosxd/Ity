@@ -1,5 +1,6 @@
 #!/usr/local/bin/ity
-merge IO;
+import IO;
+import ANSI;
 
 
 func FLOAT add; arg FLOAT first; arg FLOAT second;
@@ -7,9 +8,9 @@ func FLOAT add; arg FLOAT first; arg FLOAT second;
 /;
 
 
-print:[(ANSI.bold), 'Add 2 numbers...', (ANSI.reset)];
+IO.print:[(ANSI.bold), 'Add 2 numbers...', (ANSI.reset)];
 
-const * a = prompt:'Value 1: ' -> FLOAT;
-const * b = prompt:'Value 2: ' -> FLOAT;
+const a = IO.prompt:'Value 1: ' -> FLOAT;
+const b = IO.prompt:'Value 2: ' -> FLOAT;
 
-print:[(ANSI.yellow), 'Sum: ', (add:[a,b]), (ANSI.reset)];
+IO.print:[(ANSI.fg_yellow), 'Sum: ', (add:[a,b]), (ANSI.reset)];

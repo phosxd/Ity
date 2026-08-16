@@ -21,7 +21,7 @@ func MAP RangeIterator_new; arg INT start; arg INT end; arg INT step=1;
 	return {
 		'__t', 'rangeIt',
 		'__iter', RangeIterator_iter,
-		'i', start,
+		'i', (start-1),
 		's', step,
 		'e', end,
 	};
@@ -33,6 +33,8 @@ func ARR RangeIterator_iter; arg PTR obj;
 	if obj.i >= (obj.e); return [false, none]; /;
 	return [true, (obj.i)];
 /;
+
+
 
 
 const MAP __module__ = {
