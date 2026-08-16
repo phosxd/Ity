@@ -39,7 +39,7 @@ struct InstDef {
 	const std::string str;
 	const Instruction* inst;
 };
-const InstDef* find_InstDef_from_symbol(const InstSymbol& sym);
+const InstDef* find_InstDef(const InstSymbol& sym, const std::string& str);
 #include "Inst/Import.hpp"
 #include "Inst/Exit.hpp"
 #include "Inst/Var.hpp"
@@ -75,15 +75,10 @@ const InstDef INSTRUCTIONS[] = {
 	{InstSymbol_return,   "return",    INST_Return},
 };
 // Get string representation of an InstSymbol.
-const InstDef* find_InstDef_from_symbol(const InstSymbol& sym) {
+const InstDef* find_InstDef(const InstSymbol& sym = InstSymbol__, const std::string& str = "") {
 	for (const InstDef& def : INSTRUCTIONS) {
-		if (def.sym == sym) return &def;
-	}
-	return nullptr;
-}
-const InstDef* find_InstDef_from_string(const std::string& str) {
-	for (const InstDef& def : INSTRUCTIONS) {
-		if (def.str == str) return &def;
+		if ((sym != InstSymbol__ && def.sym == sym)
+		|| (not str.empty() && def.str == str)) return &def;
 	}
 	return nullptr;
 }
@@ -195,7 +190,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 				const size_t& args_len = item.args.size();
 				InstSymbol inst_symbol = InstSymbol__;
 				if (args_len > 0) {
-					if (const InstDef* inst_def = find_InstDef_from_string(item.args[0]); inst_def != nullptr) inst_symbol = inst_def->sym;
+					if (const InstDef* inst_def = find_InstDef(InstSymbol__, item.args[0]); inst_def != nullptr) inst_symbol = inst_def->sym;
 				}
 
 				// Handle composite instructions.
@@ -211,7 +206,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 				}
 				if (args_len > 0) {
 					// If is a valid instruction...
-					const InstDef* inst_def = find_InstDef_from_symbol(inst_symbol);
+					const InstDef* inst_def = find_InstDef(inst_symbol);
 					if (inst_def) {
 						const Instruction* inst = inst_def->inst;
 						item.symbol = inst_symbol;

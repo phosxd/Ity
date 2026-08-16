@@ -132,15 +132,10 @@ const OpDef OPERATIONS[] = {
 	{OpSymbol_type_cast, "->",  OP_TypeCast},
 	{OpSymbol_access,    ":",   OP_Access},
 };
-const OpDef* find_OpDef_from_sym(const OpSymbol& sym) {
+const OpDef* find_OpDef(const OpSymbol& sym = OpSymbol__, const std::string& str = "") {
 	for (const OpDef& def : OPERATIONS) {
-		if (def.sym == sym) return &def;
-	}
-	return nullptr;
-}
-const OpDef* find_OpDef_from_str(const std::string& str) {
-	for (const OpDef& def : OPERATIONS) {
-		if (def.str == str) return &def;
+		if ((sym != OpSymbol__ && def.sym == sym)
+		|| (not str.empty() && def.str == str)) return &def;
 	}
 	return nullptr;
 }
@@ -420,7 +415,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 							.ln  = ln_offset,
 							.col = col_offset,
 							.t   = ExprTokenType_variant,
-							.var = {OP, find_OpDef_from_sym(OpSymbol_access)},
+							.var = {OP, find_OpDef(OpSymbol_access)},
 						});
 						buffer.clear();
 						next_ref_is_str = true;
@@ -433,7 +428,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 			// End operator.
 			if (is_operator == true && expr_len > i+1 && (expr[i+1] == ' ' or not is_special_symbol(expr[i+1])) ) {
 				const std::string op_symbol_str = (buffer+ch);
-				const OpDef* op_def = find_OpDef_from_str(op_symbol_str);
+				const OpDef* op_def = find_OpDef(OpSymbol__, op_symbol_str);
 				// Throw error if invalid operator.
 				if (not op_def) {
 					emit_error(ERR_invalid_op, {op_symbol_str});
