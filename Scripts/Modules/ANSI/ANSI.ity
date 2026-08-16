@@ -28,8 +28,8 @@ func STR move; arg INT x=0; arg INT y=0;
 func STR rel_move; arg INT mode=0; arg INT value=0;
 	var STR mode_str = 'A';
 	if mode == 1; mode_str = 'B'; /;
-	else if mode == 2; mode_str = 'C'; /;
-	else if mode == 3; mode_str = 'D'; /;
+	elif mode == 2; mode_str = 'C'; /;
+	elif mode == 3; mode_str = 'D'; /;
 	return '\e[' + (value->STR) + mode_str;
 /;
 

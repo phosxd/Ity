@@ -12,6 +12,10 @@
 #include "Util.hpp"
 #include "ScriptErrors.hpp"
 #include "Variant.hpp"
+
+const void* LIB_BI_G = nullptr; // Global reference to built-in lib.
+ARR_t ARGS;
+
 #include "Common.hpp"
 #include "State.hpp"
 #include "Ity.hpp"
@@ -91,7 +95,9 @@ Variant last_expr_result = VariantPresets.empty;
 namespace Ity {
 
 
-void init() {}
+void init() {
+	LIB_BI_G = &LIB_BI;
+}
 
 
 std::vector<InstToken> tokenize(const std::string& src) {
@@ -302,6 +308,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 // Execute a sequence of instruction tokens.
 void exec(ItyState& state, const size_t start_idx, const int end_idx) {
+	current_script_name = state.path;
 	execution_depth += 1;
 	const size_t seq_len = (end_idx > 0)
 		? std::min((int)state.seq.size(), end_idx+1)
@@ -401,23 +408,11 @@ void start_shell(int argc, char* argv[]) {
 		else if (f == "-s" || f == "--step")    step_mode = true;
 	}
 
-	std::vector<std::string> split_source_script = split_str(source_script_path, '/');
-	split_source_script.insert(split_source_script.begin(), "");
+	ARGS = script_args;
 
 
 	// Initialize state.
-	ItyState state = create_new_state(create_new_scope({
-		{string_hasher("__VERSION__"),                Variant{ARR,  (ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}}, VariantMode_constant}},
-		{string_hasher("__VERSION_STRING__"),         Variant{STR,  (STR_t)ItyVersionString, VariantMode_constant}},
-		{string_hasher("__OS_NAME__"),                Variant{STR,  (STR_t)OSName, VariantMode_constant}},
-		{string_hasher("__SCRIPT_FILE_NAME__"),       Variant{STR,  (STR_t)split_source_script.back(), VariantMode_constant}},
-		{string_hasher("__SCRIPT_START_TIME_MS__"),   Variant{INT,  (INT_t)DurCast_us(Clock::now().time_since_epoch()).count(), VariantMode_constant}},
-		{string_hasher("__CMD_ARGS__"),               Variant{ARR,  (ARR_t)script_args, VariantMode_constant}},
-		{string_hasher("__HAS_RUNTIME_DEBUG__"),      Variant(BOOL, (bool)has_runtime_debug, VariantMode_constant)},
-	}));
-	// Merge built-in module.
-	state.scope.merge_module(AnyCast(MAP_t,LIB_BI.d));
-
+	ItyState state = ItyState{.path = source_script_path}; state.init();
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 	std::srand(RANDOM_SEED);
 
@@ -464,7 +459,7 @@ void start_shell(int argc, char* argv[]) {
 		// Input loop...
 		std::string command;
 		while (true) {
-			std::cout << ANSI::purple << "\n>> " << ANSI::reset;
+			std::cout << ANSI::purple << "\n>> " << ANSI::norm << ANSI::reset;
 			std::getline(std::cin, command);
 			if (command == "quit" || command == "q") {
 				break;

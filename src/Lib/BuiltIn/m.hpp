@@ -48,6 +48,13 @@ Variant LIB_BI_sleep(ItyState& _state, const ARR_t& args) {
 }
 
 
+// Return `true` if the name is defined in the current scope.
+Variant LIB_BI_is_defined(ItyState& state, const ARR_t& args) {
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
+	return Variant{BOOL, (state.scope.get_data_globally(AnyCast(STR_t,args[0].d)) != nullptr)};
+}
+
+
 // Return the type of the given Variant, in string form.
 Variant LIB_BI_type_name(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
@@ -344,12 +351,13 @@ const Variant LIB_BI {
 		// Utility functions.
 		{"set_max_depth",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_set_max_depth)},
 
-		{"system",     NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_system)},
-		{"sleep",      NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_sleep)},
-		{"type_name",  NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_type_name)},
-		{"type",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type)},
-		{"length",     NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_length)},
-		{"size",       NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)},
-		{"range",      NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_range)},
+		{"system",      NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_system)},
+		{"sleep",       NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_sleep)},
+		{"type_name",   NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_type_name)},
+		{"is_defined",  NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_BI_is_defined)},
+		{"type",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type)},
+		{"length",      NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_length)},
+		{"size",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)},
+		{"range",       NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_range)},
 
 }, VariantMode_constant };

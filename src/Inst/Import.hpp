@@ -2,15 +2,14 @@
 
 
 void INST_Import_exec(ItyState& state, InstToken& token) {
-	std::string lib_name = token.args[1];
-	std::string applied_name = lib_name;
+	std::string mod_name = token.args[1];
+	if (mod_name.size() == 0) return;
+	std::string applied_name = split_str(mod_name,'/').back();
 
-	// Ok bro.
-	if (lib_name.size() == 0) return;
 
 	// Get lib name from variable.
-	if (lib_name[0] == '@') {
-		const std::string& var_name = lib_name.substr(1);
+	if (mod_name[0] == '@') {
+		const std::string& var_name = mod_name.substr(1);
 		Variant* var_ptr = state.scope.get_data_globally(var_name);
 		// Throw error if var name is bogus.
 		if (not var_ptr) {
@@ -21,7 +20,7 @@ void INST_Import_exec(ItyState& state, InstToken& token) {
 		// Convert to string if var is not a string.
 		if (var_ptr->t != STR) var.d = var_to_str(var);
 		// Set lib name to look for as the variable value.
-		lib_name = AnyCast(STR_t,var.d);
+		mod_name = AnyCast(STR_t,var.d);
 	}
 
 	// Get alias.
@@ -40,27 +39,48 @@ void INST_Import_exec(ItyState& state, InstToken& token) {
 	}
 
 
-	// Find library.
-	const Variant* lib = nullptr;
+	const Variant* mod = nullptr;
+
+	// Find module in built-in LIBS first.
 	for (const Variant& item : LIBS) {
-		if ( AnyCast(STR_t,AnyCast(MAP_t,item.d).at("__name").d) == lib_name) {
-			lib = &item;
+		if ( AnyCast(STR_t,AnyCast(MAP_t,item.d).at("__name").d) == mod_name) {
+			mod = &item;
 			break;
 		}
 	}
 
-	// Throw error if library doesn't exist.
-	if (not lib) {
-		emit_error(ERR_unknown_module, {lib_name});
+	// Find module from file..
+	if (not mod) {
+		std::ifstream f (mod_name+ITY_FILE_EXT, std::ios::in | std::ios::binary);
+		// If not in user defined path, check relative to global modules path.
+		if (not f.is_open()) {}
+
+		// Run imported script & get defined module.
+		if (f.is_open()) {
+			const std::string& script = (std::ostringstream() << f.rdbuf()).str();
+			f.close();
+			const std::vector<InstToken> tokens = Ity::tokenize(script);
+			state.alts.push_back(ItyState{
+				.path = mod_name,
+				.seq = tokens
+			});
+			ItyState& alt = state.alts.back(); alt.init();
+			Ity::exec(alt, 0,-1);
+			mod = alt.scope.get_data("__module__");
+		}
+	}
+
+	// Throw error if module cannot be found.
+	if (not mod || mod->t != MAP) {
+		emit_error(ERR_unknown_module, {mod_name});
 		return;
 	}
 
-	const MAP_t& lib_map = AnyCast(MAP_t,lib->d);
-	//std::any_cast<NativeFunc_t>(lib_map.at("__init").d) (state, {}); // Call init function.
+	const MAP_t& mod_map = AnyCast(MAP_t,mod->d);
 	// Merge all public members of the library into the scope.
-	if (token.symbol == InstSymbol_merge) state.scope.merge_module(lib_map);
+	if (token.symbol == InstSymbol_merge) state.scope.merge_module(mod_map);
 	// Add library to scope with the given name.
-	else state.scope.import_module(applied_name, lib_map);
+	else state.scope.import_module(applied_name, mod_map);
 }
 
 

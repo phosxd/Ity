@@ -91,6 +91,7 @@ debug_flags_struct debug_flags;
 
 Clock_t clock_start;
 unsigned int tab_col_value = 4;
+std::string current_script_name = "";
 unsigned int current_line = 0;
 unsigned int current_column = 0;
 
@@ -191,8 +192,8 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 }
 
 
-std::string get_script_pos(const std::string& script_name, const unsigned int ln, const unsigned int col) {
-	return "(" + script_name + ") Ln/Col " + std::to_string(ln) + ':' + std::to_string(col);
+std::string get_script_pos(const unsigned int ln, const unsigned int col) {
+	return "(" + current_script_name + ") Ln/Col " + std::to_string(ln) + ':' + std::to_string(col);
 }
 
 
@@ -205,7 +206,7 @@ void emit_warn(const ERR_CODE code, const std::vector<std::string> args={}) {
 
 	// Print pretty warning message.
 	std::cout << ANSI::yellow << "Warning " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
-	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos("", current_line, current_column)) << '\n';
+	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(current_line, current_column)) << '\n';
 }
 
 
@@ -220,7 +221,7 @@ void emit_error(const ERR_CODE code, const std::vector<std::string> args={}, uns
 
 	// Print pretty error message.
 	std::cout << ANSI::red << "Error " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
-	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos("", ln_override, col_override)) << '\n';
+	if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(ln_override, col_override)) << '\n';
 
 	// Kill program.
 	exit(1);

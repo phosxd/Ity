@@ -66,7 +66,7 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 	VariantMode mode = VariantMode_locked_type;
 	if (token.symbol == InstSymbol_const) mode = VariantMode_constant;
 	if (type == ANY) {
-		if (mode == 1) {
+		if (mode == VariantMode_constant) {
 			emit_error(ERR_constant_type_not_explicit);
 			return;
 		}
@@ -82,7 +82,7 @@ void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned
 
 
 void INST_Var_exec(ItyState& state, InstToken& token) {
-	const std::string name = AnyCast(std::string,token.meta[0]);
+	const std::string& name = AnyCast(std::string,token.meta[0]);
 	const size_t& hashed_name = AnyCast(size_t,token.meta[1]);
 
 	if (state.scope.get_data_globally(name, nullptr, hashed_name)) {

@@ -34,13 +34,13 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 		temporary_pool = {};
 
 		// Create an alternate scope, for use inside the function.
-		ItyState func_state = create_new_state(create_new_scope(
+		ItyState func_state = ItyState{.scope = create_new_scope(
 			(ScopeMap_t){
 				{HASHED_NAMES.__AG, std::move(args)},
 				{HASHED_NAMES.__R,  Variant{func.return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
 			},
 			state.scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
-		));
+		)};
 
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;

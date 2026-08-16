@@ -249,13 +249,21 @@ void restore_ongoing_scopes() {
 
 #pragma pack(1)
 struct ItyState {
+	std::string path = "";
+	std::vector<ItyState> alts = {}; // Alternate states (script modules).
 	std::vector<InstToken> seq = {}; // Instruction token sequence.
 	ItyScope scope;
+
+
+	void init() {
+		// Add basic info.
+		scope.d.push_back({string_hasher("__VERSION__"),              Variant{ARR,  (ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}}, VariantMode_constant}});
+		scope.d.push_back({string_hasher("__VERSION_STRING__"),       Variant{STR,  (STR_t)ItyVersionString, VariantMode_constant}});
+		scope.d.push_back({string_hasher("__SCRIPT_PATH__"),          Variant(STR,  (STR_t)path, VariantMode_constant)});
+		scope.d.push_back({string_hasher("__OS_NAME__"),              Variant{STR,  (STR_t)OSName, VariantMode_constant}});
+		scope.d.push_back({string_hasher("__HAS_RUNTIME_DEBUG__"),    Variant(BOOL, (bool)has_runtime_debug, VariantMode_constant)});
+		scope.d.push_back({string_hasher("__CMD_ARGS__"),             Variant{ARR,  ARGS, VariantMode_constant}});
+		// Merge built-in library.
+		scope.merge_module(AnyCast(MAP_t,((Variant*)LIB_BI_G)->d));
+	}
 };
-
-
-ItyState create_new_state(ItyScope scope) {
-	return ItyState{
-		.scope = scope,
-	};
-}

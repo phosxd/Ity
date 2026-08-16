@@ -1,6 +1,7 @@
 #!/usr/local/bin/ity
 
 merge IO;
+import Modules/ANSI/ANSI;
 import Time;
 import Math;
 

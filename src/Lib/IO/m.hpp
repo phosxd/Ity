@@ -13,7 +13,7 @@ void LIB_IO_on_signal_received(const int sig) {
 	// Iterate on each connected function for this signal & call it...
 	for (const FUNC_t& func : LIB_IO_signal_functions[sig]) {
 		Variant args = Variant{ARR, (ARR_t){}};
-		ItyState alt_state = create_new_state(*LIB_IO_scope);
+		ItyState alt_state = {.scope = *LIB_IO_scope};
 		call_function(alt_state, func, args);
 	}
 };
