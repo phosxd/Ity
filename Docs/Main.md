@@ -704,8 +704,23 @@ You can dynamically import a module using the "@" symbol to specify a string var
 const STR module_name = 'IO';
 import @module_name as some_module; # Import dynamically.
 
-# In practice, you should verify the member "print" exists in "some_module" before trying to access it.
-some_module.print:'Hello There!';
+# As good practice, you should verify the member you're looking for exists in "some_module" before trying to access it from a dynamcally imported module if you can't be absolutely sure it has the member.
+if some_module.has:'print';
+	some_module.print:'Hello There!';
+/;
+```
+
+Import modules located anywhere on the system.
+
+```python
+import my_modules/foo;
+import 'my modules/bar'; # Wrap in quotes if path has a space.
+foo.hello:[];
+bar.hello:[];
+
+# These do the same things.
+import /usr/local/share/ity/Modules/RangeIterator as RI;
+import RangeIterator as RI_2;
 ```
 
 If you don't want to assign a name to an imported module at all, use the `merge` instruction which will directly add all the module's members to the current scope.
@@ -728,6 +743,7 @@ Libraries enable you to actually do more complex things with relative ease, here
 - [FileAccess](Lib/FileAccess.md)
 
 Script-based modules (not built-into the interpreter binary):
+- [ANSI](Lib/ANSI)
 - [StrUtil](Lib/StrUtil.md)
 - [ArrUtil](Lib/ArrUtil.md)
 - [RangeIterator](Lib/RangeIterator.md)

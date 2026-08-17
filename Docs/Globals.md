@@ -22,14 +22,11 @@ List of possible values:
 - `posix`
 - `unknown`
 
-### (STR) \_\_SCRIPT\_FILE_NAME\_\_
-A string representing the name of the script file which the interpreter is running.
+### (STR) \_\_SCRIPT\_PATH\_\_
+A string representing the path of the script file which the interpreter is running.
 This will be empty if the interpreter is running interactive mode.
 
-Note: this is not the full file path, rather it is just the file name (extension included).
-
-### (INT) \_\_SCRIPT\_START\_TIME\_MS\_\_
-An integer representing the time (in milliseconds) when the script started running. This uses the host system last epoch time.
+Note: this may not be an absolute file path, it is often relative to the current working directory.
 
 ### (ARR) \_\_CMD\_ARGS\_\_
 An array representing the string arguments passed to the script via the command line.
@@ -196,8 +193,8 @@ map.keys:[]; # Returns ["c", "b", "a"].
 ### BOOL `MAP`.has (STR key)
 Returns whether or not the given key exists inside the map.
 
-### FUNC `FUNC`.bind (ARR args)
-Returns a new function object with the given `ARR` added to it's bound arguments.
+### FUNC `FUNC`.bind (ANY ...args)
+Returns a new function object with the given arguments added to it's bound arguments.
 
 Calling a function with bound arguments will pass them as the first arguments into the function, user specified arguments will be last.
 
@@ -208,6 +205,6 @@ func BOOL flip; arg BOOL value;
 /;
 
 
-const FUNC bound_flip_function = flip.bind:[[true]];
+const FUNC bound_flip_function = flip.bind:true;
 bound_flip_function:[]; # Returns false, because we bound true to the first argument.
 ```
