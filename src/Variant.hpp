@@ -98,7 +98,7 @@ using AnyMap_t = std::unordered_map<std::string, VariantData>;
 // --------
 
 
-inline void emit_operator_overload_error(const std::string& operation, const Variant& a, const Variant& b);
+void emit_operator_overload_error(const std::string& operation, const Variant& a, const Variant& b);
 
 
 #pragma pack(1)
@@ -279,7 +279,6 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 			os << '{';
 			size_t idx = 0;
 			for (auto& i : AnyCast(MAP_t,var.d)) {
-				if (exists_in_vec(illegal_print_names, i.first)) continue;
 				if (idx != 0) {os << ", ";}
 				os << '"' << i.first << "\": ";
 				if (i.second.t == STR) os << '"' << i.second << '"';
@@ -295,7 +294,7 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 }
 
 
-inline void emit_operator_overload_error(const std::string& operation, const Variant& a, const Variant& b) {
+void emit_operator_overload_error(const std::string& operation, const Variant& a, const Variant& b) {
 	emit_error(ERR_operand_type_mismatch, {operation, get_variant_type_name(a.t), get_variant_type_name(b.t)});
 }
 

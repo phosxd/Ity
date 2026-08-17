@@ -76,7 +76,7 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 // ------------------
 
 
-const std::hash<std::string> string_hasher;
+constexpr std::hash<std::string> string_hasher;
 
 
 struct HASHED_NAMES_struct {
@@ -359,5 +359,7 @@ const std::string GLOBAL_SHARE_PATH =
 unsigned int execution_depth_max = 5000;
 unsigned int execution_depth = 0;
 
+
+// TODO: move these into ItyState.
 int exec_jump_value = 0;
 bool exec_jump_out = false;

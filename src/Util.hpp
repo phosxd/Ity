@@ -4,10 +4,6 @@
 const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"; // Too long to be constexpr.
 constexpr std::string NUM = "0123456789";
 
-const std::vector<std::string> illegal_print_names = {
-	"ANSI",
-};
-
 
 
 
@@ -40,7 +36,7 @@ const std::vector<std::string> illegal_print_names = {
 
 
 // Returns the string with all instances of `ch` removed from the start of it.
-std::string trim_left(const std::string& text, const char ch) {
+constexpr std::string trim_left(const std::string& text, const char ch) {
 	const size_t& text_len = text.size();
 	if (text_len == 0 || text[0] != ch) return text;
 	bool ended = false;
@@ -54,7 +50,7 @@ std::string trim_left(const std::string& text, const char ch) {
 
 
 // Joins all elements in the vector into a new string, with each element separated by the given `sep`.
-std::string join_str(const std::vector<std::string>& vec, const std::string& sep) {
+constexpr std::string join_str(const std::vector<std::string>& vec, const std::string& sep) {
 	const size_t& vec_len = vec.size();
 	if (vec_len == 0) return "";
 	std::string result = vec.front();
@@ -67,7 +63,7 @@ std::string join_str(const std::vector<std::string>& vec, const std::string& sep
 
 
 // Splits the `text` into a vector of strings, with each element separated by the given `sep`.
-std::vector<std::string> split_str(const std::string& text, const char sep) {
+constexpr std::vector<std::string> split_str(const std::string& text, const char sep) {
 	if (text.empty()) return {};
 
 	std::stringstream ss (text);
@@ -82,7 +78,7 @@ std::vector<std::string> split_str(const std::string& text, const char sep) {
 
 
 // Return new `text` with each line indented `count` times.
-std::string indent(const std::string& text, const std::string& indent_text="  ") {
+constexpr std::string indent(const std::string& text, const std::string& indent_text="  ") {
 	std::string result;
 	unsigned int i = 0;
 	for (const std::string& line : split_str(text, '\n')) {
@@ -95,7 +91,7 @@ std::string indent(const std::string& text, const std::string& indent_text="  ")
 
 
 // Returns the number of strings that are empty inside the given vector.
-unsigned int count_non_empty_strings(const std::vector<std::string>& items) {
+constexpr unsigned int count_non_empty_strings(const std::vector<std::string>& items) {
 	const size_t& items_len = items.size();
 	unsigned int count = 0;
 	for (size_t i = 0; i < items_len; i++) {
@@ -181,7 +177,6 @@ std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
 	os << '{';
 	unsigned int idx = 0;
 	for (auto& i:s) {
-		if (exists_in_vec(illegal_print_names, i.first)) continue;
 		if (idx != 0) os << ", ";
 		os << "\"" << i.first << "\"" << ": ";
 		os << i.second;

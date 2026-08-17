@@ -29,12 +29,12 @@ struct ItyScope {
 
 	// Returns the first parent scope with a matching ID.
 	ItyScope* get_scope_at_id(unsigned int target_id) {
-		if (id == target_id) return this;
-		ItyScope* current = p;
-		while (true) {
-			if (not current) break;
-			if (current->id <= target_id) return current;
-			current = current->p;
+		if (id != target_id) {
+			ItyScope* current = p;
+			while (current) {
+				if (current->id <= target_id) return current;
+				current = current->p;
+			}
 		}
 
 		return this;
@@ -56,7 +56,7 @@ struct ItyScope {
 	// This will effectively change the depth of the current scope while preserving the scope reference.
 	void in() {
 		p = new ItyScope{std::move(p), std::move(d), std::move(id)};
-		d.clear();
+		flush();
 		ItyScope_current_id += 1;
 		id = ItyScope_current_id;
 
@@ -68,12 +68,11 @@ struct ItyScope {
 
 	// Transforms into a copy of it's parent scope, deleting all data on the current scope.
 	void out() {
-		ItyScope* p_ = nullptr;
-		if (p) p_ = p;
-		else {
+		if (not p) {
 			emit_error(ERR_unexpected, {"ScopeOut", "Minimum depth reached."});
 			return;
 		}
+		ItyScope* p_ = p;
 
 		p = std::move(p_->p);
 		d = std::move(p_->d);
@@ -111,8 +110,7 @@ struct ItyScope {
 	// Gets the data for name in this scope or any scope above it. Returns `nullptr` or `default_value` if no data found.
 	Variant* get_data_globally(const std::string& name, Variant* default_value=nullptr, const size_t& hashed_name=0) {
 		if (Variant* var = get_data(name, nullptr, hashed_name); var) return var;
-		else if (not p) return default_value;
-		return p->get_data_globally(name, default_value, hashed_name);
+		return (p) ? p->get_data_globally(name, default_value, hashed_name) : default_value;
 	}
 
 
@@ -129,7 +127,7 @@ struct ItyScope {
 	void set_data(const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode, size_t hashed_name=0) {
 		// Output function call in debug mode...
 		#ifdef RUNTIME_DEBUG
-		if (debug_flags.data_assign && not exists_in_vec(illegal_print_names, name)) {
+		if (debug_flags.data_assign) {
 			std::cout << ANSI::blue << "Data Assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
 		}
 		#endif
