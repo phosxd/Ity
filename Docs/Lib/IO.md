@@ -8,21 +8,6 @@ Map keys:
 - `interrupt`: `2`
 - `terminate`: `15`
 
-### (MAP) ANSI
-A map of common [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) escape codes represented as a string. This is useful for printing stylized text in the terminal.
-
-Map keys:
-- `reset`
-- `bold`
-- `black`
-- `red`
-- `green`
-- `orange`
-- `blue`
-- `purple`
-- `white`
-- `yellow`
-
 # Methods
 
 ### STR in

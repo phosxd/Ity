@@ -1,9 +1,10 @@
 # ANSI
 # ----
 #
-# Defines most ANSI sequences accessible as human readable keys.
+# Implements common ANSI sequences.
+# This can be used for 16-color & RGB text coloring, text styling, & terminal controls.
 #
-# This includes:
+# Includes:
 #	- Styling (bold, italics, strike-through, etc).
 #	- Foreground/background coloring (16 colors).
 #	- Fg/Bg 8-bit RGB coloring (terminal must support it).
@@ -45,7 +46,7 @@ const MAP __module__ = {
 	'underline', '\e[4m',
 	'blinking',  '\e[5m',
 	'reverse',   '\e[7m',
-	'hideen',    '\e[8m',
+	'hidden',    '\e[8m',
 	'strike',    '\e[9m',
 
 	'reset_bold',      '\e[22m',
