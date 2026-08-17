@@ -84,9 +84,6 @@ const InstDef* find_InstDef(const InstSymbol& sym = InstSymbol__, const std::str
 }
 
 
-Variant last_expr_result = VariantPresets.empty;
-
-
 namespace Ity {
 
 
@@ -327,7 +324,7 @@ void exec(ItyState& state, const size_t start_idx, const int end_idx) {
 
 		// Run as expression if not an instruction.
 		if (not item.inst) {
-			last_expr_result = *expr_exec(state, item.expr, false);
+			state.last_expr_result = *expr_exec(state, item.expr, false);
 			continue;
 		}
 
@@ -459,7 +456,7 @@ void start_shell(int argc, char* argv[]) {
 			}
 
 			command += INST_END_SYMBOL;
-			last_expr_result = VariantPresets.empty;
+			state.last_expr_result = VariantPresets.empty;
 
 			// Tokenize the command.
 			std::vector<InstToken> sequence = Ity::tokenize(command);
@@ -468,7 +465,7 @@ void start_shell(int argc, char* argv[]) {
 			Ity::exec(state, 0,-1);
 
 			// Print expression result if there is one.
-			if (last_expr_result.t != PLACEHOLDER) std::cout << last_expr_result;
+			if (state.last_expr_result.t != PLACEHOLDER) std::cout << state.last_expr_result;
 
 			current_line += 1;
 			current_column = 1;

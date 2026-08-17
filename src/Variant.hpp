@@ -151,6 +151,66 @@ struct Variant {
 	}
 
 
+	// Conversion Functions.
+
+
+	bool to_bool() const {
+		switch (t) {
+			case BOOL:   return AnyCast(bool,d);
+			case INT:    return (bool)AnyCast(INT_t,d);
+			case FLOAT:  return (bool)AnyCast(FLOAT_t,d);
+			case STR:    return AnyCast(STR_t,d) == "true";
+
+			default: return false;
+		}
+	}
+
+
+	INT_t to_int() const {
+		switch (t) {
+			case BOOL:   return (INT_t)AnyCast(bool,d);
+			case INT:    return AnyCast(INT_t,d);
+			case FLOAT:  return (INT_t)AnyCast(FLOAT_t,d);
+			case STR: {
+				const STR_t& d_ = AnyCast(STR_t,d);
+				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos || not is_int_str_32_in_range(d_)) return 0;
+				return std::stoi(d_);
+			}
+
+			default: return 0;
+		}
+	}
+
+
+	FLOAT_t to_float() const {
+		switch (t) {
+			case BOOL:   return (FLOAT_t)AnyCast(bool,d);
+			case INT:    return (FLOAT_t)AnyCast(INT_t,d);
+			case FLOAT:  return AnyCast(FLOAT_t,d);
+			case STR: {
+				const STR_t& d_ = AnyCast(STR_t,d);
+				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos) return 0.0;
+				return std::stod(d_);
+			}
+
+			default: return 0.0;
+		}
+	}
+
+
+	STR_t to_str() const {
+		switch (t) {
+			case REF:    return "REF:"+AnyCast(STR_t,d);
+			case BOOL:   return (AnyCast(bool,d)) ? "true" : "false";
+			case INT:    return std::to_string(AnyCast(INT_t,d));
+			case FLOAT:  return std::to_string(AnyCast(FLOAT_t,d));
+			case STR:    return AnyCast(STR_t,d);
+
+			default: return "";
+		}
+	}
+
+
 
 	// COMPARISON OPERATORS
 

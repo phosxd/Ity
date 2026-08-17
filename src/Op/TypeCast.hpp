@@ -11,10 +11,10 @@ void OP_TypeCast_exec(ItyState& _state, Variant*& first, Variant*& second, const
 	Variant var;
 
 	switch ((VariantType)target) {
-		case BOOL:   {var.t = BOOL;   var.d = var_to_bool(*first);  break;}
-		case INT:    {var.t = INT;    var.d = var_to_int(*first);   break;}
-		case FLOAT:  {var.t = FLOAT;  var.d = var_to_float(*first); break;}
-		case STR:    {var.t = STR;    var.d = var_to_str(*first);   break;}
+		case BOOL:   {var.t = BOOL;   var.d = first->to_bool();  break;}
+		case INT:    {var.t = INT;    var.d = first->to_int();   break;}
+		case FLOAT:  {var.t = FLOAT;  var.d = first->to_float(); break;}
+		case STR:    {var.t = STR;    var.d = first->to_str();   break;}
 		default: {
 			emit_error(ERR_invalid_cast, {get_variant_type_name(first->t), get_variant_type_name((VariantType)target)});
 			return;

@@ -3,7 +3,7 @@
 #include <cmath>
 
 
-Variant LIB_Math_math(ItyState& _state, const ARR_t& args, const std::string& func) {
+static Variant LIB_math(ItyState& _state, const ARR_t& args, const std::string& func) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT,FLOAT}, 0)) return VariantPresets.none;
 	const Variant& var = args[0];
 
@@ -32,14 +32,14 @@ Variant LIB_Math_math(ItyState& _state, const ARR_t& args, const std::string& fu
 }
 
 
-Variant LIB_Math_abs   (ItyState& state, const ARR_t& args) {return LIB_Math_math(state, args, "abs");}
-Variant LIB_Math_floor (ItyState& state, const ARR_t& args) {return LIB_Math_math(state, args, "floor");}
-Variant LIB_Math_ceil  (ItyState& state, const ARR_t& args) {return LIB_Math_math(state, args, "ceil");}
-Variant LIB_Math_log   (ItyState& state, const ARR_t& args) {return LIB_Math_math(state, args, "log");}
-Variant LIB_Math_sqrt  (ItyState& state, const ARR_t& args) {return LIB_Math_math(state, args, "sqrt");}
+static Variant LIB_abs   (ItyState& state, const ARR_t& args) {return LIB_math(state, args, "abs");}
+static Variant LIB_floor (ItyState& state, const ARR_t& args) {return LIB_math(state, args, "floor");}
+static Variant LIB_ceil  (ItyState& state, const ARR_t& args) {return LIB_math(state, args, "ceil");}
+static Variant LIB_log   (ItyState& state, const ARR_t& args) {return LIB_math(state, args, "log");}
+static Variant LIB_sqrt  (ItyState& state, const ARR_t& args) {return LIB_math(state, args, "sqrt");}
 
 
-Variant LIB_Math_pow(ItyState& _state, const ARR_t& args) {
+static Variant LIB_pow(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)
 	|| not expect_arg_types(args[0], {INT,FLOAT}, 0)
 	|| not expect_arg_types(args[1], {INT,FLOAT}, 1))
@@ -47,14 +47,14 @@ Variant LIB_Math_pow(ItyState& _state, const ARR_t& args) {
 
 	return Variant{
 		FLOAT, (FLOAT_t)std::pow(
-			var_to_float(args[0]),
-			var_to_float(args[1])
+			args[0].to_float(),
+			args[1].to_float()
 		)
 	};
 }
 
 
-Variant LIB_Math_sum(ItyState& _state, const ARR_t& args) {
+static Variant LIB_sum(ItyState& _state, const ARR_t& args) {
 	FLOAT_t sum = 0.0;
 	VariantType type = INT;
 	for (size_t i = 0; i < args.size(); i++) {
@@ -75,7 +75,7 @@ Variant LIB_Math_sum(ItyState& _state, const ARR_t& args) {
 
 
 // Return a random number in range of `min` & `max` integer arguments.
-Variant LIB_Math_rand(ItyState& _state, const ARR_t& args) {
+static Variant LIB_rand(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2)
 		|| not expect_arg_types(args[0], {INT}, 0)
 		|| not expect_arg_types(args[1], {INT}, 1)
@@ -89,7 +89,7 @@ Variant LIB_Math_rand(ItyState& _state, const ARR_t& args) {
 
 
 // Return a random number in range of `min` & `max` integer arguments.
-Variant LIB_Math_set_seed(ItyState& _state, const ARR_t& args) {
+static Variant LIB_set_seed(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT}, 0)) return VariantPresets.none;
 
 	const INT_t& seed = AnyCast(INT_t,args[0].d);
@@ -108,15 +108,15 @@ const Variant LIB_Math {
 	MAP, (MAP_t){
 		{"__name",     Variant{STR, (STR_t)"Math", VariantMode_constant}},
 		{"__safe",     Variant{BOOL, true}},
-		{"abs",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_abs)},
-		{"floor",      NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_floor)},
-		{"ceil",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_ceil)},
-		{"log",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_log)},
-		{"sqrt",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_sqrt)},
-		{"pow",        NativeFuncTrans(FLOAT,  (NativeFunc_t)LIB_Math_pow)},
-		{"sum",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_Math_sum)},
-		{"rand",       NativeFuncTrans(INT,    (NativeFunc_t)LIB_Math_rand)},
-		{"set_seed",   NativeFuncTrans(INT,    (NativeFunc_t)LIB_Math_set_seed)},
+		{"abs",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_abs)},
+		{"floor",      NativeFuncTrans(ANY,    (NativeFunc_t)LIB_floor)},
+		{"ceil",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_ceil)},
+		{"log",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_log)},
+		{"sqrt",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_sqrt)},
+		{"pow",        NativeFuncTrans(FLOAT,  (NativeFunc_t)LIB_pow)},
+		{"sum",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_sum)},
+		{"rand",       NativeFuncTrans(INT,    (NativeFunc_t)LIB_rand)},
+		{"set_seed",   NativeFuncTrans(INT,    (NativeFunc_t)LIB_set_seed)},
 	},
 	VariantMode_constant
 };

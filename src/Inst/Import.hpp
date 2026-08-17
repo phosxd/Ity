@@ -16,9 +16,9 @@ static void INST_Import_exec(ItyState& state, InstToken& token) {
 			emit_error(ERR_name_does_not_exist, {var_name});
 			return;
 		}
-		Variant var = *var_ptr;
+		Variant var = *var_ptr; // Copy var.
 		// Convert to string if var is not a string.
-		if (var_ptr->t != STR) var.d = var_to_str(var);
+		if (var_ptr->t != STR) var.d = var.to_str();
 		// Set lib name to look for as the variable value.
 		mod_name = AnyCast(STR_t,var.d);
 	}

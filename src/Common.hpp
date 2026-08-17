@@ -174,75 +174,22 @@ VariantData get_literal_from_str(const VariantType& type, const std::string& str
 }
 
 
-bool var_to_bool(const Variant& var) {
-	switch (var.t) {
-		case BOOL:   return AnyCast(bool,var.d);
-		case INT:    return (bool)AnyCast(INT_t,var.d);
-		case FLOAT:  return (bool)AnyCast(FLOAT_t,var.d);
-		case STR:    return AnyCast(STR_t,var.d) == "true";
-
-		default: return false;
-	}
-}
-
-
-FLOAT_t var_to_float(const Variant& var) {
-	switch (var.t) {
-		case BOOL:   return (FLOAT_t)AnyCast(bool,var.d);
-		case INT:    return (FLOAT_t)AnyCast(INT_t,var.d);
-		case FLOAT:  return AnyCast(FLOAT_t,var.d);
-		case STR: {
-			const STR_t& d = AnyCast(STR_t,var.d);
-			if (d.size() == 0 || NUM.find(d[0]) == std::string::npos) return 0.0;
-			return std::stod(d);
-		}
-
-		default: return 0.0;
-	}
-}
-
-
-INT_t var_to_int(const Variant& var) {
-	switch (var.t) {
-		case BOOL:   return (INT_t)AnyCast(bool,var.d);
-		case INT:    return AnyCast(INT_t,var.d);
-		case FLOAT:  return (INT_t)AnyCast(FLOAT_t,var.d);
-		case STR: {
-			const STR_t& d = AnyCast(STR_t,var.d);
-			if (d.size() == 0 || NUM.find(d[0]) == std::string::npos || not is_int_str_32_in_range(d)) return 0;
-			return std::stoi(d);
-		}
-
-		default: return 0;
-	}
-}
-
-
-STR_t var_to_str(const Variant& var) {
-	switch (var.t) {
-		case REF:    return "REF:"+AnyCast(STR_t,var.d);
-		case BOOL:   return (AnyCast(bool,var.d)) ? "true" : "false";
-		case INT:    return std::to_string(AnyCast(INT_t,var.d));
-		case FLOAT:  return std::to_string(AnyCast(FLOAT_t,var.d));
-		case STR:    return AnyCast(STR_t,var.d);
-
-		default: return "";
-	}
-}
-
-
 // Get the type of a `MAP` object.
 const STR_t var_get_obj_type(const MAP_t& map) {
-	STR_t obj_type = "m";
 	if (const auto& it = map.find("__t"); it != map.end()) {
 		const Variant& obj_type_var = it->second;
 		if (obj_type_var.t != STR) {
-			emit_error(ERR_unexpected, {"var_get_obj_type", "Improper type of \"__t\" property."});
-			return obj_type;
+			emit_error(ERR_unexpected, {"GetObjType", "Special member \"__t\" should be of type string."});
+			return "";
 		}
-		obj_type = AnyCast(STR_t,obj_type_var.d);
+		return AnyCast(STR_t,obj_type_var.d);
 	}
-	return obj_type;
+	return "m";
+}
+
+
+const Variant var_type_var(const VariantType type) {
+	return Variant{INT, (INT_t)type, VariantMode_constant};
 }
 
 
@@ -252,18 +199,6 @@ Variant none_var = {NONE, std::monostate(), VariantMode_constant};
 struct VariantPresets_struct {
 	const Variant empty       {PLACEHOLDER, std::monostate(), VariantMode_constant};
 	const Variant none        = none_var;
-	const Variant obj_type_m  {STR, (STR_t)"m", VariantMode_constant};
-
-	const Variant any_type_int    {INT, (INT_t)ANY, VariantMode_constant};
-	const Variant ptr_type_int    {INT, (INT_t)PTR, VariantMode_constant};
-	const Variant ref_type_int    {INT, (INT_t)REF, VariantMode_constant};
-	const Variant none_type_int   {INT, (INT_t)NONE, VariantMode_constant};
-	const Variant bool_type_int   {INT, (INT_t)BOOL, VariantMode_constant};
-	const Variant int_type_int    {INT, (INT_t)INT, VariantMode_constant};
-	const Variant float_type_int  {INT, (INT_t)FLOAT, VariantMode_constant};
-	const Variant str_type_int    {INT, (INT_t)STR, VariantMode_constant};
-	const Variant arr_type_int    {INT, (INT_t)ARR, VariantMode_constant};
-	const Variant map_type_int    {INT, (INT_t)MAP, VariantMode_constant};
 
 	const Variant bool_true   {BOOL, true, VariantMode_constant};
 	const Variant bool_false  {BOOL, false, VariantMode_constant};

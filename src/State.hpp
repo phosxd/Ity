@@ -252,6 +252,8 @@ struct ItyState {
 	std::vector<InstToken> seq = {}; // Instruction token sequence.
 	ItyScope scope;
 
+	Variant last_expr_result = VariantPresets.empty;
+
 
 	void init() {
 		// Add basic info.

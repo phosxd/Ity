@@ -4,7 +4,7 @@
 
 
 // Return whether or not a file exists or is readable.
-Variant LIB_FileSystem_file_exists(ItyState& _state, const ARR_t& args) {
+static Variant LIB_file_exists(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 	const STR_t path = AnyCast(STR_t,args[0].d);
 	return Variant{BOOL, std::filesystem::exists(path) && not std::filesystem::is_directory(path)};
@@ -12,7 +12,7 @@ Variant LIB_FileSystem_file_exists(ItyState& _state, const ARR_t& args) {
 
 
 // Return whether or not a file exists or is readable.
-Variant LIB_FileSystem_dir_exists(ItyState& _state, const ARR_t& args) {
+static Variant LIB_dir_exists(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 	const STR_t& path = AnyCast(STR_t,args[0].d);
 	return Variant{BOOL, std::filesystem::exists(path) && std::filesystem::is_directory(path)};
@@ -20,7 +20,7 @@ Variant LIB_FileSystem_dir_exists(ItyState& _state, const ARR_t& args) {
 
 
 // Read a file & return the bytes as a string. Returns `none` if failed.
-Variant LIB_FileSystem_read(ItyState& _state, const ARR_t& args) {
+static Variant LIB_read(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 
 	std::ifstream f (AnyCast(STR_t,args[0].d), std::ios::in | std::ios::binary);
@@ -33,7 +33,7 @@ Variant LIB_FileSystem_read(ItyState& _state, const ARR_t& args) {
 
 
 // Write a string to a file. Returns `true` if succeeded, otherwise `false`.
-Variant LIB_FileSystem_write(ItyState& _state, const ARR_t& args) {
+static Variant LIB_write(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2) || not expect_arg_types(args[0], {STR}, 0) || not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
 	const STR_t& bytes = AnyCast(STR_t,args[1].d);
 
@@ -47,14 +47,14 @@ Variant LIB_FileSystem_write(ItyState& _state, const ARR_t& args) {
 
 
 // Creates a directory. Returns `true` if succeeded, otherwise `false`.
-Variant LIB_FileSystem_make_dir(ItyState& _state, const ARR_t& args) {
+static Variant LIB_make_dir(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 	return Variant{BOOL, std::filesystem::create_directory(AnyCast(STR_t,args[0].d))};
 }
 
 
 // Returns an array of strings representing all paths under the given directory.
-Variant LIB_FileSystem_paths_in_dir(ItyState& _state, const ARR_t& args) {
+static Variant LIB_paths_in_dir(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 	STR_t dir_path = AnyCast(STR_t,args[0].d);
 	if (dir_path.empty()) dir_path = (STR_t)std::filesystem::current_path(); // Use current path if empty string given.
@@ -75,7 +75,7 @@ Variant LIB_FileSystem_paths_in_dir(ItyState& _state, const ARR_t& args) {
 
 
 // Removes a file or empty directory. Returns `true` if succeeded, otherwise `false`.
-Variant LIB_FileSystem_remove(ItyState& _state, const ARR_t& args) {
+static Variant LIB_remove(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 	const STR_t& path = AnyCast(STR_t,args[0].d);
 	return Variant{BOOL, ((not std::filesystem::is_directory(path) || std::filesystem::is_empty(path)) && std::filesystem::remove(path))};
@@ -92,16 +92,16 @@ const Variant LIB_FileSystem {
 		{"__name",  Variant{STR, (STR_t)"FileSystem", VariantMode_constant}},
 		{"__safe",  Variant{BOOL, false}},
 
-		{"file_exists",   NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_file_exists)},
-		{"dir_exists",    NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_dir_exists)},
+		{"file_exists",   NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_file_exists)},
+		{"dir_exists",    NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_dir_exists)},
 
-		{"read",          NativeFuncTrans(STR,   (NativeFunc_t)LIB_FileSystem_read)},
-		{"write",         NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_write)},
+		{"read",          NativeFuncTrans(STR,   (NativeFunc_t)LIB_read)},
+		{"write",         NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_write)},
 
-		{"make_dir",      NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_make_dir)},
-		{"paths_in_dir",  NativeFuncTrans(ARR,   (NativeFunc_t)LIB_FileSystem_paths_in_dir)},
+		{"make_dir",      NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_make_dir)},
+		{"paths_in_dir",  NativeFuncTrans(ARR,   (NativeFunc_t)LIB_paths_in_dir)},
 
-		{"remove",        NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FileSystem_remove)}
+		{"remove",        NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_remove)}
 	},
 	VariantMode_constant
 };
