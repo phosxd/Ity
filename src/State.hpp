@@ -230,7 +230,18 @@ struct ItyState {
 
 	// This is a pool of all temporaries created in an expression.
 	// Systems have exactly until the next expr exec call to use the data of a temporary, before it gets deleted.
-	std::vector<Variant> temp_pool;
+	Variant temp_pool[MAX_TEMPORARY_POOL_RESERVE];
+	uint8_t tp_c = 0;
+	// Append new temporary variant. Throws error if over reserve size.
+	inline Variant* append_temp_var(const Variant& var) {
+		if (tp_c >= MAX_TEMPORARY_POOL_RESERVE) {
+			emit_error(ERR_max_temporaries_in_use, {std::to_string(tp_c), std::to_string(MAX_TEMPORARY_POOL_RESERVE)});
+			return &none_var;
+		}
+		temp_pool[tp_c] = std::move(var); tp_c++;
+		return &temp_pool[tp_c-1];
+	}
+
 	// Tracker for tokens responsible for a scope.
 	std::vector<InstToken*> scoped_tokens;
 

@@ -1134,12 +1134,12 @@ print:(
 	&& (true == true) && (true == true) && (true == true) && (true == true)
 	&& (true == true) && (true == true) && (true == true) && (true == true)
 	&& (true == true) && (true == true) && (true == true) && (true == true)
+	&& (true == true)
 );
 "
 
 "true
 Passed
-true
 Error: 41"
 
 # 49

@@ -460,7 +460,7 @@ Variant* resolve_variant(ItyState& state, Variant& item) {
 		}
 
 		// Create named ref.
-		if (tref.mode == 1) {state.temp_pool.push_back(Variant{REF, tref.str}); return &state.temp_pool.back();}
+		if (tref.mode == 1) return state.append_temp_var(Variant{REF, tref.str});
 		// Deref pointer or named reference.
 		else if (tref.mode == 2) {
 			switch (ptr->t) {
@@ -500,7 +500,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 			);
 		}
 
-		state.temp_pool.push_back(Variant{ARR, std::move(array)}); return &state.temp_pool.back();
+		return state.append_temp_var(Variant{ARR, std::move(array)});
 	}
 
 	// Resolve map.
@@ -539,7 +539,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 			}
 		}
 
-		state.temp_pool.push_back(Variant{MAP, std::move(map)}); return &state.temp_pool.back();
+		return state.append_temp_var(Variant{MAP, std::move(map)});
 	}
 
 
@@ -574,7 +574,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 				op_def->op->pre_exec(state, result, op_def->sym, eval_second_operand, pre_exec_result, result);
 				if (not eval_second_operand) {
 					if (pre_exec_result.t != PLACEHOLDER) {
-						state.temp_pool.push_back(pre_exec_result); result = &state.temp_pool.back();
+						result = state.append_temp_var(pre_exec_result);
 						pre_exec_result.t = PLACEHOLDER; // Reset the type for reuse.
 					}
 					op_def = nullptr;
@@ -595,7 +595,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 			op_def->op->exec(state, result, second, op_def->sym, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
 			// If we reveive a direct value, set the result to that.
 			if (op_result.t != PLACEHOLDER) {
-				state.temp_pool.push_back(op_result); result = &state.temp_pool.back();
+				result = state.append_temp_var(op_result);
 				op_result.t = PLACEHOLDER; // Reset the type for reuse.
 			}
 
@@ -615,10 +615,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 		}
 	}
 
-	if (not result) {
-		state.temp_pool.push_back(VariantPresets.none);
-		return &state.temp_pool.back();
-	}
+	if (not result) return state.append_temp_var(VariantPresets.none);
 
 	// Output result in debug mode.
 	#ifdef RUNTIME_DEBUG
@@ -634,18 +631,9 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 
 
 Variant* expr_exec(ItyState& state, ExprToken& token, const bool subexpr=false) {
-	state.temp_pool.clear();
-	// `std::vector` invalidates all references to items inside it when it reallocates, reserve an upper-limit to make sure we wont reallocate.
-	if (state.temp_pool.capacity() < MAX_TEMPORARY_POOL_RESERVE) state.temp_pool.reserve(MAX_TEMPORARY_POOL_RESERVE);
-
-	current_line = token.ln;
-	current_column = token.col;
-	Variant* result = expr_exec_(state, token, subexpr);
-
-	// Throw error if we go over the temporary variant limit.
-	if (state.temp_pool.size() >= MAX_TEMPORARY_POOL_RESERVE) emit_error(ERR_max_temporaries_in_use, {std::to_string(state.temp_pool.size()), std::to_string(MAX_TEMPORARY_POOL_RESERVE)});
-
-	return result;
+	state.tp_c = 0;
+	current_line = token.ln; current_column = token.col;
+	return expr_exec_(state, token, subexpr);
 }
 
 
