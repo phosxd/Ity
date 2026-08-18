@@ -52,57 +52,55 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 		AnyCastV(ARR_t,token.meta[3])[0] = iterable;
 	}
 
-	// Get item from integer.
-	if (iterable.t == INT) {
-		if (AnyCast(INT_t,iterable.d) > (INT_t)index) {
-			value = true;
-			AnyCastV(ARR_t,token.meta[3])[1] = Variant{INT, (INT_t)index};
+	switch (iterable.t) {
+		// Get item from integer.
+		case INT: {
+			if (AnyCast(INT_t,iterable.d) > (INT_t)index) {
+				value = true;
+				AnyCastV(ARR_t,token.meta[3])[1] = Variant{INT, (INT_t)index};
+			} break;
 		}
-	}
-
-	// Get item from string.
-	else if (iterable.t == STR) {
-		const STR_t& data = AnyCast(STR_t,iterable.d);
-		if (data.size() > index) {
-			value = true;
-			AnyCastV(ARR_t,token.meta[3])[1] = Variant{STR, (STR_t)(std::string(1,data[index]))};
+		// Get item from string.
+		case STR: {
+			const STR_t& data = AnyCast(STR_t,iterable.d);
+			if (data.size() > index) {
+				value = true;
+				AnyCastV(ARR_t,token.meta[3])[1] = Variant{STR, (STR_t)(std::string(1,data[index]))};
+			} break;
 		}
-	}
-
-	// Get item from array.
-	else if (iterable.t == ARR) {
-		ARR_t& data = AnyCastV(ARR_t,iterable.d);
-		if (data.size() > index) {
-			value = true;
-			AnyCastV(ARR_t,token.meta[3])[1] = data[index];
+		// Get item from array.
+		case ARR: {
+			ARR_t& data = AnyCastV(ARR_t,iterable.d);
+			if (data.size() > index) {
+				value = true;
+				AnyCastV(ARR_t,token.meta[3])[1] = data[index];
+			} break;
 		}
-	}
-
-	// Get item from iterable object.
-	else if (iterable.t == MAP) {
-		const MAP_t& map = AnyCast(MAP_t,iterable.d);
-		if (const auto& it = map.find("__iter"); it != map.end()) {
-			value = true;
-			Variant args {
-				ARR,(ARR_t){
-					Variant{PTR, &iterable},
-					Variant{INT, (INT_t)index},
+		// Get item from iterable object.
+		case MAP: {
+			const MAP_t& map = AnyCast(MAP_t,iterable.d);
+			if (const auto& it = map.find("__iter"); it != map.end()) {
+				value = true;
+				Variant args {
+					ARR,(ARR_t){
+						Variant{PTR, &iterable},
+						Variant{INT, (INT_t)index},
+					}
+				};
+				const Variant& result = call_function(state, AnyCast(FUNC_t,it->second.d), args);
+				if (result.t == ARR) {
+					if (const ARR_t& arr = AnyCast(ARR_t,result.d); arr.size() == 2 && arr[0].t == BOOL) {
+						value = AnyCast(bool,arr[0].d);
+						AnyCastV(ARR_t,token.meta[3])[1] = arr[1];
+					}
 				}
-			};
-			const Variant& result = call_function(state, AnyCast(FUNC_t,it->second.d), args);
-			if (result.t == ARR) {
-				if (const ARR_t& arr = AnyCast(ARR_t,result.d); arr.size() == 2 && arr[0].t == BOOL) {
-					value = AnyCast(bool,arr[0].d);
-					AnyCastV(ARR_t,token.meta[3])[1] = arr[1];
-				}
-			}
+			} break;
 		}
-	}
-
-	// Throw error if variant is not iterable.
-	else {
-		emit_error(ERR_invalid_syntax, {"Expected iterable expression"});
-		return;
+		// Throw error if variant is not iterable.
+		default: {
+			emit_error(ERR_not_iterable);
+			return;
+		}
 	}
 }
 

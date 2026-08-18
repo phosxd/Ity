@@ -188,7 +188,7 @@ void clean_up_buffer(ExprToken& result_token, ExprToken& item, std::string& buff
 }
 
 
-unsigned int final_char_count = 0;
+static unsigned int final_char_count = 0;
 // Tokenize an expression. Returns an ExprToken with type "ExprTokenType_sequence".
 ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const unsigned int col=0) {
 	ExprToken result_token = ExprToken{ln, col};

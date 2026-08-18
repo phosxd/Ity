@@ -76,19 +76,15 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 // ------------------
 
 
-constexpr std::hash<std::string> string_hasher;
+const std::hash<std::string> string_hasher;
 
 
 struct HASHED_NAMES_struct {
-	const size_t __AG;
-	const size_t __R;
-	const size_t __tm__;
+	const size_t __AG   = string_hasher("__AG");
+	const size_t __R    = string_hasher("__R");
+	const size_t __tm__ = string_hasher("__tm__");
 };
-const HASHED_NAMES_struct HASHED_NAMES {
-	string_hasher("__AG"),
-	string_hasher("__R"),
-	string_hasher("__tm__"),
-};
+const HASHED_NAMES_struct HASHED_NAMES;
 
 
 
@@ -150,27 +146,29 @@ const std::string multiple_types_str(const std::vector<VariantType>& types) {
 
 
 VariantData get_literal_from_str(const VariantType& type, const std::string& str_val) {
-	if (type == TREF) {
-		const STR_t& real_name = trim_left(trim_left(str_val,'@'),'~');
-		uint8_t mode = 0;
-		if (str_val[0] == '@') mode = 1;
-		if (str_val[0] == '~') mode = 2;
-		return TREF_t{
-			.str  = real_name,
-			.hash = string_hasher(real_name),
-			.mode = mode,
-		};
+	switch (type) {
+		case TREF: {
+			const STR_t& real_name = trim_left(trim_left(str_val,'@'),'~');
+			uint8_t mode = 0;
+			if (str_val[0] == '@') mode = 1;
+			if (str_val[0] == '~') mode = 2;
+			return TREF_t{
+				.str  = real_name,
+				.hash = string_hasher(real_name),
+				.mode = mode,
+			};
+		}
+		case REF:
+		case STR:  return str_val;
+		case BOOL: return str_val == "true";
+		case INT: {
+			if (is_int_str_32_in_range(str_val)) return (INT_t)std::stoi(str_val);
+			emit_error(ERR_cannot_initialize_value, {str_val, "Number too large"});
+			return std::monostate();
+		}
+		case FLOAT: return (FLOAT_t)std::stod(str_val);
+		default: return std::monostate();
 	}
-
-	else if (type == REF || type == STR) return str_val;
-	else if (type == BOOL) return str_val == "true";
-	else if (type == INT) {
-		if (is_int_str_32_in_range(str_val)) return (INT_t)std::stoi(str_val);
-		emit_error(ERR_cannot_initialize_value, {str_val, "Number too large"});
-		return std::monostate();
-	}
-	else if (type == FLOAT) return (FLOAT_t)std::stod(str_val);
-	else return std::monostate();
 }
 
 
@@ -199,7 +197,6 @@ Variant none_var = {NONE, std::monostate(), VariantMode_constant};
 struct VariantPresets_struct {
 	const Variant empty       {PLACEHOLDER, std::monostate(), VariantMode_constant};
 	const Variant none        = none_var;
-
 	const Variant bool_true   {BOOL, true, VariantMode_constant};
 	const Variant bool_false  {BOOL, false, VariantMode_constant};
 };

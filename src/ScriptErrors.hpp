@@ -55,6 +55,7 @@ enum ERR_CODE : uint8_t {
 	ERR_invalid_character_for_construct,
 	ERR_cannot_dereference,
 	ERR_max_temporaries_in_use,
+	ERR_not_iterable,
 };
 
 
@@ -120,7 +121,7 @@ bool step_mode = false;
 
 
 
-std::string make_err_message(const ERR_CODE code, const std::vector<std::string>& args) {
+const std::string make_err_message(const ERR_CODE code, const std::vector<std::string>& args) {
 	switch (code) {
 		case ERR_custom:                            return args[0];
 		#ifdef RUNTIME_DEBUG
@@ -184,6 +185,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 		case ERR_invalid_character_for_construct:   return "Invalid character for " + args[0] + " construct: \"" + args[1] + "\".";
 		case ERR_cannot_dereference:                return "Cannot dereference \"" + args[0] + "\". Not a pointer.";
 		case ERR_max_temporaries_in_use:            return "Maximum temporaries in use (" + args[0] + "/" + args[1] + "); Reduce one-off expression complexity.";
+		case ERR_not_iterable:                      return "Given variant is not iterable";
 		#endif
 		default: break;
 	}
@@ -192,7 +194,7 @@ std::string make_err_message(const ERR_CODE code, const std::vector<std::string>
 }
 
 
-std::string get_script_pos(const unsigned int ln, const unsigned int col) {
+const std::string get_script_pos(const unsigned int ln, const unsigned int col) {
 	return "(" + current_script_path + ") Ln/Col " + std::to_string(ln) + ':' + std::to_string(col);
 }
 

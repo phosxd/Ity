@@ -1187,23 +1187,94 @@ b"
 
 # 51
 
-""
+"
+# Custom type method
+# ------------------
 
-""
+merge IO;
+
+func NONE INT_add; arg PTR self; arg INT value;
+	self += value;
+/;
+
+__tm__.set:['INT:add', INT_add];
+
+var INT my_int = 5;
+print:my_int;
+my_int.add:4;
+print:my_int;
+"
+
+"5
+9"
 
 # 52
 
-""
+"
+# Dynamic module import.
+# ----------------------
 
-""
+const STR module_name = 'IO';
+import @module_name as MOD;
+MOD.print:true;
+
+
+# Import from file path
+# ---------------------
+
+merge IO;
+
+import /usr/local/share/ity/Modules/RangeIterator;
+print:(is_defined:'RangeIterator');
+"
+
+"true
+true"
 
 # 53
 
-""
+"
+# Import non-existent module.
+# ---------------------------
 
-""
+import BogusModuleName;
+"
+
+"Error: 4"
 
 # 54
+
+"
+# Sleep time consistency.
+# -----------------------
+
+merge IO;
+import Time;
+
+for i in 3;
+	const INT start = Time.now:'ms';
+	sleep:0.005;
+	print:(Time.now:'ms' - start); # Should always be exactly 5ms (with some microsecond noise which is not captured).
+/;
+"
+
+"5
+5
+5"
+
+# 55
+
+""
+
+""
+
+# 56
+
+""
+
+""
+
+# 57
 
 ""
 

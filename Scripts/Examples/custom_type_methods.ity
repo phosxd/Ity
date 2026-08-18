@@ -16,7 +16,7 @@ func NONE my_STR_method; arg PTR obj; arg INT times = 1;
 
 
 # Add our own function to the type methods global.
-__tm__ += {'STR:add_hello_world', my_STR_method};
+__tm__.set:['STR:add_hello_world', my_STR_method];
 # "STR" is the type this method is available to & "add_hello_world" is the name of the method.
 
 # I should also note that in the same way you can add to the type methods map, you can remove & override existing methods. Do what you will with that information.
