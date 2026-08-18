@@ -135,11 +135,11 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 
 	// Jump past instructions in this composite if failed.
 	if (not value) {
-		exec_jump_value += token.composite_size; // Add 1 to skip the end instruction, otherwise will jump back to this instruction.
+		state.exec_jump_value += token.composite_size; // Add 1 to skip the end instruction, otherwise will jump back to this instruction.
 		// Scope out if previously scoped in.
 		if (multi && AnyCast(bool,token.meta[0])) {
 			state.scope.out();
-			scoped_tokens.pop_back();
+			state.scoped_tokens.pop_back();
 			token.meta[0] = false;
 		}
 
@@ -153,7 +153,7 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 	else if (multi && not AnyCast(bool,token.meta[0])) {
 		token.meta[0] = true;
 		state.scope.in();
-		scoped_tokens.push_back(&token);
+		state.scoped_tokens.push_back(&token);
 
 		if (token.symbol == InstSymbol_for) {
 			// Give warning if the var name is shadowing another var name.

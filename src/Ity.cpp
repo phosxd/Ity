@@ -168,8 +168,8 @@ std::vector<InstToken> tokenize(const std::string& src) {
 			}
 
 			// Add argument to args.
-			if (ch == ' ') {
-				item.args.push_back(buffer);
+			if (ch == ' ' || ch == '\n' || ch == '\t') {
+				if (not buffer.empty()) item.args.push_back(buffer);
 				buffer.clear();
 				continue;
 			}
@@ -331,13 +331,13 @@ void exec(ItyState& state, const size_t start_idx, const int end_idx) {
 		// Execute the instruction.
 		item.inst->exec(state, item);
 		// Skip specified number of instructions if `exec_jump_value` has been set.
-		if (exec_jump_value != 0) {
-			i += exec_jump_value;
-			exec_jump_value = 0;
+		if (state.exec_jump_value != 0) {
+			i += state.exec_jump_value;
+			state.exec_jump_value = 0;
 		}
 		// Break execution loop, if `exec_jump_out` has been set to true.
-		if (exec_jump_out) {
-			exec_jump_out = false;
+		if (state.exec_jump_out) {
+			state.exec_jump_out = false;
 			break;
 		}
 	}
@@ -350,55 +350,63 @@ void exec(ItyState& state, const size_t start_idx, const int end_idx) {
 void start_shell(int argc, char* argv[]) {
 	// Get command line arguments & interpreter flags...
 	ARR_t script_args;
-	std::vector<std::string> flags;
 	std::string source_script_path = "";
+
+
+	// Iterate arguments.
 	for (int i = 1; i < argc; i++) {
-		const std::string& arg_str = argv[i];
-		if (arg_str[0] == '-') flags.push_back(arg_str);
-		else if (source_script_path.empty()) source_script_path = arg_str;
-		else script_args.push_back(Variant{STR, (STR_t)arg_str, VariantMode_constant});
+		const std::string& s = argv[i];
+
+		// Append to script arguments.
+		if (not source_script_path.empty()) {
+			script_args.push_back(Variant{STR, (STR_t)s, VariantMode_constant});
+		}
+
+		// Parse flags.
+		else if (s[0] == '-') {
+			// Version.
+			if (s == "-v" || s == "--version") {
+				std::cout << "Ity " << ItyVersionString << '\n';
+				return;
+			}
+			// Help.
+			else if (s == "-h" || s == "--help") {
+				std::cout << "Haha no. Go to github.com/phosxd/Ity for now.\n";
+				return;
+			}
+			// Set debug flags.
+			else if (s == "--d-result")            debug_flags.result = true;
+			#ifdef RUNTIME_DEBUG
+			else if (s == "--d-inst")         debug_flags.inst = true;
+			else if (s == "--d-expr")         debug_flags.expr = true;
+			else if (s == "--d-expr-result")  debug_flags.expr_result = true;
+			else if (s == "--d-data-assign")  debug_flags.data_assign = true;
+			else if (s == "--d-scoping")      debug_flags.scoping = true;
+			else if (s == "-d" || s == "--d-full") {
+				debug_flags.result = true;
+				debug_flags.inst = true;
+				debug_flags.expr = true;
+				debug_flags.expr_result = true;
+				debug_flags.data_assign = true;
+				debug_flags.scoping = true;
+			}
+			else if (str_starts_with(s, std::string("-t=")) || str_starts_with(s, std::string("--tabs="))) {
+				tab_col_value = std::stoi(s.substr(s.size()-1));
+			}
+			#endif
+			// Set other flags.
+			else if (s == "-c" || s == "--codes")   emit_just_codes = true;
+			else if (s == "--nowarn")               emit_warnings = false;
+			else if (s == "--safe")                 safe_mode = true;
+			else if (s == "-s" || s == "--step")    step_mode = true;
+		}
+
+		// Set script path.
+		else if (source_script_path.empty()) source_script_path = s;
 	}
 
-	for (const std::string& f : flags) {
-		// Version.
-		if (f == "-v" || f == "--version") {
-			std::cout << "Ity " << ItyVersionString << '\n';
-			return;
-		}
+	current_script_path = source_script_path;
 
-		// Help.
-		else if (f == "-h" || f == "--help") {
-			std::cout << "Haha no. Go to github.com/phosxd/Ity for now.\n";
-			return;
-		}
-
-		// Set debug flags.
-		else if (f == "--d-result")            debug_flags.result = true;
-		#ifdef RUNTIME_DEBUG
-		else if (f == "--d-inst")         debug_flags.inst = true;
-		else if (f == "--d-expr")         debug_flags.expr = true;
-		else if (f == "--d-expr-result")  debug_flags.expr_result = true;
-		else if (f == "--d-data-assign")  debug_flags.data_assign = true;
-		else if (f == "--d-scoping")      debug_flags.scoping = true;
-		else if (f == "-d" || f == "--d-full") {
-			debug_flags.result = true;
-			debug_flags.inst = true;
-			debug_flags.expr = true;
-			debug_flags.expr_result = true;
-			debug_flags.data_assign = true;
-			debug_flags.scoping = true;
-		}
-		else if (str_starts_with(f, std::string("-t=")) || str_starts_with(f, std::string("--tabs="))) {
-			tab_col_value = std::stoi(f.substr(f.size()-1));
-		}
-		#endif
-
-		// Set other flags.
-		else if (f == "-c" || f == "--codes")   emit_just_codes = true;
-		else if (f == "--nowarn")  emit_warnings = false;
-		else if (f == "--safe")    safe_mode = true;
-		else if (f == "-s" || f == "--step")    step_mode = true;
-	}
 
 	// Initialize state.
 	ARGS = script_args;

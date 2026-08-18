@@ -1,12 +1,6 @@
 #pragma once
 
 
-// This is a pool of all temporaries created in an expression.
-// Systems have exactly until the next expr exec call to use the data of a temporary, before it gets deleted.
-std::vector<Variant> temporary_pool;
-std::vector<std::vector<Variant>> temporary_pool_stack;
-
-
 // Call a function.
 Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 	if (func.native_callable) {
@@ -32,11 +26,6 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 		// Get function token.
 		const InstToken& func_token = source_state->seq[func.token_index];
 
-		//call_trace.push_back(current_line); call_trace.push_back(current_column);
-		push_back_ongoing_scopes(); // Save ongoing scopes for later.
-		temporary_pool_stack.push_back(std::move(temporary_pool));
-		temporary_pool = {};
-
 		// Create an alternate scope, for use inside the function.
 		ItyState func_state = ItyState{.path=source_state->path, .scope=create_new_scope(
 			(ScopeMap_t){
@@ -54,9 +43,6 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 		Ity::exec(func_state, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
 		current_script_path = state.path; // Reset current script path.
 		source_state->seq = std::move(func_state.seq);
-		restore_ongoing_scopes(); // Restore previously ongoing scopes, now that we are out of the function.
-		temporary_pool = std::move(temporary_pool_stack.back());
-		temporary_pool_stack.pop_back();
 
 
 		// Get result & check if return type matches.
@@ -474,7 +460,7 @@ Variant* resolve_variant(ItyState& state, Variant& item) {
 		}
 
 		// Create named ref.
-		if (tref.mode == 1) {temporary_pool.push_back(Variant{REF, tref.str}); return &temporary_pool.back();}
+		if (tref.mode == 1) {state.temp_pool.push_back(Variant{REF, tref.str}); return &state.temp_pool.back();}
 		// Deref pointer or named reference.
 		else if (tref.mode == 2) {
 			switch (ptr->t) {
@@ -514,7 +500,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 			);
 		}
 
-		temporary_pool.push_back(Variant{ARR, std::move(array)}); return &temporary_pool.back();
+		state.temp_pool.push_back(Variant{ARR, std::move(array)}); return &state.temp_pool.back();
 	}
 
 	// Resolve map.
@@ -553,7 +539,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 			}
 		}
 
-		temporary_pool.push_back(Variant{MAP, std::move(map)}); return &temporary_pool.back();
+		state.temp_pool.push_back(Variant{MAP, std::move(map)}); return &state.temp_pool.back();
 	}
 
 
@@ -588,7 +574,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 				op_def->op->pre_exec(state, result, op_def->sym, eval_second_operand, pre_exec_result, result);
 				if (not eval_second_operand) {
 					if (pre_exec_result.t != PLACEHOLDER) {
-						temporary_pool.push_back(pre_exec_result); result = &temporary_pool.back();
+						state.temp_pool.push_back(pre_exec_result); result = &state.temp_pool.back();
 						pre_exec_result.t = PLACEHOLDER; // Reset the type for reuse.
 					}
 					op_def = nullptr;
@@ -609,7 +595,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 			op_def->op->exec(state, result, second, op_def->sym, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
 			// If we reveive a direct value, set the result to that.
 			if (op_result.t != PLACEHOLDER) {
-				temporary_pool.push_back(op_result); result = &temporary_pool.back();
+				state.temp_pool.push_back(op_result); result = &state.temp_pool.back();
 				op_result.t = PLACEHOLDER; // Reset the type for reuse.
 			}
 
@@ -630,8 +616,8 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 	}
 
 	if (not result) {
-		temporary_pool.push_back(VariantPresets.none);
-		return &temporary_pool.back();
+		state.temp_pool.push_back(VariantPresets.none);
+		return &state.temp_pool.back();
 	}
 
 	// Output result in debug mode.
@@ -648,16 +634,16 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 
 
 Variant* expr_exec(ItyState& state, ExprToken& token, const bool subexpr=false) {
-	temporary_pool.clear();
+	state.temp_pool.clear();
 	// `std::vector` invalidates all references to items inside it when it reallocates, reserve an upper-limit to make sure we wont reallocate.
-	if (temporary_pool.capacity() < MAX_TEMPORARY_POOL_RESERVE) temporary_pool.reserve(MAX_TEMPORARY_POOL_RESERVE);
+	if (state.temp_pool.capacity() < MAX_TEMPORARY_POOL_RESERVE) state.temp_pool.reserve(MAX_TEMPORARY_POOL_RESERVE);
 
 	current_line = token.ln;
 	current_column = token.col;
 	Variant* result = expr_exec_(state, token, subexpr);
 
 	// Throw error if we go over the temporary variant limit.
-	if (temporary_pool.size() >= MAX_TEMPORARY_POOL_RESERVE) emit_error(ERR_max_temporaries_in_use, {std::to_string(temporary_pool.size()), std::to_string(MAX_TEMPORARY_POOL_RESERVE)});
+	if (state.temp_pool.size() >= MAX_TEMPORARY_POOL_RESERVE) emit_error(ERR_max_temporaries_in_use, {std::to_string(state.temp_pool.size()), std::to_string(MAX_TEMPORARY_POOL_RESERVE)});
 
 	return result;
 }

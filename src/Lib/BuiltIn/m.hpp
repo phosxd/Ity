@@ -5,7 +5,7 @@
 
 
 // Override maximum execution depth.
-static Variant LIB_set_max_depth(ItyState* _state, const ARR_t& args) {
+static Variant LIB_BI_set_max_depth(ItyState* _state, const ARR_t& args) {
 	if (safe_mode) {
 		emit_error(ERR_disallowed_member_in_safe_mode, {"set_max_depth"});
 		return VariantPresets.none;
@@ -19,7 +19,7 @@ static Variant LIB_set_max_depth(ItyState* _state, const ARR_t& args) {
 
 
 // Call a system comamnd. Returns the exit status code.
-static Variant LIB_system(ItyState& _state, const ARR_t& args) {
+static Variant LIB_BI_system(ItyState& _state, const ARR_t& args) {
 	if (safe_mode) {
 		emit_error(ERR_disallowed_member_in_safe_mode, {"system"});
 		return VariantPresets.none;
@@ -32,7 +32,7 @@ static Variant LIB_system(ItyState& _state, const ARR_t& args) {
 
 
 // Pause thread execution for the given number of seconds.
-static Variant LIB_sleep(ItyState& _state, const ARR_t& args) {
+static Variant LIB_BI_sleep(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT, FLOAT}, 0)) return VariantPresets.none;
 	const Variant& var = args[0];
 
@@ -49,28 +49,28 @@ static Variant LIB_sleep(ItyState& _state, const ARR_t& args) {
 
 
 // Return `true` if the name is defined in the current scope.
-static Variant LIB_is_defined(ItyState& state, const ARR_t& args) {
+static Variant LIB_BI_is_defined(ItyState& state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
 	return Variant{BOOL, (state.scope.get_data_globally(AnyCast(STR_t,args[0].d)) != nullptr)};
 }
 
 
 // Return the type of the given Variant, in string form.
-static Variant LIB_type_name(ItyState& _state, const ARR_t& args) {
+static Variant LIB_BI_type_name(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	return Variant{STR, get_variant_type_name(args[0].t)};
 }
 
 
 // Return the type of the given Variant.
-static Variant LIB_type(ItyState& _state, const ARR_t& args) {
+static Variant LIB_BI_type(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	return Variant{INT, (INT_t)(args[0].t)};
 }
 
 
 // Return the length of the given array or string.
-static Variant LIB_length(ItyState& _state, const ARR_t& args) {
+static Variant LIB_BI_length(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR,ARR}, 0)) return VariantPresets.none;;
 	size_t size = 0;
 
@@ -85,14 +85,14 @@ static Variant LIB_length(ItyState& _state, const ARR_t& args) {
 
 
 // Return the number of bytes taken by the given variant.
-static Variant LIB_size(ItyState& _state, const ARR_t& args) {
+static Variant LIB_BI_size(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	return Variant{INT, (INT_t)args[0].get_size()};
 }
 
 
 // Return an array of integers from the given start, end, & step.
-static Variant LIB_range(ItyState& _state, const ARR_t& args) {
+static Variant LIB_BI_range(ItyState& _state, const ARR_t& args) {
 	if (args.size() == 0) {
 		emit_error(ERR_invalid_func_arg_count, {"1+", "0"});
 		return VariantPresets.none;
@@ -132,7 +132,7 @@ static Variant LIB_range(ItyState& _state, const ARR_t& args) {
 // ----------
 
 // Reassign reference address.
-static Variant LIB_tm_ref_reassign(ItyState& _state, const ARR_t& args) {
+static Variant LIB_BI_tm_ref_reassign(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {REF}, 1)) return VariantPresets.none;
 	// Get data.
 	Variant* data = AnyCastV(Variant*,args[0].d);
@@ -151,7 +151,7 @@ static Variant LIB_tm_ref_reassign(ItyState& _state, const ARR_t& args) {
 // -------
 
 // Returns the raw character code for the first character in the string.
-static Variant LIB_tm_str_raw(ItyState& _state, ARR_t& args) {
+static Variant LIB_BI_tm_str_raw(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 	// Get data.
 	const STR_t& data = AnyCast(STR_t, AnyCastV(Variant*,args[0].d)->d );
@@ -164,7 +164,7 @@ static Variant LIB_tm_str_raw(ItyState& _state, ARR_t& args) {
 // Array.
 // ------
 
-static Variant LIB_tm_arr_map_erase(ItyState& _state, ARR_t& args) {
+static Variant LIB_BI_tm_arr_map_erase(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 
 	Variant* var = AnyCastV(Variant*,args[0].d);
@@ -197,7 +197,7 @@ static Variant LIB_tm_arr_map_erase(ItyState& _state, ARR_t& args) {
 }
 
 
-static Variant LIB_tm_arr_append(ItyState& _state, ARR_t& args) {
+static Variant LIB_BI_tm_arr_append(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2)) return VariantPresets.none;
 	Variant* var = AnyCast(Variant*,args[0].d);
 
@@ -213,7 +213,7 @@ static Variant LIB_tm_arr_append(ItyState& _state, ARR_t& args) {
 }
 
 
-static Variant LIB_tm_arr_reserve(ItyState& _state, ARR_t& args) {
+static Variant LIB_BI_tm_arr_reserve(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {INT}, 1)) return VariantPresets.none;
 	Variant* var = AnyCast(Variant*,args[0].d);
 	const INT_t& count = AnyCast(INT_t,args[1].d);
@@ -235,7 +235,7 @@ static Variant LIB_tm_arr_reserve(ItyState& _state, ARR_t& args) {
 
 
 // Return array of keys in the `MAP`.
-static Variant LIB_tm_map_keys(ItyState& _state, ARR_t& args) {
+static Variant LIB_BI_tm_map_keys(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VariantPresets.none;
 
 	// Get data.
@@ -251,7 +251,7 @@ static Variant LIB_tm_map_keys(ItyState& _state, ARR_t& args) {
 
 
 // Return whether or not the `MAP` has the given key.
-static Variant LIB_tm_map_has(ItyState& _state, ARR_t& args) {
+static Variant LIB_BI_tm_map_has(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
 
 	// Get data & key.
@@ -264,7 +264,7 @@ static Variant LIB_tm_map_has(ItyState& _state, ARR_t& args) {
 
 
 // Set key-value pair in the `MAP`.
-static Variant LIB_tm_map_set(ItyState& _state, ARR_t& args) {
+static Variant LIB_BI_tm_map_set(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 3) || not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
 
 	Variant* var = AnyCastV(Variant*,args[0].d);
@@ -289,7 +289,7 @@ static Variant LIB_tm_map_set(ItyState& _state, ARR_t& args) {
 // ---------
 
 // Bind arguments to the function.
-static Variant LIB_tm_func_bind(ItyState& _state, ARR_t& args) {
+static Variant LIB_BI_tm_func_bind(ItyState& _state, ARR_t& args) {
 	// Get data.
 	FUNC_t data = AnyCast(FUNC_t, AnyCastV(Variant*,args[0].d)->d ); // Copy the function.
 	// Add the given array to the function's bounded arguments.
@@ -316,19 +316,19 @@ const Variant LIB_BI {
 		// Type methods.
 		{"__tm", Variant{
 			MAP, (MAP_t){
-				{"REF:reassign", NativeFuncTrans(NONE, (NativeFunc_t)LIB_tm_ref_reassign)},
+				{"REF:reassign", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_tm_ref_reassign)},
 
-				{"STR:raw",     NativeFuncTrans(INT,   (NativeFunc_t)LIB_tm_str_raw)},
-				{"ARR:erase",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_tm_arr_map_erase)},
-				{"ARR:append",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_tm_arr_append)},
-				{"ARR:reserve", NativeFuncTrans(NONE,  (NativeFunc_t)LIB_tm_arr_reserve)},
+				{"STR:raw",     NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_tm_str_raw)},
+				{"ARR:erase",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
+				{"ARR:append",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_append)},
+				{"ARR:reserve", NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_reserve)},
 
-				{"MAP:erase",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_tm_arr_map_erase)},
-				{"MAP:keys",    NativeFuncTrans(ARR,   (NativeFunc_t)LIB_tm_map_keys)},
-				{"MAP:has",     NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_tm_map_has)},
-				{"MAP:set",     NativeFuncTrans(NONE,  (NativeFunc_t)LIB_tm_map_set)},
+				{"MAP:erase",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
+				{"MAP:keys",    NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_tm_map_keys)},
+				{"MAP:has",     NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_BI_tm_map_has)},
+				{"MAP:set",     NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_map_set)},
 
-				{"FUNC:bind",  NativeFuncTrans(MAP,  (NativeFunc_t)LIB_tm_func_bind)},
+				{"FUNC:bind",  NativeFuncTrans(MAP,  (NativeFunc_t)LIB_BI_tm_func_bind)},
 		}, VariantMode_locked_type }},
 
 
@@ -351,15 +351,15 @@ const Variant LIB_BI {
 
 
 		// Utility functions.
-		{"set_max_depth",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_set_max_depth)},
+		{"set_max_depth",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_set_max_depth)},
 
-		{"system",      NativeFuncTrans(INT,   (NativeFunc_t)LIB_system)},
-		{"sleep",       NativeFuncTrans(NONE,  (NativeFunc_t)LIB_sleep)},
-		{"type_name",   NativeFuncTrans(STR,   (NativeFunc_t)LIB_type_name)},
-		{"is_defined",  NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_is_defined)},
-		{"type",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_type)},
-		{"length",      NativeFuncTrans(STR,   (NativeFunc_t)LIB_length)},
-		{"size",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_size)},
-		{"range",       NativeFuncTrans(ARR,   (NativeFunc_t)LIB_range)},
+		{"system",      NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_system)},
+		{"sleep",       NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_sleep)},
+		{"type_name",   NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_type_name)},
+		{"is_defined",  NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_BI_is_defined)},
+		{"type",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type)},
+		{"length",      NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_length)},
+		{"size",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)},
+		{"range",       NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_range)},
 
 }, VariantMode_constant };

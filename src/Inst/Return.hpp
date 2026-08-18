@@ -23,13 +23,13 @@ static void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const
 
 static void INST_Return_exec(ItyState& state, InstToken& token) {
 	// Cleanly exit all scopes in the function.
-	exit_ongoing_scopes(state.scope);
+	state.exit_ongoing_scopes(state.scope);
 
 	// Get value from expression & set return value.
 	const Variant* var = expr_exec(state, token.expr);
 	state.scope.set_data("__R", var->t, *var, VariantMode_dynamic_type, HASHED_NAMES.__R);
 
-	exec_jump_out = true;
+	state.exec_jump_out = true;
 }
 
 

@@ -1,7 +1,7 @@
 #pragma once
 
 
-static void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
+static void processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
 	std::string type_name = "*";
 	std::string name;
 	std::string op = "";
@@ -81,7 +81,7 @@ static void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const u
 
 
 
-static void INST_Var_exec(ItyState& state, InstToken& token) {
+static void exec(ItyState& state, InstToken& token) {
 	const std::string& name = AnyCast(std::string,token.meta[0]);
 	const size_t& hashed_name = AnyCast(size_t,token.meta[1]);
 
@@ -105,7 +105,7 @@ static void INST_Var_exec(ItyState& state, InstToken& token) {
 			// Get argument if available.
 			ARR_t& scope_args = AnyCastV(ARR_t,args_it->var.d);
 			if (not scope_args.empty()) {
-				var = scope_args.front();
+				var = std::move(scope_args.front());
 				scope_args.erase(scope_args.begin());
 			}
 		}
@@ -140,6 +140,6 @@ static void INST_Var_exec(ItyState& state, InstToken& token) {
 
 const Instruction* INST_Var = new Instruction{
 	.REQUIRED = 2,
-	.exec = INST_Var_exec,
-	.processor = INST_Var_processor,
+	.exec = exec,
+	.processor = processor,
 };

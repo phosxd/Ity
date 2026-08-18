@@ -1264,9 +1264,24 @@ for i in 3;
 
 # 55
 
-""
+"
+# Awkward instruction argument formatting.
+# ----------------------------------------
 
-""
+merge   IO	;
+
+var a     = 1;
+var	b	=	2;
+
+var
+c
+=
+3;
+
+print:[a,b,c];
+"
+
+"123"
 
 # 56
 

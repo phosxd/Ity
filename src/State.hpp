@@ -2,11 +2,6 @@
 
 UINT_t ItyScope_current_id = 0;
 
-// Modified by "While", "If", & "End" instructions.
-std::vector<InstToken*> scoped_tokens;
-// Managed by `ItyScope*_ongoing_scopes` functions.
-std::vector<std::vector<InstToken*>> scoped_tokens_stack;
-
 
 
 
@@ -219,30 +214,6 @@ ItyScope create_new_scope(const ScopeMap_t& data={}, ItyScope* parent=nullptr, U
 }
 
 
-// Scope out of all ongoing scopes & call emergency cleanup functions if needed.
-void exit_ongoing_scopes(ItyScope& scope) {
-	for (InstToken* token : scoped_tokens) {
-		if (token->inst->emergency_scope_exit) token->inst->emergency_scope_exit(token);
-		scope.out();
-	}
-	scoped_tokens.clear();
-}
-
-
-// Save ongoing scopes for later.
-void push_back_ongoing_scopes() {
-	scoped_tokens_stack.push_back(std::move(scoped_tokens));
-	scoped_tokens = {};
-}
-
-
-// Restore last saved ongoing scopes.
-void restore_ongoing_scopes() {
-	scoped_tokens = scoped_tokens_stack.back();
-	scoped_tokens_stack.pop_back();
-}
-
-
 
 
 #pragma pack(1)
@@ -253,6 +224,15 @@ struct ItyState {
 	ItyScope scope;
 
 	Variant last_expr_result = VariantPresets.empty;
+	// Instruction jump values.
+	int exec_jump_value = 0;
+	bool exec_jump_out = false;
+
+	// This is a pool of all temporaries created in an expression.
+	// Systems have exactly until the next expr exec call to use the data of a temporary, before it gets deleted.
+	std::vector<Variant> temp_pool;
+	// Tracker for tokens responsible for a scope.
+	std::vector<InstToken*> scoped_tokens;
 
 
 	void init() {
@@ -274,5 +254,15 @@ struct ItyState {
 			if (alt.path == target_path) return &alt;
 		}
 		return nullptr;
+	}
+
+
+	// Scope out of all ongoing scopes & call emergency cleanup functions if needed.
+	void exit_ongoing_scopes(ItyScope& scope) {
+		for (InstToken* token : scoped_tokens) {
+			if (token->inst->emergency_scope_exit) token->inst->emergency_scope_exit(token);
+			scope.out();
+		}
+		scoped_tokens.clear();
 	}
 };

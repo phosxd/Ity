@@ -29,10 +29,10 @@ static void INST_Continue_exec(ItyState& state, InstToken& token) {
 		InstToken& linked_token = state.seq[token.i + token.linked_inst_pos];
 
 		// Jump over the "end" instruction for this loop.
-		exec_jump_value += linked_token.composite_size + token.linked_inst_pos;
+		state.exec_jump_value += linked_token.composite_size + token.linked_inst_pos;
 
 		// If is "continue", jump to the end instruction, not over it.
-		if (token.symbol == InstSymbol_continue) exec_jump_value -= 1;
+		if (token.symbol == InstSymbol_continue) state.exec_jump_value -= 1;
 		// If is "break", properly scope out.
 		else {
 			// Scope out if previously scoped in.
@@ -40,7 +40,7 @@ static void INST_Continue_exec(ItyState& state, InstToken& token) {
 				state.scope.out();
 				InstToken* linked_token_ptr = &linked_token;
 				linked_token.inst->emergency_scope_exit(linked_token_ptr);
-				scoped_tokens.pop_back();
+				state.scoped_tokens.pop_back();
 			}
 		}
 	}

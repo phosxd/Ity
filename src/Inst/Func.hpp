@@ -34,7 +34,7 @@ static void INST_Func_exec(ItyState& state, InstToken& token) {
 		VariantMode_constant
 	);
 	// Jump past function body.
-	exec_jump_value += token.composite_size;
+	state.exec_jump_value += token.composite_size;
 }
 
 

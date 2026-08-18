@@ -53,12 +53,12 @@ static void INST_If_exec(ItyState& state, InstToken& token) {
 
 	token.meta[0] = (token.symbol == InstSymbol_elif && not passed) ? previous_conditional_passed : passed;
 	// Jump past instructions in this composite if failed.
-	if (not passed) exec_jump_value += token.composite_size;
+	if (not passed) state.exec_jump_value += token.composite_size;
 
 	// Scope in, if declarative.
 	else if (token.declarative_composite){
 		state.scope.in();
-		scoped_tokens.push_back(&token);
+		state.scoped_tokens.push_back(&token);
 	}
 }
 
