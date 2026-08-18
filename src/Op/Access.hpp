@@ -2,20 +2,23 @@
 
 
 const bool OP_Access_type_method(const std::string& type_name, const STR_t& method_name, MAP_t& methods, Variant*& o1, Variant& result) {
-	MAP_t::iterator it = methods.find((type_name+':'+method_name));
+	MAP_t::iterator it;
 
-	// If method not found in top level type, try in the MAP type.
-	if (o1->t == MAP && it == methods.end()) {
+	// Find map method.
+	if (o1->t == MAP) {
 		const STR_t& map_type = var_get_obj_type(AnyCast(MAP_t,o1->d));
-		it = methods.find( (type_name+'('+map_type+')'+':'+method_name) );
+		if (map_type != "m") it = methods.find( (type_name+'('+map_type+')'+':'+method_name) );
 	}
+
+	// Find method.
+	if (it == methods.end()) it = methods.find((type_name+':'+method_name));
 
 	// Return the method.
 	if (it != methods.end()) {
 		FUNC_t func = AnyCast(FUNC_t,it->second.d); // Copy function.
 		func.bound_args = func.bound_args + (ARR_t){Variant{PTR, o1}}; // Bind first variant to the function copy.
 		// Return copied function.
-		result = Variant{FUNC, func, VariantMode_constant};
+		result = Variant{FUNC, std::move(func), VariantMode_constant};
 		return true;
 	}
 	return false;
@@ -31,17 +34,15 @@ void OP_Access_exec(ItyState& state, Variant*& first, Variant*& second, const Op
 
 	// Try to access type method.
 	if (o2->t == STR) {
-		if (Variant* type_methods = state.scope.get_data_globally("__tm__"); type_methods) {
-			// Find & return method.
-			MAP_t& methods = AnyCastV(MAP_t,type_methods->d);
-			const STR_t& method_name = AnyCast(STR_t,second->d);
-			// Try pointer/reference type methods first.
-			if (first->t == PTR || first->t == REF) {
-				if (OP_Access_type_method(get_variant_type_name(first->t), method_name, methods, first, result)) return;
-			}
-			// Try.
-			if (OP_Access_type_method(get_variant_type_name(o1->t), method_name, methods, o1, result)) return;
+		// Find & return method.
+		MAP_t& methods = AnyCastV(MAP_t,state.scope.get_data_globally("__tm__", nullptr, HASHED_NAMES.__tm__)->d);
+		const STR_t& method_name = AnyCast(STR_t,second->d);
+		// Try pointer/reference type methods first.
+		if (first->t == PTR || first->t == REF) {
+			if (OP_Access_type_method(get_variant_type_name(first->t), method_name, methods, first, result)) return;
 		}
+		// Try.
+		if (OP_Access_type_method(get_variant_type_name(o1->t), method_name, methods, o1, result)) return;
 	}
 
 

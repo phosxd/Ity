@@ -10,32 +10,35 @@
 
 func MAP VarMap_new;
 	return {
-		'__t', 'varM',
-		'data', {},
+		'__t', 'v',
+		'd', {},
 	};
 /;
 
 
+# Get value in the map.
 func ANY VarMap_get; arg PTR S; arg ANY key;
-	const STR str_key = ((type:[key]->STR)+':'+(key->STR));
-	if S.data.has:str_key;
-		return S.data:str_key;
+	const STR str_key = (type:[key]->STR) + ':' + (key->STR);
+	if S.d.has:str_key;
+		return S.d:str_key;
 	/;
 	return none;
 /;
 
 
+# Set key-value pair in the map.
+# This overrides the default `set` method for `MAP(v)`.
 func NONE VarMap_set; arg PTR S; arg ANY key; arg ANY value;
-	const STR key_str = ((type:[key]->STR)+':'+(key->STR));
-	S.data += {key_str, value};
+	const STR key_str = (type:[key]->STR) + ':' + (key->STR);
+	S.d.set:[key_str, value];
 /;
 
 
 const MAP __module__ = {
 	'__name', 'VarMap',
 	'__tm', {
-		'MAP(varM):get', VarMap_get,
-		'MAP(varM):set', VarMap_set,
+		'MAP(v):get', VarMap_get,
+		'MAP(v):set', VarMap_set,
 	},
 	'new', VarMap_new,
 };

@@ -14,7 +14,6 @@ struct ScopeItem {
 
 using ScopeMap_t = std::vector<ScopeItem>;
 
-
 #pragma pack(1)
 struct ItyScope {
 	ItyScope* p = nullptr;  // Parent scope.
@@ -146,6 +145,13 @@ struct ItyScope {
 
 
 
+	void merge_type_methods(MAP_t map) {
+		Variant* var = get_data_globally("__tm__", nullptr, HASHED_NAMES.__tm__);
+		if (var) AnyCastV(MAP_t,var->d).insert(map.begin(), map.end());
+		else set_data("__tm__", MAP, Variant{MAP,map}, VariantMode_locked_type, HASHED_NAMES.__tm__);
+	}
+
+
 	// Merge all public members of the `map` into the scope.
 	void merge_module(const MAP_t& map) {
 		for (const auto& i : map) {
@@ -161,11 +167,7 @@ struct ItyScope {
 			}
 
 			// Combine type methods.
-			if (prop_name == "__tm") {
-				ScopeItem* item = raw_get_data(HASHED_NAMES.__tm__);
-				if (not item) raw_set_data(HASHED_NAMES.__tm__, i.second, nullptr);
-				else item->var.d = (AnyCast(MAP_t,item->var.d) + AnyCast(MAP_t,i.second.d));
-			}
+			if (prop_name == "__tm") merge_type_methods(AnyCastV(MAP_t,i.second.d));
 
 			if (prop_name.starts_with("__")) continue; // Skip private members.
 			// Copy member to a variable in the scope.
@@ -185,11 +187,7 @@ struct ItyScope {
 
 		// Combine type methods.
 		const auto& it = map.find("__tm");
-		if (it != map.end()) {
-			ScopeItem* item = raw_get_data(HASHED_NAMES.__tm__);
-			if (not item) raw_set_data(HASHED_NAMES.__tm__, it->second, nullptr);
-			else item->var.d = (AnyCast(MAP_t,item->var.d) + AnyCast(MAP_t,it->second.d));
-		}
+		if (it != map.end()) merge_type_methods(AnyCast(MAP_t,it->second.d));
 
 		// Copy module to a variable in the scope.
 		set_data(name, MAP, Variant{MAP, map}, VariantMode_constant);
