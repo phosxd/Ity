@@ -121,22 +121,18 @@ You can pass flags to the interpreter to change how it behaves & select what inf
 
 Flags:
 
-- `-safe`:
-	Prevent the interpreter from importing potentially unsafe modules.
-	With this option enabled, only a select few modules can be imported:
-		IO, Time, Math.
-	
-	This will also disable certain members/functions:
-		system.
+- `-s` or `--safe`:
+	Prevent the interpreter from importing potentially unsafe modules or running unsafe functions.
+	Basically anything that can mess with your system.
 
-- `-codes`:
+- `-c` or `--codes`:
 	Print simple error / warning codes instead of detailed messages.
-- `-nowarn`:
+- `--nowarn`:
 	Don't emit any warning messages.
-- `-step`:
+- `--step`:
 	Wait for confirmation before running the next instruction.
 
-- `-d-full`:
+- `-d` or `--d-full`:
 	Enable all debug flags.
 - `-d-result`:
 	Print program times & other information when completed.
@@ -151,7 +147,7 @@ Flags:
 - `-d-scoping`:
 	Print scope in/out/alt calls.
 
-- `-tabs=*`:
+- `-t=` or `--tabs=*`:
 	(Default: 4). Change this to the tab width you use in your text editor for more accurate error column counting.
 
 ---

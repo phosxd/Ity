@@ -396,8 +396,8 @@ void start_shell(int argc, char* argv[]) {
 			// Set other flags.
 			else if (s == "-c" || s == "--codes")   emit_just_codes = true;
 			else if (s == "--nowarn")               emit_warnings = false;
-			else if (s == "--safe")                 safe_mode = true;
-			else if (s == "-s" || s == "--step")    step_mode = true;
+			else if (s == "-s" || s == "--safe")                 safe_mode = true;
+			else if (s == "--step")    step_mode = true;
 		}
 
 		// Set script path.
