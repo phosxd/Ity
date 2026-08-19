@@ -2,7 +2,7 @@
 
 
 static Variant LIB_TI_get_time(ItyState& _state, const ARR_t& args, const unsigned int mode) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return Variant{};
 
 	const STR_t& precision = AnyCast(STR_t,args[0].d);
 

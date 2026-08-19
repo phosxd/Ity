@@ -196,7 +196,6 @@ Variant none_var = {NONE, std::monostate(), VariantMode_constant};
 // Collection of Variant presets used in various places within the codebase.
 struct VariantPresets_struct {
 	const Variant empty       {PLACEHOLDER, std::monostate(), VariantMode_constant};
-	const Variant none        = none_var;
 	const Variant bool_true   {BOOL, true, VariantMode_constant};
 	const Variant bool_false  {BOOL, false, VariantMode_constant};
 };

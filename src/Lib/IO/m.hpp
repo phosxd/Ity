@@ -21,8 +21,8 @@ static void LIB_IO_on_signal_received(const int sig) {
 
 // Connect a system signal to a function.
 static Variant LIB_IO_signal(ItyState& state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2)) return VariantPresets.none;
-	if (not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {FUNC}, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 2)) return Variant{};
+	if (not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {FUNC}, 1)) return Variant{};
 
 	const uint8_t signal_number = (uint8_t)AnyCast(INT_t,args[0].d);
 
@@ -34,7 +34,7 @@ static Variant LIB_IO_signal(ItyState& state, const ARR_t& args) {
 		case 2: signal(SIGINT, LIB_IO_on_signal_received); break;
 		case 15: signal(SIGTERM, LIB_IO_on_signal_received); break;
 	}
-	return VariantPresets.none;
+	return Variant{};
 }
 
 
@@ -42,7 +42,7 @@ static Variant LIB_IO_signal(ItyState& state, const ARR_t& args) {
 
 // Wait for then return a response.
 static Variant LIB_IO_in(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 0)) return Variant{};
 	std::string input_line;
 	std::getline(std::cin, input_line);
 	return Variant{STR, (STR_t)input_line};
@@ -51,7 +51,7 @@ static Variant LIB_IO_in(ItyState& _state, const ARR_t& args) {
 
 // Wait for a key press then return it.
 static Variant LIB_IO_key_in(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 0)) return Variant{};
 
 	// These are both hacky solutions but it gets the job done.
 	#ifdef _WIN32
@@ -77,14 +77,14 @@ static Variant LIB_IO_key_in(ItyState& _state, const ARR_t& args) {
 static Variant LIB_IO_out(ItyState& state, const ARR_t& args) {
 	for (const Variant& var : args) std::cout << var;
 	std::cout << std::flush; // Instantly print to the screen.
-	return VariantPresets.none;
+	return Variant{};
 }
 
 
 // Output text.
 static Variant LIB_IO_buff_out(ItyState& state, const ARR_t& args) {
 	for (const Variant& var : args) std::cout << var;
-	return VariantPresets.none;
+	return Variant{};
 }
 
 
@@ -92,7 +92,7 @@ static Variant LIB_IO_buff_out(ItyState& state, const ARR_t& args) {
 static Variant LIB_IO_print(ItyState& state, const ARR_t& args) {
 	LIB_IO_out(state, args);
 	std::cout << '\n';
-	return VariantPresets.none;
+	return Variant{};
 }
 
 
@@ -100,7 +100,7 @@ static Variant LIB_IO_print(ItyState& state, const ARR_t& args) {
 static Variant LIB_IO_print_err(ItyState& _state, const ARR_t& args) {
 	for (const Variant& var : args) std::cerr << var;
 	std::cerr << '\n';
-	return VariantPresets.none;
+	return Variant{};
 }
 
 

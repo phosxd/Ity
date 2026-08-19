@@ -11,7 +11,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 		// Throw error if maximum execution depth is reached.
 		if (execution_depth > execution_depth_max) {
 			emit_error(ERR_max_execution_depth, {std::to_string(execution_depth_max)});
-			return VariantPresets.none;
+			return Variant{};
 		}
 
 		// Find function definition state.
@@ -21,7 +21,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 		// Throw error if could not find state.
 		if (not source_state) {
 			emit_error(ERR_unexpected, {"CallFunc", "Cannot find function."});
-			return VariantPresets.none;
+			return Variant{};
 		}
 		// Get function token.
 		const InstToken& func_token = source_state->seq[func.token_index];
@@ -55,7 +55,6 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 		if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
 		#endif
 
-		args = std::move(func_state.scope.raw_get_data(HASHED_NAMES.__AG)->var);
 		return func_result;
 	}
 }
@@ -615,12 +614,12 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 		}
 	}
 
-	if (not result) return state.append_temp_var(VariantPresets.none);
+	if (not result) return state.append_temp_var(Variant{});
 
 	// Output result in debug mode.
 	#ifdef RUNTIME_DEBUG
 	if (debug_flags.expr_result && not subexpr) {
-		std::cout << ANSI::purple << "Expression Result: " << ANSI::reset << ((result) ? *result : VariantPresets.none) << "\n";
+		std::cout << ANSI::purple << "Expression Result: " << ANSI::reset << ((result) ? *result : Variant{}) << "\n";
 	};
 	#endif
 

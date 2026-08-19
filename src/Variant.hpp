@@ -6,12 +6,6 @@
 #define AnyCastV(T, var) std::get<T>(var)
 
 
-
-
-// VariantType.
-// ------------
-
-
 // Get string representation of a VariantType.
 inline const std::string& get_variant_type_name(const VariantType& type) {return VARIANT_TYPE_NAMES.at(type);}
 
@@ -45,6 +39,7 @@ using ARR_t = std::vector<Variant>;
 using MAP_t = std::unordered_map<STR_t,Variant>;
 using NativeFunc_t = Variant(*)(ItyState& state, const ARR_t& args);
 
+
 #pragma pack(1)
 struct FUNC_t {
 	// Common parameters...
@@ -59,6 +54,7 @@ struct FUNC_t {
 	// Native functions only...
 	NativeFunc_t native_callable = nullptr;
 };
+
 
 #pragma pack(1)
 struct TREF_t {
@@ -457,7 +453,7 @@ Variant operator*(const Variant& a, const Variant& b) {
 			if (b.t == INT) {
 				const INT_t& b_val = AnyCast(INT_t,b.d);
 				if (b_val < 1) return Variant{STR, (STR_t)""};
-				return Variant{STR, (AnyCast(STR_t,a.d) * b_val)};
+				return Variant{STR, (AnyCastV(STR_t,a.d) * b_val)};
 			}
 			break;
 		}

@@ -8,13 +8,13 @@
 static Variant LIB_BI_set_max_depth(ItyState* _state, const ARR_t& args) {
 	if (safe_mode) {
 		emit_error(ERR_disallowed_member_in_safe_mode, {"set_max_depth"});
-		return VariantPresets.none;
+		return Variant{};
 	}
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT}, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT}, 0)) return Variant{};
 
 	const INT_t& count = AnyCast(INT_t,args[0].d);
 	execution_depth_max = count;
-	return VariantPresets.none;
+	return Variant{};
 }
 
 
@@ -22,9 +22,9 @@ static Variant LIB_BI_set_max_depth(ItyState* _state, const ARR_t& args) {
 static Variant LIB_BI_system(ItyState& _state, const ARR_t& args) {
 	if (safe_mode) {
 		emit_error(ERR_disallowed_member_in_safe_mode, {"system"});
-		return VariantPresets.none;
+		return Variant{};
 	}
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return Variant{};
 
 	const char* command = AnyCast(STR_t,args[0].d).c_str();
 	return Variant{INT, (INT_t)system(command)};
@@ -33,7 +33,7 @@ static Variant LIB_BI_system(ItyState& _state, const ARR_t& args) {
 
 // Pause thread execution for the given number of seconds.
 static Variant LIB_BI_sleep(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT, FLOAT}, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT, FLOAT}, 0)) return Variant{};
 	const Variant& var = args[0];
 
 	FLOAT_t sleep_time = 0;
@@ -44,40 +44,40 @@ static Variant LIB_BI_sleep(ItyState& _state, const ARR_t& args) {
 	}
 
 	std::this_thread::sleep_for(std::chrono::microseconds( (uint32_t)(sleep_time*1000000) ));
-	return VariantPresets.none;
+	return Variant{};
 }
 
 
 // Return `true` if the name is defined in the current scope.
 static Variant LIB_BI_is_defined(ItyState& state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return Variant{};
 	return Variant{BOOL, (state.scope.get_data_globally(AnyCast(STR_t,args[0].d)) != nullptr)};
 }
 
 
 // Return the type of the given Variant, in string form.
 static Variant LIB_BI_type_name(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1)) return Variant{};
 	return Variant{STR, get_variant_type_name(args[0].t)};
 }
 
 
 // Return the type of the given Variant.
 static Variant LIB_BI_type(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1)) return Variant{};
 	return Variant{INT, (INT_t)(args[0].t)};
 }
 
 
 // Return the length of the given array or string.
 static Variant LIB_BI_length(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR,ARR}, 0)) return VariantPresets.none;;
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR,ARR}, 0)) return Variant{};;
 	size_t size = 0;
 
 	switch (args[0].t) {
 		case ARR: {size = AnyCast(ARR_t,args[0].d).size(); break;}
 		case STR: {size = AnyCast(STR_t,args[0].d).size(); break;}
-		default: return VariantPresets.none;
+		default: return Variant{};
 	}
 
 	return Variant{INT, (INT_t)size};
@@ -86,7 +86,7 @@ static Variant LIB_BI_length(ItyState& _state, const ARR_t& args) {
 
 // Return the number of bytes taken by the given variant.
 static Variant LIB_BI_size(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1)) return Variant{};
 	return Variant{INT, (INT_t)args[0].get_size()};
 }
 
@@ -95,20 +95,20 @@ static Variant LIB_BI_size(ItyState& _state, const ARR_t& args) {
 static Variant LIB_BI_range(ItyState& _state, const ARR_t& args) {
 	if (args.size() == 0) {
 		emit_error(ERR_invalid_func_arg_count, {"1+", "0"});
-		return VariantPresets.none;
+		return Variant{};
 	}
-	if (not expect_arg_types(args[0], {INT}, 0)) return VariantPresets.none;
+	if (not expect_arg_types(args[0], {INT}, 0)) return Variant{};
 
 	INT_t step = 1;
 	INT_t start = 0;
 	INT_t end = AnyCastV(INT_t,args[0].d);
 	if (args.size() > 1) {
-		if (not expect_arg_types(args[1], {INT}, 1)) return VariantPresets.none;
+		if (not expect_arg_types(args[1], {INT}, 1)) return Variant{};
 		start = end;
 		end = AnyCastV(INT_t,args[1].d);
 	}
 	if (args.size() > 2) {
-		if (not expect_arg_types(args[2], {INT}, 2)) return VariantPresets.none;
+		if (not expect_arg_types(args[2], {INT}, 2)) return Variant{};
 		step = AnyCastV(INT_t,args[2].d);
 	}
 
@@ -133,17 +133,17 @@ static Variant LIB_BI_range(ItyState& _state, const ARR_t& args) {
 
 // Reassign reference address.
 static Variant LIB_BI_tm_ref_reassign(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {REF}, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {REF}, 1)) return Variant{};
 	// Get data.
 	Variant* data = AnyCastV(Variant*,args[0].d);
 	// Throw error if data is constant.
 	if (data->m == VariantMode_constant) {
 		emit_error(ERR_cannot_change_constant);
-		return VariantPresets.none;
+		return Variant{};
 	}
 	// Reassign reference.
 	data->d = AnyCastV(STR_t,args[1].d);
-	return VariantPresets.none;
+	return Variant{};
 }
 
 
@@ -152,7 +152,7 @@ static Variant LIB_BI_tm_ref_reassign(ItyState& _state, const ARR_t& args) {
 
 // Returns the raw character code for the first character in the string.
 static Variant LIB_BI_tm_str_raw(ItyState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1)) return Variant{};
 	// Get data.
 	const STR_t& data = AnyCast(STR_t, AnyCastV(Variant*,args[0].d)->d );
 	// Return integer representation.
@@ -165,18 +165,18 @@ static Variant LIB_BI_tm_str_raw(ItyState& _state, ARR_t& args) {
 // ------
 
 static Variant LIB_BI_tm_arr_map_erase(ItyState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 2)) return VariantPresets.none;
+	if (not expect_arg_count(args, 2)) return Variant{};
 
 	Variant* var = AnyCastV(Variant*,args[0].d);
 
 	// Throw error if the variant is a constant.
 	if (var->m == VariantMode_constant) {
 		emit_error(ERR_cannot_change_constant);
-		return VariantPresets.none;
+		return Variant{};
 	}
 
 	if (var->t == ARR) {
-		if (not expect_arg_types(args[1], {INT}, 1)) return VariantPresets.none;
+		if (not expect_arg_types(args[1], {INT}, 1)) return Variant{};
 		// Get data & index.
 		ARR_t& data = AnyCastV(ARR_t, var->d );
 		const INT_t& index = AnyCast(INT_t,args[1].d);
@@ -185,7 +185,7 @@ static Variant LIB_BI_tm_arr_map_erase(ItyState& _state, ARR_t& args) {
 	}
 
 	else if (var->t == MAP) {
-		if (not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
+		if (not expect_arg_types(args[1], {STR}, 1)) return Variant{};
 		// Get data & map.
 		MAP_t& data = AnyCastV(MAP_t, var->d );
 		const STR_t& key = AnyCast(STR_t,args[1].d);
@@ -193,40 +193,40 @@ static Variant LIB_BI_tm_arr_map_erase(ItyState& _state, ARR_t& args) {
 		data.erase(key);
 	}
 
-	return VariantPresets.none;
+	return Variant{};
 }
 
 
 static Variant LIB_BI_tm_arr_append(ItyState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 2)) return VariantPresets.none;
+	if (not expect_arg_count(args, 2)) return Variant{};
 	Variant* var = AnyCast(Variant*,args[0].d);
 
 	// Throw error if the variant is a constant.
 	if (var->m == VariantMode_constant) {
 		emit_error(ERR_cannot_change_constant);
-		return VariantPresets.none;
+		return Variant{};
 	}
 
 	ARR_t& data = AnyCastV(ARR_t,var->d);
 	data.push_back(args[1]);
-	return VariantPresets.none;
+	return Variant{};
 }
 
 
 static Variant LIB_BI_tm_arr_reserve(ItyState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {INT}, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {INT}, 1)) return Variant{};
 	Variant* var = AnyCast(Variant*,args[0].d);
 	const INT_t& count = AnyCast(INT_t,args[1].d);
 
 	// Throw error if the variant is a constant.
 	if (var->m == VariantMode_constant) {
 		emit_error(ERR_cannot_change_constant);
-		return VariantPresets.none;
+		return Variant{};
 	}
 
 	ARR_t& data = AnyCastV(ARR_t,var->d);
 	data.reserve(count);
-	return VariantPresets.none;
+	return Variant{};
 }
 
 
@@ -236,7 +236,7 @@ static Variant LIB_BI_tm_arr_reserve(ItyState& _state, ARR_t& args) {
 
 // Return array of keys in the `MAP`.
 static Variant LIB_BI_tm_map_keys(ItyState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 1)) return Variant{};
 
 	// Get data.
 	const MAP_t& data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d );
@@ -252,7 +252,7 @@ static Variant LIB_BI_tm_map_keys(ItyState& _state, ARR_t& args) {
 
 // Return whether or not the `MAP` has the given key.
 static Variant LIB_BI_tm_map_has(ItyState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {STR}, 1)) return Variant{};
 
 	// Get data & key.
 	const MAP_t& data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d );
@@ -265,14 +265,14 @@ static Variant LIB_BI_tm_map_has(ItyState& _state, ARR_t& args) {
 
 // Set key-value pair in the `MAP`.
 static Variant LIB_BI_tm_map_set(ItyState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 3) || not expect_arg_types(args[1], {STR}, 1)) return VariantPresets.none;
+	if (not expect_arg_count(args, 3) || not expect_arg_types(args[1], {STR}, 1)) return Variant{};
 
 	Variant* var = AnyCastV(Variant*,args[0].d);
 
 	// Throw error if the variant is a constant.
 	if (var->m == VariantMode_constant) {
 		emit_error(ERR_cannot_change_constant);
-		return VariantPresets.none;
+		return Variant{};
 	}
 
 	// Get data & key.
@@ -281,7 +281,7 @@ static Variant LIB_BI_tm_map_set(ItyState& _state, ARR_t& args) {
 
 	// Set new key-value pair.
 	data[key] = args[2];
-	return VariantPresets.none;
+	return Variant{};
 }
 
 
@@ -347,7 +347,7 @@ const Variant LIB_BI {
 
 
 		// Miscillanious constants.
-		{"noneref", VariantPresets.none},
+		{"noneref", Variant{}},
 
 
 		// Utility functions.
