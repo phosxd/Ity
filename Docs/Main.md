@@ -743,7 +743,7 @@ Libraries enable you to actually do more complex things with relative ease, here
 - [FileAccess](Lib/FileAccess.md)
 
 Script-based modules (not built-into the interpreter binary):
-- [ANSI](Lib/ANSI)
+- [ANSI](Lib/ANSI.md)
 - [StrUtil](Lib/StrUtil.md)
 - [ArrUtil](Lib/ArrUtil.md)
 - [RangeIterator](Lib/RangeIterator.md)

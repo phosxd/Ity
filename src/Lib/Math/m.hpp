@@ -13,8 +13,6 @@ static Variant LIB_MT_math(ItyState& _state, const ARR_t& args, const std::strin
 		const INT_t& d = AnyCast(INT_t,var.d);
 		type = INT;
 		if (func == "abs")         data = std::abs(d);
-		else if (func == "floor")  data = (INT_t)std::floor(d);
-		else if (func == "ceil")   data = (INT_t)std::ceil(d);
 		else if (func == "log")    data = (INT_t)std::log(d);
 		else if (func == "sqrt")   data = (INT_t)std::sqrt((double)d);
 	}
@@ -22,8 +20,6 @@ static Variant LIB_MT_math(ItyState& _state, const ARR_t& args, const std::strin
 		const FLOAT_t& d = AnyCast(FLOAT_t,var.d);
 		type = FLOAT;
 		if (func == "abs")         data = (FLOAT_t)std::abs(d);
-		else if (func == "floor")  data = (FLOAT_t)std::floor(d);
-		else if (func == "ceil")   data = (FLOAT_t)std::ceil(d);
 		else if (func == "log")    data = (FLOAT_t)std::log(d);
 		else if (func == "sqrt")   data = (FLOAT_t)std::sqrtf(d);
 	}
@@ -32,11 +28,23 @@ static Variant LIB_MT_math(ItyState& _state, const ARR_t& args, const std::strin
 }
 
 
-static Variant LIB_MT_abs   (ItyState& state, const ARR_t& args) {return LIB_MT_math(state, args, "abs");}
-static Variant LIB_MT_floor (ItyState& state, const ARR_t& args) {return LIB_MT_math(state, args, "floor");}
-static Variant LIB_MT_ceil  (ItyState& state, const ARR_t& args) {return LIB_MT_math(state, args, "ceil");}
-static Variant LIB_MT_log   (ItyState& state, const ARR_t& args) {return LIB_MT_math(state, args, "log");}
-static Variant LIB_MT_sqrt  (ItyState& state, const ARR_t& args) {return LIB_MT_math(state, args, "sqrt");}
+static Variant LIB_MT_abs    (ItyState& state, const ARR_t& args) {return LIB_MT_math(state, args, "abs");}
+static Variant LIB_MT_log    (ItyState& state, const ARR_t& args) {return LIB_MT_math(state, args, "log");}
+static Variant LIB_MT_sqrt   (ItyState& state, const ARR_t& args) {return LIB_MT_math(state, args, "sqrt");}
+
+
+static Variant LIB_MT_round  (ItyState& state, const ARR_t& args) {
+	if (not expect_arg_count(args,1) || not expect_arg_types(args[0], {FLOAT}, 0)) return Variant{};
+	return Variant{INT, (INT_t)std::round(AnyCast(FLOAT_t,args[0].d))};
+}
+static Variant LIB_MT_floor  (ItyState& state, const ARR_t& args) {
+	if (not expect_arg_count(args,1) || not expect_arg_types(args[0], {FLOAT}, 0)) return Variant{};
+	return Variant{INT, (INT_t)std::floor(AnyCast(FLOAT_t,args[0].d))};
+}
+static Variant LIB_MT_ceil   (ItyState& state, const ARR_t& args) {
+	if (not expect_arg_count(args,1) || not expect_arg_types(args[0], {FLOAT}, 0)) return Variant{};
+	return Variant{INT, (INT_t)std::ceil(AnyCast(FLOAT_t,args[0].d))};
+}
 
 
 static Variant LIB_MT_pow(ItyState& _state, const ARR_t& args) {
@@ -109,6 +117,7 @@ const Variant LIB_Math {
 		{"__name",     Variant{STR, (STR_t)"Math", VariantMode_constant}},
 		{"__safe",     Variant{BOOL, true}},
 		{"abs",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_MT_abs)},
+		{"round",      NativeFuncTrans(ANY,    (NativeFunc_t)LIB_MT_round)},
 		{"floor",      NativeFuncTrans(ANY,    (NativeFunc_t)LIB_MT_floor)},
 		{"ceil",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_MT_ceil)},
 		{"log",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_MT_log)},
