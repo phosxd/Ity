@@ -1,0 +1,32 @@
+var start = $(time this ms) as int.
+
+var blob = "Hello there! How are you doing today?
+Hello there! How are you doing today?
+Hello there! How are you doing today?
+Hello there! How are you doing today?
+Hello there! How are you doing today?
+Hello there! How are you doing today?
+Hello there! How are you doing today?
+Hello there! How are you doing today?
+Hello there! How are you doing today?
+Hello there! How are you doing today?
+Great weather we are having!
+Great weather we are having!
+Great weather we are having!
+Great weather we are having!
+Great weather we are having!
+Great weather we are having!
+Great weather we are having!
+Great weather we are having!
+Great weather we are having!
+Great weather we are having!" * 1000.
+
+var blob_len = $(len blob).
+
+var i = -1.
+loop i < blob_len {
+	i = i+1.
+	stdout i " / " blob_len "\n".
+}
+
+stdout "\nDone in " (($(time this ms)-start) / 1000.0) " seconds." "\n".
