@@ -17,8 +17,9 @@ These results were recordered using the following specs:
 |	Program shell startup memory.
 |
 |	1. Ity		0.2.0											407  KiB
-|	2. Python	3.14.5											10.8 MiB
-|	3. NodeJS	22.22.2											44.8 MiB
+|	2. Kal		0.1.0											412  KiB
+|	3. Python	3.14.5											10.8 MiB
+|	4. NodeJS	22.22.2											44.8 MiB
 |
 |
 |

@@ -24,25 +24,25 @@ static void INST_If_processor(InstToken& token, const AnyMap_t& extra, const uns
 
 
 static void INST_If_exec(ItyState& state, InstToken& token) {
-	// Get value from expression.
-	const Variant* var = expr_exec(state, token.expr);
-
-	// Throw error for "if" & "elif" if not boolean.
 	bool expr_passed = false;
+
 	if (token.symbol != InstSymbol_else) {
+		// Get value from expression.
+		const Variant* var = expr_exec(state, token.expr);
+		// Throw error if wrong type.
 		if (var->t != BOOL) {
 			emit_error(ERR_expected_boolean_expression);
 			return;
 		}
+		// Otherwise, set whether or not condition succeeded.
 		else expr_passed = AnyCast(bool,var->d);
 	}
 
+	// Check if the previous conditional statement had succeeded...
 	bool previous_conditional_passed = true;
-	if (token.linked_inst == InstSymbol_if || token.linked_inst == InstSymbol_elif) {
-		const InstToken& linked_token = state.seq[token.i + token.linked_inst_pos];
-		previous_conditional_passed = AnyCast(bool,linked_token.meta[0]);
-	}
+	if (token.linked_inst == InstSymbol_if || token.linked_inst == InstSymbol_elif) previous_conditional_passed = AnyCast(bool, state.seq[token.i + token.linked_inst_pos].meta[0]);
 
+	// Evaluate whether or not this conditional has succeeded...
 	bool passed = false;
 	switch (token.symbol) {
 		case InstSymbol_if:   {passed = expr_passed; break;}
@@ -54,8 +54,7 @@ static void INST_If_exec(ItyState& state, InstToken& token) {
 	token.meta[0] = (token.symbol == InstSymbol_elif && not passed) ? previous_conditional_passed : passed;
 	// Jump past instructions in this composite if failed.
 	if (not passed) state.exec_jump_value += token.composite_size;
-
-	// Scope in, if declarative.
+	// If succeeded, then scope in if declarative.
 	else if (token.declarative_composite){
 		state.scope.in();
 		state.scoped_tokens.push_back(&token);

@@ -216,7 +216,7 @@ ItyScope create_new_scope(const ScopeMap_t& data={}, ItyScope* parent=nullptr, U
 
 #pragma pack(1)
 struct ItyState {
-	const std::string path = "";
+	std::string path = "";
 	std::vector<ItyState> alts = {}; // Alternate states (script modules).
 	std::vector<InstToken> seq = {}; // Instruction token sequence.
 	ItyScope scope;

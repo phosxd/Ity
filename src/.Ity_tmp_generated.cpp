@@ -24,10 +24,18 @@ const unsigned int RANDOM_SEED = DurCast_ms(Clock::now() - std::chrono::time_poi
 // Lib imports...
 #include "Lib//BuiltIn/m.hpp"
 //BUILDER_INSERT: Lib Includes
+#include "Lib/IO/m.hpp"
+#include "Lib/Time/m.hpp"
+#include "Lib/Math/m.hpp"
+#include "Lib/FileSystem/m.hpp"
 
 const Variant LIBS[] = {
 	LIB_BI,
 //BUILDER_INSERT: Lib Names
+LIB_IO,
+LIB_Time,
+LIB_Math,
+LIB_FileSystem,
 };
 
 
@@ -511,3 +519,4 @@ void start_shell(int argc, char* argv[]) {
 
 
 }
+

@@ -8,17 +8,8 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 	}
 
 	else {
-		// Throw error if maximum execution depth is reached.
-		if (execution_depth > execution_depth_max) {
-			emit_error(ERR_max_execution_depth, {std::to_string(execution_depth_max)});
-			return Variant{};
-		}
-
-		// Find function definition state.
-		ItyState* source_state = nullptr;
-		if (func.script_path == state.path) source_state = &state;
-		else source_state = state.find_alt_from_path(func.script_path);
 		// Throw error if could not find state.
+		ItyState* source_state = (func.script_path == state.path) ? &state : state.find_alt_from_path(func.script_path);
 		if (not source_state) {
 			emit_error(ERR_unexpected, {"CallFunc", "Cannot find function."});
 			return Variant{};
@@ -27,28 +18,30 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 		const InstToken& func_token = source_state->seq[func.token_index];
 
 		// Create an alternate scope, for use inside the function.
-		ItyState func_state = ItyState{.path=source_state->path, .scope=create_new_scope(
-			(ScopeMap_t){
-				{HASHED_NAMES.__AG, std::move(args)},
-				{HASHED_NAMES.__R,  Variant{func.return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
-			},
-			source_state->scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
-		)};
+		ItyState func_state = ItyState{
+			.path=std::move(source_state->path), .seq = std::move(source_state->seq),
+			.scope=create_new_scope(
+				(ScopeMap_t){
+					{HASHED_NAMES.__AG, std::move(args)},
+					{HASHED_NAMES.__R,  Variant{func.return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
+				},
+				source_state->scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
+			)
+		};
 
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;
 		#endif
 
-		func_state.seq = std::move(source_state->seq);
 		Ity::exec(func_state, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
-		current_script_path = state.path; // Reset current script path.
+		source_state->path = std::move(func_state.path);
+		current_script_path = &state.path; // Reset current script path.
 		source_state->seq = std::move(func_state.seq);
 
 
 		// Get result & check if return type matches.
 		const Variant& func_result = func_state.scope.raw_get_data(HASHED_NAMES.__R)->var;
 		if (func_result.t != func.return_type && func.return_type != ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func.return_type)});
-		// Return result.
 		//call_trace.pop_back(); call_trace.pop_back();
 
 		#ifdef RUNTIME_DEBUG

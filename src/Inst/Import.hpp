@@ -63,7 +63,7 @@ static void INST_Import_exec(ItyState& state, InstToken& token) {
 		if (f.is_open()) {
 			const std::string& script = (std::ostringstream() << f.rdbuf()).str();
 			f.close();
-			current_script_path = path;
+			current_script_path = &path;
 			const std::vector<InstToken> tokens = Ity::tokenize(script);
 			state.alts.push_back(ItyState{
 				.path = path,
@@ -72,7 +72,7 @@ static void INST_Import_exec(ItyState& state, InstToken& token) {
 			});
 			ItyState& alt = state.alts.back();
 			Ity::exec(alt, 0,-1);
-			current_script_path = state.path; // Reset current script path.
+			current_script_path = &state.path; // Reset current script path.
 			mod = alt.scope.get_data("__module__");
 		}
 	}
