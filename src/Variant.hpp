@@ -47,7 +47,7 @@ struct FUNC_t {
 	ARR_t bound_args = {};
 
 	// Script functions only...
-	unsigned int token_index = 0;
+	UINT_t token_index = 0;
 	UINT_t definition_state_id = 0;
 	STR_t script_path = "";
 
@@ -123,21 +123,19 @@ struct Variant {
 
 			case ARR: {
 				const ARR_t& d_ = AnyCast(ARR_t,d);
-				size_t sum = sizeof(d_);
+				size += sizeof(d_);
 				for (const Variant& var : d_) {
-					sum += var.get_size();
+					size += var.get_size();
 				}
-				size += sum;
 				break;
 			}
 
 			case MAP: {
 				const MAP_t& d_ = AnyCast(MAP_t,d);
-				size_t sum = sizeof(d_);
+				size += sizeof(d_);
 				for (const auto& it : d_) {
-					sum += it.first.size() + it.second.get_size();
+					size += it.first.size() + it.second.get_size();
 				}
-				size += sum;
 				break;
 			}
 			default: break;

@@ -82,6 +82,17 @@ static Variant LIB_FS_remove(ItyState& _state, const ARR_t& args) {
 }
 
 
+// Moves a file or directory. Returns `true` if succeeded, otherwise `false`.
+static Variant LIB_FS_move(ItyState& _state, const ARR_t& args) {
+	if (not expect_arg_count(args, 2) || not expect_arg_types(args[0], {STR}, 0) || not expect_arg_types(args[1], {STR}, 1)) return Variant{};
+	const STR_t& path = AnyCast(STR_t,args[0].d);
+	const STR_t& new_path = AnyCast(STR_t,args[1].d);
+	if (not std::filesystem::exists(path)) return VariantPresets.bool_false;
+	std::filesystem::rename(path, new_path);
+	return VariantPresets.bool_true;
+}
+
+
 
 
 // DEFINE MAPPINGS
@@ -101,7 +112,8 @@ const Variant LIB_FileSystem {
 		{"make_dir",      NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FS_make_dir)},
 		{"paths_in_dir",  NativeFuncTrans(ARR,   (NativeFunc_t)LIB_FS_paths_in_dir)},
 
-		{"remove",        NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FS_remove)}
+		{"remove",        NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FS_remove)},
+		{"move",          NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_FS_move)},
 	},
 	VariantMode_constant
 };

@@ -31,7 +31,8 @@ static void INST_Func_exec(ItyState& state, InstToken& token) {
 			.definition_state_id = state.scope.id,
 			.script_path = state.path
 		}},
-		VariantMode_constant
+		VariantMode_constant,
+		string_hasher(name)
 	);
 	// Jump past function body.
 	state.exec_jump_value += token.composite_size;

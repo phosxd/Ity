@@ -108,7 +108,7 @@ struct ItyScope {
 	}
 
 
-	inline void raw_set_data(const size_t& hashed_name, const Variant& data, ScopeItem* item) {
+	inline void raw_set_data(const size_t& hashed_name, const Variant& data, ScopeItem*& item) {
 		if (item) item->var = data;
 		else d.push_back(ScopeItem(hashed_name, data));
 	}
@@ -118,14 +118,13 @@ struct ItyScope {
 	// If mode is dynamic type, the set "type" & the actual type of "data" can be different.
 	// If mode is constant, will throw an error when if the name is already taken in the current scope.
 	// If mode is locked type, will throw an error if the data type does not match the given type.
-	void set_data(const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode, size_t hashed_name=0) {
+	void set_data(const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode, const size_t hashed_name) {
 		// Output function call in debug mode...
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.data_assign) {
 			std::cout << ANSI::blue << "Data Assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
 		}
 		#endif
-		if (hashed_name == 0) hashed_name = string_hasher(name);
 		ScopeItem* item = raw_get_data(hashed_name);
 
 		if (item && item->var.m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
@@ -171,7 +170,7 @@ struct ItyScope {
 
 			if (prop_name.starts_with("__")) continue; // Skip private members.
 			// Copy member to a variable in the scope.
-			set_data(prop_name, i.second.t, i.second, i.second.m);
+			set_data(prop_name, i.second.t, i.second, i.second.m, string_hasher(prop_name));
 		}
 	}
 
@@ -190,7 +189,7 @@ struct ItyScope {
 		if (it != map.end()) merge_type_methods(AnyCast(MAP_t,it->second.d));
 
 		// Copy module to a variable in the scope.
-		set_data(name, MAP, Variant{MAP, map}, VariantMode_constant);
+		set_data(name, MAP, Variant{MAP, map}, VariantMode_constant, string_hasher(name));
 	}
 };
 

@@ -38,9 +38,8 @@ void OP_Access_exec(ItyState& state, Variant*& first, Variant*& second, const Op
 		MAP_t& methods = AnyCastV(MAP_t,state.scope.get_data_globally("__tm__", nullptr, HASHED_NAMES.__tm__)->d);
 		const STR_t& method_name = AnyCast(STR_t,second->d);
 		// Try pointer/reference type methods first.
-		if (first->t == PTR || first->t == REF) {
-			if (OP_Access_type_method(get_variant_type_name(first->t), method_name, methods, first, result)) return;
-		}
+		if ((first->t == PTR || first->t == REF)
+		&& (OP_Access_type_method(get_variant_type_name(first->t), method_name, methods, first, result))) return;
 		// Try.
 		if (OP_Access_type_method(get_variant_type_name(o1->t), method_name, methods, o1, result)) return;
 	}
