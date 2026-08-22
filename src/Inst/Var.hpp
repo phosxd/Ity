@@ -131,8 +131,11 @@ static void exec(ItyState& state, InstToken& token) {
 			default: break;
 		}
 	}
+
 	// Set data.
-	state.scope.set_data(name, type, var, AnyCast(VariantMode,token.meta[4]), hashed_name);
+	const VariantMode& mode = AnyCast(VariantMode,token.meta[4]);
+	if (not var.matches(Variant{type, std::monostate(), mode})) return;
+	state.scope.set_data(name, Variant{std::move(var.t), std::move(var.d), mode}, hashed_name);
 }
 
 

@@ -171,7 +171,7 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 	// If for loop, set the variable.
 	if (token.symbol == InstSymbol_for && value) {
 		ARR_t& token_vars = AnyCastV(ARR_t,token.meta[3]);
-		state.scope.set_data(AnyCast(STR_t,token.meta[1]), token_vars[1].t, std::move(token_vars[1]), VariantMode_dynamic_type, AnyCast(size_t,token.meta[2]));
+		state.scope.set_data(AnyCast(STR_t,token.meta[1]), Variant{token_vars[1].t, std::move(token_vars[1].d), VariantMode_dynamic_type}, AnyCast(size_t,token.meta[2]));
 		token.meta[4] = AnyCast(UINT_t,token.meta[4]) + 1;
 	}
 }

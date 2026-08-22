@@ -1,0 +1,30 @@
+# ExtendedSystem
+# --------------
+#
+# Implements useful functions for interacting with the OS.
+#
+#
+# PART OF THE STANDARD SET OF ITY MODULES.
+
+
+import Math;
+import FileSystem;
+
+
+func MAP ES_call; arg STR cmd;
+	const STR tmp_path = '/tmp/ity_' + (Math.rand:[0, 100_000]/100_000.0 -> STR); # Generate random temp path.
+	const MAP res = {
+		'code', (system:(cmd + ' > ' + tmp_path)), # Run command.
+		'out',  (FileSystem.read:tmp_path), # Read output file.
+	};
+	FileSystem.remove:tmp_path; # Delete file.
+	return res;
+/;
+
+
+
+
+const MAP __module__ = {
+	'__name', 'ExtendedSystem',
+	'call', ES_call,
+};

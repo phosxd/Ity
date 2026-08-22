@@ -85,9 +85,10 @@ static Variant LIB_BI_length(ItyState& _state, const ARR_t& args) {
 
 
 // Return the number of bytes taken by the given variant.
-static Variant LIB_BI_size(ItyState& _state, const ARR_t& args) {
+static Variant LIB_BI_size(ItyState& state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return Variant{};
-	return Variant{INT, (INT_t)args[0].get_size()};
+	const Variant* var = &args[0];
+	return Variant{INT, (INT_t)(resovlve_potential_ref(state, var)->get_size())};
 }
 
 

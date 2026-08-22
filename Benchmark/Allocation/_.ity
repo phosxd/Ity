@@ -3,5 +3,5 @@ merge IO; merge Time; merge FileSystem;
 const INT start = now:'ms';
 const STR blob = read:'Benchmark/Allocation/Blob.txt' * 100_000;
 
-print:(size:blob);
+print:(size:@blob);
 print:['\nDone in ', (now:'ms'-start / 1000.0), 's.'];

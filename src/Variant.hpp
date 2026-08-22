@@ -104,8 +104,8 @@ struct Variant {
 	VariantMode m = VariantMode_dynamic_type;
 
 
-	// Return true if `data` is applicable to `var`.
-	const bool type_matches(const Variant& b, const bool do_emit_error = true) const {
+	// Return true if `b` is applicable to this variant.
+	const bool matches(const Variant& b, const bool do_emit_error = true) const {
 		if (b.m == VariantMode_dynamic_type || b.t == t) return true;
 		if (do_emit_error) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(t), get_variant_type_name(b.t)});
 		return false;
@@ -342,6 +342,12 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 			os << '}';
 			break;
 		}
+
+		case FUNC: {
+			const FUNC_t& func = AnyCast(FUNC_t,var.d);
+			os << "FUNC:" << &func.native_callable << ':' << func.token_index;
+			break;
+		}
 		default: break;
 	}
 	return os;
@@ -450,7 +456,6 @@ Variant operator*(const Variant& a, const Variant& b) {
 		case STR: {
 			if (b.t == INT) {
 				const INT_t& b_val = AnyCast(INT_t,b.d);
-				if (b_val < 1) return Variant{STR, (STR_t)""};
 				return Variant{STR, (AnyCastV(STR_t,a.d) * b_val)};
 			}
 			break;

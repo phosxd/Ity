@@ -2,9 +2,11 @@
 
 
 // Call a function.
-Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
+Variant call_function(ItyState& state, const FUNC_t& func, Variant& input_args) {
+	ARR_t args = func.bound_args + AnyCastV(ARR_t,input_args.d);
+
 	if (func.native_callable) {
-		return func.native_callable(state, AnyCast(ARR_t,args.d));
+		return func.native_callable(state, args);
 	}
 
 	else {
@@ -17,13 +19,13 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& args) {
 		// Get function token.
 		const InstToken& func_token = source_state->seq[func.token_index];
 
-		// Create an alternate scope, for use inside the function.
-		ItyState func_state = ItyState{
+		// Create an alternate state for function execution.
+		ItyState func_state = {
 			.path=std::move(source_state->path), .seq = std::move(source_state->seq),
 			.scope=create_new_scope(
 				(ScopeMap_t){
-					{HASHED_NAMES.__AG, std::move(args)},
-					{HASHED_NAMES.__R,  Variant{func.return_type, std::monostate(), VariantMode_dynamic_type}}, // Initialize return variable.
+					{HASHED_NAMES.__AG, Variant{ARR, args}},
+					{HASHED_NAMES.__R,  Variant{func.return_type, std::monostate()}}, // Initialize return variable.
 				},
 				source_state->scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
 			)
@@ -61,7 +63,7 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 }
 
 
-#define resovlve_potential_ref(state, var) (var->t == REF) ? state.scope.get_data_globally(AnyCast(STR_t,var->d), &none_var) : ((var->t == PTR) ? AnyCast(Variant*,var->d) : var);
+#define resovlve_potential_ref(state, var) ((var->t == REF) ? state.scope.get_data_globally(AnyCast(STR_t,var->d), &none_var) : ((var->t == PTR) ? AnyCast(Variant*,var->d) : var))
 
 
 

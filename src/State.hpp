@@ -109,35 +109,30 @@ struct ItyScope {
 
 
 	inline void raw_set_data(const size_t& hashed_name, const Variant& data, ScopeItem*& item) {
-		if (item) item->var = data;
-		else d.push_back(ScopeItem(hashed_name, data));
+		if (item) item->var = std::move(data);
+		else d.push_back(ScopeItem(hashed_name, std::move(data)));
 	}
 
 
 	// Sets the data for name in this scope.
-	// If mode is dynamic type, the set "type" & the actual type of "data" can be different.
-	// If mode is constant, will throw an error when if the name is already taken in the current scope.
-	// If mode is locked type, will throw an error if the data type does not match the given type.
-	void set_data(const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode, const size_t hashed_name) {
+	void set_data(const std::string& name, const Variant& data, const size_t hashed_name) {
 		// Output function call in debug mode...
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.data_assign) {
-			std::cout << ANSI::blue << "Data Assignment: " << ANSI::reset << "{name=" << name << ", type=" << type << ", data=" << data << ", mode=" << mode << "}\n";
+			std::cout << ANSI::blue << "Data Assignment: " << ANSI::reset << "{name=" << name << ", data=" << data << "}\n";
 		}
 		#endif
+
 		ScopeItem* item = raw_get_data(hashed_name);
-
 		if (item && item->var.m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
-		if (mode != VariantMode_dynamic_type && type != data.t) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(data.t), get_variant_type_name(type)}); // Throw error if data is not applicable.
-
-		raw_set_data(hashed_name, Variant{data.t, data.d, mode}, item);
+		raw_set_data(hashed_name, data, item);
 	}
 
 
-	void set_data_globally(const std::string& name, const VariantType& type, const Variant& data, const VariantMode& mode, const size_t& hashed_name=0) {
+	void set_data_globally(const std::string& name, const Variant& data, const size_t& hashed_name=0) {
 		return (p)
-			? p->set_data_globally(name, type, data, mode, hashed_name)
-			: set_data(name, type, data, mode, hashed_name)
+			? p->set_data_globally(name, data, hashed_name)
+			: set_data(name, data, hashed_name)
 		;
 	}
 
@@ -147,7 +142,7 @@ struct ItyScope {
 	void merge_type_methods(MAP_t map) {
 		Variant* var = get_data_globally("__tm__", nullptr, HASHED_NAMES.__tm__);
 		if (var) AnyCastV(MAP_t,var->d).insert(map.begin(), map.end());
-		else set_data("__tm__", MAP, Variant{MAP,map}, VariantMode_locked_type, HASHED_NAMES.__tm__);
+		else set_data("__tm__", Variant{MAP, map, VariantMode_locked_type}, HASHED_NAMES.__tm__);
 	}
 
 
@@ -165,12 +160,16 @@ struct ItyScope {
 				}
 			}
 
-			// Combine type methods.
-			if (prop_name == "__tm") merge_type_methods(AnyCastV(MAP_t,i.second.d));
-
+			if (prop_name == "__tm") merge_type_methods(AnyCastV(MAP_t,i.second.d)); // Combine type methods.
 			if (prop_name.starts_with("__")) continue; // Skip private members.
+
+			// Throw error if name taken.
+			if (get_data(prop_name)) {
+				emit_error(ERR_name_is_taken, {prop_name});
+				return;
+			}
 			// Copy member to a variable in the scope.
-			set_data(prop_name, i.second.t, i.second, i.second.m, string_hasher(prop_name));
+			set_data(prop_name, Variant{i.second.t, i.second.d, i.second.m}, string_hasher(prop_name));
 		}
 	}
 
@@ -189,7 +188,7 @@ struct ItyScope {
 		if (it != map.end()) merge_type_methods(AnyCast(MAP_t,it->second.d));
 
 		// Copy module to a variable in the scope.
-		set_data(name, MAP, Variant{MAP, map}, VariantMode_constant, string_hasher(name));
+		set_data(name, Variant{MAP, map, VariantMode_constant}, string_hasher(name));
 	}
 };
 

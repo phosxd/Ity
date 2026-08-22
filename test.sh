@@ -1285,9 +1285,15 @@ print:[a,b,c];
 
 # 56
 
-""
+"
+# Module member name collisions
+# -----------------------------
 
-""
+merge IO;
+merge IO;
+"
+
+"Error: 24"
 
 # 57
 

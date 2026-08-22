@@ -112,10 +112,7 @@ void OP_Access_exec(ItyState& state, Variant*& first, Variant*& second, const Op
 			const FUNC_t& func = AnyCast(FUNC_t,o1->d);
 			// Construct args.
 			Variant args {ARR,
-				std::move(
-					func.bound_args
-					+ ( (second->t == ARR) ? AnyCast(ARR_t,second->d) : (ARR_t){*second} ) // Using "second" instead of "o2" is not a mistake, if it's a `REF`/`PTR` we want to pass the actual ref/ptr.
-				)
+				std::move(( (second->t == ARR) ? AnyCastV(ARR_t,second->d) : (ARR_t){*second} )) // Using "second" instead of "o2" is not a mistake, if it's a `REF`/`PTR` we want to pass the actual ref/ptr.
 			};
 			// Call function.
 			result = std::move(call_function(state, func, args));
