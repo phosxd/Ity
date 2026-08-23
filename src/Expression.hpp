@@ -25,7 +25,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& input_args) 
 			.scope=create_new_scope(
 				(ScopeMap_t){
 					{HASHED_NAMES.__AG, Variant{ARR, args}},
-					{HASHED_NAMES.__R,  Variant{func.return_type, std::monostate()}}, // Initialize return variable.
+					{HASHED_NAMES.__R,  Variant{func.return_type}}, // Initialize return variable.
 				},
 				source_state->scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
 			)
@@ -37,8 +37,8 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& input_args) 
 
 		Ity::exec(func_state, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
 		source_state->path = std::move(func_state.path);
-		current_script_path = &state.path; // Reset current script path.
 		source_state->seq = std::move(func_state.seq);
+		current_script_path = &state.path; // Reset current script path.
 
 
 		// Get result & check if return type matches.
