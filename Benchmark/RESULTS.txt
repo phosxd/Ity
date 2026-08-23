@@ -28,11 +28,11 @@ These results were recordered using the following specs:
 |
 |	Input: 100000
 |
-|	1. C++		(GCC) 15.2.1 20260123 (Red Hat 15.2.1-7)		0.098s AVG
-|	2. Ity		0.2.0											0.174s AVG
-|	3. Python	3.14.5											0.240s AVG
-|	4. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		0.332s AVG
-|	5. Kal		0.1.0											0.681s AVG
+|	1. C++		(GCC) 15.2.1 20260123 (Red Hat 15.2.1-7)		0.084s AVG
+|	2. Ity		0.2.0											0.112s AVG
+|	3. Python	3.14.5											0.198s AVG
+|	4. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		0.312s AVG
+|	5. Kal		0.1.0											0.698s AVG
 |
 |
 |

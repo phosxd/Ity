@@ -42,7 +42,7 @@ void OP_Set_exec(ItyState& state, Variant*& first, Variant*& second, const OpSym
 
 	var.m = o1->m; // Make sure the mode is kept in-tact.
 	*o1 = std::move(var);
-	result_ptr = first;
+	result_ptr = o1;
 }
 
 

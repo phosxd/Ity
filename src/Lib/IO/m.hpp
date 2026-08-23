@@ -90,8 +90,8 @@ static Variant LIB_IO_buff_out(ItyState& state, const ARR_t& args) {
 
 // Output text with a leading new line.
 static Variant LIB_IO_print(ItyState& state, const ARR_t& args) {
-	LIB_IO_out(state, args);
-	std::cout << '\n';
+	for (const Variant& var : args) std::cout << var;
+	std::cout << '\n' << std::flush;
 	return Variant{};
 }
 

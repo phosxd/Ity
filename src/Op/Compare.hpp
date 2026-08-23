@@ -4,25 +4,20 @@
 void OP_Compare_pre_exec(ItyState& state, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
 	Variant* o1 = resovlve_potential_ref(state, first);
 
-	switch (symbol) {
-		case OpSymbol_cmp_and: {
-			eval_second_operand = *o1 == VariantPresets.bool_true;
-			result = VariantPresets.bool_false;
-			return;
-		}
-		case OpSymbol_cmp_or: {
-			eval_second_operand = *o1 == VariantPresets.bool_false;
-			result = VariantPresets.bool_true;
-			return;
-		}
-		default: break;
+	if (symbol == OpSymbol_cmp_and) {
+		eval_second_operand = *o1 == VariantPresets.bool_true;
+		result = VariantPresets.bool_false;
+	}
+	else if (symbol == OpSymbol_cmp_or) {
+		eval_second_operand = *o1 == VariantPresets.bool_false;
+		result = VariantPresets.bool_true;
 	}
 }
 
 
 void OP_Compare_exec(ItyState& state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& _result_ptr) {
-	Variant* o1 = resovlve_potential_ref(state, first);
-	Variant* o2 = resovlve_potential_ref(state, second);
+	const Variant* o1 = resovlve_potential_ref(state, first);
+	const Variant* o2 = resovlve_potential_ref(state, second);
 
 	bool test = false;
 	switch (symbol) {
