@@ -27,7 +27,6 @@ These results were recordered using the following specs:
 |	-------------
 |
 |	32768 empty statements. 64.0KB file
-|	(Externally timed from start to finish using `time` command)
 |
 |	1. Ity		0.2.0											0.007s AVG
 |	2. Kal		0.1.0											0.011s AVG
