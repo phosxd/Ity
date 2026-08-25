@@ -56,6 +56,7 @@ enum ERR_CODE : uint8_t {
 	ERR_cannot_dereference,
 	ERR_max_temporaries_in_use,
 	ERR_not_iterable,
+	ERR_misplaced_operator,
 };
 
 
@@ -186,6 +187,7 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		case ERR_cannot_dereference:                return "Cannot dereference \"" + args[0] + "\". Not a pointer.";
 		case ERR_max_temporaries_in_use:            return "Maximum temporaries in use (" + args[0] + "/" + args[1] + "); Reduce one-off expression complexity.";
 		case ERR_not_iterable:                      return "Given variant is not iterable";
+		case ERR_misplaced_operator:                return "Misplaced operator.";
 		#endif
 		default: break;
 	}

@@ -21,7 +21,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& input_args) 
 
 		// Create an alternate state for function execution.
 		ItyState func_state = {
-			.path=std::move(source_state->path), .seq = std::move(source_state->seq),
+			.path=std::move(source_state->path), .seq=std::move(source_state->seq),
 			.scope=create_new_scope(
 				(ScopeMap_t){
 					{HASHED_NAMES.__AG, Variant{ARR, args}},
@@ -42,9 +42,8 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& input_args) 
 
 
 		// Get result & check if return type matches.
-		const Variant& func_result = func_state.scope.raw_get_data(HASHED_NAMES.__R)->var;
+		const Variant func_result = std::move(func_state.scope.raw_get_data(HASHED_NAMES.__R)->var);
 		if (func_result.t != func.return_type && func.return_type != ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func.return_type)});
-		//call_trace.pop_back(); call_trace.pop_back();
 
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
@@ -414,6 +413,11 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 					emit_error(ERR_invalid_op, {op_symbol_str});
 					return result_token;
 				}
+				// Throw error if previous token was also an operator.
+				if (result_token.seq.back().var.t == OP) {
+					emit_error(ERR_misplaced_operator, {}, ln_offset, col_offset);
+					return result_token;
+				}
 				// Append operator token.
 				result_token.seq.push_back(ExprToken{
 					.ln  = ln_offset,
@@ -564,13 +568,11 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 			if (op_def->op->pre_exec) {
 				// Skip evaluation of second Variant if pre_exec says so...
 				bool eval_second_operand = true;
+				pre_exec_result.t = PLACEHOLDER; // Reset the type for reuse.
 				// Run pre-executor.
 				op_def->op->pre_exec(state, result, op_def->sym, eval_second_operand, pre_exec_result, result);
 				if (not eval_second_operand) {
-					if (pre_exec_result.t != PLACEHOLDER) {
-						result = state.append_temp_var(pre_exec_result);
-						pre_exec_result.t = PLACEHOLDER; // Reset the type for reuse.
-					}
+					if (pre_exec_result.t != PLACEHOLDER) result = state.append_temp_var(pre_exec_result);
 					op_def = nullptr;
 					continue;
 				}
@@ -580,41 +582,30 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 				? expr_exec_(state, item, true)
 				: resolve_variant(state, item.var)
 			;
-			// Throw error if second is an operator.
-			if (second->t == OP) {
-				emit_error(ERR_invalid_syntax, {"Operator cannot be used as operand"});
-				return result;
-			}
 
+			op_result.t = PLACEHOLDER; // Reset the type for reuse.
 			op_def->op->exec(state, result, second, op_def->sym, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
 			// If we reveive a direct value, set the result to that.
-			if (op_result.t != PLACEHOLDER) {
-				result = state.append_temp_var(op_result);
-				op_result.t = PLACEHOLDER; // Reset the type for reuse.
-			}
+			if (op_result.t != PLACEHOLDER) result = state.append_temp_var(op_result);
 
 			op_def = nullptr;
 			continue;
 		}
 
 
-		else if (item.t == ExprTokenType_variant) {
-			if (item.var.t == OP) op_def = AnyCast(const OpDef*,item.var.d); // Get operator.
-			else result = resolve_variant(state, item.var); // Get variant.
-		}
-
-		// Get value from sub-sequence
-		else if (item.t == ExprTokenType_sequence) {
-			result = expr_exec_(state, item, true);
-		}
+		else if (item.var.t == OP) op_def = AnyCast(const OpDef*,item.var.d); // Get operator.
+		else result = (item.t == ExprTokenType_sequence)
+			? expr_exec_(state, item, true) // Get value from sub-sequence
+			: resolve_variant(state, item.var) // Get variant.
+		;
 	}
 
-	if (not result) return state.append_temp_var(Variant{});
+	if (not result) result = state.append_temp_var(Variant{});
 
 	// Output result in debug mode.
 	#ifdef RUNTIME_DEBUG
 	if (debug_flags.expr_result && not subexpr) {
-		std::cout << ANSI::purple << "Expression Result: " << ANSI::reset << ((result) ? *result : Variant{}) << "\n";
+		std::cout << ANSI::purple << "Expression Result: " << ANSI::reset << *result << "\n";
 	};
 	#endif
 
