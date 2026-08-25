@@ -88,21 +88,18 @@ void OP_Access_exec(ItyState& state, Variant*& first, Variant*& second, const Op
 		// Access map object property.
 		case MAP: {
 			MAP_t& map = AnyCastV(MAP_t,o1->d);
-
 			// Throw error if accessor is not a string.
 			if (o2->t != STR) {
 				emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 				return;
 			}
-			// Find key.
-			const STR_t& key = AnyCast(STR_t,o2->d);
-			const MAP_t::iterator& it = map.find(key);
-			if (it == map.end()) {
-				emit_error(ERR_no_property_with_name, {key});
+			// Find value.
+			if (const MAP_t::iterator& it = map.find(AnyCast(STR_t,o2->d)); it != map.end()) {
+				result_ptr = &it->second;
 				return;
 			}
-			// Return Variant at the key.
-			result_ptr = &it->second;
+			// Throw error if does not exist.
+			emit_error(ERR_no_property_with_name, {AnyCast(STR_t,o2->d)});
 			return;
 		}
 
@@ -111,9 +108,8 @@ void OP_Access_exec(ItyState& state, Variant*& first, Variant*& second, const Op
 		case FUNC: {
 			const FUNC_t& func = AnyCast(FUNC_t,o1->d);
 			// Construct args.
-			Variant args {ARR,
-				std::move(( (second->t == ARR) ? AnyCastV(ARR_t,second->d) : (ARR_t){*second} )) // Using "second" instead of "o2" is not a mistake, if it's a `REF`/`PTR` we want to pass the actual ref/ptr.
-			};
+			// Using "second" instead of "o2" is not a mistake, if it's a `REF`/`PTR` we want to pass the actual ref/ptr.
+			Variant args {ARR, std::move(( (second->t == ARR) ? AnyCastV(ARR_t,second->d) : (ARR_t){*second} ))};
 			// Call function.
 			result = std::move(call_function(state, func, args));
 			return;

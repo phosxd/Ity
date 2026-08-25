@@ -24,7 +24,6 @@ static void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const
 static void INST_Return_exec(ItyState& state, InstToken& token) {
 	// Cleanly exit all scopes in the function.
 	state.exit_ongoing_scopes(state.scope);
-
 	// Set return value to expression result then jump out of the current execution.
 	state.scope.set_data("__R", *expr_exec(state, token.expr), HASHED_NAMES.__R);
 	state.exec_jump_out = true;

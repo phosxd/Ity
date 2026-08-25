@@ -56,7 +56,7 @@ static void INST_If_exec(ItyState& state, InstToken& token) {
 	if (not passed) state.exec_jump_value += token.composite_size;
 	// If succeeded, then scope in if declarative.
 	else if (token.declarative_composite){
-		state.scope.in();
+		state.scope.in(state.scope_current_id);
 		state.scoped_tokens.push_back(&token);
 	}
 }

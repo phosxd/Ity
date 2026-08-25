@@ -155,7 +155,7 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 	// If entering loop for first time & (the composite is declarative or is a for loop), then scope in.
 	else if (multi && not AnyCast(bool,token.meta[0])) {
 		token.meta[0] = true;
-		state.scope.in();
+		state.scope.in(state.scope_current_id);
 		state.scoped_tokens.push_back(&token);
 
 		if (token.symbol == InstSymbol_for) {

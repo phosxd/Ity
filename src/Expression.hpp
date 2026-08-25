@@ -22,7 +22,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant& input_args) 
 		// Create an alternate state for function execution.
 		ItyState func_state = {
 			.path=std::move(source_state->path), .seq=std::move(source_state->seq),
-			.scope=create_new_scope(
+			.scope=create_new_scope(source_state->scope_current_id,
 				(ScopeMap_t){
 					{HASHED_NAMES.__AG, Variant{ARR, args}},
 					{HASHED_NAMES.__R,  Variant{func.return_type}}, // Initialize return variable.
@@ -448,19 +448,18 @@ Variant* resolve_variant(ItyState& state, Variant& item) {
 	// If typed reference...
 	if (item.t == TREF) {
 		const TREF_t& tref = AnyCast(TREF_t,item.d);
+		if (tref.mode == 1) return state.append_temp_var(Variant{REF, tref.str}); // Create named ref.
+
 		// Get variable.
 		Variant* ptr = state.scope.get_data_globally(tref.str, nullptr, tref.hash);
-
 		// Throw error if variable is undefined.
 		if (not ptr) {
 			emit_error(ERR_name_does_not_exist, {tref.str});
 			return &item;
 		}
 
-		// Create named ref.
-		if (tref.mode == 1) return state.append_temp_var(Variant{REF, tref.str});
 		// Deref pointer or named reference.
-		else if (tref.mode == 2) {
+		if (tref.mode == 2) {
 			switch (ptr->t) {
 				case REF: return state.scope.get_data_globally(AnyCast(STR_t,ptr->d), &none_var);
 				case PTR: return AnyCast(Variant*,ptr->d);
@@ -497,7 +496,6 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 				: *resolve_variant(state, subtoken.var)
 			);
 		}
-
 		return state.append_temp_var(Variant{ARR, std::move(array)});
 	}
 
@@ -536,7 +534,6 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 				is_key = true;
 			}
 		}
-
 		return state.append_temp_var(Variant{MAP, std::move(map)});
 	}
 

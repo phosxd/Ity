@@ -1,9 +1,5 @@
 #pragma once
 
-UINT_t ItyScope_current_id = 0;
-
-
-
 
 #pragma pack(1)
 struct ScopeItem {
@@ -48,11 +44,11 @@ struct ItyScope {
 
 	// Transforms into an empty scope & copies the current scope into the new scope's parent.
 	// This will effectively change the depth of the current scope while preserving the scope reference.
-	void in() {
+	void in(UINT_t& scope_current_id) {
 		p = new ItyScope{std::move(p), std::move(d), std::move(id)};
 		flush();
-		ItyScope_current_id += 1;
-		id = ItyScope_current_id;
+		scope_current_id += 1;
+		id = scope_current_id;
 
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.scoping) std::cout << ANSI::orange << "Scope In (" + std::to_string(id) + ")\n" << ANSI::reset;
@@ -197,10 +193,10 @@ struct ItyScope {
 
 
 // Create a new scope state.
-ItyScope create_new_scope(const ScopeMap_t& data={}, ItyScope* parent=nullptr, UINT_t id=0) {
+ItyScope create_new_scope(UINT_t& scope_current_id, const ScopeMap_t& data={}, ItyScope* parent=nullptr, UINT_t id=0) {
 	if (id == 0) {
-		ItyScope_current_id += 1;
-		id = ItyScope_current_id;
+		scope_current_id += 1;
+		id = scope_current_id;
 	}
 
 	return ItyScope{
@@ -219,6 +215,7 @@ struct ItyState {
 	std::vector<ItyState> alts = {}; // Alternate states (script modules).
 	std::vector<InstToken> seq = {}; // Instruction token sequence.
 	ItyScope scope;
+	UINT_t scope_current_id = 0;
 
 	Variant last_expr_result = VariantPresets.empty;
 	// Instruction jump values.
@@ -254,7 +251,7 @@ struct ItyState {
 		scope.d.push_back({string_hasher("__IMPORTED__"),             Variant{BOOL, false, VariantMode_constant}});
 		// Merge built-in library.
 		scope.merge_module(AnyCast(MAP_t,((Variant*)LIB_BI_G)->d));
-		scope.in(); // Keep built-ins a scope higher than everything else.
+		scope.in(scope_current_id); // Keep built-ins a scope higher than everything else.
 	}
 
 

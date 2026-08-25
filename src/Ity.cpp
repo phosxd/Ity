@@ -500,7 +500,7 @@ void start_shell(int argc, char* argv[]) {
 		if (not source_script_path.empty()) {std::cout << "TIME (Token):    " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
 		std::cout <<                                      "TIME (Total):    " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
 		std::cout <<                                      "STATE SIZE:      " << state.scope.get_size() << " bytes." << '\n';
-		std::cout <<                                      "STATE MAXID:     " << ItyScope_current_id << '\n';
+		std::cout <<                                      "STATE MAXID:     " << state.scope_current_id << '\n';
 		std::cout << '\n';
 	}
 	#endif
