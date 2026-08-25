@@ -36,7 +36,7 @@ constexpr std::string NUM = "0123456789";
 
 
 // Returns the string with all instances of `ch` removed from the start of it.
-constexpr std::string trim_left(const std::string& text, const char ch) {
+const std::string trim_left(const std::string& text, const char ch) {
 	const size_t& text_len = text.size();
 	if (text_len == 0 || text[0] != ch) return text;
 	bool ended = false;
@@ -50,7 +50,7 @@ constexpr std::string trim_left(const std::string& text, const char ch) {
 
 
 // Joins all elements in the vector into a new string, with each element separated by the given `sep`.
-constexpr std::string join_str(const std::vector<std::string>& vec, const std::string& sep) {
+const std::string join_str(const std::vector<std::string>& vec, const std::string& sep) {
 	const size_t& vec_len = vec.size();
 	if (vec_len == 0) return "";
 	std::string result = vec.front();
@@ -63,7 +63,7 @@ constexpr std::string join_str(const std::vector<std::string>& vec, const std::s
 
 
 // Splits the `text` into a vector of strings, with each element separated by the given `sep`.
-constexpr std::vector<std::string> split_str(const std::string& text, const char sep) {
+const std::vector<std::string> split_str(const std::string& text, const char sep) {
 	if (text.empty()) return {};
 
 	std::stringstream ss (text);
@@ -78,7 +78,7 @@ constexpr std::vector<std::string> split_str(const std::string& text, const char
 
 
 // Return new `text` with each line indented `count` times.
-constexpr std::string indent(const std::string& text, const std::string& indent_text="  ") {
+const std::string indent(const std::string& text, const std::string& indent_text="  ") {
 	std::string result;
 	unsigned int i = 0;
 	for (const std::string& line : split_str(text, '\n')) {
@@ -91,7 +91,7 @@ constexpr std::string indent(const std::string& text, const std::string& indent_
 
 
 // Returns the number of strings that are empty inside the given vector.
-constexpr unsigned int count_non_empty_strings(const std::vector<std::string>& items) {
+const unsigned int count_non_empty_strings(const std::vector<std::string>& items) {
 	const size_t& items_len = items.size();
 	unsigned int count = 0;
 	for (size_t i = 0; i < items_len; i++) {
@@ -103,7 +103,7 @@ constexpr unsigned int count_non_empty_strings(const std::vector<std::string>& i
 
 // Returns `false` if the string representation falls out of the 32-bit range for integers.
 // NOTE: This is not an accurate check, it stops at 2,000,000,000 instead of the actual maximum.
-bool is_int_str_32_in_range(std::string int_str) {
+const bool is_int_str_32_in_range(std::string int_str) {
 	int_str = trim_left(int_str, '0');
 	if (int_str.size() == 0) return true;
 

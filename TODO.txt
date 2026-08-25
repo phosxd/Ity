@@ -1,4 +1,3 @@
-- Add global property that specifies whether or not a script is running as a module.
 - QOL feature: allow some operators to capture all RHS tokens via recursive decent.
 - QOL feature: separator symbol `,` should automatically wrap tokens into a grouping. Allows direct operator usage in arrays & maps.
 - Fix REF persistence across external functions.

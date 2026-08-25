@@ -32,6 +32,15 @@ Note: this may not be an absolute file path, it is often relative to the current
 An array representing the string arguments passed to the script via the command line.
 This does not include any interpreter flags or interpreter arguments.
 
+### (BOOL) \_\_IMPORTED\_\_
+A boolean representing whether the script is running as a module or as the main program.
+
+```python
+if __IMPORTED__ == false;
+	print:'Running as main program!';
+/;
+```
+
 ### \[Types\]
 Every built-in data type, represented as a string. They share the same names as the ones you would use to declare a variable.
 

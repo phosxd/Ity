@@ -83,6 +83,8 @@ struct HASHED_NAMES_struct {
 	const size_t __AG   = string_hasher("__AG");
 	const size_t __R    = string_hasher("__R");
 	const size_t __tm__ = string_hasher("__tm__");
+
+	const size_t __IMPORTED__ = string_hasher("__IMPORTED__");
 };
 const HASHED_NAMES_struct HASHED_NAMES;
 

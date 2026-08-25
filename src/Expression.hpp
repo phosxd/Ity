@@ -232,7 +232,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 			}
 		}
 
-		// Compile array of expressions into a Variant.
+		// Capture a sequence of expressions.
 		else if (is_array || is_map || is_grouping) {
 			const std::string& subexpr = expr.substr(i);
 			if (not subexpr.empty()) {

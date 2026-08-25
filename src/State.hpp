@@ -174,6 +174,7 @@ struct ItyScope {
 	}
 
 
+	// Import a map as a module accessible by `name`.
 	void import_module(const std::string& name, const MAP_t& map) {
 		bool safe = true;
 		const auto& safe_it = map.find("__safe");
@@ -248,8 +249,9 @@ struct ItyState {
 		scope.d.push_back({string_hasher("__VERSION_STRING__"),       Variant{STR,  (STR_t)ItyVersionString, VariantMode_constant}});
 		scope.d.push_back({string_hasher("__SCRIPT_PATH__"),          Variant(STR,  (STR_t)path, VariantMode_constant)});
 		scope.d.push_back({string_hasher("__OS_NAME__"),              Variant{STR,  (STR_t)OSName, VariantMode_constant}});
-		scope.d.push_back({string_hasher("__HAS_RUNTIME_DEBUG__"),    Variant(BOOL, (bool)has_runtime_debug, VariantMode_constant)});
+		scope.d.push_back({string_hasher("__HAS_RUNTIME_DEBUG__"),    Variant(BOOL, has_runtime_debug, VariantMode_constant)});
 		scope.d.push_back({string_hasher("__CMD_ARGS__"),             Variant{ARR,  ARGS, VariantMode_constant}});
+		scope.d.push_back({string_hasher("__IMPORTED__"),             Variant{BOOL, false, VariantMode_constant}});
 		// Merge built-in library.
 		scope.merge_module(AnyCast(MAP_t,((Variant*)LIB_BI_G)->d));
 		scope.in(); // Keep built-ins a scope higher than everything else.

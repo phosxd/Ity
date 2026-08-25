@@ -7,4 +7,4 @@ var MAP my_vmap = VarMap.new:[];
 # Set pair.
 my_vmap.set:[0,2];
 # Get pair.
-print:[(my_vmap.get:[0])];
+print:(my_vmap.get:0);
