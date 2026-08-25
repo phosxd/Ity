@@ -487,14 +487,26 @@ Variant operator/(const Variant& a, const Variant& b) {
 	switch (a.t) {
 		// If a is int...
 		case INT: {
-			if (b.t == INT) return Variant{INT, (AnyCast(INT_t,a.d) / AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT) return Variant{FLOAT, (AnyCast(INT_t,a.d) / AnyCast(FLOAT_t,b.d))};
+			if (b.t == INT) {
+				if (const INT_t bd = AnyCast(INT_t,b.d); bd != 0) return Variant{INT, (AnyCast(INT_t,a.d) / bd)};
+				emit_error(ERR_zero_division);
+			}
+			else if (b.t == FLOAT) {
+				if (const FLOAT_t bd = AnyCast(FLOAT_t,b.d); bd != 0) return Variant{FLOAT, (AnyCast(INT_t,a.d) / bd)};
+				emit_error(ERR_zero_division);
+			}
 			break;
 		}
 		// If a is float...
 		case FLOAT: {
-			if (b.t == INT) return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) / AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT) return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) / AnyCast(FLOAT_t,b.d))};
+			if (b.t == INT) {
+				if (const INT_t bd = AnyCast(INT_t,b.d); bd != 0) return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) / bd)};
+				emit_error(ERR_zero_division);
+			}
+			else if (b.t == FLOAT) {
+				if (const FLOAT_t bd = AnyCast(FLOAT_t,b.d); bd != 0) return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) / bd)};
+				emit_error(ERR_zero_division);
+			}
 			break;
 		}
 		default: break;
@@ -509,9 +521,8 @@ Variant operator/(const Variant& a, const Variant& b) {
 Variant operator%(const Variant& a, const Variant& b) {
 	// If a is int & b is int...
 	if (a.t == INT && b.t == INT) {
-		const INT_t& bd = AnyCast(INT_t,b.d);
-		if (bd == 0) return Variant{INT, (INT_t)0};
-		return Variant{INT, (AnyCast(INT_t,a.d) % bd)};
+		if (const INT_t& bd = AnyCast(INT_t,b.d); bd != 0) return Variant{INT, (AnyCast(INT_t,a.d) % bd)};
+		emit_error(ERR_zero_division);
 	};
 
 	// Throw error is none matched.

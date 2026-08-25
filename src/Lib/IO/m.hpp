@@ -110,8 +110,14 @@ const Variant LIB_IO {
 		// System signals.
 		{"SIGNAL", Variant{
 			MAP, (MAP_t){
-				{"interrupt",  Variant{INT, (INT_t)SIGINT, VariantMode_constant}},
+				{"abort",      Variant{INT, (INT_t)SIGABRT, VariantMode_constant}},
+				{"illegal",    Variant{INT, (INT_t)SIGILL,  VariantMode_constant}},
+				{"interrupt",  Variant{INT, (INT_t)SIGINT,  VariantMode_constant}},
+				{"seg_fault",  Variant{INT, (INT_t)SIGSEGV, VariantMode_constant}},
 				{"terminate",  Variant{INT, (INT_t)SIGTERM, VariantMode_constant}},
+				{"quit",       Variant{INT, (INT_t)SIGQUIT, VariantMode_constant}},
+				{"user1",      Variant{INT, (INT_t)SIGUSR1, VariantMode_constant}},
+				{"user2",      Variant{INT, (INT_t)SIGUSR2, VariantMode_constant}},
 			}, VariantMode_constant }},
 
 

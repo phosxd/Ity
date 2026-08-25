@@ -8,8 +8,14 @@ func NONE interrupt_handler;
 /;
 
 
+func NONE user_signal_handler;
+	IO.print:'\nReceived custom signal 1';
+/;
+
+
 # Connect signal to our `interrupt_handler` function.
 IO.signal:[(IO.SIGNAL.interrupt), interrupt_handler];
+IO.signal:[(IO.SIGNAL.user1), user_signal_handler];
 
 
 # Sleep...
