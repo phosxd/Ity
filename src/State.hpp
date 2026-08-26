@@ -242,7 +242,7 @@ struct ItyState {
 
 	void init() {
 		// Add basic info.
-		scope.d.push_back({string_hasher("__VERSION__"),              Variant{ARR,  (ARR_t){Variant{INT,ItyVersion[0]}, Variant{INT,ItyVersion[1]}, Variant{INT,ItyVersion[2]}, Variant{INT,ItyVersion[3]}}, VariantMode_constant}});
+		scope.d.push_back({string_hasher("__VERSION__"),              Variant{ARR,  (ARR_t){Variant{INT,(INT_t)ItyVersion[0]}, Variant{INT,(INT_t)ItyVersion[1]}, Variant{INT,(INT_t)ItyVersion[2]}, Variant{INT,(INT_t)ItyVersion[3]}}, VariantMode_constant}});
 		scope.d.push_back({string_hasher("__VERSION_STRING__"),       Variant{STR,  (STR_t)ItyVersionString, VariantMode_constant}});
 		scope.d.push_back({string_hasher("__SCRIPT_PATH__"),          Variant(STR,  (STR_t)path, VariantMode_constant)});
 		scope.d.push_back({string_hasher("__OS_NAME__"),              Variant{STR,  (STR_t)OSName, VariantMode_constant}});

@@ -1319,11 +1319,65 @@ merge IO;
 
 # 59
 
-""
+"
+# Reassign persistence
+# --------------------
 
-""
+merge IO;
+
+var a = 1;
+var b = 0;
+b = a;
+
+var c = [1,2,3];
+var d = c;
+
+print:a;
+print:b;
+print:c;
+print:d;
+"
+
+"1
+1
+123
+123"
 
 # 60
+
+"
+# Pass var to function arg
+# ------------------------
+
+merge IO;
+
+var a = [1];
+print:a;
+print:a;
+
+var b = 2;
+print:b;
+print:b;
+"
+
+"1
+1
+2
+2"
+
+# 61
+
+""
+
+""
+
+# 62
+
+""
+
+""
+
+# 63
 
 ""
 

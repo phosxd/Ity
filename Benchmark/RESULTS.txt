@@ -66,7 +66,7 @@ These results were recordered using the following specs:
 |	ALLOCATION:
 |	-----------
 |
-|	"Blob.txt" multipled by 100,000 (67 MB)
+|	"Blob.txt" multiplied by 100,000 (67 MB)
 |
 |	1. C++		(GCC) 15.2.1 20260123 (Red Hat 15.2.1-7)		0.027s AVG
 |	2. Python	3.14.5											0.029s AVG
@@ -88,7 +88,7 @@ These results were recordered using the following specs:
 |	BYTE-ITERATION:
 |	---------------
 |
-|	"Blob.txt" multipled by 1,000 (0.67 MB)
+|	"Blob.txt" multiplied by 1,000 (0.67 MB)
 |
 |	1. C++		(GCC) 15.2.1 20260123 (Red Hat 15.2.1-7)		0.296s AVG
 |	2. Python	3.14.5											0.901s AVG

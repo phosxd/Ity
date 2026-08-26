@@ -1,8 +1,5 @@
 #pragma once
 
-// Variable declarations at the end of the file.
-
-
 
 // ExprToken.
 // ----------
@@ -236,58 +233,7 @@ const bool expect_arg_types(const Variant& arg, std::vector<VariantType> types, 
 
 
 
-// Constants.
-// ----------
-
-constexpr STR_t ItyVersionString = "0.2.0";
-// Last number indicates release type:
-//	0 = release.
-//	1 = beta / pre-release.
-//	2 = experimental / custom.
-constexpr INT_t ItyVersion[4] = {0,2,0, 1};
-
-constexpr STR_t OSName =
-#if _WIN32
-	"windows"
-#elif __linux__
-	"linux"
-#elif __APPLE__
-	#include "TargetConditionals.h"
-	#if TARGET_OS_MAC
-		"apple_mac"
-	#elif TARGET_OS_IPHONE
-		"apple_iphone"
-	#endif
-#elif __unix__
-	"unix"
-#elif _POSIX_VERSION
-	"posix"
-#else
-	"unknown"
-#endif
-;
-
-
-const std::string GLOBAL_SHARE_PATH =
-#if _WIN32
-	"%LOCALAPPDATA%/ity/"
-#elif __APPLE__
-	#include "TargetConditionals.h"
-	#if TARGET_OS_MAC
-		"~/Library/Application Support/ity/"
-	#elif TARGET_OS_IPHONE
-		"Documents/ity/"
-	#endif
-#else
-	"/usr/local/share/ity/"
-#endif
-;
-
-
-
-
-// Variables.
-// ----------
+// TODO: move these into ItyState.
 
 unsigned int execution_depth_max = 5000;
 unsigned int execution_depth = 0;

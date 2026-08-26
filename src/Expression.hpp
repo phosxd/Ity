@@ -2,7 +2,7 @@
 
 
 // Call a function.
-Variant call_function(ItyState& state, const FUNC_t& func, Variant& input_args) {
+Variant call_function(ItyState& state, const FUNC_t& func, Variant input_args) {
 	ARR_t args = func.bound_args + AnyCastV(ARR_t,input_args.d);
 
 	if (func.native_callable) {
