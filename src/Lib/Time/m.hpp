@@ -2,7 +2,7 @@
 
 
 static Variant LIB_TI_get_time(ItyState& _state, const ARR_t& args, const unsigned int mode) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return Variant{};
+	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VPS.empty;
 
 	const STR_t& precision = AnyCast(STR_t,args[0].d);
 
@@ -23,7 +23,7 @@ static Variant LIB_TI_get_time(ItyState& _state, const ARR_t& args, const unsign
 	else if (precision == "M")  result = DurCast_M(clock_1-clock_2).count();
 	else if (precision == "y")  result = DurCast_y(clock_1-clock_2).count();
 
-	return Variant{INT, std::move(result)};
+	return Variant{INT, result};
 }
 
 
@@ -39,7 +39,7 @@ static Variant LIB_TI_now(ItyState& state, const ARR_t& args) {return LIB_TI_get
 const Variant LIB_Time {
 	MAP, (MAP_t){
 		{"__name",      Variant{STR, (STR_t)"Time", VariantMode_constant}},
-		{"__safe",      Variant{BOOL, true}},
+		{"__safe",      VPS.bool_true},
 		{"snow",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_TI_snow)},
 		{"now",         NativeFuncTrans(INT,   (NativeFunc_t)LIB_TI_now)},
 	},

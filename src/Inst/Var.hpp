@@ -122,7 +122,7 @@ static void exec(ItyState& state, InstToken& token) {
 	else if (var.t == NONE && var.t != type) {
 		switch (type) {
 			case REF:    {var = Variant{REF, (STR_t)"noneref"}; break;}
-			case BOOL:   {var = VariantPresets.bool_false;      break;}
+			case BOOL:   {var = VPS.bool_false;      break;}
 			case INT:    {var = Variant{INT, (INT_t)0};         break;}
 			case FLOAT:  {var = Variant{FLOAT, (FLOAT_t)0};     break;}
 			case STR:    {var = Variant{STR, (STR_t)""};        break;}

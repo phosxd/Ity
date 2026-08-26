@@ -5,7 +5,7 @@ void OP_Ternary_pre_exec(ItyState& state, Variant*& first, const OpSymbol& symbo
 	Variant* o1 = resovlve_potential_ref(state, first);
 
 	if (symbol == OpSymbol_ternary) {
-		eval_second_operand = *o1 == VariantPresets.bool_true;
+		eval_second_operand = *o1 == VPS.bool_true;
 		if (not eval_second_operand) result = Variant{INTERNAL, std::monostate()};
 	}
 	else {

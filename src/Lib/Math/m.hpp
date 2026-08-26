@@ -3,56 +3,49 @@
 #include <cmath>
 
 
-static Variant LIB_MT_math(ItyState& _state, const ARR_t& args, const std::string& func) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT,FLOAT}, 0)) return Variant{};
+static Variant LIB_MT_abs(ItyState& _state, const ARR_t& args) {
+	if (not ExpectArgs(args, { {INT,FLOAT} })) return VPS.empty;
 	const Variant& var = args[0];
-
-	VariantType type;
-	VariantData data;
-	if (var.t == INT) {
-		const INT_t& d = AnyCast(INT_t,var.d);
-		type = INT;
-		if (func == "abs")         data = std::abs(d);
-		else if (func == "log")    data = (INT_t)std::log(d);
-		else if (func == "sqrt")   data = (INT_t)std::sqrt((double)d);
-	}
-	else if (var.t == FLOAT) {
-		const FLOAT_t& d = AnyCast(FLOAT_t,var.d);
-		type = FLOAT;
-		if (func == "abs")         data = (FLOAT_t)std::abs(d);
-		else if (func == "log")    data = (FLOAT_t)std::log(d);
-		else if (func == "sqrt")   data = (FLOAT_t)std::sqrtf(d);
-	}
-
-	return Variant{std::move(type), std::move(data)};
+	if (var.t == INT) return Variant{INT, std::abs(AnyCast(int32_t,var.d))};
+	return Variant{FLOAT, std::abs(AnyCast(double,var.d))};
 }
 
 
-static Variant LIB_MT_abs    (ItyState& state, const ARR_t& args) {return LIB_MT_math(state, args, "abs");}
-static Variant LIB_MT_log    (ItyState& state, const ARR_t& args) {return LIB_MT_math(state, args, "log");}
-static Variant LIB_MT_sqrt   (ItyState& state, const ARR_t& args) {return LIB_MT_math(state, args, "sqrt");}
+static Variant LIB_MT_log(ItyState& _state, const ARR_t& args) {
+	if (not ExpectArgs(args, { {INT,FLOAT} })) return VPS.empty;
+	const Variant& var = args[0];
+	if (var.t == INT) return Variant{INT, (INT_t)std::log(AnyCast(int32_t,var.d))};
+	return Variant{FLOAT, (FLOAT_t)std::log(AnyCast(double,var.d))};
+}
 
 
-static Variant LIB_MT_round  (ItyState& state, const ARR_t& args) {
-	if (not expect_arg_count(args,1) || not expect_arg_types(args[0], {FLOAT}, 0)) return Variant{};
+static Variant LIB_MT_sqrt(ItyState& _state, const ARR_t& args) {
+	if (not ExpectArgs(args, { {INT,FLOAT} })) return VPS.empty;
+	const Variant& var = args[0];
+	if (var.t == INT) return Variant{INT, (INT_t)std::sqrt((double)AnyCast(int32_t,var.d))};
+	return Variant{FLOAT, std::sqrtf(AnyCast(double,var.d))};
+}
+
+
+// Rounding functions.
+
+static Variant LIB_MT_round(ItyState& state, const ARR_t& args) {
+	if (not ExpectArgs(args, { {FLOAT} })) return VPS.empty;
 	return Variant{INT, (INT_t)std::round(AnyCast(FLOAT_t,args[0].d))};
 }
-static Variant LIB_MT_floor  (ItyState& state, const ARR_t& args) {
-	if (not expect_arg_count(args,1) || not expect_arg_types(args[0], {FLOAT}, 0)) return Variant{};
+static Variant LIB_MT_floor(ItyState& state, const ARR_t& args) {
+	if (not ExpectArgs(args, { {FLOAT} })) return VPS.empty;
 	return Variant{INT, (INT_t)std::floor(AnyCast(FLOAT_t,args[0].d))};
 }
-static Variant LIB_MT_ceil   (ItyState& state, const ARR_t& args) {
-	if (not expect_arg_count(args,1) || not expect_arg_types(args[0], {FLOAT}, 0)) return Variant{};
+static Variant LIB_MT_ceil(ItyState& state, const ARR_t& args) {
+	if (not ExpectArgs(args, { {FLOAT} })) return VPS.empty;
 	return Variant{INT, (INT_t)std::ceil(AnyCast(FLOAT_t,args[0].d))};
 }
 
 
+// Power.
 static Variant LIB_MT_pow(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2)
-	|| not expect_arg_types(args[0], {INT,FLOAT}, 0)
-	|| not expect_arg_types(args[1], {INT,FLOAT}, 1))
-	return Variant{};
-
+	if (not ExpectArgs(args, { {INT,FLOAT}, {INT,FLOAT} })) return VPS.empty;
 	return Variant{
 		FLOAT, (FLOAT_t)std::pow(
 			args[0].to_float(),
@@ -62,6 +55,7 @@ static Variant LIB_MT_pow(ItyState& _state, const ARR_t& args) {
 }
 
 
+// Sum.
 static Variant LIB_MT_sum(ItyState& _state, const ARR_t& args) {
 	FLOAT_t sum = 0.0;
 	VariantType type = INT;
@@ -84,10 +78,7 @@ static Variant LIB_MT_sum(ItyState& _state, const ARR_t& args) {
 
 // Return a random number in range of `min` & `max` integer arguments.
 static Variant LIB_MT_rand(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2)
-		|| not expect_arg_types(args[0], {INT}, 0)
-		|| not expect_arg_types(args[1], {INT}, 1)
-	) return Variant{};
+	if (not ExpectArgs(args, { {INT}, {INT} })) return VPS.empty;
 
 	const INT_t& min = AnyCast(INT_t,args[0].d);
 	const INT_t& max = AnyCast(INT_t,args[1].d);
@@ -98,7 +89,7 @@ static Variant LIB_MT_rand(ItyState& _state, const ARR_t& args) {
 
 // Return a random number in range of `min` & `max` integer arguments.
 static Variant LIB_MT_set_seed(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT}, 0)) return Variant{};
+	if (not ExpectArgs(args, { {INT} })) return VPS.empty;
 
 	const INT_t& seed = AnyCast(INT_t,args[0].d);
 	std::srand(seed);
@@ -115,11 +106,11 @@ static Variant LIB_MT_set_seed(ItyState& _state, const ARR_t& args) {
 const Variant LIB_Math {
 	MAP, (MAP_t){
 		{"__name",     Variant{STR, (STR_t)"Math", VariantMode_constant}},
-		{"__safe",     Variant{BOOL, true}},
+		{"__safe",     VPS.bool_true},
 		{"abs",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_MT_abs)},
-		{"round",      NativeFuncTrans(ANY,    (NativeFunc_t)LIB_MT_round)},
-		{"floor",      NativeFuncTrans(ANY,    (NativeFunc_t)LIB_MT_floor)},
-		{"ceil",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_MT_ceil)},
+		{"round",      NativeFuncTrans(INT,    (NativeFunc_t)LIB_MT_round)},
+		{"floor",      NativeFuncTrans(INT,    (NativeFunc_t)LIB_MT_floor)},
+		{"ceil",       NativeFuncTrans(INT,    (NativeFunc_t)LIB_MT_ceil)},
 		{"log",        NativeFuncTrans(ANY,    (NativeFunc_t)LIB_MT_log)},
 		{"sqrt",       NativeFuncTrans(ANY,    (NativeFunc_t)LIB_MT_sqrt)},
 		{"pow",        NativeFuncTrans(FLOAT,  (NativeFunc_t)LIB_MT_pow)},

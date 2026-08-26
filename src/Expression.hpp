@@ -545,8 +545,8 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 	Variant* result = nullptr;
 	Variant* second = nullptr;
 	// Pre initialized variables.
-	Variant pre_exec_result = VariantPresets.empty;
-	Variant op_result = VariantPresets.empty;
+	Variant pre_exec_result = VPS.empty;
+	Variant op_result = VPS.empty;
 
 	const OpDef* op_def = nullptr;
 	for (size_t i = 0; i < seq_len; i++) {

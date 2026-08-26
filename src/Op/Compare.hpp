@@ -5,12 +5,12 @@ void OP_Compare_pre_exec(ItyState& state, Variant*& first, const OpSymbol& symbo
 	Variant* o1 = resovlve_potential_ref(state, first);
 
 	if (symbol == OpSymbol_cmp_and) {
-		eval_second_operand = *o1 == VariantPresets.bool_true;
-		result = VariantPresets.bool_false;
+		eval_second_operand = *o1 == VPS.bool_true;
+		result = VPS.bool_false;
 	}
 	else if (symbol == OpSymbol_cmp_or) {
-		eval_second_operand = *o1 == VariantPresets.bool_false;
-		result = VariantPresets.bool_true;
+		eval_second_operand = *o1 == VPS.bool_false;
+		result = VPS.bool_true;
 	}
 }
 
@@ -27,8 +27,8 @@ void OP_Compare_exec(ItyState& state, Variant*& first, Variant*& second, const O
 		case OpSymbol_cmp_lt:   {test = *o1 < *o2;         break;}
 		case OpSymbol_cmp_gteq: {test = *o1 == *o2 || *o1 > *o2; break;}
 		case OpSymbol_cmp_lteq: {test = *o1 == *o2 || *o1 < *o2; break;}
-		case OpSymbol_cmp_and:  {test = *o1 == VariantPresets.bool_true && *o2 == VariantPresets.bool_true; break;}
-		case OpSymbol_cmp_or:   {test = *o1 == VariantPresets.bool_true || *o2 == VariantPresets.bool_true; break;}
+		case OpSymbol_cmp_and:  {test = *o1 == VPS.bool_true && *o2 == VPS.bool_true; break;}
+		case OpSymbol_cmp_or:   {test = *o1 == VPS.bool_true || *o2 == VPS.bool_true; break;}
 		default: break;
 	}
 

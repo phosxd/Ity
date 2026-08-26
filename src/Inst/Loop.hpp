@@ -8,8 +8,8 @@ static void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const 
 		(STR_t)"", // For loop item var name.
 		(size_t)0, // For loop item hashed var name.
 		(ARR_t){
-			VariantPresets.empty, // For loop iterable.
-			VariantPresets.empty, // For loop current item in iterable.
+			VPS.empty, // For loop iterable.
+			VPS.empty, // For loop current item in iterable.
 		},
 		(UINT_t)0,  // For loop iteration index.
 	};
@@ -147,7 +147,7 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 		}
 
 		// Reset token state.
-		token.meta[3] = (ARR_t){VariantPresets.empty, VariantPresets.empty};
+		token.meta[3] = (ARR_t){VPS.empty, VPS.empty};
 		token.meta[4] = (UINT_t)0;
 		return;
 	}
@@ -181,7 +181,7 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 static void INST_Loop_emergency_scope_exit(InstToken*& token) {
 	// Reset token state.
 	token->meta[0] = false;
-	token->meta[3] = (ARR_t){VariantPresets.empty, VariantPresets.empty};
+	token->meta[3] = (ARR_t){VPS.empty, VPS.empty};
 	token->meta[4] = (UINT_t)0;
 }
 

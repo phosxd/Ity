@@ -217,7 +217,7 @@ struct ItyState {
 	ItyScope scope;
 	UINT_t scope_current_id = 0;
 
-	Variant last_expr_result = VariantPresets.empty;
+	Variant last_expr_result = VPS.empty;
 	// Instruction jump values.
 	int exec_jump_value = 0;
 	bool exec_jump_out = false;
@@ -248,7 +248,7 @@ struct ItyState {
 		scope.d.push_back({string_hasher("__OS_NAME__"),              Variant{STR,  (STR_t)OSName, VariantMode_constant}});
 		scope.d.push_back({string_hasher("__HAS_RUNTIME_DEBUG__"),    Variant(BOOL, has_runtime_debug, VariantMode_constant)});
 		scope.d.push_back({string_hasher("__CMD_ARGS__"),             Variant{ARR,  ARGS, VariantMode_constant}});
-		scope.d.push_back({string_hasher("__IMPORTED__"),             Variant{BOOL, false, VariantMode_constant}});
+		scope.d.push_back({string_hasher("__IMPORTED__"),             VPS.bool_false});
 		// Merge built-in library.
 		scope.merge_module(AnyCast(MAP_t,((Variant*)LIB_BI_G)->d));
 		scope.in(scope_current_id); // Keep built-ins a scope higher than everything else.

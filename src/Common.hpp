@@ -198,7 +198,7 @@ struct VariantPresets_struct {
 	const Variant bool_true   {BOOL, true, VariantMode_constant};
 	const Variant bool_false  {BOOL, false, VariantMode_constant};
 };
-const VariantPresets_struct VariantPresets;
+const VariantPresets_struct VPS;
 
 
 // Translate a native function to a usable function object.
@@ -228,6 +228,16 @@ const bool expect_arg_types(const Variant& arg, std::vector<VariantType> types, 
 	if (exists_in_vec(types, arg.t)) return true;
 	emit_error(ERR_invalid_func_arg_type, {std::to_string(arg_idx), multiple_types_str(types), get_variant_type_name(arg.t)});
 	return false;
+}
+
+
+const bool ExpectArgs(const ARR_t& args, const std::vector<std::vector<VariantType>> types) {
+	if (not expect_arg_count(args, types.size())) return false;
+	size_t i = 0; for (const Variant& arg : args) {
+		if (not expect_arg_types(arg, types[i], i)) return false;
+		i++;
+	}
+	return true;
 }
 
 

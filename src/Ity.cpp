@@ -470,7 +470,7 @@ void start_shell(int argc, char* argv[]) {
 			}
 
 			command += INST_END_SYMBOL;
-			state.last_expr_result = VariantPresets.empty;
+			state.last_expr_result = VPS.empty;
 
 			// Tokenize the command.
 			std::vector<InstToken> sequence = Ity::tokenize(command);

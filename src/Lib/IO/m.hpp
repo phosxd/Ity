@@ -20,14 +20,14 @@ static void LIB_IO_on_signal_received(const int sig) {
 
 // Connect a system signal to a function.
 static Variant LIB_IO_signal(ItyState& state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2) || not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {FUNC}, 1)) return Variant{};
+	if (not expect_arg_count(args, 2) || not expect_arg_types(args[0], {INT}, 0) || not expect_arg_types(args[1], {FUNC}, 1)) return VPS.empty;
 	const uint8_t signal_number = (uint8_t)AnyCast(INT_t,args[0].d);
 
 	LIB_IO_state = &state;
 	if (LIB_IO_signal_functions[signal_number].size() == 0) signal(signal_number, LIB_IO_on_signal_received);
 	LIB_IO_signal_functions[signal_number].push_back(AnyCast(FUNC_t,args[1].d));
 
-	return Variant{};
+	return VPS.empty;
 }
 
 
@@ -35,7 +35,7 @@ static Variant LIB_IO_signal(ItyState& state, const ARR_t& args) {
 
 // Wait for then return a response.
 static Variant LIB_IO_in(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 0)) return Variant{};
+	if (not expect_arg_count(args, 0)) return VPS.empty;
 	std::string input_line;
 	std::getline(std::cin, input_line);
 	return Variant{STR, (STR_t)input_line};
@@ -44,7 +44,7 @@ static Variant LIB_IO_in(ItyState& _state, const ARR_t& args) {
 
 // Wait for a key press then return it.
 static Variant LIB_IO_key_in(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 0)) return Variant{};
+	if (not expect_arg_count(args, 0)) return VPS.empty;
 
 	// These are both hacky solutions but it gets the job done.
 	#ifdef _WIN32
@@ -70,7 +70,7 @@ static Variant LIB_IO_key_in(ItyState& _state, const ARR_t& args) {
 static Variant LIB_IO_out(ItyState& state, const ARR_t& args) {
 	for (const Variant& var : args) std::cout << var;
 	std::cout << std::flush; // Instantly print to the screen.
-	return Variant{};
+	return VPS.empty;
 }
 
 
@@ -78,7 +78,7 @@ static Variant LIB_IO_out(ItyState& state, const ARR_t& args) {
 static Variant LIB_IO_err(ItyState& _state, const ARR_t& args) {
 	for (const Variant& var : args) std::cerr << var;
 	std::cerr << std::flush;
-	return Variant{};
+	return VPS.empty;
 }
 
 
@@ -86,7 +86,7 @@ static Variant LIB_IO_err(ItyState& _state, const ARR_t& args) {
 static Variant LIB_IO_print(ItyState& state, const ARR_t& args) {
 	for (const Variant& var : args) std::cout << var;
 	std::cout << '\n' << std::flush;
-	return Variant{};
+	return VPS.empty;
 }
 
 
@@ -105,7 +105,7 @@ static Variant LIB_IO_prompt(ItyState& state, const ARR_t& args) {
 const Variant LIB_IO {
 	MAP, (MAP_t){
 		{"__name",  Variant{STR, (STR_t)"IO", VariantMode_constant}},
-		{"__safe",  Variant{BOOL, true}},
+		{"__safe",  VPS.bool_true},
 
 		// System signals.
 		{"SIGNAL", Variant{
