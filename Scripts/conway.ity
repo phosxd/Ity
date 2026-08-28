@@ -109,7 +109,7 @@ GAME.init:[];
 
 
 while true;
-	const INT start_time = Time.now:'ms';
+	const INT start_time = Time.now.ms;
 
 	# Tick once.
 	GAME.next:[];
@@ -133,7 +133,7 @@ while true;
 
 
 	# Calculate time taken to run.
-	const INT delta = (Time.now:'ms' - start_time);
+	const INT delta = (Time.now.ms - start_time);
 	const FLOAT sleep_time = (FPS_ms-delta) / 1_000.0;
 
 	# Print seed.

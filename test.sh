@@ -1028,8 +1028,8 @@ for i in 3;
 merge IO;
 
 func NONE do_modification; arg REF obj;
-	if type:[~obj] != ARR;
-		throw 'Invalid reference value, expected array, got ' + (type_name:~obj) + '.';
+	if obj.type:[] != ARR;
+		throw 'Invalid reference value, expected ARR, got ' + (type_name:(obj.type:[])) + '.';
 	/;
 	obj += [3]; # Add an item to the referenced array.
 /;

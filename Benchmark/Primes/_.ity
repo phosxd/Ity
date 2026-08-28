@@ -23,7 +23,7 @@ func BOOL is_prime; arg INT n;
 
 
 const count = prompt:'Count: ' -> INT;
-const INT start = now:'us';
+const INT start = now.us;
 
 
 for p in count;
@@ -32,4 +32,4 @@ for p in count;
 /;
 
 
-print:['\nDone in ', (now:'us'-start / 1_000_000.0), 's.'];
+print:['\nDone in ', (now.us-start / 1_000_000.0), 's.'];

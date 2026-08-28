@@ -10,7 +10,7 @@ static Variant LIB_BI_set_max_depth(ItyState* _state, const ARR_t& args) {
 		emit_error(ERR_disallowed_member_in_safe_mode, {"set_max_depth"});
 		return VPS.empty;
 	}
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT}, 0)) return VPS.empty;
+	if (not ExpectArgs(args, { {INT} })) return VPS.empty;
 
 	const INT_t& count = AnyCast(INT_t,args[0].d);
 	execution_depth_max = count;
@@ -24,7 +24,7 @@ static Variant LIB_BI_system(ItyState& _state, const ARR_t& args) {
 		emit_error(ERR_disallowed_member_in_safe_mode, {"system"});
 		return VPS.empty;
 	}
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VPS.empty;
+	if (not ExpectArgs(args, { {STR} })) return VPS.empty;
 
 	const char* command = AnyCast(STR_t,args[0].d).c_str();
 	return Variant{INT, (INT_t)system(command)};
@@ -33,7 +33,7 @@ static Variant LIB_BI_system(ItyState& _state, const ARR_t& args) {
 
 // Pause thread execution for the given number of seconds.
 static Variant LIB_BI_sleep(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {INT, FLOAT}, 0)) return VPS.empty;
+	if (not ExpectArgs(args, { {INT,FLOAT} })) return VPS.empty;
 	const Variant& var = args[0];
 
 	FLOAT_t sleep_time = 0;
@@ -50,15 +50,15 @@ static Variant LIB_BI_sleep(ItyState& _state, const ARR_t& args) {
 
 // Return `true` if the name is defined in the current scope.
 static Variant LIB_BI_is_defined(ItyState& state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VPS.empty;
+	if (not ExpectArgs(args, { {STR} })) return VPS.empty;
 	return Variant{BOOL, (state.scope.get_data_globally(AnyCast(STR_t,args[0].d)) != nullptr)};
 }
 
 
 // Return the type of the given Variant, in string form.
 static Variant LIB_BI_type_name(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VPS.empty;
-	return Variant{STR, get_variant_type_name(args[0].t)};
+	if (not ExpectArgs(args, { {INT} })) return VPS.empty;
+	return Variant{STR, get_variant_type_name((VariantType)AnyCast(INT_t,args[0].d))};
 }
 
 
@@ -71,7 +71,7 @@ static Variant LIB_BI_type(ItyState& _state, const ARR_t& args) {
 
 // Return the length of the given array or string.
 static Variant LIB_BI_length(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR,ARR}, 0)) return VPS.empty;;
+	if (not ExpectArgs(args, { {ARR,STR} })) return VPS.empty;
 	size_t size = 0;
 
 	switch (args[0].t) {
@@ -134,7 +134,7 @@ static Variant LIB_BI_range(ItyState& _state, const ARR_t& args) {
 
 // Reassign reference address.
 static Variant LIB_BI_tm_ref_reassign(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {REF}, 1)) return VPS.empty;
+	if (not ExpectArgs(args, { {PTR}, {REF} })) return VPS.empty;
 	// Get data.
 	Variant* data = AnyCastV(Variant*,args[0].d);
 	// Throw error if data is constant.
@@ -146,6 +146,21 @@ static Variant LIB_BI_tm_ref_reassign(ItyState& _state, const ARR_t& args) {
 	data->d = AnyCastV(STR_t,args[1].d);
 	return VPS.empty;
 }
+
+
+// Get referenced data type.
+static Variant LIB_BI_tm_ref_type(ItyState& state, const ARR_t& args) {
+	if (not ExpectArgs(args, { {PTR} })) return VPS.empty;
+	// Get data.
+	Variant* data = AnyCastV(Variant*,args[0].d);
+	// Return type.
+	if (data->t == PTR) return Variant{INT, (INT_t)AnyCast(Variant*,data->d)->t};
+	const Variant* var = state.scope.get_data_globally(AnyCast(STR_t,data->d));
+	if (not var) return Variant{INT, (INT_t)NONE};
+	return Variant{INT, (INT_t)var->t};
+}
+
+
 
 
 // String.
@@ -231,6 +246,8 @@ static Variant LIB_BI_tm_arr_reserve(ItyState& _state, ARR_t& args) {
 }
 
 
+
+
 // Map.
 // ----
 
@@ -286,6 +303,8 @@ static Variant LIB_BI_tm_map_set(ItyState& _state, ARR_t& args) {
 }
 
 
+
+
 // Function.
 // ---------
 
@@ -311,13 +330,15 @@ static Variant LIB_BI_tm_func_bind(ItyState& _state, ARR_t& args) {
 const Variant LIB_BI {
 	MAP, (MAP_t){
 		{"__name",  Variant{STR, (STR_t)"BI", VariantMode_constant}},
-		{"__safe",  Variant{BOOL, true}},
+		{"__safe",  VPS.bool_true},
 
 
 		// Type methods.
 		{"__tm", Variant{
 			MAP, (MAP_t){
-				{"REF:reassign", NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_tm_ref_reassign)},
+				{"REF:reassign",  NativeFuncTrans(NONE, (NativeFunc_t)LIB_BI_tm_ref_reassign)},
+				{"REF:type",      NativeFuncTrans(INT,  (NativeFunc_t)LIB_BI_tm_ref_type)},
+				{"PTR:type",      NativeFuncTrans(INT,  (NativeFunc_t)LIB_BI_tm_ref_type)},
 
 				{"STR:raw",     NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_tm_str_raw)},
 				{"ARR:erase",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
@@ -356,10 +377,10 @@ const Variant LIB_BI {
 
 		{"system",      NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_system)},
 		{"sleep",       NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_sleep)},
-		{"type_name",   NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_type_name)},
 		{"is_defined",  NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_BI_is_defined)},
 		{"type",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type)},
-		{"length",      NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_length)},
+		{"type_name",   NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_type_name)},
+		{"length",      NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_length)},
 		{"size",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)},
 		{"range",       NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_range)},
 

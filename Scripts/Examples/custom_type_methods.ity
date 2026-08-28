@@ -6,9 +6,9 @@ func NONE my_STR_method; arg PTR obj; arg INT times = 1;
 	# Pointer to the object the method was called on can be used.
 	# If you know for certain that you will only be calling this function as a method for a specific type, you can skip the type check.
 
-	if type:~obj != STR; # Very important: `obj` is of type `PTR`, we need to get the actual value it is holding & check *that* type. We use `~` to do that.
+	if obj.type:[] != STR;
 		throw 'Invalid type.';
-	/;;
+	/;
 
 	# Pointers can be used just as if they are the value it is representing.
 	obj += (' Hello World!' * times);
