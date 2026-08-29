@@ -49,7 +49,7 @@ E.g. `NONE` = "NONE"
 # Standard Global Functions
 
 ### INT system (STR command)
-A function that runs a system command string then returns the exit status code.
+Run a system command string then return the exit status code.
 
 ```python
 system:'echo Hello World!'; # Returns 0.
@@ -59,35 +59,25 @@ system:'NonExistentCommand'; # Returns 32512.
 ```
 
 ### NONE sleep (INT/FLOAT seconds)
-A function that pauses thread execution by the given number of seconds.
+Pause thread execution by the given number of seconds.
 
 ```python
 sleep:1; # Pause for 1 second.
 sleep:0.5; # Pause for half of a second.
 ```
 
-### STR type_name (ANY var)
-A function that returns a `STR` representing the active type of a given variable.
+### STR type_name (INT type)
+Return a `STR` representation of the given type number .
 
 ```python
-type_name:'Hello World!'; # Returns "STR".
+type_name:(type:'Hello World!'); # Returns "STR".
 
-
-merge IO;
-
-var ANY var = 4; # Var is INT.
-const STR var_type = type_name:var;
-
-if (var_type == 'INT') || (var_type == 'FLOAT');
-	print:'Var is a number!';
-/;
-elif var_type == 'STR';
-	print:'Var is a string!';
-/;
+const INT type_value = type:123;
+type_name:type_value; # Returns "INT".
 ```
 
 ### INT type (ANY var)
-A function that returns an `INT` representing the active type of a given variable. Equal to built-in type constants (E.g. `BOOL`, `INT`, `FLOAT`, etc).
+Return an `INT` representing the active type of a given variable. Equal to built-in type constants (E.g. `BOOL`, `INT`, `FLOAT`, etc).
 
 The literal `INT` value returned by `type` should not be relied upon as they may vary across different versions of Ity. Always compare against the type constants or use `type_name`.
 
@@ -102,7 +92,7 @@ if type:'string' == STR;
 ```
 
 ### INT length (ARR/STR var)
-A function that returns an `INT` representing the length of the given `ARR` / `STR` variable.
+Return an `INT` representing the length of the given `ARR` / `STR` variable.
 
 ```python
 length:'Hello World!'; # Returns 12.
@@ -110,7 +100,7 @@ length:[[1,2,3,4]]; # Returns 4.
 ```
 
 ### INT size (ANY var)
-A function that returns an `INT` representing the size (in bytes) of a given variable. Including variant type & mode data (2 bytes extra).
+Return an `INT` representing the size (in bytes) of a given variable. Including variant type & mode data (2 bytes extra).
 
 ```python
 size:0;              # Returns 4 (32-bit int) + 2 (type & mode info).
@@ -145,6 +135,18 @@ ref.reasssign:@b; # Now references `b`.
 
 const c_ref = @a;
 ref.reassign:@b; # Fails, `c_ref` is permanently linked to `a`.
+```
+
+### INT `REF`.type ()
+Return the data's type referenced by the `REF` or `PTR`.
+
+```python
+var a = 99;
+var REF = @a;
+
+type:ref == REF; # True, checking type of the REF itself.
+ref.type:[] == REF; # False, data is INT.
+
 ```
 
 ### INT `STR`.raw ()
