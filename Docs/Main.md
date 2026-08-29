@@ -1,14 +1,13 @@
 Ity is a simple language compared to the larger languages like Python, C++, & even JavaScript. This means a lot of advanced features you would normally see in those languages don't exist here, in this part of town we call that  **B L O A T**.
 
-The language is however still meant to be a real alternative, so all the essentials are here & are designed to be as readable & usable as possible.
+The language is however still meant to be a real alternative, so all the essentials are here & are designed to be both readable, usable, & practical.
 
 After reading, or even before, I highly suggest looking at some of the example scripts in the repository. Pick apart what you can from the examples & try making something on your own!
 As a little challenge, try one of these starter projects:
 - Print a readable & formatted current date using the `IO` & `Time` modules. The time module only provides an integer representing the current time, good luck!
 - Command line utility that sorts then returns every given argument in alphabetical order.
 
-
-Each instruction & expression is separated by a semi-colon `;` character. Some instructions may require white space separation between sections (E.g. `var INT x=1`). `var` & `INT` require a space, otherwise they would be treated as a single string.
+Each statement is separated by a semi-colon `;` character. Some instructions may require white space separation between sections (E.g. `var INT x=1`). `var` & `INT` require a space, otherwise they would be treated as a single string.
 
 
 # Comments
@@ -18,6 +17,8 @@ Comments are defined by the "#" character. When a comment is defined, all charac
 # This is a comment
 "# this is not a comment, we're in a string";
 ```
+
+The reason for using a "#" character instead of "//" or "/\*" is because it's simple, plays nicely with [shebangs](https://en.wikipedia.org/wiki/Shebang_%28Unix%29) while being familiar.
 
 # Expressions
 
@@ -220,7 +221,7 @@ Holds a reference to a variable stored in the scope. This will act exactly like 
 
 `PTR` is more of an internal type which should not be used if possible. The only time is should be used is when it is fully required, usually in type methods & iterator functions.
 
-Setting, accessing, comparing, or in any way operating on a pointer will always apply to the referenced variable, not the reference itself. Think of it as the 2 variables are hard-linked. This makes it really convenient to work with.
+Setting, accessing, comparing, or in any way operating on a pointer will most of the time apply to the referenced variable, not the reference itself. Think of it as the 2 variables are hard-linked. This makes it really convenient to work with.
 
 ```python
 merge IO;
@@ -232,12 +233,13 @@ print:~my_ref; # Prints 100.
 my_var = 101;
 print:~my_ref; # Prints 101.
 my_ref = 99;
+print:my_ref; # Prints "REF:my_var".
 print:my_var; # Prints 99.
 
-# my_ref & my_var are essentially interchangable.
+# my_ref & my_var are essentially interchangable in most cases.
 ```
 
-You can dereference a `REF` by using the `~` symbol. This is useful for getting the *actual* type a reference is holding.
+You can dereference a `REF` or `PTR` by using the `~` (tilda) symbol.
 
 ```python
 merge IO;
@@ -254,8 +256,9 @@ print:deref; # Prints 0.
 print:~my_ref; # Reference remains unchanged. Prints 100.
 
 # Get type of referenced value in pointer.
-print:(type_name:my_ref); # Prints "REF", that's not what we want.
-print:(type_name:~my_ref); # Prints "INT", the actual held value type.
+print:(type_name:(type:my_ref)); # Prints "REF", that's not what we want.
+print:(type_name:(type:~my_ref)_); # Prints "INT", the actual held value type.
+print:(type_name:(my_ref.type:[])); # Prints "INT", this is better for performance, not passing a copy of the value to the `type` function.
 ```
 
 To reassign the reference you can use the `reassign` type method.
@@ -272,7 +275,7 @@ my_ref.reassign:@b;
 print:~my_ref; # Prints "b".
 ```
 
-If the referenced value ever gets destroyed or goes out of scope, then the `REF` will be reset to the default `noneref`.
+If the referenced value ever gets destroyed or goes out of scope, then the `REF` will be reset to reference `none`.
 
 ```python
 merge IO;
@@ -309,11 +312,11 @@ An operator takes 2 variants & processes them to make a new value in an expressi
 
 ## Arithmetic
 ### +
-Add to a value. This works on numbers, arrays, & strings.
+Add to a value. This works on numbers, arrays, maps & strings.
 ### -
 Subtract from a value. Only works on numbers.
 ### \*
-Multiply a value. This works on numbers, arrays, & strings.
+Multiply a value. This works on numbers, arrays & strings.
 ### /
 Divide a value. Only works on numbers.
 ### %
@@ -679,10 +682,11 @@ func NONE recurse; arg n = 0;
 recurse:[];
 ```
 
-Using `exit` will quit the program with exit code `0` & print nothing.
+Using `exit` will quit the program with the given exit code (default `0`).
 
 ```python
 exit;
+exit 1; # Exit with code 1.
 ```
 
 ## Import / Merge
@@ -743,7 +747,7 @@ Libraries enable you to actually do more complex things with relative ease, here
 - [FileAccess](Lib/FileAccess.md)
 
 Script-based modules (not built-into the interpreter binary):
-- [ANSI](Lib/ANSI.md)
+- [ANSI](Lib/ANSI)
 - [StrUtil](Lib/StrUtil.md)
 - [ArrUtil](Lib/ArrUtil.md)
 - [RangeIterator](Lib/RangeIterator.md)
