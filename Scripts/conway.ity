@@ -53,13 +53,18 @@ func NONE _game_init;
 
 
 func NONE _game_next;
+	if GAME.stable; return; /;
+	GAME.last_frame <<= (GAME.frame);
+	GAME.alive_count = 0;
+	GAME.generation += 1;
+
 	const INT w = WORLD_SIZE.x;
 	var ARR buf = GAME.cells; # Copy cells into writable buffer.
 	for i in GAME.cell_count;
 		if is_cell_border:i; continue; /;
 
 		# Count neighboring cells...
-		const neighbors = Math.sum:[
+		const INT neighbors = Math.sum:[
 			(GAME.cells:(i-1)),
 			(GAME.cells:(i-w-1)),
 			(GAME.cells:(i+w-1)),
@@ -79,17 +84,29 @@ func NONE _game_next;
 		elif neighbors == 3;
 			buf:i = 1;
 		/;
+
+		# Put cell into frame buffer.
+		if (buf:i == 1);
+			GAME.alive_count += 1;
+			GAME.frame += CELL_ON;
+		/;
+		else; GAME.frame += CELL_OFF; /;
+		if GAME.cell_x:(i+2) == 0;
+			GAME.frame += '\n';
+		/;
 	/;
+
 	# Move buffer to the main game cell array, overwriting the data previously there.
 	GAME.cells <<= buf;
+	if GAME.frame == (GAME.last_frame); GAME.stable = true; /;
 /;
 
 
-func BOOL is_cell_border; arg INT i;
-	return (WORLD_SIZE.x > i)
-	|| (GAME.cell_x:i == 0)
-	|| (GAME.cell_x:(i+1) == 0)
-	|| (i > (GAME.cell_count-(WORLD_SIZE.x)));
+func BOOL is_cell_border; arg INT i_;
+	return (WORLD_SIZE.x > i_)
+	|| (GAME.cell_x:i_ == 0)
+	|| (GAME.cell_x:(i_+1) == 0)
+	|| (i_ > (GAME.cell_count-(WORLD_SIZE.x)));
 /;
 
 
@@ -97,9 +114,15 @@ func BOOL is_cell_border; arg INT i;
 const MAP GAME = {
 	'init', _game_init,
 	'next', _game_next,
-	'cells', [],
 	'cell_x', [],
 	'cell_count', 0,
+
+	'stable', false,
+	'generation', 0,
+	'alive_count', 0,
+	'frame', '',
+	'last_frame', '',
+	'cells', [],
 };
 
 
@@ -111,33 +134,24 @@ GAME.init:[];
 while true;
 	const INT start_time = Time.now.ms;
 
-	# Tick once.
+	# Tick game.
 	GAME.next:[];
 
-	# Render world...
-	var STR frame;
-	var i = -1;
-	for cell in GAME.cells; i+=1;
-		if is_cell_border:i; continue; /;
-		frame += (cell == 1 ? CELL_ON -- CELL_OFF);
-		if GAME.cell_x:(i+2) == 0;
-			frame += '\n';
-		/;
-	/;
 	# Clear screen then print frame.
 	out:[
 		'\e[H\e[0J',
 		(ANSI.reset),
-		frame,
+		(GAME.frame),
 	];
-
 
 	# Calculate time taken to run.
 	const INT delta = (Time.now.ms - start_time);
 	const FLOAT sleep_time = (FPS_ms-delta) / 1_000.0;
 
-	# Print seed.
-	out:['Seed: ',SEED_in,'  |  '];
+	# Print details.
+	out:['Seed: ',SEED_in,' | '];
+	out:['Gen: ',(GAME.generation),' | '];
+	out:['Alive: ',(GAME.alive_count),' | '];
 	# Print frame time info.
 	out:'Frame time: ';
 	(sleep_time <= 0) ? (out:(ANSI.fg_red)) -- (out:(ANSI.fg_green));
