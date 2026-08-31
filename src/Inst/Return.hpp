@@ -36,5 +36,6 @@ const Instruction* INST_Return = new Instruction{
 	.REQUIRED = 1,
 	.exec = INST_Return_exec,
 	.has_expr = true,
+	.clear_args = true,
 	.processor = INST_Return_processor
 };

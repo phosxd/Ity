@@ -69,5 +69,6 @@ const Instruction* INST_If = new Instruction{
 	.exec = INST_If_exec,
 	.is_composite = true,
 	.has_expr = true,
+	.clear_args = true,
 	.processor = INST_If_processor
 };

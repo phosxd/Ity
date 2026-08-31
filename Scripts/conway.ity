@@ -86,11 +86,7 @@ func NONE _game_next;
 		/;
 
 		# Put cell into frame buffer.
-		if (buf:i == 1);
-			GAME.alive_count += 1;
-			GAME.frame += CELL_ON;
-		/;
-		else; GAME.frame += CELL_OFF; /;
+		(buf:i == 1) ? ((GAME.alive_count += 1),(GAME.frame += CELL_ON)) -- (GAME.frame += CELL_OFF);
 		if GAME.cell_x:(i+2) == 0;
 			GAME.frame += '\n';
 		/;

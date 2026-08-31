@@ -26,11 +26,11 @@ Ity is a work-in-progress, light-weight & embeddable interpreted programming lan
 
 
 # Features
-- **Tiny & portable.** < 150KB executable. All self-contained.
+- **Tiny & portable.** 124KB executable. All self-contained.
 - **Efficient memory usage.** 400KB runtime (Python: 11.2MB, Node: 45MB, Bash: 3.2MB).
-- **Platform agnostic.** No platform dependent code.
+- **Platform agnostic.** No platform dependent source code.
 - **No build setup.** Requires no third-party libraries.
-- **Practical.** I/O, file management, time, & math modules all built-in.
+- **Practical.** I/O, file management, time, & math modules all built-in. With many more pre-built opt-in modules.
 - **Modular.** Designed to be torn apart & pieced back together.
 - **Extendible.** Build your own modules in Ity itself to extend your capability.
 
@@ -65,10 +65,11 @@ You can pass flags to the build script.
 
 ## Optimization profiles
 As mentioned in the flags section, you can choose from 3 optimization profiles. Balanced is the default & is what is used for benchmarks, but it is not the most performant.
-If you're looking to get the most speed out of Ity, use the "speed" profile which increases overall speed by about 23% but comes at the cost of a slightly larger binary (still under 200kb).
-On the other hand, if you are *really* constrained with file size & are willing to deal with an about 19% slower runtime then you can use the "size" profile, which decreases the final binary size to somehwere around 82-85kb.
+If you're looking to get the most speed out of Ity, use the "speed" profile which increases overall speed by about 28% but comes at the cost of a slightly larger binary (still under 250kb).
+On the other hand, if you are *really* constrained with file size & are willing to deal with an about 9% slower runtime then you can use the "size" profile, which decreases the final binary size to almost exactly 100kb.
 
 The overall differences between each profile is largely insignificant in most real-word cases, so unless you are working with tight constraints I wouldn't worry about changing the optimization profile.
+Modifying the source code to remove built-ins or even entire operators & instructions that you don't use in your codebase, will probably be much more valuable if you need to make the most of every kilobyte.
 
 ## Installation
 You can install Ity on your system as a command called `ity` by running the `install.sh` script.
@@ -134,17 +135,17 @@ Flags:
 
 - `-d` or `--d-full`:
 	Enable all debug flags.
-- `-d-result`:
+- `--d-result`:
 	Print program times & other information when completed.
-- `-d-inst`:
+- `--d-inst`:
 	Print instructions as InstTokens as they're executed.
-- `-d-expr`:
+- `--d-expr`:
 	Print expressions as ExprTokens as they're executed.
-- `-d-expr-result`:
+- `--d-expr-result`:
 	Print results from expressions as soon as they are executed.
-- `-d-assign-data`:
+- `--d-assign-data`:
 	Print "set_data" calls on the current state.
-- `-d-scoping`:
+- `--d-scoping`:
 	Print scope in/out/alt calls.
 
 - `-t=` or `--tabs=*`:

@@ -258,6 +258,8 @@ std::vector<InstToken> tokenize(const std::string& src) {
 								return sequence;
 							}
 						}
+						// Clear arguments from memory if instruction specification says so.
+						if (inst->clear_args) item.args.clear();
 					}
 					// Instruction is a standalone expression.
 					else {

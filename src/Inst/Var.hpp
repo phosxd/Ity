@@ -144,5 +144,6 @@ static void exec(ItyState& state, InstToken& token) {
 const Instruction* INST_Var = new Instruction{
 	.REQUIRED = 2,
 	.exec = exec,
+	.clear_args = true,
 	.processor = processor,
 };

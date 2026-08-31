@@ -202,7 +202,7 @@ struct Variant {
 			case BOOL:  {return (AnyCast(bool,d) ? "true":"false"); break;}
 			case UINT:  {return std::to_string(AnyCast(UINT_t,d));  break;}
 			case INT:   {return std::to_string(AnyCast(INT_t,d));   break;}
-			case FLOAT: {return std::to_string(AnyCast(FLOAT_t,d)); break;} // `std::cout` wont show the full precision by default, so we convert to string.
+			case FLOAT: {return std::to_string(AnyCast(FLOAT_t,d)); break;}
 			case STR:   {return AnyCast(STR_t,d);                   break;}
 
 			case ARR: {
@@ -340,20 +340,7 @@ struct Variant {
 
 std::ostream& operator<<(std::ostream& os, const Variant& var) {
 	if (var.d.index() == 0) return os << "none"; // Print "none" if unset.
-
-	switch (var.t) {
-		case OP:   case TREF:
-		case NONE: case REF:
-		case BOOL: case UINT:
-		case INT:  case FLOAT:
-		case STR:  case ARR:
-		case MAP:  case FUNC: {
-			os << var.to_str();
-			break;
-		}
-		default: break;
-	}
-	return os;
+	return os << var.to_str();
 }
 
 

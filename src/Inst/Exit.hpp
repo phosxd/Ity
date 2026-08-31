@@ -42,4 +42,5 @@ const Instruction* INST_Exit = new Instruction{
 	.REQUIRED = 1,
 	.exec = INST_Exit_exec,
 	.has_expr = true,
+	.clear_args = true,
 };

@@ -133,7 +133,7 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		case ERR_invalid_op: {
 			std::string part = "\".";
 			if (args[0][args[0].size()-1] == '-') {
-				part = "\". Hint: isolate negative number with a space (E.g. `1 + -1`, not `1+-1`).";
+				part += " Hint: isolate negative number with a space (E.g. `1 + -1`, not `1+-1`).";
 			}
 			return "Invalid operator \"" + args[0] + part;
 		}

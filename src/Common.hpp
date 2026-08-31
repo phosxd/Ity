@@ -15,6 +15,7 @@ struct ExprToken {
 };
 
 
+#ifdef RUNTIME_DEBUG
 std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 	os << "{ln=" << s.ln << ", col=" << s.col;
 	os << ", var=" << s.var;
@@ -22,6 +23,7 @@ std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 	os << '}';
 	return os;
 }
+#endif
 
 
 
@@ -53,6 +55,7 @@ struct InstToken {
 };
 
 
+#ifdef RUNTIME_DEBUG
 std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 	os << "{ln=" << s.ln << ", col=" << s.col;
 	if (not s.args.empty()) os << ", args=" << s.args;
@@ -65,6 +68,7 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 	os << '}';
 	return os;
 }
+#endif
 
 
 
@@ -98,6 +102,7 @@ struct Instruction {
 	void (*exec)(ItyState&, InstToken&) = nullptr;
 	const bool is_composite = false;
 	const bool has_expr = false;
+	const bool clear_args = false;
 	void (*processor)(InstToken&, const AnyMap_t&, const unsigned int& ln, const unsigned int& col) = nullptr;
 	void (*emergency_scope_exit)(InstToken*&) = nullptr;
 };
