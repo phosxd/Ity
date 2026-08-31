@@ -30,9 +30,26 @@ These results were recordered using the following specs:
 |
 |	1. Ity		0.2.0											0.007s AVG
 |	2. Kal		0.1.0											0.011s AVG
-|	3. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		0.027s AVG
-|	4. Python	3.14.5											0.070s AVG
-|	5. NodeJS	22.22.2											0.087s AVG
+|	3. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		0.024s AVG
+|	4. Python	3.14.5											0.064s AVG
+|	5. NodeJS	22.22.2											0.074s AVG
+|
+|
+|
+|	COMPLEX PARSE:
+|	--------------
+|
+|	32768 variable reassignment statements, with simple math expression.
+|
+|	1. Ity		0.2.0											0.044s AVG
+|	2. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		0.055s AVG
+|	3. NodeJS	22.22.2											0.097s AVG
+|	4. Kal		0.1.0											0.180s AVG
+|	5. Python	3.14.5											0.252s AVG
+|
+|	NOTE: Notice that NodeJS only slightly differs from the SimpleParse
+|	benchmark, indicating that most of that time is actually just
+|	initialization.
 |
 |
 |

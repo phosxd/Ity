@@ -1,0 +1,42 @@
+#!/usr/local/bin/ity
+import IO;
+import FileSystem as FS;
+import ExtendedSystem as ES;
+
+
+const INT SCRIPT_SIZE = 32768;
+const STR WORKING_DIR = 'Benchmark/ComplexParse/';
+const STR LANG = __CMD_ARGS__:0;
+const STR PATH = WORKING_DIR+'_.'+LANG;
+
+var MAP result;
+
+
+if LANG == 'sh';
+	FS.write:[PATH, ('a=$((100*(2+1-1)))\n' * SCRIPT_SIZE)];
+	result = (ES.call:('time bash ' + PATH));
+/;
+
+elif LANG == 'ity';
+	FS.write:[PATH, ("var a = 0;" + ('a=(100*(2+1-1));\n' * SCRIPT_SIZE))];
+	result = (ES.call:('time ./ity.bin ' + PATH));
+/;
+
+elif LANG == 'kal';
+	FS.write:[PATH, ('a=(100*(2+1-1)).\n' * SCRIPT_SIZE)];
+	result = (ES.call:('time kal ' + PATH));
+/;
+
+elif LANG == 'py';
+	FS.write:[PATH, ('a=(100*(2+1-1))\n' * SCRIPT_SIZE)];
+	result = (ES.call:('time python ' + PATH));
+/;
+
+elif LANG == 'js';
+	FS.write:[PATH, ('a=(100*(2+1-1))\n' * SCRIPT_SIZE)];
+	result = (ES.call:('time node ' + PATH));
+/;
+
+
+FS.remove:PATH;
+IO.print:(result.out);
