@@ -194,11 +194,49 @@ struct Variant {
 
 	STR_t to_str() const {
 		switch (t) {
-			case REF:    return "REF:"+AnyCast(STR_t,d);
-			case BOOL:   return (AnyCast(bool,d)) ? "true" : "false";
-			case INT:    return std::to_string(AnyCast(INT_t,d));
-			case FLOAT:  return std::to_string(AnyCast(FLOAT_t,d));
-			case STR:    return AnyCast(STR_t,d);
+			case OP:   {return "OP:"   + std::to_string((uintptr_t)AnyCast(const OpDef*,d)); break;}
+			case TREF: {return "TREF:" + AnyCast(TREF_t,d).str; break;}
+
+			case NONE:  {return "none";                             break;}
+			case REF:   {return "REF:" + AnyCast(STR_t,d);          break;}
+			case BOOL:  {return (AnyCast(bool,d) ? "true":"false"); break;}
+			case UINT:  {return std::to_string(AnyCast(UINT_t,d));  break;}
+			case INT:   {return std::to_string(AnyCast(INT_t,d));   break;}
+			case FLOAT: {return std::to_string(AnyCast(FLOAT_t,d)); break;} // `std::cout` wont show the full precision by default, so we convert to string.
+			case STR:   {return AnyCast(STR_t,d);                   break;}
+
+			case ARR: {
+				STR_t buf = "[";
+				size_t i = 0;
+				for (const Variant& it : AnyCast(ARR_t,d)) {
+					if (i != 0) buf += ", ";
+					if (it.t == STR) buf += '"' + it.to_str() + '"';
+					else buf += it.to_str();
+					i++;
+				}
+				return buf + ']';
+				break;
+			}
+
+			case MAP: {
+				STR_t buf = "{";
+				size_t idx = 0;
+				for (auto& i : AnyCast(MAP_t,d)) {
+					if (idx != 0) buf += ", ";
+					buf += '"' + i.first + "\": ";
+					if (i.second.t == STR) buf += '"' + i.second.to_str() + '"';
+					else buf += i.second.to_str();
+					idx++;
+				}
+				return buf + '}';
+				break;
+			}
+
+			case FUNC: {
+				const FUNC_t& func = AnyCast(FUNC_t,d);
+				return "FUNC:" + std::to_string((uintptr_t)&func.native_callable) + ':' + std::to_string(func.token_index);
+				break;
+			}
 
 			default: return "";
 		}
@@ -304,48 +342,13 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 	if (var.d.index() == 0) return os << "none"; // Print "none" if unset.
 
 	switch (var.t) {
-		// Meta types.
-		case OP:   {os << "OP:"   << AnyCast(const OpDef*,var.d); break;}
-		case TREF: {os << "TREF:" << AnyCast(TREF_t,var.d).str; break;}
-
-		// Real types.
-		case NONE:  {os << "none";                                 break;}
-		case REF:   {os << "REF:" << AnyCast(STR_t,var.d);         break;}
-		case BOOL:  {os << (AnyCast(bool,var.d) ? "true":"false"); break;}
-		case INT:   {os << AnyCast(INT_t,var.d);                   break;}
-		case FLOAT: {os << std::to_string(AnyCast(FLOAT_t,var.d)); break;} // `std::cout` wont show the full precision by default, so we convert to string.
-		case STR:   {os << AnyCast(STR_t,var.d);                   break;}
-
-		case ARR: {
-			os << '[';
-			size_t i = 0;
-			for (const Variant& it : AnyCast(ARR_t,var.d)) {
-				if (i != 0) os << ", ";
-				if (it.t == STR) os << '"' << it << '"';
-				else os << it;
-				i++;
-			}
-			os << ']';
-			break;
-		}
-
-		case MAP: {
-			os << '{';
-			size_t idx = 0;
-			for (auto& i : AnyCast(MAP_t,var.d)) {
-				if (idx != 0) {os << ", ";}
-				os << '"' << i.first << "\": ";
-				if (i.second.t == STR) os << '"' << i.second << '"';
-				else os << i.second;
-				idx++;
-			}
-			os << '}';
-			break;
-		}
-
-		case FUNC: {
-			const FUNC_t& func = AnyCast(FUNC_t,var.d);
-			os << "FUNC:" << &func.native_callable << ':' << func.token_index;
+		case OP:   case TREF:
+		case NONE: case REF:
+		case BOOL: case UINT:
+		case INT:  case FLOAT:
+		case STR:  case ARR:
+		case MAP:  case FUNC: {
+			os << var.to_str();
 			break;
 		}
 		default: break;

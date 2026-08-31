@@ -369,7 +369,7 @@ const Variant LIB_BI {
 
 
 		// Miscillanious constants.
-		{"noneref", VPS.empty},
+		{"noneref", Variant{NONE, std::monostate(), VariantMode_constant}},
 
 
 		// Utility functions.

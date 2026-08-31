@@ -23,7 +23,7 @@ enum ERR_CODE : uint8_t {
 	ERR_invalid_assignment_op,
 	ERR_missing_operand,
 	ERR_invalid_cast,
-	ERR_unexpected_inst,
+	ERR_misplaced_inst,
 
 	// 18
 	ERR_operand_type_mismatch,
@@ -45,7 +45,7 @@ enum ERR_CODE : uint8_t {
 	ERR_invalid_property_access,
 	ERR_index_out_of_range,
 	ERR_no_property_with_name,
-	ERR_invalid_func_call,
+	ERR_1__,
 	ERR_invalid_func_arg_count,
 	ERR_invalid_func_arg_type,
 	ERR_no_args_available,
@@ -63,19 +63,6 @@ enum ERR_CODE : uint8_t {
 
 using Clock = std::chrono::high_resolution_clock;
 using Clock_t = std::chrono::time_point<std::chrono::high_resolution_clock>;
-
-
-namespace ANSI {
-	static constexpr std::string reset        = "\e[0m";
-	static constexpr std::string bold         = "\e[1m";
-	static constexpr std::string red          = "\e[31m";
-	static constexpr std::string green        = "\e[32m";
-	static constexpr std::string orange       = "\e[33m";
-	static constexpr std::string blue         = "\e[34m";
-	static constexpr std::string purple       = "\e[35m";
-	static constexpr std::string yellow       = "\e[93m";
-	static constexpr std::string norm         = "\e[39m";
-}
 
 
 struct debug_flags_struct {
@@ -132,14 +119,14 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		case ERR_expected_ity_extension:            return "Expected file with \".ity\" extension.";
 		case ERR_unable_to_open_script:             return "Unable to open script at \"" + args[0] + "\".";
 		#endif
-		case ERR_unknown_module:                    return "No module with name \"" + args[0] + "\" is available.";
-		case ERR_disallowed_member_in_safe_mode:    return "Member \"" + args[0] + "\" is not allowed during safe mode (--safe).";
+		case ERR_unknown_module:                    return "Cannot find module with name \"" + args[0] + "\".";
+		case ERR_disallowed_member_in_safe_mode:    return "Member \"" + args[0] + "\" not permitted in safe mode (--safe).";
 
-		case ERR_max_composite_size:                return "Exceeded maximum instructions under composite (65,535). Nesting is not healthy.";
-		case ERR_no_composite_requiring_end:        return "There is no instruction requiring a composite end here.";
-		case ERR_no_composite_end:                  return "Composite instruction has no end.";
+		case ERR_max_composite_size:                return "Exceeded maximum instructions under a composite (65,535).";
+		case ERR_no_composite_requiring_end:        return "No instruction requiring an end here.";
+		case ERR_no_composite_end:                  return "Composite has no end.";
 		case ERR_no_string_end:                     return "String literal has no end.";
-		case ERR_max_execution_depth:               return "Maximum exec-depth reached (" + args[0] + "). Use the `set_max_depth` function to increase limit.";
+		case ERR_max_execution_depth:               return "Maximum depth reached (" + args[0] + ").";
 
 		case ERR_invalid_syntax:                    return "Invalid syntax: " + args[0] + ".";
 		case ERR_invalid_inst_arg_count:            return "Invalid number of arguments for \"" + args[0] + "\". Expected at least " + args[1] + " separated by a space.";
@@ -153,7 +140,7 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		case ERR_invalid_assignment_op:             return "Invalid assignment operator \"" + args[0] + "\" for instruction \"" + args[1] + "\".";
 		case ERR_missing_operand:                   return "Operator is missing an operand.";
 		case ERR_invalid_cast:                      return "Cannot type cast from \"" + args[0] + " to \"" + args[1] + "\".";
-		case ERR_unexpected_inst:                   return "Unexpected \"" + args[0] + "\" instruction. No valid previous.";
+		case ERR_misplaced_inst:                    return "Misplaced \"" + args[0] + "\" instruction.";
 
 		case ERR_operand_type_mismatch: {
 			std::string part = "\".";
@@ -168,28 +155,28 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		case ERR_expected_boolean_expression:       return "Expected a boolean result in expression.";
 		case ERR_expected_string_expression:        return "Expected a string result in expression.";
 
-		case ERR_name_is_taken:                     return "Name \"" + args[0] + "\" is already taken within this scope.";
+		case ERR_name_is_taken:                     return "Name \"" + args[0] + "\" already taken in this scope.";
 		case ERR_name_is_shadowed:                  return "Shadowed name \"" + args[0] + "\"";
-		case ERR_name_must_not_contain_symbols:     return "Name must not contain any symbols. Underscores are allowed.";
+		case ERR_name_must_not_contain_symbols:     return "Name must not contain symbols. Underscores are allowed.";
 		case ERR_name_does_not_exist:               return "Name \"" + args[0] + "\" does not exist.";
 		case ERR_cannot_initialize_value:           return "Cannot initialize value \"" + args[0] + "\": " + args[1] + ".";
-		case ERR_cannot_change_constant:            return "Cannot change value of constant after declaration.";
-		case ERR_constant_type_not_explicit:        return "Constant must have an explicit type, not \"ANY\".";
+		case ERR_cannot_change_constant:            return "Cannot modify constant value.";
+		case ERR_constant_type_not_explicit:        return "Constant requires explicit type, not \"ANY\".";
 		case ERR_invalid_property_access:           return "Invalid access to value (" + args[0] + ") using value of type \"" + args[1] + "\".";
-		case ERR_index_out_of_range:                return "Access index \"" + args[0] + "\" out of range.";
+		case ERR_index_out_of_range:                return "Index \"" + args[0] + "\" out of range.";
 		case ERR_no_property_with_name:             return "No property named \"" + args[0] + "\" in this object.";
-		case ERR_invalid_func_call:                 return "Cannot call function with value of type \"" + args[0] + "\". Wrap arguments in an array.";
+		case ERR_1__:                               return "";
 		case ERR_invalid_func_arg_count:            return "Function expected " + args[0] + " arguments, not " + args[1] + ".";
 		case ERR_invalid_func_arg_type:             return "Function argument " + args[0] + " expected vaue of type \"" + args[1] + "\", not \"" + args[2] + "\"";
-		case ERR_no_args_available:                 return "No arguments available in this scope.";
+		case ERR_no_args_available:                 return "No more arguments to capture.";
 
-		case ERR_unexpected_char_at_expr_end:       return "Unexpected character \"" + args[0] + "\" at end of expression.";
+		case ERR_unexpected_char_at_expr_end:       return "Unexpected character \"" + args[0] + "\" at expression end.";
 		case ERR_invalid_character_for_construct:   return "Invalid character for " + args[0] + " construct: \"" + args[1] + "\".";
-		case ERR_cannot_dereference:                return "Cannot dereference \"" + args[0] + "\". Not a pointer.";
+		case ERR_cannot_dereference:                return "Cannot dereference \"" + args[0] + "\".";
 		case ERR_max_temporaries_in_use:            return "Maximum temporaries in use (" + args[0] + "/" + args[1] + "); Reduce one-off expression complexity.";
-		case ERR_not_iterable:                      return "Given variant is not iterable";
+		case ERR_not_iterable:                      return "Value is not iterable.";
 		case ERR_misplaced_operator:                return "Misplaced operator.";
-		case ERR_zero_division:                     return "Cannot divide by zero.";
+		case ERR_zero_division:                     return "Division by zero.";
 		#endif
 		default: break;
 	}

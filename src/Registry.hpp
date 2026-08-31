@@ -59,6 +59,20 @@ constexpr unsigned int MAX_TEMPORARY_POOL_RESERVE = 32;
 
 
 
+namespace ANSI {
+	static constexpr std::string reset        = "\e[0m";
+	static constexpr std::string bold         = "\e[1m";
+	static constexpr std::string red          = "\e[31m";
+	static constexpr std::string green        = "\e[32m";
+	static constexpr std::string orange       = "\e[33m";
+	static constexpr std::string blue         = "\e[34m";
+	static constexpr std::string purple       = "\e[35m";
+	static constexpr std::string yellow       = "\e[93m";
+	static constexpr std::string norm         = "\e[39m";
+}
+
+
+
 // -------------------------------------------
 
 

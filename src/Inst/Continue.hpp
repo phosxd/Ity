@@ -16,7 +16,7 @@ static void INST_Continue_processor(InstToken& token, const AnyMap_t& extra, con
 
 		// Throw error if there is no loop token to link to.
 		if (not found) {
-			emit_error(ERR_unexpected_inst, {token.args[0]}, ln,col);
+			emit_error(ERR_misplaced_inst, {token.args[0]}, ln,col);
 			return;
 		}
 	}

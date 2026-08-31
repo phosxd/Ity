@@ -10,7 +10,7 @@ static void INST_If_processor(InstToken& token, const AnyMap_t& extra, const uns
 
 		// Throw error if previous composite item was not a valid conditional.
 		if (last_comp_item.token.symbol != InstSymbol_if && last_comp_item.token.symbol != InstSymbol_elif) {
-			emit_error(ERR_unexpected_inst, {token.args[0]}, ln,col);
+			emit_error(ERR_misplaced_inst, {token.args[0]}, ln,col);
 			return;
 		}
 

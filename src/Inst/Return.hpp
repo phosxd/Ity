@@ -13,7 +13,7 @@ static void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const
 
 	// Throw error if there if instruciton is not under a function.
 	if (not found) {
-		emit_error(ERR_unexpected_inst, {token.args[0]}, ln,col);
+		emit_error(ERR_misplaced_inst, {token.args[0]}, ln,col);
 		return;
 	}
 }
