@@ -183,6 +183,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 	// Return cached sequence if available.
 	if (const auto& it = expr_cache.find(expr); it != expr_cache.end()) {
 		for (ExprTokenizeResult& item : it->second) {
+			if (item.grouping_mode != grouping_mode) continue;
 			result.final_char_count = item.final_char_count;
 			result.token = item.token;
 			return result;
@@ -300,14 +301,14 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				};
 				// Set type integer.
 				if ((NUM.find(ch) != std::string::npos) || (ch == '-' && (expr_len > i && NUM.find(expr[i+1]) != std::string::npos ))) {
-					item.var = {INT};
+					item.var.t = INT;
 					buffer += ch;
 					is_start = false;
 					continue;
 				}
 				// Start string.
 				else if (STRING_SYMBOLS.find(ch) != std::string::npos) {
-					item.var = {STR};
+					item.var.t = STR;
 					secondary_buffer = ch;
 					is_string = true;
 					is_start = false;
@@ -316,27 +317,27 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				// Set type bool.
 				else if (check_ahead(expr, i, "true")) {
 					secondary_buffer = "true";
-					item.var = {BOOL};
+					item.var.t = BOOL;
 				}
 				else if (check_ahead(expr, i, "false")) {
 					secondary_buffer = "false";
-					item.var = {BOOL};
+					item.var.t = BOOL;
 				}
 				// Set type none.
 				else if (check_ahead(expr, i, "none")) {
 					secondary_buffer = "none";
-					item.var = {NONE};
+					item.var.t = NONE;
 				}
 				// Set type reference.
 				else if (ch == '@' || ch == '~' || is_valid_name(std::string(1,ch))) {
 					if (next_ref_is_str_) item.var.t = STR; // Set type as string but don't set `is_string` so it's not treated as a string.
-					else item.var = {TREF};
+					else item.var.t = TREF;
 				}
 				// Set type array.
 				else if (ch == '[') {
 					secondary_buffer = ']';
 					item.t = ExprTokenType_sequence;
-					item.var = {ARR};
+					item.var.t = ARR;
 					is_array = true;
 					is_start = false;
 					continue;
@@ -345,7 +346,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				else if (ch == '{') {
 					secondary_buffer = '}';
 					item.t = ExprTokenType_sequence;
-					item.var = {MAP};
+					item.var.t = MAP;
 					is_map = true;
 					is_start = false;
 					continue;
@@ -364,7 +365,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				// Separate expression.
 				if (ch == ',') {
 					clean_up_buffer(result.token, item, buffer);
-					item.var = {PLACEHOLDER};
+					item.var.t = PLACEHOLDER;
 					is_start = true;
 					continue;
 				}
@@ -372,7 +373,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				// Start operator.
 				else if (is_special_symbol(ch) == true) {
 					clean_up_buffer(result.token, item, buffer);
-					item.var = {PLACEHOLDER};
+					item.var.t = PLACEHOLDER;
 					is_operator = true;
 				}
 
@@ -383,7 +384,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 
 				else if (item.var.t == INT) {
 					// If "." found in INT, convert to FLOAT.
-					if (ch == '.') item.var = {FLOAT};
+					if (ch == '.') item.var.t = FLOAT;
 					// Throw error if invalid character found.
 					else if ((NUM.find(ch) == std::string::npos)) {
 						emit_error(ERR_invalid_character_for_construct, {"number", std::string(1,ch)}, ln+ln_offset, col+col_offset);
@@ -394,7 +395,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				else if (item.var.t == BOOL || item.var.t == NONE) {
 					// If no longer matches the bool or none token, switch to a reference.
 					if ((buffer+ch).size() >= secondary_buffer.size() && (buffer+ch) != secondary_buffer) {
-						item.var = {TREF};
+						item.var.t = TREF;
 						secondary_buffer.clear();
 					}
 				}
@@ -463,16 +464,8 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 	clean_up_buffer(result.token, item, buffer);
 	result.final_char_count = idx;
 	// Add to cache.
-	if (const auto it = expr_cache.find(expr); it != expr_cache.end()) {
-		bool found = false;
-		for (ExprTokenizeResult& item : it->second) {
-			if (item.grouping_mode == grouping_mode) found = true;
-		}
-		if (not found) expr_cache[expr].push_back(result);
-	}
-	else {
-		expr_cache[expr] = {result};
-	}
+	if (const auto it = expr_cache.find(expr); it != expr_cache.end()) expr_cache[expr].push_back(result);
+	else expr_cache[expr] = {result};
 	// Return result.
 	return result;
 }
