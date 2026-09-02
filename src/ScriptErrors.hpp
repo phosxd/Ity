@@ -58,6 +58,8 @@ enum ERR_CODE : uint8_t {
 	ERR_not_iterable,
 	ERR_misplaced_operator,
 	ERR_zero_division,
+	ERR_unexpected_group_end,
+	ERR_no_group_end,
 };
 
 
@@ -177,6 +179,8 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		case ERR_not_iterable:                      return "Value is not iterable.";
 		case ERR_misplaced_operator:                return "Misplaced operator.";
 		case ERR_zero_division:                     return "Division by zero.";
+		case ERR_unexpected_group_end:              return "Unexpected group end.";
+		case ERR_no_group_end:                      return "Grouping has no end, expected \"" + args[0] + "\".";
 		#endif
 		default: break;
 	}

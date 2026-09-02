@@ -90,11 +90,9 @@ static Variant LIB_MT_rand(ItyState& _state, const ARR_t& args) {
 // Return a random number in range of `min` & `max` integer arguments.
 static Variant LIB_MT_set_seed(ItyState& _state, const ARR_t& args) {
 	if (not ExpectArgs(args, { {INT} })) return VPS.empty;
-
 	const INT_t& seed = AnyCast(INT_t,args[0].d);
 	std::srand(seed);
-
-	return Variant{};
+	return VPS.empty;
 }
 
 

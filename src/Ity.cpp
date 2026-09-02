@@ -73,7 +73,7 @@ const InstDef INSTRUCTIONS[] = {
 	{InstSymbol_func,     "func",      INST_Func},
 	{InstSymbol_return,   "return",    INST_Return},
 };
-// Get string representation of an InstSymbol.
+// Get instruction definition from a symbol or string.
 const InstDef* find_InstDef(const InstSymbol& sym = InstSymbol__, const std::string& str = "") {
 	for (const InstDef& def : INSTRUCTIONS) {
 		if ((sym != InstSymbol__ && def.sym == sym)
@@ -269,7 +269,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 							expr_string += arg;
 							i_++;
 						}
-						item.expr = expr_tokenize(std::move(expr_string), item.ln, item.col-1);
+						item.expr = expr_tokenize(std::move(expr_string), item.ln, item.col-1).token;
 						item.args.clear();
 					}
 				}
@@ -383,8 +383,8 @@ void start_shell(int argc, char* argv[]) {
 				return;
 			}
 			// Set debug flags.
-			else if (s == "--d-result")            debug_flags.result = true;
 			#ifdef RUNTIME_DEBUG
+			else if (s == "--d-result")       debug_flags.result = true;
 			else if (s == "--d-inst")         debug_flags.inst = true;
 			else if (s == "--d-expr")         debug_flags.expr = true;
 			else if (s == "--d-expr-result")  debug_flags.expr_result = true;
@@ -405,8 +405,8 @@ void start_shell(int argc, char* argv[]) {
 			// Set other flags.
 			else if (s == "-c" || s == "--codes")   emit_just_codes = true;
 			else if (s == "--nowarn")               emit_warnings = false;
-			else if (s == "-s" || s == "--safe")                 safe_mode = true;
-			else if (s == "--step")    step_mode = true;
+			else if (s == "-s" || s == "--safe")    safe_mode = true;
+			else if (s == "--step")                 step_mode = true;
 		}
 
 		// Set script path.

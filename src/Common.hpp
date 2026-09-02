@@ -18,7 +18,7 @@ struct ExprToken {
 #ifdef RUNTIME_DEBUG
 std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 	os << "{ln=" << s.ln << ", col=" << s.col;
-	os << ", var=" << s.var;
+	os << ", var=" << get_variant_type_name(s.var.t);
 	if (not s.seq.empty()) os << ", seq=" << s.seq;
 	os << '}';
 	return os;

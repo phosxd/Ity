@@ -120,9 +120,6 @@ const OpDef* find_OpDef(const OpSymbol& sym = OpSymbol__, const std::string& str
 }
 
 
-std::unordered_map<std::string, std::vector<ExprToken>> expr_cache;
-
-
 
 
 const bool is_valid_name(const std::string& name) {
@@ -167,22 +164,35 @@ void clean_up_buffer(ExprToken& result_token, ExprToken& item, std::string& buff
 }
 
 
-static unsigned int final_char_count = 0;
-// Tokenize an expression. Returns an ExprToken with type "ExprTokenType_sequence".
-ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const unsigned int col=0) {
-	ExprToken result_token = ExprToken{ln, col};
-	result_token.t = ExprTokenType_sequence;
+struct ExprTokenizeResult {
+	ExprToken token;
+	unsigned int final_char_count = 0;
+	char grouping_mode = '.';
+};
 
-	// Return cached token if available.
+std::unordered_map<std::string, std::vector<ExprTokenizeResult>> expr_cache;
+
+
+// Tokenize an expression. Returns an ExprToken with type "ExprTokenType_sequence".
+ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=0, const unsigned int col=0, const char grouping_mode='.') {
+	ExprTokenizeResult result = {
+		.token = ExprToken{.ln=ln, .col=col, .t=ExprTokenType_sequence},
+		.grouping_mode = grouping_mode,
+	};
+
+	// Return cached sequence if available.
 	if (const auto& it = expr_cache.find(expr); it != expr_cache.end()) {
-		result_token.seq = it->second;
-		return result_token;
+		for (ExprTokenizeResult& item : it->second) {
+			result.final_char_count = item.final_char_count;
+			result.token = item.token;
+			return result;
+		}
 	}
 
 	const size_t& expr_len = expr.size();
 	std::string buffer; buffer.reserve(expr_len);
 	std::string secondary_buffer;
-	ExprToken item = {0,0, ExprTokenType_variant, Variant{PLACEHOLDER}};
+	ExprToken item = {0,0, ExprTokenType_variant, {PLACEHOLDER}};
 	unsigned int ln_offset = 0;
 	unsigned int col_offset = 0;
 	unsigned int skip_chars = 0;
@@ -194,6 +204,7 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 	bool is_array        = false;
 	bool is_map          = false;
 	bool is_grouping     = false;
+	char group_ended     = '.';
 	bool next_ref_is_str = false;
 
 	size_t idx = 0;
@@ -236,31 +247,31 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 			const std::string& subexpr = expr.substr(i);
 			if (not subexpr.empty()) {
 				// Tokenize sub-expression & add to sequence.
-				item.seq = expr_tokenize(subexpr, ln_offset, col_offset).seq;
-				result_token.seq.push_back(item);
-
+				ExprTokenizeResult result_ = expr_tokenize(subexpr, ln+ln_offset, col+col_offset, secondary_buffer[0]);
+				item.seq = result_.token.seq;
+				result.token.seq.push_back(item);
+				// Throw error if operator token found in array or map.
 				if (!is_grouping) {
-					// Throw error if operator token found.
 					for (const ExprToken& subtoken : item.seq) {
 						if (subtoken.var.t == OP) {
-							emit_error(ERR_operators_not_allowed);
-							return result_token;
+							emit_error(ERR_operators_not_allowed, {}, ln+ln_offset, col+col_offset);
+							return result;
 						}
 					}
 				}
-
 				// Skip over characters inside the sub-expression.
-				skip_chars = final_char_count;
+				skip_chars = result_.final_char_count;
 			}
-			if (is_array)    is_array    = false;
-			if (is_map)      is_map      = false;
-			if (is_grouping) is_grouping = false;
 			item = ExprToken{
 				.ln  = ln_offset,
 				.col = col_offset,
 				.t   = ExprTokenType_variant,
 				.var = {PLACEHOLDER},
 			};
+			is_map = false;
+			is_array = false;
+			is_grouping = false;
+			secondary_buffer.clear();
 			continue;
 		}
 
@@ -270,6 +281,11 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 
 			// End expression.
 			if (ch == ')' || ch == ']' || ch == '}') {
+				if (grouping_mode != ch) {
+					emit_error(ERR_unexpected_group_end, {}, ln+ln_offset, col+col_offset);
+					return result;
+				}
+				group_ended = ch;
 				break;
 			}
 
@@ -284,14 +300,14 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				};
 				// Set type integer.
 				if ((NUM.find(ch) != std::string::npos) || (ch == '-' && (expr_len > i && NUM.find(expr[i+1]) != std::string::npos ))) {
-					item.var.t = INT;
+					item.var = {INT};
 					buffer += ch;
 					is_start = false;
 					continue;
 				}
 				// Start string.
 				else if (STRING_SYMBOLS.find(ch) != std::string::npos) {
-					item.var.t = STR;
+					item.var = {STR};
 					secondary_buffer = ch;
 					is_string = true;
 					is_start = false;
@@ -300,39 +316,42 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				// Set type bool.
 				else if (check_ahead(expr, i, "true")) {
 					secondary_buffer = "true";
-					item.var.t = BOOL;
+					item.var = {BOOL};
 				}
 				else if (check_ahead(expr, i, "false")) {
 					secondary_buffer = "false";
-					item.var.t = BOOL;
+					item.var = {BOOL};
 				}
 				// Set type none.
 				else if (check_ahead(expr, i, "none")) {
 					secondary_buffer = "none";
-					item.var.t = NONE;
+					item.var = {NONE};
 				}
 				// Set type reference.
 				else if (ch == '@' || ch == '~' || is_valid_name(std::string(1,ch))) {
 					if (next_ref_is_str_) item.var.t = STR; // Set type as string but don't set `is_string` so it's not treated as a string.
-					else item.var.t = TREF;
+					else item.var = {TREF};
 				}
 				// Set type array.
 				else if (ch == '[') {
+					secondary_buffer = ']';
 					item.t = ExprTokenType_sequence;
-					item.var.t = ARR;
+					item.var = {ARR};
 					is_array = true;
 					is_start = false;
 					continue;
 				}
 				// Set type map.
 				else if (ch == '{') {
+					secondary_buffer = '}';
 					item.t = ExprTokenType_sequence;
-					item.var.t = MAP;
+					item.var = {MAP};
 					is_map = true;
 					is_start = false;
 					continue;
 				}
 				else if (ch == '(') {
+					secondary_buffer = ')';
 					item.t = ExprTokenType_sequence;
 					is_grouping = true;
 					is_start = false;
@@ -344,16 +363,16 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 			if (is_operator == false) {
 				// Separate expression.
 				if (ch == ',') {
-					clean_up_buffer(result_token, item, buffer);
-					item.var.t = PLACEHOLDER;
+					clean_up_buffer(result.token, item, buffer);
+					item.var = {PLACEHOLDER};
 					is_start = true;
 					continue;
 				}
 
 				// Start operator.
 				else if (is_special_symbol(ch) == true) {
-					clean_up_buffer(result_token, item, buffer);
-					item.var.t = PLACEHOLDER;
+					clean_up_buffer(result.token, item, buffer);
+					item.var = {PLACEHOLDER};
 					is_operator = true;
 				}
 
@@ -364,18 +383,18 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 
 				else if (item.var.t == INT) {
 					// If "." found in INT, convert to FLOAT.
-					if (ch == '.') item.var.t = FLOAT;
+					if (ch == '.') item.var = {FLOAT};
 					// Throw error if invalid character found.
 					else if ((NUM.find(ch) == std::string::npos)) {
-						emit_error(ERR_invalid_character_for_construct, {"number", std::string(1,ch)}, ln_offset, col_offset);
-						return result_token;
+						emit_error(ERR_invalid_character_for_construct, {"number", std::string(1,ch)}, ln+ln_offset, col+col_offset);
+						return result;
 					}
 				}
 
 				else if (item.var.t == BOOL || item.var.t == NONE) {
 					// If no longer matches the bool or none token, switch to a reference.
 					if ((buffer+ch).size() >= secondary_buffer.size() && (buffer+ch) != secondary_buffer) {
-						item.var.t = TREF;
+						item.var = {TREF};
 						secondary_buffer.clear();
 					}
 				}
@@ -384,13 +403,13 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 					// Convert reference dot accessor to proper accessor.
 					if (ch == '.') {
 						const VariantType type = (item.var.t == STR) ? STR : TREF;
-						result_token.seq.push_back(ExprToken{
+						result.token.seq.push_back(ExprToken{
 							.ln  = ln_offset,
 							.col = col_offset,
 							.t   = ExprTokenType_variant,
 							.var = {type, get_literal_from_str(type, buffer)},
 						});
-						result_token.seq.push_back(ExprToken{
+						result.token.seq.push_back(ExprToken{
 							.ln  = ln_offset,
 							.col = col_offset,
 							.t   = ExprTokenType_variant,
@@ -410,16 +429,16 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 				const OpDef* op_def = find_OpDef(OpSymbol__, op_symbol_str);
 				// Throw error if invalid operator.
 				if (not op_def) {
-					emit_error(ERR_invalid_op, {op_symbol_str});
-					return result_token;
+					emit_error(ERR_invalid_op, {op_symbol_str}, ln+ln_offset, col+col_offset);
+					return result;
 				}
 				// Throw error if previous token was also an operator.
-				if (result_token.seq.back().var.t == OP) {
-					emit_error(ERR_misplaced_operator, {}, ln_offset, col_offset);
-					return result_token;
+				if (result.token.seq.back().var.t == OP) {
+					emit_error(ERR_misplaced_operator, {}, ln+ln_offset, col+col_offset);
+					return result;
 				}
 				// Append operator token.
-				result_token.seq.push_back(ExprToken{
+				result.token.seq.push_back(ExprToken{
 					.ln  = ln_offset,
 					.col = col_offset,
 					.t   = ExprTokenType_variant,
@@ -434,11 +453,28 @@ ExprToken expr_tokenize(const std::string& expr, const unsigned int ln=0, const 
 
 		buffer.push_back(ch);
 	}
-	clean_up_buffer(result_token, item, buffer);
-	// Add to cache & return result.
-	expr_cache[expr] = result_token.seq;
-	final_char_count = idx;
-	return result_token;
+
+	// Throw error if the expected group ending was not found.
+	if (grouping_mode != group_ended) {
+		emit_error(ERR_no_group_end, {std::string(1,grouping_mode)}, ln+ln_offset, col+col_offset);
+		return result;
+	}
+
+	clean_up_buffer(result.token, item, buffer);
+	result.final_char_count = idx;
+	// Add to cache.
+	if (const auto it = expr_cache.find(expr); it != expr_cache.end()) {
+		bool found = false;
+		for (ExprTokenizeResult& item : it->second) {
+			if (item.grouping_mode == grouping_mode) found = true;
+		}
+		if (not found) expr_cache[expr].push_back(result);
+	}
+	else {
+		expr_cache[expr] = {result};
+	}
+	// Return result.
+	return result;
 }
 
 
@@ -639,6 +675,6 @@ std::vector<std::string> tokenize_expr_from_inst_args(InstToken& token, const un
 		}
 		i++;
 	}
-	token.expr = expr_tokenize(expr_string, token.ln+ln, token.col+col);
+	token.expr = expr_tokenize(expr_string, token.ln+ln, token.col+col).token;
 	return new_args;
 }

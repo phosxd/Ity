@@ -35,10 +35,10 @@ true_; true;
 
 var NONE a;
 a = none;
-a = none);
+a = none;
 var BOOL b = true;
 b = false;
-b = false);
+b = false;
 
 # Var syntax comprehension.
 var c=1;
@@ -273,10 +273,10 @@ true"
 # Expression syntax
 # -----------------
 
-'early') + 'exit';
+'early' + 'exit';
 
 1 + (2);
-1 + (2 ;
+1 + 2;
 20 - (5+5);
 20 + (-10);
 'Hello' + ' '+ ( 'W'+'o' + ('r'+'d') );
@@ -1174,7 +1174,7 @@ print: (true ? 'a');        # No exception, but succeeded, so prints 'a'.
 print: (false ? 'a');       # No exception, but failed, so prints void (no print).
 
 # Conditional function calls...
-1==1 ? (print:'a') -- (print:'b')); # TODO: fix required extra ')', weird ahh bug.
+1==1 ? (print:'a') -- (print:'b');
 1==2 ? (print:'a') -- (print:'b');
 "
 
@@ -1367,9 +1367,25 @@ print:b;
 
 # 61
 
-""
+"
+# Function definition scope correctness
+# -------------------------------------
 
-""
+merge IO;
+
+func FUNC make_func;
+	const STR text = 'Hello!';
+	func NONE f; print:text; /;
+	f:[]; # Scope with 'text' is still alive, won't fail.
+	return f;
+/;
+
+const FUNC function = make_func:[];
+function:[]; # The definition scope no longer exists, falls back to the scope above, which does not hold 'text', so throws an error.
+"
+
+"Hello!
+Error: 27"
 
 # 62
 

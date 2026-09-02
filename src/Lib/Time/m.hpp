@@ -2,27 +2,21 @@
 
 
 static Variant LIB_TI_get_time(ItyState& _state, const ARR_t& args, const unsigned int mode) {
-	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {STR}, 0)) return VPS.empty;
+	if (not ExpectArgs(args, { {STR} })) return VPS.empty;
 
 	const STR_t& precision = AnyCast(STR_t,args[0].d);
+	const auto diff = Clock::now() - ((mode == 1) ? clock_start : Clock_t{});
 
-	// Initialize clocks.
-	const Clock_t& clock_1 = Clock::now();
-	std::chrono::time_point<std::chrono::high_resolution_clock> clock_2;
-	if (mode == 1) clock_2 = clock_start;
-
-	// Get value.
 	INT_t result = 0;
-	if (precision == "us")      result = DurCast_us(clock_1-clock_2).count();
-	else if (precision == "ms") result = DurCast_ms(clock_1-clock_2).count();
-	else if (precision == "s")  result = DurCast_s(clock_1-clock_2).count();
-	else if (precision == "m")  result = DurCast_m(clock_1-clock_2).count();
-	else if (precision == "h")  result = DurCast_h(clock_1-clock_2).count();
-	else if (precision == "d")  result = DurCast_d(clock_1-clock_2).count();
-	else if (precision == "w")  result = DurCast_w(clock_1-clock_2).count();
-	else if (precision == "M")  result = DurCast_M(clock_1-clock_2).count();
-	else if (precision == "y")  result = DurCast_y(clock_1-clock_2).count();
-
+	if (precision == "us")      result = DurCast_us(diff).count();
+	else if (precision == "ms") result = DurCast_ms(diff).count();
+	else if (precision == "s")  result = DurCast_s(diff).count();
+	else if (precision == "m")  result = DurCast_m(diff).count();
+	else if (precision == "h")  result = DurCast_h(diff).count();
+	else if (precision == "d")  result = DurCast_d(diff).count();
+	else if (precision == "w")  result = DurCast_w(diff).count();
+	else if (precision == "M")  result = DurCast_M(diff).count();
+	else if (precision == "y")  result = DurCast_y(diff).count();
 	return Variant{INT, result};
 }
 

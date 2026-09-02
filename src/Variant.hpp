@@ -194,7 +194,7 @@ struct Variant {
 
 	STR_t to_str() const {
 		switch (t) {
-			case OP:   {return "OP:"   + std::to_string((uintptr_t)AnyCast(const OpDef*,d)); break;}
+			case OP:   {return "OP";                            break;}
 			case TREF: {return "TREF:" + AnyCast(TREF_t,d).str; break;}
 
 			case NONE:  {return "none";                             break;}

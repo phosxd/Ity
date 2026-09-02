@@ -12,4 +12,5 @@
 .src/
 .last_build_size
 .test_result.txt
+test.ity
 git_assets/

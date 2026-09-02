@@ -75,7 +75,7 @@ static void processor(InstToken& token, const AnyMap_t& _extra, const unsigned i
 
 	// Set token properties.
 	token.meta = {name, string_hasher(name), op, type, mode};
-	token.expr = expr_tokenize(expr, ln-expr_start_ln, col-expr_start_col);
+	token.expr = expr_tokenize(expr, ln-expr_start_ln, col-expr_start_col).token;
 }
 
 

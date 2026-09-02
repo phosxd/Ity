@@ -35,15 +35,7 @@ static Variant LIB_BI_system(ItyState& _state, const ARR_t& args) {
 static Variant LIB_BI_sleep(ItyState& _state, const ARR_t& args) {
 	if (not ExpectArgs(args, { {INT,FLOAT} })) return VPS.empty;
 	const Variant& var = args[0];
-
-	FLOAT_t sleep_time = 0;
-	switch (var.t) {
-		case INT: sleep_time = AnyCast(INT_t,var.d); break;
-		case FLOAT: sleep_time = AnyCast(FLOAT_t,var.d); break;
-		default: break;
-	}
-
-	std::this_thread::sleep_for(std::chrono::microseconds( (uint32_t)(sleep_time*1000000) ));
+	std::this_thread::sleep_for(std::chrono::microseconds( (uint32_t)(((var.t == INT) ? AnyCast(INT_t,var.d) : AnyCast(FLOAT_t,var.d))*1000000) ));
 	return VPS.empty;
 }
 
@@ -72,15 +64,15 @@ static Variant LIB_BI_type(ItyState& _state, const ARR_t& args) {
 // Return the length of the given array or string.
 static Variant LIB_BI_length(ItyState& _state, const ARR_t& args) {
 	if (not ExpectArgs(args, { {ARR,STR} })) return VPS.empty;
-	size_t size = 0;
 
+	INT_t size = 0;
 	switch (args[0].t) {
 		case ARR: {size = AnyCast(ARR_t,args[0].d).size(); break;}
 		case STR: {size = AnyCast(STR_t,args[0].d).size(); break;}
 		default: return VPS.empty;
 	}
 
-	return Variant{INT, (INT_t)size};
+	return Variant{INT, size};
 }
 
 
@@ -271,12 +263,9 @@ static Variant LIB_BI_tm_map_keys(ItyState& _state, ARR_t& args) {
 // Return whether or not the `MAP` has the given key.
 static Variant LIB_BI_tm_map_has(ItyState& _state, ARR_t& args) {
 	if (not expect_arg_count(args, 2) || not expect_arg_types(args[1], {STR}, 1)) return VPS.empty;
-
-	// Get data & key.
 	const MAP_t& data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d );
-	const STR_t& key = AnyCast(STR_t,args[1].d);
 	// Return whether or not the map has the key.
-	if (data.find(key) != data.end()) return VPS.bool_true;
+	if (data.find(AnyCast(STR_t,args[1].d)) != data.end()) return VPS.bool_true;
 	return VPS.bool_false;
 }
 
@@ -310,15 +299,13 @@ static Variant LIB_BI_tm_map_set(ItyState& _state, ARR_t& args) {
 
 // Bind arguments to the function.
 static Variant LIB_BI_tm_func_bind(ItyState& _state, ARR_t& args) {
-	// Get data.
-	FUNC_t data = AnyCast(FUNC_t, AnyCastV(Variant*,args[0].d)->d ); // Copy the function.
-	// Add the given array to the function's bounded arguments.
-	for (unsigned int i = 0; i < args.size(); i++) {
-		if (i == 0) continue;
+	FUNC_t data = AnyCastV(FUNC_t, AnyCastV(Variant*,args[0].d)->d ); // Copy the function.
+	// Add the given args to the function's bounded arguments.
+	for (size_t i = 1; i < args.size(); i++) {
 		data.bound_args.push_back(args[i]);
 	}
 	// Return the new function.
-	return Variant{FUNC, data};
+	return Variant{FUNC, std::move(data)};
 }
 
 
