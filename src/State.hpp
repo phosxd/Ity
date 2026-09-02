@@ -135,7 +135,7 @@ struct ItyScope {
 
 
 
-	void merge_type_methods(MAP_t map) {
+	void merge_type_methods(const MAP_t& map) {
 		Variant* var = get_data_globally("__tm__", nullptr, HASHED_NAMES.__tm__);
 		if (var) AnyCastV(MAP_t,var->d).insert(map.begin(), map.end());
 		else set_data("__tm__", Variant{MAP, map, VariantMode_locked_type}, HASHED_NAMES.__tm__);
@@ -248,7 +248,7 @@ struct ItyState {
 		scope.d.push_back({string_hasher("__OS_NAME__"),              Variant{STR,  (STR_t)OSName, VariantMode_constant}});
 		scope.d.push_back({string_hasher("__HAS_RUNTIME_DEBUG__"),    Variant(BOOL, has_runtime_debug, VariantMode_constant)});
 		scope.d.push_back({string_hasher("__CMD_ARGS__"),             Variant{ARR,  ARGS, VariantMode_constant}});
-		scope.d.push_back({string_hasher("__IMPORTED__"),             VPS.bool_false});
+		scope.d.push_back({HASHED_NAMES.__IMPORTED__,                 VPS.bool_false});
 		// Merge built-in library.
 		scope.merge_module(AnyCast(MAP_t,((Variant*)LIB_BI_G)->d));
 		scope.in(scope_current_id); // Keep built-ins a scope higher than everything else.

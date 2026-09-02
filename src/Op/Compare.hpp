@@ -32,7 +32,7 @@ void OP_Compare_exec(ItyState& state, Variant*& first, Variant*& second, const O
 		default: break;
 	}
 
-	result = Variant{BOOL, std::move(test)};
+	result = Variant{BOOL, test};
 }
 
 
