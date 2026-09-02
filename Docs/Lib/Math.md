@@ -41,14 +41,14 @@ var sum = (0.5 + 1 + 1 + 1);
 ```
 
 ### INT rand (INT min, INT max)
-A function that returns an `INT`, which is a random number between the given minimum & maximum values. Uses the standard C `rand` function internally.
+Returns an `INT`, which is a random number between the given minimum & maximum values. Uses the standard C `rand` function internally.
 
 ```python
 rand:[0, 10]; # Some random value from 0 to 10.
 ```
 
 ### NONE set_seed (INT seed)
-A function that overrides the randomization seed for use in `rand`. The seed is by default set to the script start time according to the host system.
+Overrides the randomization seed for use in `rand`. The seed is by default set to the script start time according to the host system.
 
 ```python
 set_seed:0;

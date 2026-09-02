@@ -11,7 +11,7 @@ Map keys:
 # Methods
 
 ### STR in
-A function that waits for then returns an input line `STR` via `stdin` pipe.
+Waits for then returns an input line `STR` via `stdin` pipe.
 
 ```python
 # Print raw input.
@@ -55,29 +55,26 @@ const name = prompt:'Enter your name: ';
 ```
 
 ### NONE out (ANY ...var)
-A function that outputs the (stringified) variants to `stdout` directly without modification. Instantly flushes output for immediate display in the terminal.
+Output the stringified variants to `stdout` directly without modification. Instantly flushes output for immediate display in the terminal.
 
 ```python
 out:'Hello World!\n';
 # Hello World!
 ```
 
-### NONE buff_out (ANY ...var)
-Same as `out` except it does not immediately flush output. (Buffered output).
+### NONE err (ANY ...var)
+Same as `out` except it writes to `stderr` instead. Text is *not* colorized.
 
 ### NONE print (ANY ...var)
-A function that outputs the (stringified) variants to `stdout` with a new line appended to the output. Instantly flushes output.
+Outputs the stringified variants to `stdout` with a new line appended to the output. Instantly flushes output.
 
 ```python
 print:'Hello World!';
 # Hello World!
 ```
 
-### NONE print_err (ANY ...var)
-Same as `print` except it writes to `stderr` instead. Text is *not* colorized.
-
 ### NONE signal (INT signal_code, MAP(f) function)
-A function that connects the given function to a system signal. Refer to the [SIGNAL](#map-signal) member for valid signal codes.
+Connects the given function to a system signal. Refer to the [SIGNAL](#map-signal) member for valid signal codes.
 
 ```python
 func NONE on_signal_interrupt_reveived;
