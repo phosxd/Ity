@@ -1,0 +1,10 @@
+#!/usr/local/bin/ity
+import IO;
+import StrUtil;
+
+const STR text = 'Hello World!';
+IO.print:(text.find:'orld'); # 7.
+
+var STR mutable_text = '1 2 3 4 5';
+mutable_text.erase:(mutable_text.find:'3'); # Remove "3" from the string.
+IO.print:mutable_text;
