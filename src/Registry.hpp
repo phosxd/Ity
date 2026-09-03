@@ -1,5 +1,13 @@
 #pragma once
 
+// Include platform APIs
+#if _WIN32
+#elif defined(__linux__) || defined(__unix__) || defined(_POSIX_VERSION)
+	#include <termios.h>
+#elif __APPLE__
+	#include "TargetConditionals.h"
+#endif
+
 
 constexpr std::string ItyVersionString = "0.2.0";
 // Last number indicates release type:
@@ -10,38 +18,36 @@ constexpr uint8_t ItyVersion[4] = {0,2,0, 1};
 
 constexpr std::string OSName =
 #if _WIN32
-"windows"
+	"windows"
 #elif __linux__
-"linux"
+	"linux"
 #elif __APPLE__
-#include "TargetConditionals.h"
-#if TARGET_OS_MAC
-"apple_mac"
-#elif TARGET_OS_IPHONE
-"apple_iphone"
-#endif
+	#if TARGET_OS_MAC
+		"apple_mac"
+	#elif TARGET_OS_IPHONE
+		"apple_iphone"
+	#endif
 #elif __unix__
-"unix"
+	"unix"
 #elif _POSIX_VERSION
-"posix"
+	"posix"
 #else
-"unknown"
+	"unknown"
 #endif
 ;
 
 
 const std::string GLOBAL_SHARE_PATH =
 #if _WIN32
-"%LOCALAPPDATA%/ity/"
+	"%LOCALAPPDATA%/ity/"
 #elif __APPLE__
-#include "TargetConditionals.h"
-#if TARGET_OS_MAC
-"~/Library/Application Support/ity/"
-#elif TARGET_OS_IPHONE
-"Documents/ity/"
-#endif
+	#if TARGET_OS_MAC
+		"~/Library/Application Support/ity/"
+	#elif TARGET_OS_IPHONE
+		"Documents/ity/"
+	#endif
 #else
-"/usr/local/share/ity/"
+	"/usr/local/share/ity/"
 #endif
 ;
 

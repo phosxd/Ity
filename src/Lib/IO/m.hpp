@@ -46,20 +46,34 @@ static Variant LIB_IO_in(ItyState& _state, const ARR_t& args) {
 static Variant LIB_IO_key_in(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 0)) return VPS.empty;
 
-	// These are both hacky solutions but it gets the job done.
+	char input;
+
+	// If on Windows, use built-in API...
 	#ifdef _WIN32
 		HANDLE handle = GetStdHandle(STD_INPUT_HANDLE);
 		DWORD mode; GetConsoleMode(handle, &mode);
 		DWORD new_mode = mode; new_mode &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT);
 		SetConsoleMode(handle, new_mode);
-		char input;
-		std::cin >> input;
+		std::cin.get(input);
 		SetConsoleMode(handle, mode);
+	// If not on Windows...
 	#else
-		system("stty raw");
-		char input;
-		std::cin >> input;
-		system("stty -raw");
+		// If "termios" is available to us, then use that.
+		#ifdef _TERMIOS_H
+			termios tio;
+			tcgetattr(0, &tio);
+			tio.c_lflag &= ~(ICANON | ECHO);
+			tcsetattr(0, TCSANOW, &tio);
+			std::cin.get(input);
+			tcgetattr(0, &tio);
+			tio.c_lflag |= (ICANON | ECHO);
+			tcsetattr(0, TCSANOW, &tio);
+		// Fall back to system calls.
+		#else
+			system("stty raw -echo");
+			std::cin.get(input);
+			system("stty -raw echo");
+		#endif
 	#endif
 
 	return Variant{STR, (STR_t)std::string(1,input)};
