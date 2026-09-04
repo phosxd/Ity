@@ -194,16 +194,17 @@ struct Variant {
 
 	STR_t to_str() const {
 		switch (t) {
-			case OP:   {return "OP";                            break;}
-			case TREF: {return "TREF:" + AnyCast(TREF_t,d).str; break;}
+			case OP:   return "OP";
+			case TREF: return "TREF:" + AnyCast(TREF_t,d).str;
 
-			case NONE:  {return "none";                             break;}
-			case REF:   {return "REF:" + AnyCast(STR_t,d);          break;}
-			case BOOL:  {return (AnyCast(bool,d) ? "true":"false"); break;}
-			case UINT:  {return std::to_string(AnyCast(UINT_t,d));  break;}
-			case INT:   {return std::to_string(AnyCast(INT_t,d));   break;}
-			case FLOAT: {return std::to_string(AnyCast(FLOAT_t,d)); break;}
-			case STR:   {return AnyCast(STR_t,d);                   break;}
+			case NONE:  return "none";
+			case PTR:   return "PTR";
+			case REF:   return "REF:" + AnyCast(STR_t,d);
+			case BOOL:  return (AnyCast(bool,d) ? "true":"false");
+			case UINT:  return std::to_string(AnyCast(UINT_t,d));
+			case INT:   return std::to_string(AnyCast(INT_t,d));
+			case FLOAT: return std::to_string(AnyCast(FLOAT_t,d));
+			case STR:   return AnyCast(STR_t,d);
 
 			case ARR: {
 				STR_t buf = "[";
@@ -215,7 +216,6 @@ struct Variant {
 					i++;
 				}
 				return buf + ']';
-				break;
 			}
 
 			case MAP: {
@@ -229,16 +229,14 @@ struct Variant {
 					idx++;
 				}
 				return buf + '}';
-				break;
 			}
 
 			case FUNC: {
 				const FUNC_t& func = AnyCast(FUNC_t,d);
 				return "FUNC:" + std::to_string((uintptr_t)&func.native_callable) + ':' + std::to_string(func.token_index);
-				break;
 			}
 
-			default: return "";
+			default: return "???";
 		}
 	}
 
@@ -339,7 +337,6 @@ struct Variant {
 
 
 std::ostream& operator<<(std::ostream& os, const Variant& var) {
-	if (var.d.index() == 0) return os << "none"; // Print "none" if unset.
 	return os << var.to_str();
 }
 

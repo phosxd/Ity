@@ -1171,7 +1171,7 @@ merge IO;
 print: (1==1 ? 'a' -- 'b'); # Succeeds, so prints 'a'.
 print: (1==2 ? 'a' -- 'b'); # Fails, so prints 'b'.
 print: (true ? 'a');        # No exception, but succeeded, so prints 'a'.
-print: (false ? 'a');       # No exception, but failed, so prints void (no print).
+print: (false ? 'a');       # No exception, but failed, so prints void (unprintable, shows as '???').
 
 # Conditional function calls...
 1==1 ? (print:'a') -- (print:'b');
@@ -1181,7 +1181,7 @@ print: (false ? 'a');       # No exception, but failed, so prints void (no print
 "a
 b
 a
-
+???
 a
 b"
 
@@ -1407,12 +1407,59 @@ print:(~val_ptr);
 
 "
 
-"none
+"PTR
 9
-none
+PTR
 99"
 
 # 63
+
+"
+# Pointer reference container data
+# ---------------------------------
+
+merge IO;
+
+# Array...
+
+var ARR array = [1,2,3,4];
+const PTR arr_item_ptr = &>(array:2); # Point to INT '3'.
+print:(~arr_item_ptr);
+
+array:2 = 33; # Overwrite value at index 2.
+print:(~arr_item_ptr); # Should be 33 now.
+
+# Map...
+
+var MAP map = {'a',1, 'b',2, 'c',3};
+const PTR map_item_ptr = &>(map.b); # Point to INT '2'.
+print:(~map_item_ptr);
+
+map.b = 22; # Overwrite value at 'b'.
+print:(~map_item_ptr); # Should be 22 now.
+
+map = {}; # Delete all items.
+var unstable = ~map_item_ptr; # Pointer usage is unstable, value is undetermined.
+"
+
+"3
+33
+2
+22"
+
+# 64
+
+""
+
+""
+
+# 65
+
+""
+
+""
+
+# 66
 
 ""
 
