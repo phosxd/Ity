@@ -61,21 +61,6 @@ static Variant LIB_BI_type(ItyState& _state, const ARR_t& args) {
 }
 
 
-// Return the length of the given array or string.
-static Variant LIB_BI_length(ItyState& _state, const ARR_t& args) {
-	if (not ExpectArgs(args, { {ARR,STR} })) return VPS.empty;
-
-	INT_t size = 0;
-	switch (args[0].t) {
-		case ARR: {size = AnyCast(ARR_t,args[0].d).size(); break;}
-		case STR: {size = AnyCast(STR_t,args[0].d).size(); break;}
-		default: return VPS.empty;
-	}
-
-	return Variant{INT, size};
-}
-
-
 // Return the number of bytes taken by the given variant.
 static Variant LIB_BI_size(ItyState& state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1)) return VPS.empty;
@@ -167,6 +152,24 @@ static Variant LIB_BI_tm_str_raw(ItyState& _state, ARR_t& args) {
 	if (data.empty()) return Variant{INT, (INT_t)-1};
 	return Variant{INT, (INT_t)data[0]};
 }
+
+
+// String / Array.
+// ---------------
+
+// Return the length of the given array or string.
+static Variant LIB_BI_tm_str_arr_length(ItyState& _state, const ARR_t& args) {
+	Variant* var = AnyCastV(Variant*,args[0].d);
+	INT_t size = 0;
+	switch (var->t) {
+		case ARR: {size = AnyCast(ARR_t,var->d).size(); break;}
+		case STR: {size = AnyCast(STR_t,var->d).size(); break;}
+		default: return VPS.empty;
+	}
+
+	return Variant{INT, size};
+}
+
 
 
 // Array.
@@ -328,6 +331,8 @@ const Variant LIB_BI {
 				{"PTR:type",      NativeFuncTrans(INT,  (NativeFunc_t)LIB_BI_tm_ref_type)},
 
 				{"STR:raw",     NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_tm_str_raw)},
+				{"STR:length",  NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_tm_str_arr_length)},
+				{"ARR:length",  NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_tm_str_arr_length)},
 				{"ARR:erase",   NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_map_erase)},
 				{"ARR:append",  NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_append)},
 				{"ARR:reserve", NativeFuncTrans(NONE,  (NativeFunc_t)LIB_BI_tm_arr_reserve)},
@@ -367,7 +372,6 @@ const Variant LIB_BI {
 		{"is_defined",  NativeFuncTrans(BOOL,  (NativeFunc_t)LIB_BI_is_defined)},
 		{"type",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_type)},
 		{"type_name",   NativeFuncTrans(STR,   (NativeFunc_t)LIB_BI_type_name)},
-		{"length",      NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_length)},
 		{"size",        NativeFuncTrans(INT,   (NativeFunc_t)LIB_BI_size)},
 		{"range",       NativeFuncTrans(ARR,   (NativeFunc_t)LIB_BI_range)},
 

@@ -74,6 +74,7 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 #include "Op/Ternary.hpp"
 #include "Op/Access.hpp"
 #include "Op/TypeCast.hpp"
+#include "Op/RefOps.hpp"
 
 #pragma pack(1)
 struct OpDef {
@@ -110,6 +111,9 @@ const OpDef OPERATIONS[] = {
 
 	{OpSymbol_type_cast, "->",  OP_TypeCast},
 	{OpSymbol_access,    ":",   OP_Access},
+
+	{OpSymbol_ptrref, "&>",  OP_RefOps},
+	{OpSymbol_deref,  "~",   OP_RefOps},
 };
 const OpDef* find_OpDef(const OpSymbol& sym = OpSymbol__, const std::string& str = "") {
 	for (const OpDef& def : OPERATIONS) {
@@ -329,7 +333,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 					item.var.t = NONE;
 				}
 				// Set type reference.
-				else if (ch == '@' || ch == '~' || is_valid_name(std::string(1,ch))) {
+				else if (ch == '@' || is_valid_name(std::string(1,ch))) {
 					if (next_ref_is_str_) item.var.t = STR; // Set type as string but don't set `is_string` so it's not treated as a string.
 					else item.var.t = TREF;
 				}
@@ -434,7 +438,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 					return result;
 				}
 				// Throw error if previous token was also an operator.
-				if (result.token.seq.back().var.t == OP) {
+				if (result.token.seq.size() > 0 && result.token.seq.back().var.t == OP) {
 					emit_error(ERR_misplaced_operator, {}, ln+ln_offset, col+col_offset);
 					return result;
 				}
@@ -487,17 +491,6 @@ Variant* resolve_variant(ItyState& state, Variant& item) {
 			return &item;
 		}
 
-		// Deref pointer or named reference.
-		if (tref.mode == 2) {
-			switch (ptr->t) {
-				case REF: return state.scope.get_data_globally(AnyCast(STR_t,ptr->d), &none_var);
-				case PTR: return AnyCast(Variant*,ptr->d);
-				default: {
-					emit_error(ERR_cannot_dereference, {tref.str});
-					return &item;
-				}
-			}
-		}
 		// Return variable.
 		return ptr;
 	}
@@ -585,8 +578,9 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 
 		// Execute operator.
 		if (op_def) {
+			if (op_def->op->single_part) result = &none_var; // Set garbage first result value for single part operators, will only use the second value.
 			// Throw error if there is no first operand.
-			if (not result) {
+			if (not result ) {
 				emit_error(ERR_missing_operand);
 				return result;
 			}

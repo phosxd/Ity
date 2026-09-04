@@ -2,7 +2,7 @@ merge IO; merge Time; merge FileSystem;
 
 const INT start = now.ms;
 const STR blob = read:'Benchmark/Allocation/Blob.txt' * 1_000;
-const INT blob_len = length:blob;
+const INT blob_len = blob.length:[];
 
 var INT i = -1; while i < (blob_len-1); i+=1;
 	out:['\e[0G', i, ' / ', blob_len];

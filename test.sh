@@ -783,7 +783,7 @@ merge IO;
 var MAP map = {'a',1, 'b',2, 'c',3};
 const ARR keys = map.keys:[];
 
-var INT i = 0; while i < (length:[keys]);
+var INT i = 0; while i < (keys.length:[]);
 	print:(map:(keys:i));
 	i+=1;
 /;
@@ -1090,9 +1090,9 @@ const a = 10;
 const b = 20;
 
 var ref = @a;
-print:~ref;
+print:(~ref);
 ref.reassign:@b;
-print:~ref;
+print:(~ref);
 "
 
 "10
@@ -1389,9 +1389,28 @@ Error: 27"
 
 # 62
 
-""
+"
+# Pointer syntax
+# --------------
 
-""
+merge IO;
+
+const INT a = 9;
+const PTR ptr = &>a;
+
+print:ptr;
+print:(~ptr);
+
+const PTR val_ptr = (&> 99);
+print:val_ptr;
+print:(~val_ptr);
+
+"
+
+"none
+9
+none
+99"
 
 # 63
 

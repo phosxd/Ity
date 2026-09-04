@@ -14,7 +14,7 @@ const STR CELL_OFF = '  ';
 
 # Allow user defined world size.
 const WORLD_SIZE = {'x',25, 'y',20};
-if length:[__CMD_ARGS__] > 1;
+if __CMD_ARGS__.length:[] > 1;
 	WORLD_SIZE.x = (__CMD_ARGS__:0 -> INT);
 	WORLD_SIZE.y = (__CMD_ARGS__:1 -> INT);
 /;
@@ -22,7 +22,7 @@ if length:[__CMD_ARGS__] > 1;
 # Get world seed.
 var INT SEED;
 var STR SEED_in = prompt:'Set seed (default 0): ';
-if length:SEED_in == 0; SEED_in = '0'; /;
+if SEED_in.length:[] == 0; SEED_in = '0'; /;
 for ch in SEED_in;
 	SEED += 1;
 	SEED *= (ch.raw:[]); # Convert character to ASCII code & multiply that with the seed.
@@ -45,7 +45,7 @@ func NONE _game_init;
 		/;
 	/;
 	# Precalculate edges.
-	GAME.cell_count = (length:[(GAME.cells)]);
+	GAME.cell_count = (GAME.cells.length:[]);
 	for i in GAME.cell_count+1;
 		GAME.cell_x.append:(i % (WORLD_SIZE.x));
 	/;

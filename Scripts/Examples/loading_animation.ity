@@ -10,7 +10,7 @@ const ARR frames = ['|','/','-','\\'];
 func NONE do_animation;
 	IO.out:(ANSI.cursor_off); # Hide the terminal cursor.
 	while true;
-		for i in length:[frames];
+		for i in frames.length:[];
 			IO.out:['\e[1G',' ',(frames:i)];
 			sleep:0.133;
 		/;

@@ -60,7 +60,7 @@ struct FUNC_t {
 struct TREF_t {
 	std::string str;
 	size_t hash = 0;
-	uint8_t mode = 0; // 0 = normal, 1 = create ref, 2 = resolve ref.
+	uint8_t mode = 0; // 0 = normal, 1 = create ref.
 };
 
 using VariantData = std::variant<

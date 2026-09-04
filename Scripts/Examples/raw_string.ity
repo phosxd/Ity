@@ -3,7 +3,7 @@ import ANSI;
 
 
 var STR string = '';
-if (length:[__CMD_ARGS__] > 0);
+if (__CMD_ARGS__.length:[] > 0);
 	string = (__CMD_ARGS__:0);
 /;
 else;

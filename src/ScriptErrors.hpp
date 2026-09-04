@@ -174,7 +174,7 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 
 		case ERR_unexpected_char_at_expr_end:       return "Unexpected character \"" + args[0] + "\" at expression end.";
 		case ERR_invalid_character_for_construct:   return "Invalid character for " + args[0] + " construct: \"" + args[1] + "\".";
-		case ERR_cannot_dereference:                return "Cannot dereference \"" + args[0] + "\".";
+		case ERR_cannot_dereference:                return "Cannot dereference value of type \"" + args[0] + "\".";
 		case ERR_max_temporaries_in_use:            return "Maximum temporaries in use (" + args[0] + "/" + args[1] + "); Reduce one-off expression complexity.";
 		case ERR_not_iterable:                      return "Value is not iterable.";
 		case ERR_misplaced_operator:                return "Misplaced operator.";

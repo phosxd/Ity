@@ -59,7 +59,7 @@ constexpr char INST_END_SYMBOL = ';';
 constexpr std::string ITY_FILE_EXT = ".ity";
 
 constexpr std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
-constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}@~" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
+constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}@" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
 
 constexpr unsigned int MAX_TEMPORARY_POOL_RESERVE = 32;
 
@@ -168,6 +168,9 @@ enum OpSymbol : uint8_t {
 
 	OpSymbol_type_cast,
 	OpSymbol_access,
+
+	OpSymbol_ptrref,
+	OpSymbol_deref,
 };
 
 

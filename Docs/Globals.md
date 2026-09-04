@@ -91,14 +91,6 @@ if type:'string' == STR;
 /;
 ```
 
-### INT length (ARR/STR var)
-Return an `INT` representing the length of the given `ARR` / `STR` variable.
-
-```python
-length:'Hello World!'; # Returns 12.
-length:[[1,2,3,4]]; # Returns 4.
-```
-
 ### INT size (ANY var)
 Return an `INT` representing the size (in bytes) of a given variable. Including variant type & mode data (2 bytes extra).
 
@@ -155,6 +147,17 @@ Get an ASCII code for the first character in the string.
 ```python
 const STR string = 'a';
 string.raw:[]; # Returns 97.
+```
+
+### INT `STR/ARR`.length ()
+Get the string or array length. For strings, it is equal to the number of bytes representing the string, for arrays it is the length of the array.
+
+```python
+const STR string = 'abc';
+string.length:[]; # 3.
+
+const ARR array = [1,2,3];
+array.length:[]; # 3.
 ```
 
 ### NONE `ARR`.erase (INT index)
