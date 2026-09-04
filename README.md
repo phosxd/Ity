@@ -72,7 +72,13 @@ The overall differences between each profile is largely insignificant in most re
 Modifying the source code to remove built-ins or even entire operators & instructions that you don't use in your codebase, will probably be much more valuable if you need to make the most of every kilobyte.
 
 ## Installation
-You can install Ity on your system as a command called `ity` by running the `install.sh` script.
+You can install Ity on your system as a command called `ity` by running the `install.sh` script. Installing will also copy all modules in `Scripts/Modules` over to `/usr/local/share/ity/Modules` so they can be imported from anywhere on the system using the module's global name.
+
+```python
+import ANSI as A1; # Imports from '/usr/local/share/ity/Modules' or another path based on your platform.
+import Scripts/Modules/ANSI as A2; # Import a module using a relative path.
+import 'Scripts/Modules/ANSI' as A3; # You can use quotes if the path contains spaces.
+```
 
 
 # Usage
@@ -168,7 +174,7 @@ var INT b; # Value defaults to 0.
 
 var ANY c;     # Value defaults to none.
 print:(type:c)
-c = 99;        # Type is now INT, because he's can be whatever he wants. If he wants to grow up to be a string, god damn it let him be string.
+c = 99;        # Type is now INT.
 print:(type:c)
 ```
 
@@ -188,7 +194,7 @@ for i in 100;
 
 # Loop through an array like a based person.
 const ARR arr = [1,'2',3,'4',5];
-var INT i=-1; while i < (length:[arr]-1); i+=1;
+var INT i=-1; while i < (arr.length:[]-1); i+=1;
 	print:(arr:i);
 /;
 
