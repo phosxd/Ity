@@ -62,7 +62,7 @@ You can pass flags to the build script.
 	Statically link final binary. Comes at no performance benefiet & increases binary size about 1.5MB.
 - `-d` or `--debug`:
 	Build with debug symbols in-tact.
-- `-srd` or `--strip-runtime-deubg`
+- `-srd` or `--strip-runtime-debug`
 	Remove runtime error strings & debug flag branches.
 	Error codes & ln/col tracking are still kept.
 	Use this to save an extra few kilobytes.
