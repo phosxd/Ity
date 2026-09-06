@@ -1224,8 +1224,8 @@ MOD.print:true;
 
 merge IO;
 
-import /usr/local/share/ity/Modules/RangeIterator;
-print:(is_defined:'RangeIterator');
+import /usr/local/share/ity/Modules/ANSI;
+print:(is_defined:'ANSI');
 "
 
 "true

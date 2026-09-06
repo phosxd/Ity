@@ -1,3 +1,7 @@
+# Bash 5.3.0
+# Linux & Mac compatible script.
+
+
 install_path="/usr/local/bin/ity"
 share_install_path='/usr/local/share/ity'
 

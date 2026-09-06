@@ -1,3 +1,7 @@
+# Bash 5.3.0
+# Linux & Mac compatible script.
+
+
 RESET=$'\033[0m'
 BOLD=$'\033[1m'
 BLACK=$'\x1B[30m'
@@ -5,25 +9,26 @@ RED=$'\x1B[31m'
 GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
 
-MAC_GPP_PATH="/opt/local/bin/g++-mp-14" # If you installed GCC through Homebrew, you will need to change this to the proper location.
+GPP='g++'
+MAC_GPP_PATH="/opt/local/bin/g++-mp-14" # If you installed GCC (g++) through Homebrew, you will need to change this to the proper location.
 BIN_SIZE_LIMIT=150000
-COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt"
+COMMON_BUILD_ARGS='-std=c++26 -Wall -flto=4 -fno-exceptions -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt'
 
 DO_TEST=0
 DEBUG=0
 RUNTIME_DEBUG=1
 INCLUDE_SHELL=1
 DO_CAPTURE=0
-OPTIM="balanced"
-OPTIM_balanced="-O2 -finline-limit=4"
-OPTIM_speed="-Ofast"
-OPTIM_size="-Os -finline-limit=0"
+OPTIM='balanced'
+OPTIM_balanced='-O2 -finline-limit=4'
+OPTIM_speed='-Ofast'
+OPTIM_size='-Os -finline-limit=0'
 
-LINKS=".Ity_tmp_generated.cpp -o ity.o Main.cpp -o ity.bin"
+LINKS='.Ity_tmp_generated.cpp -o ity.o Main.cpp -o ity.bin'
 
 
 if [[ "$(uname -s)" == "Darwin" ]]; then
-	alias g++=$MAC_GPP_PATH
+	GPP="$MAC_GPP_PATH"
 fi
 
 
@@ -143,9 +148,9 @@ cd src
 result=0
 if [[ $DEBUG == 0 ]]; then
 	if [[ $DO_CAPTURE -eq 1 ]]; then
-		g++ $BUILD_ARGS 2> log.txt
+		$GPP $BUILD_ARGS 2> log.txt
 	else
-		g++ $BUILD_ARGS
+		$GPP $BUILD_ARGS
 	fi
 	result=$?
 	strip ity.bin # Better results than "-s" flag for gcc.
@@ -162,7 +167,7 @@ if [[ $DEBUG == 0 ]]; then
 		ity.bin ity.bin
 fi
 if [[ $DEBUG == 1 ]]; then
-	g++ -g $BUILD_ARGS
+	$GPP -g $BUILD_ARGS
 	result=$?
 fi
 

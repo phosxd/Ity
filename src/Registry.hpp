@@ -42,7 +42,7 @@ const std::string GLOBAL_SHARE_PATH =
 	"%LOCALAPPDATA%/ity/"
 #elif __APPLE__
 	#if TARGET_OS_MAC
-		"~/Library/Application Support/ity/"
+		"/usr/local/share/ity/"
 	#elif TARGET_OS_IPHONE
 		"Documents/ity/"
 	#endif
