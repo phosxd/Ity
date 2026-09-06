@@ -20,9 +20,7 @@ func MAP VarMap_new;
 func ANY VarMap_get; arg PTR S; arg ANY key;
 	const STR str_key = (type:[key]->STR) + ':' + (key->STR);
 	if S.d.has:str_key;
-		return S.d:str_key;
-	/;
-	return none;
+	return (S.d.has:str_key) ? (S.d:str_key) -- none;
 /;
 
 

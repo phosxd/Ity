@@ -5,8 +5,9 @@ RED=$'\x1B[31m'
 GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
 
+MAC_GPP_PATH="/opt/local/bin/g++-mp-14" # If you installed GCC through Homebrew, you will need to change this to the proper location.
 BIN_SIZE_LIMIT=150000
-COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt -Wl,--gc-sections -Wl,--build-id=none"
+COMMON_BUILD_ARGS="-std=c++26 -Wall -flto=4 -fno-exceptions -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt"
 
 DO_TEST=0
 DEBUG=0
@@ -19,6 +20,13 @@ OPTIM_speed="-Ofast"
 OPTIM_size="-Os -finline-limit=0"
 
 LINKS=".Ity_tmp_generated.cpp -o ity.o Main.cpp -o ity.bin"
+
+
+if [[ "$(uname -s)" == "Darwin" ]]; then
+	alias g++=$MAC_GPP_PATH
+fi
+
+
 
 
 # Parse "LIBRARIES" file.

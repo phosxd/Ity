@@ -41,8 +41,16 @@ This is my first project in C++, I'm sure there are things that I have done wron
 
 
 # Build
-The build process for the Ity interpreter is very straight-forward. After cloning this repository you should notice a `build.sh` bash script inside the root directory.
-Run the build script by typing `./build.sh` in your terminal, doing so will build the source code using the GCC compiler on your system.
+## Linux Build
+The build process for the Ity interpreter is very straight-forward on Linux. After cloning this repository you should notice a `build.sh` Bash script inside the root directory.
+Run the build script by typing `./build.sh` in your terminal, doing so will build the source code using the GCC compiler on your system. GCC (g++) version 14 or later is required.
+
+## MacOS Build
+Mac is bit more complicated. The `g++` install on your system uses Clang instead of the required GCC. Before running the build script you will have to go through some setup.
+1. Install GCC 14 or later, using Homebrew or MacPorts (recommended).
+2. Ensure the GCC (g++) install is present at `/opt/local/bin/g++-mp-14` (MacPorts).
+   If you installed with Homebrew, the location will be different & you will need to edit `build.sh` to change the path declared as `MAC_GPP_PATH`.
+3. Install Bash 5.3.0 or later, then use it to run `build.sh`.
 
 ## Build flags
 You can pass flags to the build script.
