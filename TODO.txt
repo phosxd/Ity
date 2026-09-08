@@ -2,6 +2,11 @@
 - Use custom pointer functionality for `PTR` type that can be safely dereferenced by storing a comprehensive path to the data stored in scope, instead of using a raw pointer.
   Either that, or enhance the capbility of `REF` to be able to reference data in nested arrays & maps, so that there is basically no need for `PTR`.
 
+- Implement new operator execution system which uses a stuct for operator arguments instead of forcing them in the function parameters for every operator.
+  Also if an operator definition specifies a flag for it, have every operator that makes an access of some kind (to array, variable name, or map), append to
+  a custom "path" which can be passed to a reference operator("@") which can use it to lookup the value via the path upon deref. This will require
+  that custom accessor functions be made instead of being embedded in the access operator logic.
+
 - Fully implement StrUtil & ArrUtil modules.
 
 

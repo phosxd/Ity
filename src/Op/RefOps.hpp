@@ -1,8 +1,9 @@
 #pragma once
 
 
-void OP_RefOps_exec(ItyState& state, Variant*& _first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& result_ptr) {
+void OP_RefOps_exec(ItyState& state, ExprState& expr_state, Variant*& _first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& result_ptr) {
 	// Make pointer.
+	if (symbol == OpSymbol_ref)    result = Variant{REF, expr_state.path};
 	if (symbol == OpSymbol_ptrref) result = Variant{PTR, second};
 
 	// Dereference.
@@ -18,5 +19,5 @@ void OP_RefOps_exec(ItyState& state, Variant*& _first, Variant*& second, const O
 
 const auto OP_RefOps = new Operation{
 	.exec = OP_RefOps_exec,
-	.single_part = true,
+	.unary = true,
 };

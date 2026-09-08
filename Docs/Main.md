@@ -59,7 +59,7 @@ false;
 ```
 
 ## INT
-Holds a 32-bit signed integer. It has a maximum value of 2,147,483,647 & will wrap around or potentially crash if this limit is exceeded. 
+Holds a 64-bit signed integer.  It has a range of 1.7e−308 to 1.7e+308. Trying to manually type out & initialize a value larger than the capacity will crash the program with no explanation.
 
 ```python
 1; 2; 3;
@@ -67,7 +67,7 @@ Holds a 32-bit signed integer. It has a maximum value of 2,147,483,647 & will wr
 ```
 
 ## FLOAT
-Holds a 64-bit signed floating point number.  It has a range of 1.7e−308 to 1.7e+308.
+Holds a 64-bit signed floating point number.  It has a range of 1.7e−308 to 1.7e+308. Trying to manually type out & initialize a value larger than the capacity will crash the program with no explanation.
 
 ```python
 0.0; 1.34291;
@@ -227,7 +227,7 @@ Setting, accessing, comparing, or in any way operating on a reference/pointer wi
 merge IO;
 
 var my_var = 100;
-const my_ref = @my_var; # "@" symbol creates a reference to a variable name.
+const my_ref = @my_var; # "@" unary operator creates a reference to a variable name.
 
 print:(~my_ref); # 100.
 my_var = 101;
@@ -239,16 +239,16 @@ print:my_var; # 99.
 # my_ref & my_var are essentially interchangable in most cases.
 ```
 
-The `@` symbol can only be used on variable names to create a `REF` to it. To create a `PTR` you must use the `&>` unary operator. What makes this so powerful (and dangerous) is that pointers can reference *any* value located *anywhere* (array items, map items, values in other modules, etc).
+The `@` unary operator can only be used on variable names to create a `REF` to it. To create a `PTR` you must use the `@>` unary operator. What makes this so powerful (and dangerous) is that pointers can reference *any* value located *anywhere* (array items, map items, values in other modules, etc).
 
 ```python
 const INT my_var = 100;
-const PTR ptr = &>my_var;
+const PTR ptr = @>my_var;
 print:(~ptr); # 100.
 
 # Point to variant in a container...
 const ARR array = [1,2,3];
-const PTR arr_item_ptr = &>(array:0);
+const PTR arr_item_ptr = @>(array:0);
 print:(~arr_item_ptr); # 1.
 array:0 = 11;
 print:(~arr_item_ptr); # 11.
@@ -278,7 +278,7 @@ const b = 'b';
 
 var my_ref = @a;
 print:(~my_ref); # Prints "a".
-my_ref.reassign:@b;
+my_ref.reassign:(@b);
 print:(~my_ref); # Prints "b".
 ```
 
@@ -294,10 +294,10 @@ const STR other_global_value = 'Other Global';
 func NONE reassign_ref; arg REF ref; arg local=false;
 	if local;
 		const STR local_value = 'Local';
-		(~ref).reassign:@local_value; # We deref so we don't reassign the copy given in the function argument.
+		(~ref).reassign:(@local_value); # We deref so we don't reassign the copy given in the function argument.
 	/;
 	else;
-		(~ref).reassign:@other_global_value;
+		(~ref).reassign:(@other_global_value);
 	/;
 /;
 
@@ -306,9 +306,9 @@ const STR global_value = 'Global';
 var REF my_ref = @global_value; # Initialize with some global constant value.
 print:(~my_ref); # Prints "Global".
 
-reassign_ref:[@my_ref, false]; # Reassign to another global value which is *not* destroyed after the function returns.
+reassign_ref:[(@my_ref), false]; # Reassign to another global value which is *not* destroyed after the function returns.
 print:(~my_ref); # Prints "Other Global";
-reassign_ref:[@my_ref, true]; # Reassign to a local value which *is* destroyed after the function returns.
+reassign_ref:[(@my_ref), true]; # Reassign to a local value which *is* destroyed after the function returns.
 print:(~my_ref); # Prints none. The pointer was assigned to a variable that got destroyed.
 ```
 
@@ -420,8 +420,15 @@ x==99 ? (f1:[]) -- (f2:[]);
 # 2
 ```
 
-### PointTo ( `&>` )
-The point-to operation creates a new `PTR` variant which references the value on the right-side of the operator.
+### Reference ( `@` )
+The reference operation creates a new `REF` variant which references the variable name given on the right-side of the operator.
+
+```python
+const INT x = 99;
+const REF ref = @(x);
+```
+### Pointer Reference ( `@>` )
+The pointer reference operation creates a new `PTR` variant which references the value on the right-side of the operator.
 
 ```python
 const ARR array = [1,2,3];

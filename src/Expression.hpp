@@ -112,7 +112,8 @@ const OpDef OPERATIONS[] = {
 	{OpSymbol_type_cast, "->",  OP_TypeCast},
 	{OpSymbol_access,    ":",   OP_Access},
 
-	{OpSymbol_ptrref, "&>",  OP_RefOps},
+	{OpSymbol_ref,    "@",   OP_RefOps},
+	{OpSymbol_ptrref, "@>",  OP_RefOps},
 	{OpSymbol_deref,  "~",   OP_RefOps},
 };
 const OpDef* find_OpDef(const OpSymbol& sym = OpSymbol__, const std::string& str = "") {
@@ -333,7 +334,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 					item.var.t = NONE;
 				}
 				// Set type reference.
-				else if (ch == '@' || is_valid_name(std::string(1,ch))) {
+				else if (is_valid_name(std::string(1,ch))) {
 					if (next_ref_is_str_) item.var.t = STR; // Set type as string but don't set `is_string` so it's not treated as a string.
 					else item.var.t = TREF;
 				}
@@ -477,11 +478,11 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 
 
 
-Variant* resolve_variant(ItyState& state, Variant& item) {
+Variant* resolve_variant(ItyState& state, ExprState& expr_state, Variant& item) {
 	// If typed reference...
 	if (item.t == TREF) {
 		const TREF_t& tref = AnyCast(TREF_t,item.d);
-		if (tref.mode == 1) return state.append_temp_var(Variant{REF, tref.str}); // Create named ref.
+		expr_state.path = tref.str;
 
 		// Get variable.
 		Variant* ptr = state.scope.get_data_globally(tref.str, nullptr, tref.hash);
@@ -501,7 +502,7 @@ Variant* resolve_variant(ItyState& state, Variant& item) {
 
 
 // Execute a sequence of ExprTokens. `token` itself is an ExprToken which should contain a sequence in `ExprToken.seq`.
-Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false) {
+Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, const bool subexpr=false) {
 	// Output sequence in debug mode.
 	#ifdef RUNTIME_DEBUG
 	if (debug_flags.expr && not subexpr) {
@@ -514,8 +515,8 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 		ARR_t array; array.reserve(token.seq.size());
 		for (ExprToken& subtoken : token.seq) {
 			array.push_back((subtoken.t == ExprTokenType_sequence)
-				? *expr_exec_(state, subtoken, true)
-				: *resolve_variant(state, subtoken.var)
+				? *expr_exec_(state, subtoken, expr_state, true)
+				: *resolve_variant(state, expr_state, subtoken.var)
 			);
 		}
 		return state.append_temp_var(Variant{ARR, std::move(array)});
@@ -535,8 +536,8 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 			if (is_key) {
 				// Get key.
 				const Variant* var = (subtoken.t == ExprTokenType_sequence)
-					? expr_exec_(state, subtoken, true)
-					: resolve_variant(state, subtoken.var)
+					? expr_exec_(state, subtoken, expr_state, true)
+					: resolve_variant(state, expr_state, subtoken.var)
 				;
 				// Throw error if key is not a string.
 				if (var->t != STR) {
@@ -550,8 +551,8 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 			else {
 				// Apply value.
 				map[key] = (subtoken.t == ExprTokenType_sequence)
-					? *expr_exec_(state, subtoken, true)
-					: *resolve_variant(state, subtoken.var)
+					? *expr_exec_(state, subtoken, expr_state, true)
+					: *resolve_variant(state, expr_state, subtoken.var)
 				;
 				is_key = true;
 			}
@@ -578,7 +579,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 
 		// Execute operator.
 		if (op_def) {
-			if (op_def->op->single_part) result = &none_var; // Set garbage first result value for single part operators, will only use the second value.
+			if (op_def->op->unary) result = &none_var; // Set garbage first result value for unsary operators, will only use the second value.
 			// Throw error if there is no first operand.
 			if (not result ) {
 				emit_error(ERR_missing_operand);
@@ -599,12 +600,12 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 			}
 			// Get our second variant to operate on.
 			second = (item.t == ExprTokenType_sequence)
-				? expr_exec_(state, item, true)
-				: resolve_variant(state, item.var)
+				? expr_exec_(state, item, expr_state, true)
+				: resolve_variant(state, expr_state, item.var)
 			;
 
 			op_result.t = PLACEHOLDER; // Reset the type for reuse.
-			op_def->op->exec(state, result, second, op_def->sym, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
+			op_def->op->exec(state, expr_state, result, second, op_def->sym, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
 			// If we reveive a direct value, set the result to that.
 			if (op_result.t != PLACEHOLDER) result = state.append_temp_var(op_result);
 
@@ -615,8 +616,8 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 
 		else if (item.var.t == OP) op_def = AnyCast(const OpDef*,item.var.d); // Get operator.
 		else result = (item.t == ExprTokenType_sequence)
-			? expr_exec_(state, item, true) // Get value from sub-sequence
-			: resolve_variant(state, item.var) // Get variant.
+			? expr_exec_(state, item, expr_state, true) // Get value from sub-sequence
+			: resolve_variant(state, expr_state, item.var) // Get variant.
 		;
 	}
 
@@ -638,7 +639,9 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, const bool subexpr=false)
 Variant* expr_exec(ItyState& state, ExprToken& token, const bool subexpr=false) {
 	state.tp_c = 0;
 	current_line = token.ln; current_column = token.col;
-	return expr_exec_(state, token, subexpr);
+	ExprState expr_state = {
+	};
+	return expr_exec_(state, token, expr_state, subexpr);
 }
 
 

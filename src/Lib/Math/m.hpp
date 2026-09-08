@@ -6,7 +6,7 @@
 static Variant LIB_MT_abs(ItyState& _state, const ARR_t& args) {
 	if (not ExpectArgs(args, { {INT,FLOAT} })) return VPS.empty;
 	const Variant& var = args[0];
-	if (var.t == INT) return Variant{INT, std::abs(AnyCast(int32_t,var.d))};
+	if (var.t == INT) return Variant{INT, (INT_t)std::abs(AnyCast(INT_t,var.d))};
 	return Variant{FLOAT, std::abs(AnyCast(double,var.d))};
 }
 
@@ -14,7 +14,7 @@ static Variant LIB_MT_abs(ItyState& _state, const ARR_t& args) {
 static Variant LIB_MT_log(ItyState& _state, const ARR_t& args) {
 	if (not ExpectArgs(args, { {INT,FLOAT} })) return VPS.empty;
 	const Variant& var = args[0];
-	if (var.t == INT) return Variant{INT, (INT_t)std::log(AnyCast(int32_t,var.d))};
+	if (var.t == INT) return Variant{INT, (INT_t)std::log(AnyCast(INT_t,var.d))};
 	return Variant{FLOAT, (FLOAT_t)std::log(AnyCast(double,var.d))};
 }
 
@@ -22,7 +22,7 @@ static Variant LIB_MT_log(ItyState& _state, const ARR_t& args) {
 static Variant LIB_MT_sqrt(ItyState& _state, const ARR_t& args) {
 	if (not ExpectArgs(args, { {INT,FLOAT} })) return VPS.empty;
 	const Variant& var = args[0];
-	if (var.t == INT) return Variant{INT, (INT_t)std::sqrt((double)AnyCast(int32_t,var.d))};
+	if (var.t == INT) return Variant{INT, (INT_t)std::sqrt((double)AnyCast(INT_t,var.d))};
 	return Variant{FLOAT, std::sqrtf(AnyCast(double,var.d))};
 }
 

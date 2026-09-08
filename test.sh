@@ -1036,7 +1036,7 @@ func NONE do_modification; arg REF obj;
 
 
 var ARR my_arr = [1,2];
-do_modification:[@my_arr];
+do_modification:[(@my_arr)];
 print:[my_arr];
 "
 
@@ -1091,7 +1091,7 @@ const b = 20;
 
 var ref = @a;
 print:(~ref);
-ref.reassign:@b;
+ref.reassign:(@b);
 print:(~ref);
 "
 
@@ -1107,7 +1107,7 @@ print:(~ref);
 var a = 1;
 var b = 2;
 const ref = @a;
-ref.reassign:@b; # Should throw const value error.
+ref.reassign:(@b); # Should throw const value error.
 "
 
 "Error: 29"
@@ -1396,12 +1396,12 @@ Error: 27"
 merge IO;
 
 const INT a = 9;
-const PTR ptr = &>a;
+const PTR ptr = @>a;
 
 print:ptr;
 print:(~ptr);
 
-const PTR val_ptr = (&> 99);
+const PTR val_ptr = (@> 99);
 print:val_ptr;
 print:(~val_ptr);
 
@@ -1423,7 +1423,7 @@ merge IO;
 # Array...
 
 var ARR array = [1,2,3,4];
-const PTR arr_item_ptr = &>(array:2); # Point to INT '3'.
+const PTR arr_item_ptr = @>(array:2); # Point to INT '3'.
 print:(~arr_item_ptr);
 
 array:2 = 33; # Overwrite value at index 2.
@@ -1432,7 +1432,7 @@ print:(~arr_item_ptr); # Should be 33 now.
 # Map...
 
 var MAP map = {'a',1, 'b',2, 'c',3};
-const PTR map_item_ptr = &>(map.b); # Point to INT '2'.
+const PTR map_item_ptr = @>(map.b); # Point to INT '2'.
 print:(~map_item_ptr);
 
 map.b = 22; # Overwrite value at 'b'.

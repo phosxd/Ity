@@ -15,6 +15,11 @@ struct ExprToken {
 };
 
 
+struct ExprState {
+	STR_t path = ""; // W.I.P.
+};
+
+
 #ifdef RUNTIME_DEBUG
 std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 	os << "{ln=" << s.ln << ", col=" << s.col;
@@ -127,9 +132,9 @@ struct CompositeItem {
 
 
 struct Operation {
-	void (*exec)(ItyState&, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& result_ptr) = nullptr;
+	void (*exec)(ItyState&, ExprState& expr_state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& result_ptr) = nullptr;
 	void (*pre_exec)(ItyState&, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& result_ptr) = nullptr;
-	const bool single_part = false;
+	const bool unary = false;
 };
 
 
@@ -153,13 +158,9 @@ const std::string multiple_types_str(const std::vector<VariantType>& types) {
 VariantData get_literal_from_str(const VariantType& type, const std::string& str_val) {
 	switch (type) {
 		case TREF: {
-			const STR_t& real_name = trim_left(str_val,'@');
-			uint8_t mode = 0;
-			if (str_val[0] == '@') mode = 1;
 			return TREF_t{
-				.str  = real_name,
-				.hash = string_hasher(real_name),
-				.mode = mode,
+				.str  = str_val,
+				.hash = string_hasher(str_val),
 			};
 		}
 		case REF:

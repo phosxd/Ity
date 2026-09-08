@@ -14,7 +14,7 @@ void OP_Ternary_pre_exec(ItyState& state, Variant*& first, const OpSymbol& symbo
 }
 
 
-void OP_Ternary_exec(ItyState& state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& _result, Variant*& result_ptr) {
+void OP_Ternary_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& _result, Variant*& result_ptr) {
 	result_ptr = second;
 }
 

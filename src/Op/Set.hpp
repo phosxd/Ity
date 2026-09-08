@@ -13,7 +13,7 @@ static Variant OP_Set_arith_set(const OpSymbol& symbol, Variant*& o1, Variant*& 
 }
 
 
-void OP_Set_exec(ItyState& state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& result_ptr) {
+void OP_Set_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& result_ptr) {
 	Variant* o1 = resovlve_potential_ref(state, first);
 	Variant* o2 = resovlve_potential_ref(state, second);
 

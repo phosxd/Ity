@@ -31,7 +31,7 @@ struct ItyState;
 struct CompositeItem;
 struct OpDef;
 
-using INT_t = int32_t;
+using INT_t = int64_t;
 using UINT_t = uint32_t;
 using FLOAT_t = double;
 using STR_t = std::string;
@@ -60,7 +60,6 @@ struct FUNC_t {
 struct TREF_t {
 	std::string str;
 	size_t hash = 0;
-	uint8_t mode = 0; // 0 = normal, 1 = create ref.
 };
 
 using VariantData = std::variant<

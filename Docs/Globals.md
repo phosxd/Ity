@@ -95,13 +95,13 @@ if type:'string' == STR;
 Return an `INT` representing the size (in bytes) of a given variable. Including variant type & mode data (2 bytes extra).
 
 ```python
-size:0;              # Returns 4 (32-bit int) + 2 (type & mode info).
+size:0;              # Returns 8 (64-bit int) + 2 (type & mode info).
 size:'Hello World!'; # Returns the number of characters in the string + 2.
-size:[[1,2,3,4]];    # Returns 50.
+size:[[1,2,3,4]];    # Returns 66.
 
 # Arrays & maps are particularly bulky.
-size:{'a',1, 'b',2, 'c',3, 'd',4}; # Returns 86.
-size:{'array value',[1,2,3,4]};    # Returns 119.
+size:{'a',1, 'b',2, 'c',3, 'd',4}; # Returns 102.
+size:{'array value',[1,2,3,4]};    # Returns 135.
 ```
 
 ### ARR range (INT start, INT end, INT step=1)
@@ -122,14 +122,14 @@ Reassign a `REF`. Will not work on constant reference variants.
 const a = 1;
 const b = 2;
 
-var ref = @a; # References `a`.
-ref.reasssign:@b; # Now references `b`.
+var REF ref = @a; # References `a`.
+ref.reasssign:(@b); # Now references `b`.
 
-const c_ref = @a;
-ref.reassign:@b; # Fails, `c_ref` is permanently linked to `a`.
+const REF c_ref = @a;
+ref.reassign:(@b); # Fails, `c_ref` is permanently linked to `a`.
 ```
 
-### INT `REF`.type ()
+### INT `REF/PTR`.type ()
 Return the data's type referenced by the `REF` or `PTR`.
 
 ```python

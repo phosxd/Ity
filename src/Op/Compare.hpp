@@ -15,7 +15,7 @@ void OP_Compare_pre_exec(ItyState& state, Variant*& first, const OpSymbol& symbo
 }
 
 
-void OP_Compare_exec(ItyState& state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& _result_ptr) {
+void OP_Compare_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& _result_ptr) {
 	const Variant* o1 = resovlve_potential_ref(state, first);
 	const Variant* o2 = resovlve_potential_ref(state, second);
 
