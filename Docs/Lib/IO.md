@@ -4,9 +4,16 @@ IO module provides the essentials for communicating via the process standard in 
 ### (MAP) SIGNAL
 A map of all supported system signals represented as an `INT`.
 
-Map keys:
-- `interrupt`: `2`
-- `terminate`: `15`
+**Map keys:**
+- `abort`
+- `illegal`
+- `interrupt`
+- `seg_fault`
+- `terminate`
+**Unix specific:**
+- `quit`
+- `user1`
+- `user2`
 
 # Methods
 

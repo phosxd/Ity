@@ -47,7 +47,7 @@ This is my first project in C++, I'm sure there are things that I have done wron
 |--|--|--|--|
 | Linux (Fedora 43) x86_64 | 🟩 | 0.2.0 | .
 | MacOS (Monterey) x86_64 VM | 🟩 | 0.2.0 | This is run through a virtual machine on the latest version of MacOS that still supports the x86 architecture. Newer MacOS versions may interact with Ity or it's build systems differently.
-| Windows (11 Pro) x86_64 | 🟥 | . | . |
+| Windows (11 Pro) x86_64 | 🟧 | 0.2.0 | Automated tests & installation not available. Certain system IO signals are not available. |
 | Web (JavaScript) | 🟥 | . | We are a long way from being Web compatible, but it is on the roadmap. The only practical reason I want to get this working is so I can host a sandbox for those who don't want to install on their base system.
 
 - 🟩 Fully supported, all features work as expected.
@@ -73,7 +73,7 @@ Mac is bit more complicated. The `g++` install on your system uses Clang instead
 3. Install Bash 5.3.0 or later, then use it to run `build.sh`.
 
 ## Windows Build
-Windows is not supported at the moment. However, I am actively working on a build process for it & making the source code fit the Windows standards.
+To build on Windows, run the `build_windows.ps1` PowerShell script in your terminal. Automated testing not availale.
 
 ## Build flags
 You can pass flags to the build script.
@@ -102,8 +102,8 @@ On the other hand, if you are *really* constrained with file size & are willing 
 The overall differences between each profile is largely insignificant in most real-word cases, so unless you are working with tight constraints I wouldn't worry about changing the optimization profile.
 Modifying the source code to remove built-ins or even entire operators & instructions that you don't use in your codebase, will probably be much more valuable if you need to make the most of every kilobyte.
 
-## Installation
-You can install Ity on your system as a command called `ity` by running the `install.sh` script. Installing will also copy all modules in `Scripts/Modules` over to `/usr/local/share/ity/Modules` so they can be imported from anywhere on the system using the module's global name.
+## Linux / MacOS Installation
+You can install Ity on your system as a command called `ity` by running the `install.sh` Bash script. Installing will also copy all modules in `Scripts/Modules` over to `/usr/local/share/ity/Modules` so they can be imported from anywhere on the system using the module's global name.
 
 ```python
 import ANSI as A1; # Imports from '/usr/local/share/ity/Modules' or another path based on your platform.
