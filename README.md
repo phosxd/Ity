@@ -42,12 +42,23 @@ This is my first project in C++, I'm sure there are things that I have done wron
 
 # Build
 
-Tested:
-- Linux (Fedora 43) x86_64
-- Linux (Alpine) ARM32
-- MacOS (Montery) x86_64 VM
-Plan to support, but untested:
-- Windows (11 Pro) x86_64
+
+| Platform | Support Level | Last Ver. Tested | Notes |
+|--|--|--|--|
+| Linux (Fedora 43) x86_64 | 🟩 | 0.2.0 | .
+| MacOS (Monterey) x86_64 VM | 🟩 | 0.2.0 | This is run through a virtual machine on the latest version of MacOS that still supports the x86 architecture. Newer MacOS versions may interact with Ity or it's build systems differently.
+| Windows (11 Pro) x86_64 | 🟥 | . | . |
+| Web (JavaScript) | 🟥 | . | We are a long way from being Web compatible, but it is on the roadmap. The only practical reason I want to get this working is so I can host a sandbox for those who don't want to install on their base system.
+
+- 🟩 Fully supported, all features work as expected.
+- 🟧 Supported, but some features may not work flawlessly.
+- 🟥 Does not compile / no compatible build system.
+
+Windows support is planned. Some refactoring needs to be done to make it possible though.
+
+If your platform is not on this list, open an issue so I can get to work on adding it to the supported platforms.
+
+
 
 
 ## Linux Build
