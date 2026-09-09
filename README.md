@@ -54,8 +54,6 @@ This is my first project in C++, I'm sure there are things that I have done wron
 - 🟧 Supported, but some features may not work flawlessly.
 - 🟥 Does not compile / no compatible build system.
 
-Windows support is planned. Some refactoring needs to be done to make it possible though.
-
 If your platform is not on this list, open an issue so I can get to work on adding it to the supported platforms.
 
 
