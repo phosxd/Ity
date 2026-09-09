@@ -32,7 +32,7 @@ void OP_Compare_exec(ItyState& state, ExprState& _expr_state, Variant*& first, V
 		default: break;
 	}
 
-	result = Variant{BOOL, test};
+	result = Variant{VT_BOOL, test};
 }
 
 

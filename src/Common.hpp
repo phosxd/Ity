@@ -157,21 +157,21 @@ const std::string multiple_types_str(const std::vector<VariantType>& types) {
 
 VariantData get_literal_from_str(const VariantType& type, const std::string& str_val) {
 	switch (type) {
-		case TREF: {
+		case VT_TREF: {
 			return TREF_t{
 				.str  = str_val,
 				.hash = string_hasher(str_val),
 			};
 		}
-		case REF:
-		case STR:  return str_val;
-		case BOOL: return str_val == "true";
-		case INT: {
+		case VT_REF:
+		case VT_STR:  return str_val;
+		case VT_BOOL: return str_val == "true";
+		case VT_INT: {
 			if (is_int_str_32_in_range(str_val)) return (INT_t)std::stoi(str_val);
 			emit_error(ERR_cannot_initialize_value, {str_val, "Number too large"});
 			return std::monostate();
 		}
-		case FLOAT: return (FLOAT_t)std::stod(str_val);
+		case VT_FLOAT: return (FLOAT_t)std::stod(str_val);
 		default: return std::monostate();
 	}
 }
@@ -181,7 +181,7 @@ VariantData get_literal_from_str(const VariantType& type, const std::string& str
 const STR_t var_get_obj_type(const MAP_t& map) {
 	if (const auto& it = map.find("__t"); it != map.end()) {
 		const Variant& obj_type_var = it->second;
-		if (obj_type_var.t != STR) {
+		if (obj_type_var.t != VT_STR) {
 			emit_error(ERR_unexpected, {"GetObjType", "Special member \"__t\" should be of type string."});
 			return "";
 		}
@@ -192,17 +192,18 @@ const STR_t var_get_obj_type(const MAP_t& map) {
 
 
 const Variant var_type_var(const VariantType type) {
-	return Variant{INT, (INT_t)type, VariantMode_constant};
+	return Variant{VT_INT, (INT_t)type, VariantMode_constant};
 }
 
 
-Variant none_var = {NONE, std::monostate(), VariantMode_constant};
+Variant none_var = {VT_NONE, std::monostate(), VariantMode_constant};
 
 // Collection of Variant presets used in various places within the codebase.
 struct VariantPresets_struct {
-	const Variant empty       {PLACEHOLDER, std::monostate(), VariantMode_constant};
-	const Variant bool_true   {BOOL, true, VariantMode_constant};
-	const Variant bool_false  {BOOL, false, VariantMode_constant};
+	const Variant none        {VT_NONE, std::monostate(), VariantMode_constant};
+	const Variant empty       {VT_PLACEHOLDER, std::monostate(), VariantMode_constant};
+	const Variant bool_true   {VT_BOOL, true, VariantMode_constant};
+	const Variant bool_false  {VT_BOOL, false, VariantMode_constant};
 };
 const VariantPresets_struct VPS;
 
@@ -210,7 +211,7 @@ const VariantPresets_struct VPS;
 // Translate a native function to a usable function object.
 const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t& native_func) {
 	return Variant{
-		FUNC, (FUNC_t){
+		VT_FUNC, (FUNC_t){
 			.return_type = return_type,
 			.bound_args = (ARR_t){},
 			.native_callable = native_func

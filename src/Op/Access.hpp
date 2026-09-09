@@ -5,7 +5,7 @@ const bool OP_Access_type_method(const std::string& type_name, const STR_t& meth
 	MAP_t::iterator it;
 
 	// Find map method.
-	if (o1->t == MAP) {
+	if (o1->t == VT_MAP) {
 		const STR_t& map_type = var_get_obj_type(AnyCast(MAP_t,o1->d));
 		if (map_type != "m") it = methods.find( (type_name+'('+map_type+')'+':'+method_name) );
 	}
@@ -16,9 +16,9 @@ const bool OP_Access_type_method(const std::string& type_name, const STR_t& meth
 	// Return the method.
 	if (it != methods.end()) {
 		FUNC_t func = AnyCast(FUNC_t,it->second.d); // Copy function.
-		func.bound_args = func.bound_args + (ARR_t){Variant{PTR, o1}}; // Bind first variant to the function copy.
+		func.bound_args = func.bound_args + (ARR_t){Variant{VT_PTR, o1}}; // Bind first variant to the function copy.
 		// Return copied function.
-		result = Variant{FUNC, std::move(func), VariantMode_constant};
+		result = Variant{VT_FUNC, std::move(func), VariantMode_constant};
 		return true;
 	}
 	return false;
@@ -33,12 +33,12 @@ void OP_Access_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Va
 
 
 	// Try to access type method.
-	if (o2->t == STR) {
+	if (o2->t == VT_STR) {
 		// Find & return method.
 		MAP_t& methods = AnyCastV(MAP_t,state.scope.get_data_globally("__tm__", nullptr, HASHED_NAMES.__tm__)->d);
 		const STR_t& method_name = AnyCast(STR_t,second->d);
 		// Try pointer/reference type methods first.
-		if ((first->t == PTR || first->t == REF)
+		if ((first->t == VT_PTR || first->t == VT_REF)
 		&& (OP_Access_type_method(get_variant_type_name(first->t), method_name, methods, first, result))) return;
 		// Try.
 		if (OP_Access_type_method(get_variant_type_name(o1->t), method_name, methods, o1, result)) return;
@@ -47,8 +47,8 @@ void OP_Access_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Va
 
 	switch (o1->t) {
 		// Access array element.
-		case ARR: {
-			if (o2->t != INT) {
+		case VT_ARR: {
+			if (o2->t != VT_INT) {
 				emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 				return;
 			}
@@ -69,8 +69,8 @@ void OP_Access_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Va
 
 
 		// Access string character.
-		case STR: {
-			if (o2->t != INT) {
+		case VT_STR: {
+			if (o2->t != VT_INT) {
 				emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 				return;
 			}
@@ -80,16 +80,16 @@ void OP_Access_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Va
 				emit_error(ERR_index_out_of_range, {std::to_string(index)});
 				return;
 			}
-			result = Variant{STR, std::string(1,str[index])};
+			result = Variant{VT_STR, std::string(1,str[index])};
 			return;
 	}
 
 
 		// Access map object property.
-		case MAP: {
+		case VT_MAP: {
 			MAP_t& map = AnyCastV(MAP_t,o1->d);
 			// Throw error if accessor is not a string.
-			if (o2->t != STR) {
+			if (o2->t != VT_STR) {
 				emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 				return;
 			}
@@ -105,11 +105,11 @@ void OP_Access_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Va
 
 
 		// Access function call.
-		case FUNC: {
+		case VT_FUNC: {
 			const FUNC_t& func = AnyCast(FUNC_t,o1->d);
 			result = std::move(call_function(
 				state, func,
-				Variant{ARR, (second->t == ARR) ? AnyCastV(ARR_t,second->d) : (ARR_t){*second}} // Using "second" instead of "o2" is not a mistake, if it's a `REF`/`PTR` we want to pass the actual ref/ptr.
+				Variant{VT_ARR, (second->t == VT_ARR) ? AnyCastV(ARR_t,second->d) : (ARR_t){*second}} // Using "second" instead of "o2" is not a mistake, if it's a `REF`/`PTR` we want to pass the actual ref/ptr.
 			));
 			return;
 		}

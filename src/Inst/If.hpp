@@ -30,7 +30,7 @@ static void INST_If_exec(ItyState& state, InstToken& token) {
 		// Get value from expression.
 		const Variant* var = expr_exec(state, token.expr);
 		// Throw error if wrong type.
-		if (var->t != BOOL) {
+		if (var->t != VT_BOOL) {
 			emit_error(ERR_expected_boolean_expression);
 			return;
 		}

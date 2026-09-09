@@ -46,7 +46,7 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 	ARR_t& token_vars = AnyCastV(ARR_t,token.meta[3]);
 	// Get iterable.
 	Variant& iterable = token_vars[0];
-	if (iterable.t == PLACEHOLDER) {
+	if (iterable.t == VT_PLACEHOLDER) {
 		iterable = *expr_exec(state, token.expr);
 		token_vars[0] = iterable;
 	}
@@ -54,24 +54,24 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 
 	switch (iterable.t) {
 		// Get item from integer.
-		case INT: {
+		case VT_INT: {
 			if (AnyCast(INT_t,iterable.d) > (INT_t)index) {
 				value = true;
-				token_vars[1].t = INT;
+				token_vars[1].t = VT_INT;
 				token_vars[1].d = (INT_t)index;
 			} break;
 		}
 		// Get item from string.
-		case STR: {
+		case VT_STR: {
 			const STR_t& data = AnyCast(STR_t,iterable.d);
 			if (data.size() > index) {
 				value = true;
-				token_vars[1].t = STR;
+				token_vars[1].t = VT_STR;
 				token_vars[1].d = (STR_t)(std::string(1,data[index]));
 			} break;
 		}
 		// Get item from array.
-		case ARR: {
+		case VT_ARR: {
 			ARR_t& data = AnyCastV(ARR_t,iterable.d);
 			if (data.size() > index) {
 				value = true;
@@ -80,19 +80,19 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 			} break;
 		}
 		// Get item from iterable object.
-		case MAP: {
+		case VT_MAP: {
 			const MAP_t& map = AnyCast(MAP_t,iterable.d);
 			if (const auto& it = map.find("__iter"); it != map.end()) {
 				value = true;
 				Variant args {
-					ARR,(ARR_t){
-						Variant{PTR, &iterable},
-						Variant{INT, (INT_t)index},
+					VT_ARR,(ARR_t){
+						Variant{VT_PTR, &iterable},
+						Variant{VT_INT, (INT_t)index},
 					}
 				};
 				const Variant& result = call_function(state, AnyCast(FUNC_t,it->second.d), args);
-				if (result.t == ARR) {
-					if (const ARR_t& arr = AnyCast(ARR_t,result.d); arr.size() == 2 && arr[0].t == BOOL) {
+				if (result.t == VT_ARR) {
+					if (const ARR_t& arr = AnyCast(ARR_t,result.d); arr.size() == 2 && arr[0].t == VT_BOOL) {
 						value = AnyCast(bool,arr[0].d);
 						token_vars[1].t = arr[1].t;
 						token_vars[1].d = arr[1].d;
@@ -120,7 +120,7 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 		// Get value from expression.
 		const Variant* var = expr_exec(state, token.expr);
 		// Throw error if not boolean.
-		if (var->t != BOOL) {
+		if (var->t != VT_BOOL) {
 			emit_error(ERR_expected_boolean_expression);
 			return;
 		}

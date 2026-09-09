@@ -138,7 +138,7 @@ struct ItyScope {
 	void merge_type_methods(const MAP_t& map) {
 		Variant* var = get_data_globally("__tm__", nullptr, HASHED_NAMES.__tm__);
 		if (var) AnyCastV(MAP_t,var->d).insert(map.begin(), map.end());
-		else set_data("__tm__", Variant{MAP, map, VariantMode_locked_type}, HASHED_NAMES.__tm__);
+		else set_data("__tm__", Variant{VT_MAP, map, VariantMode_locked_type}, HASHED_NAMES.__tm__);
 	}
 
 
@@ -185,7 +185,7 @@ struct ItyScope {
 		if (it != map.end()) merge_type_methods(AnyCast(MAP_t,it->second.d));
 
 		// Copy module to a variable in the scope.
-		set_data(name, Variant{MAP, map, VariantMode_constant}, string_hasher(name));
+		set_data(name, Variant{VT_MAP, map, VariantMode_constant}, string_hasher(name));
 	}
 };
 
@@ -242,12 +242,12 @@ struct ItyState {
 
 	void init() {
 		// Add basic info.
-		scope.d.push_back({string_hasher("__VERSION__"),              Variant{ARR,  (ARR_t){Variant{INT,(INT_t)ItyVersion[0]}, Variant{INT,(INT_t)ItyVersion[1]}, Variant{INT,(INT_t)ItyVersion[2]}, Variant{INT,(INT_t)ItyVersion[3]}}, VariantMode_constant}});
-		scope.d.push_back({string_hasher("__VERSION_STRING__"),       Variant{STR,  (STR_t)ItyVersionString, VariantMode_constant}});
-		scope.d.push_back({string_hasher("__SCRIPT_PATH__"),          Variant(STR,  (STR_t)path, VariantMode_constant)});
-		scope.d.push_back({string_hasher("__OS_NAME__"),              Variant{STR,  (STR_t)OSName, VariantMode_constant}});
-		scope.d.push_back({string_hasher("__HAS_RUNTIME_DEBUG__"),    Variant(BOOL, has_runtime_debug, VariantMode_constant)});
-		scope.d.push_back({string_hasher("__CMD_ARGS__"),             Variant{ARR,  ARGS, VariantMode_constant}});
+		scope.d.push_back({string_hasher("__VERSION__"),              Variant{VT_ARR,  (ARR_t){Variant{VT_INT,(INT_t)ItyVersion[0]}, Variant{VT_INT,(INT_t)ItyVersion[1]}, Variant{VT_INT,(INT_t)ItyVersion[2]}, Variant{VT_INT,(INT_t)ItyVersion[3]}}, VariantMode_constant}});
+		scope.d.push_back({string_hasher("__VERSION_STRING__"),       Variant{VT_STR,  (STR_t)ItyVersionString, VariantMode_constant}});
+		scope.d.push_back({string_hasher("__SCRIPT_PATH__"),          Variant(VT_STR,  (STR_t)path, VariantMode_constant)});
+		scope.d.push_back({string_hasher("__OS_NAME__"),              Variant{VT_STR,  (STR_t)OSName, VariantMode_constant}});
+		scope.d.push_back({string_hasher("__HAS_RUNTIME_DEBUG__"),    Variant(VT_BOOL, has_runtime_debug, VariantMode_constant)});
+		scope.d.push_back({string_hasher("__CMD_ARGS__"),             Variant{VT_ARR,  ARGS, VariantMode_constant}});
 		scope.d.push_back({HASHED_NAMES.__IMPORTED__,                 VPS.bool_false});
 		// Merge built-in library.
 		scope.merge_module(AnyCast(MAP_t,((Variant*)LIB_BI_G)->d));

@@ -367,7 +367,7 @@ void start_shell(int argc, char* argv[]) {
 
 		// Append to script arguments.
 		if (not source_script_path.empty()) {
-			script_args.push_back(Variant{STR, (STR_t)s, VariantMode_constant});
+			script_args.push_back(Variant{VT_STR, (STR_t)s, VariantMode_constant});
 		}
 
 		// Parse flags.
@@ -481,7 +481,7 @@ void start_shell(int argc, char* argv[]) {
 			Ity::exec(state, 0,-1);
 
 			// Print expression result if there is one.
-			if (state.last_expr_result.t != PLACEHOLDER) std::cout << state.last_expr_result;
+			if (state.last_expr_result.t != VT_PLACEHOLDER) std::cout << state.last_expr_result;
 
 			current_line += 1;
 			current_column = 1;

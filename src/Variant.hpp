@@ -15,7 +15,7 @@ inline const VariantType get_variant_type_from_name(const std::string& name) {
 	for (const auto& it : VARIANT_TYPE_NAMES) {
 		if (it.second == name) return it.first;
 	}
-	return PLACEHOLDER;
+	return VT_PLACEHOLDER;
 }
 
 
@@ -43,7 +43,7 @@ using NativeFunc_t = Variant(*)(ItyState& state, const ARR_t& args);
 #pragma pack(1)
 struct FUNC_t {
 	// Common parameters...
-	VariantType return_type = NONE;
+	VariantType return_type = VT_NONE;
 	ARR_t bound_args = {};
 
 	// Script functions only...
@@ -98,7 +98,7 @@ void emit_operator_overload_error(const std::string& operation, const Variant& a
 
 #pragma pack(1)
 struct Variant {
-	VariantType t = NONE;
+	VariantType t = VT_NONE;
 	VariantData d = std::monostate();
 	VariantMode m = VariantMode_dynamic_type;
 
@@ -115,12 +115,12 @@ struct Variant {
 	const size_t get_size() const {
 		size_t size = sizeof(t) + sizeof(m);
 		switch (t) {
-			case INT:    {size += sizeof(AnyCast(INT_t,d));   break;}
-			case FLOAT:  {size += sizeof(AnyCast(FLOAT_t,d)); break;}
-			case REF:
-			case STR:    {size += AnyCast(STR_t,d).size();    break;}
+			case VT_INT:    {size += sizeof(AnyCast(INT_t,d));   break;}
+			case VT_FLOAT:  {size += sizeof(AnyCast(FLOAT_t,d)); break;}
+			case VT_REF:
+			case VT_STR:    {size += AnyCast(STR_t,d).size();    break;}
 
-			case ARR: {
+			case VT_ARR: {
 				const ARR_t& d_ = AnyCast(ARR_t,d);
 				size += sizeof(d_);
 				for (const Variant& var : d_) {
@@ -129,7 +129,7 @@ struct Variant {
 				break;
 			}
 
-			case MAP: {
+			case VT_MAP: {
 				const MAP_t& d_ = AnyCast(MAP_t,d);
 				size += sizeof(d_);
 				for (const auto& it : d_) {
@@ -149,10 +149,10 @@ struct Variant {
 
 	bool to_bool() const {
 		switch (t) {
-			case BOOL:   return AnyCast(bool,d);
-			case INT:    return (bool)AnyCast(INT_t,d);
-			case FLOAT:  return (bool)AnyCast(FLOAT_t,d);
-			case STR:    return AnyCast(STR_t,d) == "true";
+			case VT_BOOL:   return AnyCast(bool,d);
+			case VT_INT:    return (bool)AnyCast(INT_t,d);
+			case VT_FLOAT:  return (bool)AnyCast(FLOAT_t,d);
+			case VT_STR:    return AnyCast(STR_t,d) == "true";
 
 			default: return false;
 		}
@@ -161,10 +161,10 @@ struct Variant {
 
 	INT_t to_int() const {
 		switch (t) {
-			case BOOL:   return (INT_t)AnyCast(bool,d);
-			case INT:    return AnyCast(INT_t,d);
-			case FLOAT:  return (INT_t)AnyCast(FLOAT_t,d);
-			case STR: {
+			case VT_BOOL:   return (INT_t)AnyCast(bool,d);
+			case VT_INT:    return AnyCast(INT_t,d);
+			case VT_FLOAT:  return (INT_t)AnyCast(FLOAT_t,d);
+			case VT_STR: {
 				const STR_t& d_ = AnyCast(STR_t,d);
 				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos || not is_int_str_32_in_range(d_)) return 0;
 				return std::stoi(d_);
@@ -177,10 +177,10 @@ struct Variant {
 
 	FLOAT_t to_float() const {
 		switch (t) {
-			case BOOL:   return (FLOAT_t)AnyCast(bool,d);
-			case INT:    return (FLOAT_t)AnyCast(INT_t,d);
-			case FLOAT:  return AnyCast(FLOAT_t,d);
-			case STR: {
+			case VT_BOOL:   return (FLOAT_t)AnyCast(bool,d);
+			case VT_INT:    return (FLOAT_t)AnyCast(INT_t,d);
+			case VT_FLOAT:  return AnyCast(FLOAT_t,d);
+			case VT_STR: {
 				const STR_t& d_ = AnyCast(STR_t,d);
 				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos) return 0.0;
 				return std::stod(d_);
@@ -193,44 +193,44 @@ struct Variant {
 
 	STR_t to_str() const {
 		switch (t) {
-			case OP:   return "OP";
-			case TREF: return "TREF:" + AnyCast(TREF_t,d).str;
+			case VT_OP:   return "OP";
+			case VT_TREF: return "TREF:" + AnyCast(TREF_t,d).str;
 
-			case NONE:  return "none";
-			case PTR:   return "PTR";
-			case REF:   return "REF:" + AnyCast(STR_t,d);
-			case BOOL:  return (AnyCast(bool,d) ? "true":"false");
-			case UINT:  return std::to_string(AnyCast(UINT_t,d));
-			case INT:   return std::to_string(AnyCast(INT_t,d));
-			case FLOAT: return std::to_string(AnyCast(FLOAT_t,d));
-			case STR:   return AnyCast(STR_t,d);
+			case VT_NONE:  return "none";
+			case VT_PTR:   return "PTR";
+			case VT_REF:   return "REF:" + AnyCast(STR_t,d);
+			case VT_BOOL:  return (AnyCast(bool,d) ? "true":"false");
+			case VT_UINT:  return std::to_string(AnyCast(UINT_t,d));
+			case VT_INT:   return std::to_string(AnyCast(INT_t,d));
+			case VT_FLOAT: return std::to_string(AnyCast(FLOAT_t,d));
+			case VT_STR:   return AnyCast(STR_t,d);
 
-			case ARR: {
+			case VT_ARR: {
 				STR_t buf = "[";
 				size_t i = 0;
 				for (const Variant& it : AnyCast(ARR_t,d)) {
 					if (i != 0) buf += ", ";
-					if (it.t == STR) buf += '"' + it.to_str() + '"';
+					if (it.t == VT_STR) buf += '"' + it.to_str() + '"';
 					else buf += it.to_str();
 					i++;
 				}
 				return buf + ']';
 			}
 
-			case MAP: {
+			case VT_MAP: {
 				STR_t buf = "{";
 				size_t idx = 0;
 				for (auto& i : AnyCast(MAP_t,d)) {
 					if (idx != 0) buf += ", ";
 					buf += '"' + i.first + "\": ";
-					if (i.second.t == STR) buf += '"' + i.second.to_str() + '"';
+					if (i.second.t == VT_STR) buf += '"' + i.second.to_str() + '"';
 					else buf += i.second.to_str();
 					idx++;
 				}
 				return buf + '}';
 			}
 
-			case FUNC: {
+			case VT_FUNC: {
 				const FUNC_t& func = AnyCast(FUNC_t,d);
 				return "FUNC:" + std::to_string((uintptr_t)&func.native_callable) + ':' + std::to_string(func.token_index);
 			}
@@ -247,35 +247,35 @@ struct Variant {
 	const bool operator==(const Variant& b) const {
 		switch (t) {
 			// If a is bool & b is bool...
-			case BOOL: {
-				if (b.t == BOOL) return AnyCast(bool,d) == AnyCast(bool,b.d);
+			case VT_BOOL: {
+				if (b.t == VT_BOOL) return AnyCast(bool,d) == AnyCast(bool,b.d);
 				break;
 			}
 			// If a is int...
-			case INT: {
-				if (b.t == INT)        return AnyCast(INT_t,d) == AnyCast(INT_t,b.d);
-				else if (b.t == FLOAT) return AnyCast(INT_t,d) == AnyCast(FLOAT_t,b.d);
+			case VT_INT: {
+				if (b.t == VT_INT)        return AnyCast(INT_t,d) == AnyCast(INT_t,b.d);
+				else if (b.t == VT_FLOAT) return AnyCast(INT_t,d) == AnyCast(FLOAT_t,b.d);
 				break;
 			}
 			// If a is float...
-			case FLOAT: {
-				if (b.t == INT)        return AnyCast(FLOAT_t,d) == AnyCast(INT_t,b.d);
-				else if (b.t == FLOAT) return AnyCast(FLOAT_t,d) == AnyCast(FLOAT_t,b.d);
+			case VT_FLOAT: {
+				if (b.t == VT_INT)        return AnyCast(FLOAT_t,d) == AnyCast(INT_t,b.d);
+				else if (b.t == VT_FLOAT) return AnyCast(FLOAT_t,d) == AnyCast(FLOAT_t,b.d);
 				break;
 			}
 			// If a is string & b is string...
-			case STR: {
-				if (b.t == STR) return AnyCast(STR_t,d) == AnyCast(STR_t,b.d);
+			case VT_STR: {
+				if (b.t == VT_STR) return AnyCast(STR_t,d) == AnyCast(STR_t,b.d);
 				break;
 			}
 			// If a is array & b is array...
-			case ARR: {
-				if (b.t == ARR) return AnyCast(ARR_t,d) == AnyCast(ARR_t,b.d);
+			case VT_ARR: {
+				if (b.t == VT_ARR) return AnyCast(ARR_t,d) == AnyCast(ARR_t,b.d);
 				break;
 			}
 			// If a is map & b is map...
-			case MAP: {
-				if (b.t == MAP) return AnyCast(MAP_t,d) == AnyCast(MAP_t,b.d);
+			case VT_MAP: {
+				if (b.t == VT_MAP) return AnyCast(MAP_t,d) == AnyCast(MAP_t,b.d);
 				break;
 			}
 			default: break;
@@ -290,15 +290,15 @@ struct Variant {
 	const bool operator>(const Variant& b) const {
 		switch (t) {
 			// If a is int...
-			case INT: {
-				if (b.t == INT)        return AnyCast(INT_t,d) > AnyCast(INT_t,b.d);
-				else if (b.t == FLOAT) return AnyCast(INT_t,d) > AnyCast(FLOAT_t,b.d);
+			case VT_INT: {
+				if (b.t == VT_INT)        return AnyCast(INT_t,d) > AnyCast(INT_t,b.d);
+				else if (b.t == VT_FLOAT) return AnyCast(INT_t,d) > AnyCast(FLOAT_t,b.d);
 				break;
 			}
 			// If a is float...
-			case FLOAT: {
-				if (b.t == INT)        return AnyCast(FLOAT_t,d) > AnyCast(INT_t,b.d);
-				else if (b.t == FLOAT) return AnyCast(FLOAT_t,d) > AnyCast(FLOAT_t,b.d);
+			case VT_FLOAT: {
+				if (b.t == VT_INT)        return AnyCast(FLOAT_t,d) > AnyCast(INT_t,b.d);
+				else if (b.t == VT_FLOAT) return AnyCast(FLOAT_t,d) > AnyCast(FLOAT_t,b.d);
 				break;
 			}
 			default: break;
@@ -313,15 +313,15 @@ struct Variant {
 	const bool operator<(const Variant& b) const {
 		switch (t) {
 			// If a is int...
-			case INT: {
-				if (b.t == INT)        return AnyCast(INT_t,d) < AnyCast(INT_t,b.d);
-				else if (b.t == FLOAT) return AnyCast(INT_t,d) < AnyCast(FLOAT_t,b.d);
+			case VT_INT: {
+				if (b.t == VT_INT)        return AnyCast(INT_t,d) < AnyCast(INT_t,b.d);
+				else if (b.t == VT_FLOAT) return AnyCast(INT_t,d) < AnyCast(FLOAT_t,b.d);
 				break;
 			}
 			// If a is float...
-			case FLOAT: {
-				if (b.t == INT)        return AnyCast(FLOAT_t,d) < AnyCast(INT_t,b.d);
-				else if (b.t == FLOAT) return AnyCast(FLOAT_t,d) < AnyCast(FLOAT_t,b.d);
+			case VT_FLOAT: {
+				if (b.t == VT_INT)        return AnyCast(FLOAT_t,d) < AnyCast(INT_t,b.d);
+				else if (b.t == VT_FLOAT) return AnyCast(FLOAT_t,d) < AnyCast(FLOAT_t,b.d);
 			}
 			default: break;
 		}
@@ -366,30 +366,30 @@ MAP_t operator+(const MAP_t& a, const MAP_t& b) {
 Variant operator+(const Variant& a, const Variant& b) {
 	switch (a.t) {
 		// If a is int...
-		case INT: {
-			if (b.t == INT)         return Variant{INT,   (AnyCast(INT_t,a.d) + AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(INT_t,a.d) + AnyCast(FLOAT_t,b.d))};
+		case VT_INT: {
+			if (b.t == VT_INT)         return Variant{VT_INT,   (AnyCast(INT_t,a.d) + AnyCast(INT_t,b.d))};
+			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(INT_t,a.d) + AnyCast(FLOAT_t,b.d))};
 		}
 		// If a is float...
-		case FLOAT: {
-			if (b.t == INT)         return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) + AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) + AnyCast(FLOAT_t,b.d))};
+		case VT_FLOAT: {
+			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) + AnyCast(INT_t,b.d))};
+			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) + AnyCast(FLOAT_t,b.d))};
 			break;
 		}
 		// If a is string...
-		case STR: {
-			if (b.t == STR)       return Variant{STR, (AnyCast(STR_t,a.d) + AnyCast(STR_t,b.d))};
-			else if (b.t == INT)  return Variant{STR, (AnyCast(STR_t,a.d) + char(AnyCast(INT_t,b.d)))}; // Add character to the string, from a code.
+		case VT_STR: {
+			if (b.t == VT_STR)       return Variant{VT_STR, (AnyCast(STR_t,a.d) + AnyCast(STR_t,b.d))};
+			else if (b.t == VT_INT)  return Variant{VT_STR, (AnyCast(STR_t,a.d) + char(AnyCast(INT_t,b.d)))}; // Add character to the string, from a code.
 			break;
 		}
 		// If a is array & b is array...
-		case ARR: {
-			if (b.t == ARR) return Variant{ARR, (AnyCast(ARR_t,a.d) + AnyCast(ARR_t,b.d))};
+		case VT_ARR: {
+			if (b.t == VT_ARR) return Variant{VT_ARR, (AnyCast(ARR_t,a.d) + AnyCast(ARR_t,b.d))};
 			break;
 		}
 		// If a is map & b is map...
-		case MAP: {
-			if (b.t == MAP) return Variant{MAP, (AnyCast(MAP_t,a.d) + AnyCast(MAP_t,b.d))};
+		case VT_MAP: {
+			if (b.t == VT_MAP) return Variant{VT_MAP, (AnyCast(MAP_t,a.d) + AnyCast(MAP_t,b.d))};
 			break;
 		}
 		default: break;
@@ -404,15 +404,15 @@ Variant operator+(const Variant& a, const Variant& b) {
 Variant operator-(const Variant& a, const Variant& b) {
 	switch (a.t) {
 		// If a is int...
-		case INT: {
-			if (b.t == INT)         return Variant{INT,   (AnyCast(INT_t,a.d) - AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(INT_t,a.d) - AnyCast(FLOAT_t,b.d))};
+		case VT_INT: {
+			if (b.t == VT_INT)         return Variant{VT_INT,   (AnyCast(INT_t,a.d) - AnyCast(INT_t,b.d))};
+			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(INT_t,a.d) - AnyCast(FLOAT_t,b.d))};
 			break;
 		}
 		// If a is float...
-		case FLOAT: {
-			if (b.t == INT)         return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) - AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) - AnyCast(FLOAT_t,b.d))};
+		case VT_FLOAT: {
+			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) - AnyCast(INT_t,b.d))};
+			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) - AnyCast(FLOAT_t,b.d))};
 			break;
 		}
 		default: break;
@@ -427,36 +427,36 @@ Variant operator-(const Variant& a, const Variant& b) {
 Variant operator*(const Variant& a, const Variant& b) {
 	switch (a.t) {
 		// If a is int...
-		case INT: {
-			if (b.t == INT)         return Variant{INT,   (AnyCast(INT_t,a.d) * AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(INT_t,a.d) * AnyCast(FLOAT_t,b.d))};
+		case VT_INT: {
+			if (b.t == VT_INT)         return Variant{VT_INT,   (AnyCast(INT_t,a.d) * AnyCast(INT_t,b.d))};
+			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(INT_t,a.d) * AnyCast(FLOAT_t,b.d))};
 			break;
 		}
 		// If a is float...
-		case FLOAT: {
-			if (b.t == INT)         return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) * AnyCast(INT_t,b.d))};
-			else if (b.t == FLOAT)  return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) * AnyCast(FLOAT_t,b.d))};
+		case VT_FLOAT: {
+			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) * AnyCast(INT_t,b.d))};
+			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) * AnyCast(FLOAT_t,b.d))};
 			break;
 		}
 		// If a is string & b is int.
-		case STR: {
-			if (b.t == INT) {
+		case VT_STR: {
+			if (b.t == VT_INT) {
 				const INT_t& b_val = AnyCast(INT_t,b.d);
-				return Variant{STR, (AnyCastV(STR_t,a.d) * b_val)};
+				return Variant{VT_STR, (AnyCastV(STR_t,a.d) * b_val)};
 			}
 			break;
 		}
 		// If a is array & b is int.
-		case ARR: {
-			if (b.t == INT) {
+		case VT_ARR: {
+			if (b.t == VT_INT) {
 				const INT_t& b_val = AnyCast(INT_t,b.d);
-				if (b_val < 1) return Variant{ARR, ARR_t()};
+				if (b_val < 1) return Variant{VT_ARR, ARR_t()};
 				ARR_t a_val = AnyCastV(ARR_t,a.d);
 				ARR_t sum; sum.reserve(a_val.size()*b_val);
 				for (INT_t i = 0; i < b_val; i++) {
 					for (auto& item : a_val) sum.push_back(item);
 				};
-				return Variant{ARR, std::move(sum)};
+				return Variant{VT_ARR, std::move(sum)};
 			}
 			break;
 		}
@@ -472,25 +472,25 @@ Variant operator*(const Variant& a, const Variant& b) {
 Variant operator/(const Variant& a, const Variant& b) {
 	switch (a.t) {
 		// If a is int...
-		case INT: {
-			if (b.t == INT) {
-				if (const INT_t bd = AnyCast(INT_t,b.d); bd != 0) return Variant{INT, (AnyCast(INT_t,a.d) / bd)};
+		case VT_INT: {
+			if (b.t == VT_INT) {
+				if (const INT_t bd = AnyCast(INT_t,b.d); bd != 0) return Variant{VT_INT, (AnyCast(INT_t,a.d) / bd)};
 				emit_error(ERR_zero_division);
 			}
-			else if (b.t == FLOAT) {
-				if (const FLOAT_t bd = AnyCast(FLOAT_t,b.d); bd != 0) return Variant{FLOAT, (AnyCast(INT_t,a.d) / bd)};
+			else if (b.t == VT_FLOAT) {
+				if (const FLOAT_t bd = AnyCast(FLOAT_t,b.d); bd != 0) return Variant{VT_FLOAT, (AnyCast(INT_t,a.d) / bd)};
 				emit_error(ERR_zero_division);
 			}
 			break;
 		}
 		// If a is float...
-		case FLOAT: {
-			if (b.t == INT) {
-				if (const INT_t bd = AnyCast(INT_t,b.d); bd != 0) return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) / bd)};
+		case VT_FLOAT: {
+			if (b.t == VT_INT) {
+				if (const INT_t bd = AnyCast(INT_t,b.d); bd != 0) return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) / bd)};
 				emit_error(ERR_zero_division);
 			}
-			else if (b.t == FLOAT) {
-				if (const FLOAT_t bd = AnyCast(FLOAT_t,b.d); bd != 0) return Variant{FLOAT, (AnyCast(FLOAT_t,a.d) / bd)};
+			else if (b.t == VT_FLOAT) {
+				if (const FLOAT_t bd = AnyCast(FLOAT_t,b.d); bd != 0) return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) / bd)};
 				emit_error(ERR_zero_division);
 			}
 			break;
@@ -506,8 +506,8 @@ Variant operator/(const Variant& a, const Variant& b) {
 
 Variant operator%(const Variant& a, const Variant& b) {
 	// If a is int & b is int...
-	if (a.t == INT && b.t == INT) {
-		if (const INT_t& bd = AnyCast(INT_t,b.d); bd != 0) return Variant{INT, (AnyCast(INT_t,a.d) % bd)};
+	if (a.t == VT_INT && b.t == VT_INT) {
+		if (const INT_t& bd = AnyCast(INT_t,b.d); bd != 0) return Variant{VT_INT, (AnyCast(INT_t,a.d) % bd)};
 		emit_error(ERR_zero_division);
 	};
 

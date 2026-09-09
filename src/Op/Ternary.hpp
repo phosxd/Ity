@@ -6,10 +6,10 @@ void OP_Ternary_pre_exec(ItyState& state, Variant*& first, const OpSymbol& symbo
 
 	if (symbol == OpSymbol_ternary) {
 		eval_second_operand = *o1 == VPS.bool_true;
-		if (not eval_second_operand) result = Variant{INTERNAL, std::monostate()};
+		if (not eval_second_operand) result = Variant{VT_INTERNAL, std::monostate()};
 	}
 	else {
-		eval_second_operand = o1->t == INTERNAL;
+		eval_second_operand = o1->t == VT_INTERNAL;
 	}
 }
 

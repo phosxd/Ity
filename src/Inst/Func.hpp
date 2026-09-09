@@ -23,7 +23,7 @@ static void INST_Func_exec(ItyState& state, InstToken& token) {
 
 	// Create the function.
 	state.scope.set_data(
-		name, Variant{FUNC, (FUNC_t){
+		name, Variant{VT_FUNC, (FUNC_t){
 			.return_type = get_variant_type_from_name(type_name),
 			.bound_args = (ARR_t){},
 			.token_index = token.i,

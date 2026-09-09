@@ -24,7 +24,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant input_args) {
 			.path=std::move(source_state->path), .seq=std::move(source_state->seq),
 			.scope=create_new_scope(source_state->scope_current_id,
 				(ScopeMap_t){
-					{HASHED_NAMES.__AG, Variant{ARR, args}},
+					{HASHED_NAMES.__AG, Variant{VT_ARR, args}},
 					{HASHED_NAMES.__R,  Variant{func.return_type}}, // Initialize return variable.
 				},
 				source_state->scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
@@ -43,7 +43,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant input_args) {
 
 		// Get result & check if return type matches.
 		const Variant func_result = std::move(func_state.scope.raw_get_data(HASHED_NAMES.__R)->var);
-		if (func_result.t != func.return_type && func.return_type != ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func.return_type)});
+		if (func_result.t != func.return_type && func.return_type != VT_ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(func.return_type)});
 
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
@@ -62,7 +62,7 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 }
 
 
-#define resovlve_potential_ref(state, var) ((var->t == REF) ? state.scope.get_data_globally(AnyCast(STR_t,var->d), &none_var) : ((var->t == PTR) ? AnyCast(Variant*,var->d) : var))
+#define resovlve_potential_ref(state, var) ((var->t == VT_REF) ? state.scope.get_data_globally(AnyCast(STR_t,var->d), &none_var) : ((var->t == VT_PTR) ? AnyCast(Variant*,var->d) : var))
 
 
 
@@ -161,7 +161,7 @@ const bool check_ahead(const std::string& text, const unsigned int& start_idx, c
 // Add the pending literal token if available.
 // Also resets the current buffer.
 void clean_up_buffer(ExprToken& result_token, ExprToken& item, std::string& buffer) {
-	if (item.var.t != PLACEHOLDER) {
+	if (item.var.t != VT_PLACEHOLDER) {
 		item.var.d = get_literal_from_str(item.var.t, buffer);
 		result_token.seq.push_back(item);
 		buffer.clear();
@@ -198,7 +198,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 	const size_t& expr_len = expr.size();
 	std::string buffer; buffer.reserve(expr_len);
 	std::string secondary_buffer;
-	ExprToken item = {0,0, ExprTokenType_variant, {PLACEHOLDER}};
+	ExprToken item = {0,0, ExprTokenType_variant, {VT_PLACEHOLDER}};
 	unsigned int ln_offset = 0;
 	unsigned int col_offset = 0;
 	unsigned int skip_chars = 0;
@@ -259,7 +259,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				// Throw error if operator token found in array or map.
 				if (!is_grouping) {
 					for (const ExprToken& subtoken : item.seq) {
-						if (subtoken.var.t == OP) {
+						if (subtoken.var.t == VT_OP) {
 							emit_error(ERR_operators_not_allowed, {}, ln+ln_offset, col+col_offset);
 							return result;
 						}
@@ -272,7 +272,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				.ln  = ln_offset,
 				.col = col_offset,
 				.t   = ExprTokenType_variant,
-				.var = {PLACEHOLDER},
+				.var = {VT_PLACEHOLDER},
 			};
 			is_map = false;
 			is_array = false;
@@ -302,18 +302,18 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 					.ln  = ln_offset,
 					.col = col_offset,
 					.t   = ExprTokenType_variant,
-					.var = {PLACEHOLDER},
+					.var = {VT_PLACEHOLDER},
 				};
 				// Set type integer.
 				if ((NUM.find(ch) != std::string::npos) || (ch == '-' && (expr_len > i && NUM.find(expr[i+1]) != std::string::npos ))) {
-					item.var.t = INT;
+					item.var.t = VT_INT;
 					buffer += ch;
 					is_start = false;
 					continue;
 				}
 				// Start string.
 				else if (STRING_SYMBOLS.find(ch) != std::string::npos) {
-					item.var.t = STR;
+					item.var.t = VT_STR;
 					secondary_buffer = ch;
 					is_string = true;
 					is_start = false;
@@ -322,27 +322,27 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				// Set type bool.
 				else if (check_ahead(expr, i, "true")) {
 					secondary_buffer = "true";
-					item.var.t = BOOL;
+					item.var.t = VT_BOOL;
 				}
 				else if (check_ahead(expr, i, "false")) {
 					secondary_buffer = "false";
-					item.var.t = BOOL;
+					item.var.t = VT_BOOL;
 				}
 				// Set type none.
 				else if (check_ahead(expr, i, "none")) {
 					secondary_buffer = "none";
-					item.var.t = NONE;
+					item.var.t = VT_NONE;
 				}
 				// Set type reference.
 				else if (is_valid_name(std::string(1,ch))) {
-					if (next_ref_is_str_) item.var.t = STR; // Set type as string but don't set `is_string` so it's not treated as a string.
-					else item.var.t = TREF;
+					if (next_ref_is_str_) item.var.t = VT_STR; // Set type as string but don't set `is_string` so it's not treated as a string.
+					else item.var.t = VT_TREF;
 				}
 				// Set type array.
 				else if (ch == '[') {
 					secondary_buffer = ']';
 					item.t = ExprTokenType_sequence;
-					item.var.t = ARR;
+					item.var.t = VT_ARR;
 					is_array = true;
 					is_start = false;
 					continue;
@@ -351,7 +351,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				else if (ch == '{') {
 					secondary_buffer = '}';
 					item.t = ExprTokenType_sequence;
-					item.var.t = MAP;
+					item.var.t = VT_MAP;
 					is_map = true;
 					is_start = false;
 					continue;
@@ -370,7 +370,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				// Separate expression.
 				if (ch == ',') {
 					clean_up_buffer(result.token, item, buffer);
-					item.var.t = PLACEHOLDER;
+					item.var.t = VT_PLACEHOLDER;
 					is_start = true;
 					continue;
 				}
@@ -378,18 +378,18 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				// Start operator.
 				else if (is_special_symbol(ch) == true) {
 					clean_up_buffer(result.token, item, buffer);
-					item.var.t = PLACEHOLDER;
+					item.var.t = VT_PLACEHOLDER;
 					is_operator = true;
 				}
 
 				// Skip over underscore in numbers.
-				else if ((item.var.t == INT || item.var.t == FLOAT) && ch == '_') {
+				else if ((item.var.t == VT_INT || item.var.t == VT_FLOAT) && ch == '_') {
 					continue;
 				}
 
-				else if (item.var.t == INT) {
+				else if (item.var.t == VT_INT) {
 					// If "." found in INT, convert to FLOAT.
-					if (ch == '.') item.var.t = FLOAT;
+					if (ch == '.') item.var.t = VT_FLOAT;
 					// Throw error if invalid character found.
 					else if ((NUM.find(ch) == std::string::npos)) {
 						emit_error(ERR_invalid_character_for_construct, {"number", std::string(1,ch)}, ln+ln_offset, col+col_offset);
@@ -397,18 +397,18 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 					}
 				}
 
-				else if (item.var.t == BOOL || item.var.t == NONE) {
+				else if (item.var.t == VT_BOOL || item.var.t == VT_NONE) {
 					// If no longer matches the bool or none token, switch to a reference.
 					if ((buffer+ch).size() >= secondary_buffer.size() && (buffer+ch) != secondary_buffer) {
-						item.var.t = TREF;
+						item.var.t = VT_TREF;
 						secondary_buffer.clear();
 					}
 				}
 
-				else if (item.var.t == TREF || (item.var.t == STR && not is_string)) {
+				else if (item.var.t == VT_TREF || (item.var.t == VT_STR && not is_string)) {
 					// Convert reference dot accessor to proper accessor.
 					if (ch == '.') {
-						const VariantType type = (item.var.t == STR) ? STR : TREF;
+						const VariantType type = (item.var.t == VT_STR) ? VT_STR : VT_TREF;
 						result.token.seq.push_back(ExprToken{
 							.ln  = ln_offset,
 							.col = col_offset,
@@ -419,7 +419,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 							.ln  = ln_offset,
 							.col = col_offset,
 							.t   = ExprTokenType_variant,
-							.var = {OP, find_OpDef(OpSymbol_access)},
+							.var = {VT_OP, find_OpDef(OpSymbol_access)},
 						});
 						buffer.clear();
 						next_ref_is_str = true;
@@ -439,7 +439,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 					return result;
 				}
 				// Throw error if previous token was also an operator.
-				if (result.token.seq.size() > 0 && result.token.seq.back().var.t == OP) {
+				if (result.token.seq.size() > 0 && result.token.seq.back().var.t == VT_OP) {
 					emit_error(ERR_misplaced_operator, {}, ln+ln_offset, col+col_offset);
 					return result;
 				}
@@ -448,7 +448,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 					.ln  = ln_offset,
 					.col = col_offset,
 					.t   = ExprTokenType_variant,
-					.var = {OP, std::move(op_def)},
+					.var = {VT_OP, std::move(op_def)},
 				});
 				buffer.clear();
 				is_operator = false;
@@ -480,7 +480,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 
 Variant* resolve_variant(ItyState& state, ExprState& expr_state, Variant& item) {
 	// If typed reference...
-	if (item.t == TREF) {
+	if (item.t == VT_TREF) {
 		const TREF_t& tref = AnyCast(TREF_t,item.d);
 		expr_state.path = tref.str;
 
@@ -511,7 +511,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 	#endif
 
 	// Resolve array.
-	if (token.var.t == ARR) {
+	if (token.var.t == VT_ARR) {
 		ARR_t array; array.reserve(token.seq.size());
 		for (ExprToken& subtoken : token.seq) {
 			array.push_back((subtoken.t == ExprTokenType_sequence)
@@ -519,11 +519,11 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 				: *resolve_variant(state, expr_state, subtoken.var)
 			);
 		}
-		return state.append_temp_var(Variant{ARR, std::move(array)});
+		return state.append_temp_var(Variant{VT_ARR, std::move(array)});
 	}
 
 	// Resolve map.
-	else if (token.var.t == MAP) {
+	else if (token.var.t == VT_MAP) {
 		// Throw error if there are an odd number of elements.
 		if (token.seq.size() % 2 != 0) {
 			emit_error(ERR_invalid_syntax, {"Map literal expects key-value pairs. ( {'a', 1, 'b', 2} )"});
@@ -540,7 +540,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 					: resolve_variant(state, expr_state, subtoken.var)
 				;
 				// Throw error if key is not a string.
-				if (var->t != STR) {
+				if (var->t != VT_STR) {
 					emit_error(ERR_invalid_syntax, {"Map key must be a string"});
 					return &none_var;
 				}
@@ -557,7 +557,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 				is_key = true;
 			}
 		}
-		return state.append_temp_var(Variant{MAP, std::move(map)});
+		return state.append_temp_var(Variant{VT_MAP, std::move(map)});
 	}
 
 
@@ -589,11 +589,11 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 			if (op_def->op->pre_exec) {
 				// Skip evaluation of second Variant if pre_exec says so...
 				bool eval_second_operand = true;
-				pre_exec_result.t = PLACEHOLDER; // Reset the type for reuse.
+				pre_exec_result.t = VT_PLACEHOLDER; // Reset the type for reuse.
 				// Run pre-executor.
 				op_def->op->pre_exec(state, result, op_def->sym, eval_second_operand, pre_exec_result, result);
 				if (not eval_second_operand) {
-					if (pre_exec_result.t != PLACEHOLDER) result = state.append_temp_var(pre_exec_result);
+					if (pre_exec_result.t != VT_PLACEHOLDER) result = state.append_temp_var(pre_exec_result);
 					op_def = nullptr;
 					continue;
 				}
@@ -604,17 +604,17 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 				: resolve_variant(state, expr_state, item.var)
 			;
 
-			op_result.t = PLACEHOLDER; // Reset the type for reuse.
+			op_result.t = VT_PLACEHOLDER; // Reset the type for reuse.
 			op_def->op->exec(state, expr_state, result, second, op_def->sym, op_result, result); // Passing the `result` variable so the operator can potentially overwrite it.
 			// If we reveive a direct value, set the result to that.
-			if (op_result.t != PLACEHOLDER) result = state.append_temp_var(op_result);
+			if (op_result.t != VT_PLACEHOLDER) result = state.append_temp_var(op_result);
 
 			op_def = nullptr;
 			continue;
 		}
 
 
-		else if (item.var.t == OP) op_def = AnyCast(const OpDef*,item.var.d); // Get operator.
+		else if (item.var.t == VT_OP) op_def = AnyCast(const OpDef*,item.var.d); // Get operator.
 		else result = (item.t == ExprTokenType_sequence)
 			? expr_exec_(state, item, expr_state, true) // Get value from sub-sequence
 			: resolve_variant(state, expr_state, item.var) // Get variant.

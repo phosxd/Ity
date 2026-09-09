@@ -18,7 +18,7 @@ static void INST_Import_exec(ItyState& state, InstToken& token) {
 		}
 		Variant var = *var_ptr; // Copy var.
 		// Convert to string if var is not a string.
-		if (var_ptr->t != STR) var.d = var.to_str();
+		if (var_ptr->t != VT_STR) var.d = var.to_str();
 		// Set lib name to look for as the variable value.
 		mod_name = AnyCast(STR_t,var.d);
 	}
@@ -71,7 +71,7 @@ static void INST_Import_exec(ItyState& state, InstToken& token) {
 				.scope = {.p = state.scope.get_scope_at_id(1)} // Use top-most scope as parent in the module scope.
 			});
 			ItyState& alt = state.alts.back();
-			alt.scope.set_data("__IMPORTED__", Variant{BOOL, true, VariantMode_constant}, HASHED_NAMES.__IMPORTED__); // Set imported flag.
+			alt.scope.set_data("__IMPORTED__", Variant{VT_BOOL, true, VariantMode_constant}, HASHED_NAMES.__IMPORTED__); // Set imported flag.
 			Ity::exec(alt, 0,-1);
 			current_script_path = &state.path; // Reset current script path.
 			mod = alt.scope.get_data("__module__");
@@ -79,7 +79,7 @@ static void INST_Import_exec(ItyState& state, InstToken& token) {
 	}
 
 	// Throw error if module cannot be found.
-	if (not mod || mod->t != MAP) {
+	if (not mod || mod->t != VT_MAP) {
 		emit_error(ERR_unknown_module, {mod_name});
 		return;
 	}

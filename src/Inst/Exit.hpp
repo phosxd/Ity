@@ -10,7 +10,7 @@ static void INST_Exit_exec(ItyState& state, InstToken& token) {
 		}
 
 		const Variant* var = expr_exec(state, token.expr);
-		if (var->t != INT) {
+		if (var->t != VT_INT) {
 			emit_error(ERR_invalid_syntax, {"Expected integer expression"});
 			return;
 		}
@@ -26,7 +26,7 @@ static void INST_Exit_exec(ItyState& state, InstToken& token) {
 		}
 
 		const Variant* var = expr_exec(state, token.expr);
-		if (var->t != STR) {
+		if (var->t != VT_STR) {
 			emit_error(ERR_invalid_syntax, {"Expected string expression"});
 			return;
 		}

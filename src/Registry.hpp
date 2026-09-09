@@ -2,6 +2,7 @@
 
 // Include platform APIs
 #if _WIN32
+	#include <windows.h>
 #elif defined(__linux__) || defined(__unix__) || defined(_POSIX_VERSION)
 	#include <termios.h>
 #elif __APPLE__
@@ -183,47 +184,47 @@ enum OpSymbol : uint8_t {
 
 enum VariantType : uint8_t {
 	// Meta types.
-	PLACEHOLDER, // Void, absent.
-	INTERNAL,    // Data not meant for in-script usage.
-	INFERRED,    // Inferred type. Should not contain data.
-	ANY,         // Any type. Should not contain data.
-	OP,          // Operation definition pointer.
-	TREF,        // Literally typed name reference.
-	PTR,         // Variant pointer.
+	VT_PLACEHOLDER, // Void, absent.
+	VT_INTERNAL,    // Data not meant for in-script usage.
+	VT_INFERRED,    // Inferred type. Should not contain data.
+	VT_ANY,         // Any type. Should not contain data.
+	VT_OP,          // Operation definition pointer.
+	VT_TREF,        // Literally typed name reference.
+	VT_PTR,         // Variant pointer.
 	// Real types.
-	REF,         // Name reference.
-	NONE,        // Monostate data.
-	BOOL,        // Boolean data.
-	UINT,        // UInt32 data.
-	INT,         // Int32 data.
-	FLOAT,       // Float64 data.
-	STR,         // String data.
-	ARR,         // Array of Variants.
-	MAP,         // Unordered String:Variant pairs.
-	FUNC,        // Script or native callable.
+	VT_REF,         // Name reference.
+	VT_NONE,        // Monostate data.
+	VT_BOOL,        // Boolean data.
+	VT_UINT,        // UInt32 data.
+	VT_INT,         // Int32 data.
+	VT_FLOAT,       // Float64 data.
+	VT_STR,         // String data.
+	VT_ARR,         // Array of Variants.
+	VT_MAP,         // Unordered String:Variant pairs.
+	VT_FUNC,        // Script or native callable.
 };
 
 
 const std::unordered_map<const VariantType, const std::string> VARIANT_TYPE_NAMES = {
 	// Meta types.
-	{PLACEHOLDER,  "PLACEHOLDER"},
-	{INTERNAL,     "INTERNAL"},
-	{INFERRED,     "*"},
-	{ANY,          "ANY"},
-	{OP,           "OP"},
-	{TREF,         "TREF"},
-	{PTR,          "PTR"},
+	{VT_PLACEHOLDER,  "VT_PLACEHOLDER"},
+	{VT_INTERNAL,     "VT_INTERNAL"},
+	{VT_INFERRED,     "*"},
+	{VT_ANY,          "ANY"},
+	{VT_OP,           "OP"},
+	{VT_TREF,         "TREF"},
+	{VT_PTR,          "PTR"},
 	// Real types.
-	{REF,          "REF"},
-	{NONE,         "NONE"},
-	{BOOL,         "BOOL"},
-	{UINT,         "UINT"},
-	{INT,          "INT"},
-	{FLOAT,        "FLOAT"},
-	{STR,          "STR"},
-	{ARR,          "ARR"},
-	{MAP,          "MAP"},
-	{FUNC,         "FUNC"},
+	{VT_REF,          "REF"},
+	{VT_NONE,         "NONE"},
+	{VT_BOOL,         "BOOL"},
+	{VT_UINT,         "UINT"},
+	{VT_INT,          "INT"},
+	{VT_FLOAT,        "FLOAT"},
+	{VT_STR,          "STR"},
+	{VT_ARR,          "ARR"},
+	{VT_MAP,          "MAP"},
+	{VT_FUNC,         "FUNC"},
 };
 
 

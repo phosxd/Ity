@@ -65,7 +65,7 @@ static void processor(InstToken& token, const AnyMap_t& _extra, const unsigned i
 	const VariantType type = get_variant_type_from_name(type_name);
 	VariantMode mode = VariantMode_locked_type;
 	if (token.symbol == InstSymbol_const) mode = VariantMode_constant;
-	if (type == ANY) {
+	if (type == VT_ANY) {
 		if (mode == VariantMode_constant) {
 			emit_error(ERR_constant_type_not_explicit);
 			return;
@@ -117,17 +117,17 @@ static void exec(ItyState& state, InstToken& token) {
 
 	// Get variable type & infer it if needed.
 	VariantType type = AnyCastV(VariantType,token.meta[3]);
-	if (type == INFERRED) type = var.t;
+	if (type == VT_INFERRED) type = var.t;
 	// Set value to sane default if not explicitly set.
-	else if (var.t == NONE && var.t != type) {
+	else if (var.t == VT_NONE && var.t != type) {
 		switch (type) {
-			case REF:    {var = Variant{REF, (STR_t)"noneref"}; break;}
-			case BOOL:   {var = VPS.bool_false;      break;}
-			case INT:    {var = Variant{INT, (INT_t)0};         break;}
-			case FLOAT:  {var = Variant{FLOAT, (FLOAT_t)0};     break;}
-			case STR:    {var = Variant{STR, (STR_t)""};        break;}
-			case ARR:    {var = Variant{ARR, (ARR_t){}};        break;}
-			case MAP:    {var = Variant{MAP, (MAP_t){}};        break;}
+			case VT_REF:    {var = Variant{VT_REF, (STR_t)"noneref"}; break;}
+			case VT_BOOL:   {var = VPS.bool_false;      break;}
+			case VT_INT:    {var = Variant{VT_INT, (INT_t)0};         break;}
+			case VT_FLOAT:  {var = Variant{VT_FLOAT, (FLOAT_t)0};     break;}
+			case VT_STR:    {var = Variant{VT_STR, (STR_t)""};        break;}
+			case VT_ARR:    {var = Variant{VT_ARR, (ARR_t){}};        break;}
+			case VT_MAP:    {var = Variant{VT_MAP, (MAP_t){}};        break;}
 			default: break;
 		}
 	}
