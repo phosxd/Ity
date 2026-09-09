@@ -147,6 +147,7 @@ struct Variant {
 	// Conversion Functions.
 
 
+	// Get boolean representation.
 	bool to_bool() const {
 		switch (t) {
 			case VT_BOOL:   return AnyCast(bool,d);
@@ -159,6 +160,7 @@ struct Variant {
 	}
 
 
+	// Get integer representation.
 	INT_t to_int() const {
 		switch (t) {
 			case VT_BOOL:   return (INT_t)AnyCast(bool,d);
@@ -175,6 +177,7 @@ struct Variant {
 	}
 
 
+	// Get float representation.
 	FLOAT_t to_float() const {
 		switch (t) {
 			case VT_BOOL:   return (FLOAT_t)AnyCast(bool,d);
@@ -191,6 +194,7 @@ struct Variant {
 	}
 
 
+	// Get string representation.
 	STR_t to_str() const {
 		switch (t) {
 			case VT_OP:   return "OP";

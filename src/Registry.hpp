@@ -2,7 +2,9 @@
 
 // Include platform APIs
 #if _WIN32
-	#include <windows.h>
+	#include <windef.h>
+	#include <winbase.h>
+	#include <wincon.h>
 #elif defined(__linux__) || defined(__unix__) || defined(_POSIX_VERSION)
 	#include <termios.h>
 #elif __APPLE__

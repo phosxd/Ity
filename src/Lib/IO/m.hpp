@@ -129,11 +129,12 @@ const Variant LIB_IO {
 				{"interrupt",  Variant{VT_INT, (INT_t)SIGINT,  VariantMode_constant}},
 				{"seg_fault",  Variant{VT_INT, (INT_t)SIGSEGV, VariantMode_constant}},
 				{"terminate",  Variant{VT_INT, (INT_t)SIGTERM, VariantMode_constant}},
+				#ifdef SIGQUIT // Unix specific signals.
 				{"quit",       Variant{VT_INT, (INT_t)SIGQUIT, VariantMode_constant}},
 				{"user1",      Variant{VT_INT, (INT_t)SIGUSR1, VariantMode_constant}},
 				{"user2",      Variant{VT_INT, (INT_t)SIGUSR2, VariantMode_constant}},
+				#endif
 			}, VariantMode_constant }},
-
 
 		// Functions.
 		{"signal",     NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_IO_signal)},

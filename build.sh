@@ -32,25 +32,7 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
 fi
 
 
-
-
-# Parse "LIBRARIES" file.
-readarray -t LibrariesFile <<< "$(cat BuildWithLibs.txt)"
-LibNames=()
-for line in "${LibrariesFile[@]}"; do
-	# Skip lines without "." prefix.
-	if [[ ${line:0:1} != "." ]]; then
-		continue
-	fi
-
-	lib_name=${line:1} # Get line with "." prefix excluded.
-	LibNames+=(${lib_name})
-done
-
-echo "${LINKS}"
-
-
-# Iterate on every command line arg...
+# Parse arguments.
 for i in "$@"; do
 	case $i in
 		-t|--test)
@@ -80,6 +62,19 @@ for i in "$@"; do
 		;;
 	esac
 done
+
+
+# Parse "BuildWithLibs.txt" to decide which libraries to include in the build.
+readarray -t LibrariesFile <<< "$(cat BuildWithLibs.txt)"
+LibNames=()
+for line in "${LibrariesFile[@]}"; do
+	# Only add lines beginning with ".".
+	if [[ ${line:0:1} == "." ]]; then
+		LibNames+=(${line:1})
+	fi
+done
+
+echo "${LINKS}"
 
 
 # Choose optimization profile...
@@ -186,7 +181,7 @@ rm src/.Ity_tmp_generated.cpp
 # Print results...
 
 end=$(date +%s)
-echo "Done in" $((end-start))"s."
+echo "Done in $((end-start))s."
 
 # Get size difference between this & the last build.
 bin_size=$(wc -c < ity.bin)

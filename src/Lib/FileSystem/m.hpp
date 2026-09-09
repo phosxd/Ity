@@ -57,7 +57,7 @@ static Variant LIB_FS_make_dir(ItyState& _state, const ARR_t& args) {
 static Variant LIB_FS_paths_in_dir(ItyState& _state, const ARR_t& args) {
 	if (not expect_arg_count(args, 1) || not expect_arg_types(args[0], {VT_STR}, 0)) return VPS.none;
 	STR_t dir_path = AnyCast(STR_t,args[0].d);
-	if (dir_path.empty()) dir_path = (STR_t)std::filesystem::current_path(); // Use current path if empty string given.
+	if (dir_path.empty()) dir_path = (STR_t)std::filesystem::current_path().string(); // Use current path if empty string given.
 	ARR_t paths;
 
 	// get all paths in the directory..
@@ -65,7 +65,7 @@ static Variant LIB_FS_paths_in_dir(ItyState& _state, const ARR_t& args) {
 		for (const std::filesystem::path& path : std::filesystem::directory_iterator(dir_path)) {
 			paths.push_back(Variant{
 				VT_STR,
-				(STR_t)(path.filename()) + (std::filesystem::is_directory(path) ? "/" : ""), // Add a slash at the end to signify the path is a directory.
+				(STR_t)(path.filename().string()) + (std::filesystem::is_directory(path) ? "/" : ""), // Add a slash at the end to signify the path is a directory.
 			});
 		}
 	}
