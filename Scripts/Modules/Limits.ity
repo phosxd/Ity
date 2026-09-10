@@ -1,0 +1,52 @@
+# Limits
+# -------
+#
+# Defines various language constant values & ranges.
+#
+#
+# PART OF THE STANDARD SET OF ITY MODULES.
+
+
+const INT i8_x =  127;
+const INT i8_n = -128;
+
+const INT i16_x =  32_767;
+const INT i16_n = -32_768;
+
+const INT i32_x =  2_147_483_647;
+const INT i32_n = -2_147_483_648;
+
+const INT i64_x =  9_223_372_036_854_775_807;
+const INT i64_n = -9_223_372_036_854_775_808;
+
+# Min/max are not the true limits, only an approximation. This will change.
+const FLOAT f64_x   = 179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0;
+const FLOAT f64_n   = 0-f64_x;
+const FLOAT f64_inf = f64_x+f64_x;
+
+
+const MAP __module__ = {
+	'__name', 'Limits',
+
+	'INT_max', i64_x,
+	'INT_min', i64_n,
+
+	'INT8_max', i8_x,
+	'INT8_min', i8_n,
+
+	'INT16_max', i16_x,
+	'INT16_min', i16_n,
+
+	'INT32_max', i32_x,
+	'INT32_min', i32_n,
+
+	'INT64_max', i64_x,
+	'INT64_min', i64_n,
+
+	'FLOAT_max', f64_x,
+	'FLOAT_min', f64_n,
+
+	'FLOAT64_max', f64_x,
+	'FLOAT64_min', f64_n,
+	'FLOAT64_inf', f64_inf,
+};

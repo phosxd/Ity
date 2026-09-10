@@ -166,11 +166,7 @@ VariantData get_literal_from_str(const VariantType& type, const std::string& str
 		case VT_REF:
 		case VT_STR:  return str_val;
 		case VT_BOOL: return str_val == "true";
-		case VT_INT: {
-			if (is_int_str_32_in_range(str_val)) return (INT_t)std::stoi(str_val);
-			emit_error(ERR_cannot_initialize_value, {str_val, "Number too large"});
-			return std::monostate();
-		}
+		case VT_INT:  return (INT_t)std::stol(str_val);
 		case VT_FLOAT: return (FLOAT_t)std::stod(str_val);
 		default: return std::monostate();
 	}

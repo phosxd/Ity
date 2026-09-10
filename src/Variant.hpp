@@ -168,8 +168,8 @@ struct Variant {
 			case VT_FLOAT:  return (INT_t)AnyCast(FLOAT_t,d);
 			case VT_STR: {
 				const STR_t& d_ = AnyCast(STR_t,d);
-				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos || not is_int_str_32_in_range(d_)) return 0;
-				return std::stoi(d_);
+				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos) return 0;
+				return std::stol(d_);
 			}
 
 			default: return 0;

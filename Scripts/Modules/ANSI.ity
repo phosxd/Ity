@@ -37,7 +37,7 @@ func STR rel_move; arg INT mode=0; arg INT value=0;
 
 
 const MAP __module__ = {
-	'__name', 'test_module',
+	'__name', 'ANSI',
 
 	'reset',     '\e[0m',
 	'bold',      '\e[1m',

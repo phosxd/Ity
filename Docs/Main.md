@@ -132,12 +132,12 @@ You can get an element from the array by using the accessor operator on it. Usin
 ```python
 const ARR my_arr = [1,2,3];
 my_arr:0; # Gives 1.
-my_arr: -1; # Get last element. Same as this: my_arr:(length:[my_arr]-1)
+my_arr: -1; # Get last element. Same as this: my_arr:(my_arr.length:()-1)
 ```
 
 Similarly to the method for getting, you can overwrite an element using the accessor operator, but in conjunction with an assignment operator.
 
-Adding a brand new item, instead of overwriting an existing one is also straight forward. Use the `append` type method to add an item to the end of the `ARR`. You can also use the `+=` assignment operator to add multiple items at once. However for single or few items `append` is more efficient, the assignment operator should not be used in frequent loops.
+Adding a brand new item, instead of overwriting an existing one is also straight forward. Use the `append` type method to add an item to the end of the `ARR`. You can also use the `+=` assignment operator to add multiple items at once into a new array.
 
 ```python
 var ARR my_arr = [1,2,3]
@@ -187,7 +187,7 @@ my_map:'a'; # Does the same thing.
 
 To set the value of a key in a map, you can use the accessor operator in conjunction with the assignment operator if the key is already in the map. If the key-value pair does not already exist, this will not work.
 
-To add a brand new pair, instead of overwriting an existing one, use the `set` type method or the `+=` assignment operator to add multiple pairs. However for single or few elements `set` is more efficient, the assignment operator should not be used in frequent loops.
+To add a brand new pair, instead of overwriting an existing one, use the `set` type method or the `+=` assignment operator to add multiple pairs into a new map.
 
 ```python
 var MAP my_map = {'a',1, 'b',2};

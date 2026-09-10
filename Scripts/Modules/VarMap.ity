@@ -10,7 +10,7 @@
 
 func MAP VarMap_new;
 	return {
-		'__t', 'v',
+		'__t', 'VMAP',
 		'd', {},
 	};
 /;
@@ -19,7 +19,6 @@ func MAP VarMap_new;
 # Get value in the map.
 func ANY VarMap_get; arg PTR S; arg ANY key;
 	const STR str_key = (type:[key]->STR) + ':' + (key->STR);
-	if S.d.has:str_key;
 	return (S.d.has:str_key) ? (S.d:str_key) -- none;
 /;
 
@@ -34,9 +33,12 @@ func NONE VarMap_set; arg PTR S; arg ANY key; arg ANY value;
 
 const MAP __module__ = {
 	'__name', 'VarMap',
+	'__t', [
+		'VMAP',
+	],
 	'__tm', {
-		'MAP(v):get', VarMap_get,
-		'MAP(v):set', VarMap_set,
+		'MAP(VMAP):get', VarMap_get,
+		'MAP(VMAP):set', VarMap_set,
 	},
 	'new', VarMap_new,
 };

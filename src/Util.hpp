@@ -101,25 +101,6 @@ const unsigned int count_non_empty_strings(const std::vector<std::string>& items
 }
 
 
-// Returns `false` if the string representation falls out of the 32-bit range for integers.
-// NOTE: This is not an accurate check, it stops at 2,000,000,000 instead of the actual maximum.
-const bool is_int_str_32_in_range(std::string int_str) {
-	int_str = trim_left(int_str, '0');
-	if (int_str.size() == 0) return true;
-
-	const bool negative = (int_str[0] == '-');
-	const size_t digits = (negative) ? int_str.size()-1 : int_str.size();
-	// If too many or not enough digits, return false.
-	if (digits > 10) return false;
-	else if (digits < 10) return true;
-
-	uint8_t i = 0;
-	if (negative) i++;
-	if (int_str[i] == '1') return true;
-	return false;
-}
-
-
 template<class T, class T2>
 const bool exists_in_vec(const std::vector<T>& v, const T2& val) {
 	for (const T& i:v) {

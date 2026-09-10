@@ -14,3 +14,5 @@
 .test_result.txt
 test.ity
 git_assets/
+
+Scripts/Modules/BigInt.ity
