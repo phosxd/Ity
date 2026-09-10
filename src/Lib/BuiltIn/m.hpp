@@ -5,7 +5,7 @@
 
 
 // Override maximum execution depth.
-static Variant LIB_BI_set_max_depth(ItyState* _state, const ARR_t& args) {
+static Variant LIB_BI_set_max_depth(ItyState& state, const ARR_t& args) {
 	if (safe_mode) {
 		emit_error(ERR_disallowed_member_in_safe_mode, {"set_max_depth"});
 		return VPS.none;
@@ -13,7 +13,7 @@ static Variant LIB_BI_set_max_depth(ItyState* _state, const ARR_t& args) {
 	if (not ExpectArgs(args, { {VT_INT} })) return VPS.none;
 
 	const INT_t& count = AnyCast(INT_t,args[0].d);
-	execution_depth_max = count;
+	state.execution_depth_max = count;
 	return VPS.none;
 }
 

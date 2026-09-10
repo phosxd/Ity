@@ -59,7 +59,7 @@ false;
 ```
 
 ## INT
-Holds a 64-bit signed integer.  It has a range of 1.7e−308 to 1.7e+308. Trying to manually type out & initialize a value larger than the capacity will crash the program with no explanation.
+Holds a 64-bit signed integer.  It has a range of −9.223e18 to 9.223e18. Trying to manually type out & initialize a value larger than the capacity will crash the program with no explanation.
 
 ```python
 1; 2; 3;
@@ -67,7 +67,7 @@ Holds a 64-bit signed integer.  It has a range of 1.7e−308 to 1.7e+308. Trying
 ```
 
 ## FLOAT
-Holds a 64-bit signed floating point number.  It has a range of 1.7e−308 to 1.7e+308. Trying to manually type out & initialize a value larger than the capacity will crash the program with no explanation.
+Holds a 64-bit signed floating point number.  It has a range of −1.798e308 to 1.798e308. Trying to manually type out & initialize a value larger than the capacity will crash the program with no explanation.
 
 ```python
 0.0; 1.34291;

@@ -1449,15 +1449,43 @@ var unstable = ~map_item_ptr; # Pointer usage is unstable, value is undetermined
 
 # 64
 
-""
+"
+# Reach max execution depth
+# -------------------------
 
-""
+merge IO;
+
+func NONE recurse;
+	recurse:();
+/;
+
+recurse:();
+"
+
+"Error: 10"
 
 # 65
 
-""
+"
+# Reach custom max execution depth
+# --------------------------------
 
-""
+merge IO;
+
+func NONE recurse; arg INT i=0;
+	print:i;
+	recurse:(i+1);
+/;
+
+set_max_depth:5;
+recurse:();
+"
+
+"0
+1
+2
+3
+Error: 10"
 
 # 66
 

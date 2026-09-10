@@ -22,14 +22,17 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant input_args) {
 		// Create an alternate state for function execution.
 		ItyState func_state = {
 			.path=std::move(source_state->path), .seq=std::move(source_state->seq),
-			.scope=create_new_scope(source_state->scope_current_id,
-				(ScopeMap_t){
-					{HASHED_NAMES.__AG, Variant{VT_ARR, args}},
-					{HASHED_NAMES.__R,  Variant{func.return_type}}, // Initialize return variable.
-				},
-				source_state->scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
-			)
+			.scope_current_id = source_state->scope_current_id,
+			.execution_depth_max = state.execution_depth_max,
+			.execution_depth     = state.execution_depth
 		};
+		func_state.scope = create_new_scope(func_state.scope_current_id,
+			(ScopeMap_t){
+				{HASHED_NAMES.__AG, Variant{VT_ARR, std::move(args)}},
+				{HASHED_NAMES.__R,  Variant{func.return_type}}, // Initialize return variable.
+			},
+			source_state->scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
+		);
 
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;

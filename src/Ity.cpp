@@ -9,7 +9,7 @@
 
 #include "Registry.hpp"
 #include "Util.hpp"
-#include "ScriptErrors.hpp"
+#include "Debug.hpp"
 #include "Variant.hpp"
 
 const void* LIB_BI_G = nullptr; // Global reference to built-in lib.
@@ -302,10 +302,10 @@ std::vector<InstToken> tokenize(const std::string& src) {
 // Execute a sequence of instruction tokens.
 void exec(ItyState& state, const size_t start_idx, const int end_idx) {
 	current_script_path = &state.path;
-	execution_depth += 1;
+	state.execution_depth += 1;
 	// Throw error if maximum execution depth is reached.
-	if (execution_depth > execution_depth_max) {
-		emit_error(ERR_max_execution_depth, {std::to_string(execution_depth_max)});
+	if (state.execution_depth > state.execution_depth_max) {
+		emit_error(ERR_max_execution_depth, {std::to_string(state.execution_depth_max)});
 		return;
 	}
 
@@ -349,7 +349,7 @@ void exec(ItyState& state, const size_t start_idx, const int end_idx) {
 			break;
 		}
 	}
-	execution_depth -= 1;
+	state.execution_depth -= 1;
 }
 
 

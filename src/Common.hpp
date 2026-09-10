@@ -246,11 +246,3 @@ const bool ExpectArgs(const ARR_t& args, const std::vector<std::vector<VariantTy
 	}
 	return true;
 }
-
-
-
-
-// TODO: move these into ItyState.
-
-unsigned int execution_depth_max = 5000;
-unsigned int execution_depth = 0;

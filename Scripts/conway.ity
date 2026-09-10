@@ -98,11 +98,11 @@ func NONE _game_next;
 /;
 
 
-func BOOL is_cell_border; arg INT i_;
-	return (WORLD_SIZE.x > i_)
-	|| (GAME.cell_x:i_ == 0)
-	|| (GAME.cell_x:(i_+1) == 0)
-	|| (i_ > (GAME.cell_count-(WORLD_SIZE.x)));
+func BOOL is_cell_border; arg INT i;
+	return (WORLD_SIZE.x > i)
+	|| (GAME.cell_x:i == 0)
+	|| (GAME.cell_x:(i+1) == 0)
+	|| (i > (GAME.cell_count-(WORLD_SIZE.x)));
 /;
 
 

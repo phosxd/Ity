@@ -192,7 +192,7 @@ struct ItyScope {
 
 
 
-// Create a new scope state.
+// Create a new scope.
 ItyScope create_new_scope(UINT_t& scope_current_id, const ScopeMap_t& data={}, ItyScope* parent=nullptr, UINT_t id=0) {
 	if (id == 0) {
 		scope_current_id += 1;
@@ -216,6 +216,9 @@ struct ItyState {
 	std::vector<InstToken> seq = {}; // Instruction token sequence.
 	ItyScope scope;
 	UINT_t scope_current_id = 0;
+
+	unsigned int execution_depth_max = 1500;
+	unsigned int execution_depth = 0;
 
 	Variant last_expr_result = VPS.empty;
 	// Instruction jump values.
