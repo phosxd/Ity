@@ -3,6 +3,8 @@
 
 **Version:** 0.2.0
 
+<img src="https://noailist.org/images/badge.png" align=""></img>
+
 Ity is a work-in-progress, light-weight & embeddable interpreted programming language built with C++.
 
 </div>
