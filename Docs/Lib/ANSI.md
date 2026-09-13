@@ -36,8 +36,8 @@ If your terminal supports it, you may be able to get RGB colors using the `fg_rg
 - `cursor_off`
 - `cursor_on`
 
-### STR move (INT x, INT y)
+### (STR) move (INT x, INT y)
 Move the cursor to the given coordinate values.
 
-### STR move_\[up,down,left,right\] (INT value)
+### (STR) move_\[up,down,left,right\] (INT value)
 Relatively move the cursor by the given amount.

@@ -17,20 +17,20 @@ A map of all supported system signals represented as an `INT`.
 
 # Methods
 
-### STR in
+### (STR) in
 Waits for then returns an input line `STR` via `stdin` pipe.
 
 ```python
 # Print raw input.
-const STR input = in:[];
+const STR input = in:();
 print:input;
 
 # Print input converted to a number.
-const num_input = in:[] -> FLOAT;
+const num_input = in:() -> FLOAT;
 print:num_input; # 0.0 if failed conversion.
 ```
 
-### STR key_in
+### (STR) key_in
 Same as `in` except it doesn't wait for a new line, instantly returns the next character in the `stdin` buffer.
 
 ```python
@@ -39,7 +39,7 @@ merge IO;
 
 var chars = [];
 while true;
-	const ch = key_in:[];
+	const ch = key_in:();
 	chars.append:ch;
 	# If received ASCII code 3, then exit the loop.
 	if ch.raw:[] == 3; break; /;
@@ -49,19 +49,19 @@ while true;
 print:['\nGot: ', chars];
 ```
 
-### STR prompt (STR text)
+### (STR) prompt (STR text)
 Same as `in` except it outputs the given text before accepting input.
 
 ```python
 # Without `prompt`:
 out:'Enter your name: ';
-const name = in:[];
+const name = in:();
 
 # With `prompt`:
 const name = prompt:'Enter your name: ';
 ```
 
-### NONE out (ANY ...var)
+### (NONE) out (ANY ...var)
 Output the stringified variants to `stdout` directly without modification. Instantly flushes output for immediate display in the terminal.
 
 ```python
@@ -69,10 +69,10 @@ out:'Hello World!\n';
 # Hello World!
 ```
 
-### NONE err (ANY ...var)
+### (NONE) err (ANY ...var)
 Same as `out` except it writes to `stderr` instead. Text is *not* colorized.
 
-### NONE print (ANY ...var)
+### (NONE) print (ANY ...var)
 Outputs the stringified variants to `stdout` with a new line appended to the output. Instantly flushes output.
 
 ```python
@@ -80,7 +80,7 @@ print:'Hello World!';
 # Hello World!
 ```
 
-### NONE signal (INT signal_code, MAP(f) function)
+### (NONE) signal (INT signal_code, MAP(f) function)
 Connects the given function to a system signal. Refer to the [SIGNAL](#map-signal) member for valid signal codes.
 
 ```python

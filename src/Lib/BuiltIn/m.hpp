@@ -145,7 +145,6 @@ static Variant LIB_BI_tm_ref_type(ItyState& state, const ARR_t& args) {
 
 // Returns the raw character code for the first character in the string.
 static Variant LIB_BI_tm_str_raw(ItyState& _state, ARR_t& args) {
-	if (not expect_arg_count(args, 1)) return VPS.none;
 	// Get data.
 	const STR_t& data = AnyCast(STR_t, AnyCastV(Variant*,args[0].d)->d );
 	// Return integer representation.
