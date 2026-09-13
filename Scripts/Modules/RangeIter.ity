@@ -1,0 +1,38 @@
+# RangeIter
+# ----------
+#
+# Implements an efficient range iterator.
+#
+# How is this different from the built-in `range` method?
+#   `range` allocates a literal `ARR` containing a range of integers.
+#   This becomes problematic when creating a range of very large numbers.
+#
+#   RangeIter solves this by iterating on a bound function.
+#   This is slightly slower to iterate on, but it's more convenient than
+#   manually stepping inside the loop.
+#
+#
+# PART OF THE STANDARD SET OF ITY MODULES.
+
+
+func ARR RangeIter_iter; arg INT s; arg INT e; arg INT t; arg ANY i;
+	if type:i != INT; i = s; /;
+	const INT new_i = i+t;
+	return (new_i >= e)
+		?  [false, none]
+		-- [true, new_i]
+	;
+/;
+
+
+func FUNC RangeIter_new; arg INT start; arg INT end; arg INT step=1;
+	return RangeIter_iter.bind:[start, end, step];
+/;
+
+
+
+
+const MAP __module__ = {
+	'__name', 'RangeIter',
+	'new', RangeIter_new,
+};

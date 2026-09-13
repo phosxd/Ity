@@ -106,9 +106,8 @@ void OP_Access_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Va
 
 		// Access function call.
 		case VT_FUNC: {
-			const FUNC_t& func = AnyCast(FUNC_t,o1->d);
 			result = std::move(call_function(
-				state, func,
+				state, AnyCast(FUNC_t,o1->d),
 				Variant{VT_ARR, (second->t == VT_ARR) ? AnyCastV(ARR_t,second->d) : (ARR_t){*second}} // Using "second" instead of "o2" is not a mistake, if it's a `REF`/`PTR` we want to pass the actual ref/ptr.
 			));
 			return;

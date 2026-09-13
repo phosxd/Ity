@@ -45,17 +45,17 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 	const UINT_t& index = AnyCast(UINT_t,token.meta[4]);
 	ARR_t& token_vars = AnyCastV(ARR_t,token.meta[3]);
 	// Get iterable.
-	Variant& iterable = token_vars[0];
-	if (iterable.t == VT_PLACEHOLDER) {
-		iterable = *expr_exec(state, token.expr);
-		token_vars[0] = iterable;
+	Variant* iterable = &(token_vars[0]);
+	if (iterable->t == VT_PLACEHOLDER) {
+		token_vars[0] = *expr_exec(state, token.expr);
+		iterable = &(token_vars[0]);
 	}
 
 
-	switch (iterable.t) {
+	switch (iterable->t) {
 		// Get item from integer.
 		case VT_INT: {
-			if (AnyCast(INT_t,iterable.d) > (INT_t)index) {
+			if (AnyCast(INT_t,iterable->d) > (INT_t)index) {
 				value = true;
 				token_vars[1].t = VT_INT;
 				token_vars[1].d = (INT_t)index;
@@ -63,7 +63,7 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 		}
 		// Get item from string.
 		case VT_STR: {
-			const STR_t& data = AnyCast(STR_t,iterable.d);
+			const STR_t& data = AnyCast(STR_t,iterable->d);
 			if (data.size() > index) {
 				value = true;
 				token_vars[1].t = VT_STR;
@@ -72,31 +72,19 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 		}
 		// Get item from array.
 		case VT_ARR: {
-			ARR_t& data = AnyCastV(ARR_t,iterable.d);
+			ARR_t& data = AnyCastV(ARR_t,iterable->d);
 			if (data.size() > index) {
 				value = true;
-				token_vars[1].t = data[index].t;
-				token_vars[1].d = data[index].d;
+				token_vars[1] = data[index];
 			} break;
 		}
-		// Get item from iterable object.
-		case VT_MAP: {
-			const MAP_t& map = AnyCast(MAP_t,iterable.d);
-			if (const auto& it = map.find("__iter"); it != map.end()) {
-				value = true;
-				Variant args {
-					VT_ARR,(ARR_t){
-						Variant{VT_PTR, &iterable},
-						Variant{VT_INT, (INT_t)index},
-					}
-				};
-				const Variant& result = call_function(state, AnyCast(FUNC_t,it->second.d), args);
-				if (result.t == VT_ARR) {
-					if (const ARR_t& arr = AnyCast(ARR_t,result.d); arr.size() == 2 && arr[0].t == VT_BOOL) {
-						value = AnyCast(bool,arr[0].d);
-						token_vars[1].t = arr[1].t;
-						token_vars[1].d = arr[1].d;
-					}
+		// Get item from function.
+		case VT_FUNC: {
+			const Variant& result = call_function(state, AnyCast(FUNC_t,iterable->d), Variant{VT_ARR,(ARR_t){token_vars[1]}});
+			if (result.t == VT_ARR) {
+				if (const ARR_t& arr = AnyCast(ARR_t,result.d); arr.size() == 2 && arr[0].t == VT_BOOL) {
+					value = AnyCast(bool,arr[0].d);
+					token_vars[1] = arr[1];
 				}
 			} break;
 		}

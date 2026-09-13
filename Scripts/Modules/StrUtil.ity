@@ -80,7 +80,7 @@ func STR STR_replace; arg PTR S; arg STR a; arg STR b;
 func STR STR_replace_all; arg PTR S; arg STR a; arg STR b;
 	var STR new_str = ~S;
 	while true;
-		var STR new_str_ = STR_replace:[(&>new_str), a,b];
+		var STR new_str_ = STR_replace:[(@>new_str), a,b];
 		if new_str_ == new_str; break; /;
 		new_str <<= new_str_;
 	/;

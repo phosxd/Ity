@@ -75,8 +75,7 @@ Holds a 64-bit signed floating point number.  It has a range of −1.798e308 to 
 ```
 
 ## STR
-Holds an array of bytes characters. UTF-8 characters can be represented as multiple bytes.
-This may be used as a container for storing raw bytes.
+Holds a string of raw bytes.
 
 ```python
 "This is a string";
@@ -97,7 +96,7 @@ Strings can make use of `\` (back-slash) for escape sequences. Here is each one 
 "Give me my \"double quotes\"!";
 ```
 
-You can get an individual character from a string by using the accessor operator on it.
+You can get an individual byte from a string by using the accessor operator on it.
 
 ```python
 const STR my_str = 'abcdefg';
@@ -106,7 +105,7 @@ my_str:5;  # Gives "f".
 'abc':1;   # Gives "b".
 ```
 
-Adding an `INT` to a string will append the ASCII representation of the integer to the string.
+Adding an `INT` to a string will append the ASCII representation of that integer to the string.
 
 ```python
 var STR my_str = 'ab';
@@ -115,7 +114,7 @@ my_str += 99; # 99 = 'c'.
 ```
 
 ## ARR
-Holds an array of variants which can of any type.
+Holds an array of variants which can be of any type.
 
 ```python
 [1,2,3];
@@ -608,7 +607,7 @@ import IO;
 
 const STR string = "Hello World!";
 # Print each character in the string, with some delay.
-var INT i = -1; while i < (length:string - 1); i+=1;
+var INT i = -1; while i < (string.length:() - 1); i+=1;
 	# Skip white space characters.
 	if string:i == " ";
 		continue;
@@ -659,32 +658,25 @@ for i in [1,2,'3'];
 for i in range:[0,10,2];
 	print:i;
 /;
-```
 
-The `range` function can be useful, but it comes at a cost of allocating a literal array with numbers inside, which is bad for large range. For larger ranges you should consider using the `RangeIterator` script-module which implements an iterable object that does not generate an array.
 
-```python
-# Safer range iteration.
-import RangeIterator;
-
-# Print numbers 0, 2, 4, 6, 8.
-for i in RangeIterator.new:[0,10,2];
-	print:i;
+# Print keys "c", "b", "a".
+# Order cannot be guaranteed.
+const MAP map = {'a',1, 'b',2, 'c',3};
+for key in map.keys:();
+	print:key;
 /;
 ```
 
-You can iterate over keys in a `MAP` as well.
+The `range` function can be useful, but it comes at a cost of allocating a literal array with numbers inside, which is bad for large ranges. For larger ranges you should consider using the `RangeIter` script-module which uses a method that does not allocate memory.
 
 ```python
-merge IO;
+# Safer range iteration.
+import RangeIter;
 
-const map = {'a',1, 'b'2, 'c',3};
-# Print keys "a", "b", "c".
-# Print value 1, 2, 3.
-# (Note: order not determined)
-for i in map.keys:[];
+# Print numbers 0, 2, 4, 6, 8.
+for i in RangeIter.new:[0,10,2];
 	print:i;
-	print:(map:i);
 /;
 ```
 
@@ -772,5 +764,5 @@ Script-based modules (not built-into the interpreter binary):
 - [ANSI](Lib/ANSI)
 - [StrUtil](Lib/StrUtil.md)
 - [ArrUtil](Lib/ArrUtil.md)
-- [RangeIterator](Lib/RangeIterator.md)
+- [RangeIter](Lib/RangeIter.md)
 - [VarMap](Lib/VarMap.md)

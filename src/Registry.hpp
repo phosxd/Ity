@@ -209,8 +209,8 @@ enum VariantType : uint8_t {
 
 const std::unordered_map<const VariantType, const std::string> VARIANT_TYPE_NAMES = {
 	// Meta types.
-	{VT_PLACEHOLDER,  "VT_PLACEHOLDER"},
-	{VT_INTERNAL,     "VT_INTERNAL"},
+	{VT_PLACEHOLDER,  "PLACEHOLDER"},
+	{VT_INTERNAL,     "INTERNAL"},
 	{VT_INFERRED,     "*"},
 	{VT_ANY,          "ANY"},
 	{VT_OP,           "OP"},

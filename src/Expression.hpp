@@ -639,11 +639,11 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 
 
 
+// Clear state temporaries then execute the expression.
 Variant* expr_exec(ItyState& state, ExprToken& token, const bool subexpr=false) {
 	state.tp_c = 0;
 	current_line = token.ln; current_column = token.col;
-	ExprState expr_state = {
-	};
+	ExprState expr_state = {};
 	return expr_exec_(state, token, expr_state, subexpr);
 }
 
