@@ -13,14 +13,14 @@ Time measurement functions will require a `mode` parameter, which dictates the f
 
 # Methods
 
-### INT snow (STR mode)
+### (INT) snow (STR mode)
 Get the current real world time according to the host system clock. The returned value is counted up from the year 1970, therefor a value of 0 would represent some time in the year 1970.
 
 ```python
 snow.y; # Returns 56, for 2026.
 ```
 
-### INT now (STR mode)
+### (INT) now (STR mode)
 Get the current program time since start-up.
 
 ```python
