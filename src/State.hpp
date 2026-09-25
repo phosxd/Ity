@@ -216,6 +216,7 @@ struct ItyState {
 	std::vector<InstToken> seq = {}; // Instruction token sequence.
 	ItyScope scope;
 	UINT_t scope_current_id = 0;
+	std::vector<InstToken*> scoped_tokens; // Tracker for tokens responsible for a scope.
 
 	unsigned int execution_depth_max = 1500;
 	unsigned int execution_depth = 0;
@@ -238,9 +239,6 @@ struct ItyState {
 		temp_pool[tp_c] = std::move(var); tp_c++;
 		return &temp_pool[tp_c-1];
 	}
-
-	// Tracker for tokens responsible for a scope.
-	std::vector<InstToken*> scoped_tokens;
 
 
 	void init() {

@@ -33,9 +33,6 @@ func NONE VarMap_set; arg PTR S; arg ANY key; arg ANY value;
 
 const MAP __module__ = {
 	'__name', 'VarMap',
-	'__t', [
-		'VMAP',
-	],
 	'__tm', {
 		'MAP(VMAP):get', VarMap_get,
 		'MAP(VMAP):set', VarMap_set,

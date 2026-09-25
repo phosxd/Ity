@@ -7,7 +7,7 @@
 
 
 // Get string representation of a VariantType.
-inline const std::string& get_variant_type_name(const VariantType& type) {return VARIANT_TYPE_NAMES.at(type);}
+#define get_variant_type_name(type) (VARIANT_TYPE_NAMES.at(type))
 
 
 // Get VariantType from a string representation.
@@ -286,7 +286,7 @@ struct Variant {
 		}
 
 		// Throw error is none matched.
-		emit_operator_overload_error("Compare(==)", *this,b);
+		emit_operator_overload_error("Comp(==)", *this,b);
 		return false;
 	}
 
@@ -309,7 +309,7 @@ struct Variant {
 		}
 
 		// Throw error is none matched.
-		emit_operator_overload_error("Compare(>)", *this,b);
+		emit_operator_overload_error("Comp(>)", *this,b);
 		return false;
 	}
 
@@ -331,7 +331,7 @@ struct Variant {
 		}
 
 		// Throw error is none matched.
-		emit_operator_overload_error("Compare(<)", *this,b);
+		emit_operator_overload_error("Comp(<)", *this,b);
 		return false;
 	}
 };

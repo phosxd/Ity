@@ -131,11 +131,11 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		case ERR_max_execution_depth:               return "Maximum depth reached (" + args[0] + ").";
 
 		case ERR_invalid_syntax:                    return "Invalid syntax: " + args[0] + ".";
-		case ERR_invalid_inst_arg_count:            return "Invalid number of arguments for \"" + args[0] + "\". Expected at least " + args[1] + " separated by a space.";
+		case ERR_invalid_inst_arg_count:            return "Invalid argument count for \"" + args[0] + "\". Expected at least " + args[1] + " separated by a space.";
 		case ERR_invalid_op: {
 			std::string part = "\".";
 			if (args[0][args[0].size()-1] == '-') {
-				part += " Hint: isolate negative number with a space (E.g. `1 + -1`, not `1+-1`).";
+				part += " Hint: isolate negatives with grouping or space (`1 + -1` or `1+(-1)`, not `1+-1`).";
 			}
 			return "Invalid operator \"" + args[0] + part;
 		}
@@ -151,8 +151,8 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 			}
 			return "Cannot perform operation \"" + args[0] + "\" on value of type \"" + args[1] + part;
 		}
-		case ERR_assignment_type_mismatch:          return "Cannot assign value of type \"" + args[0] + "\" to variable of type \"" + args[1] + "\".";
-		case ERR_return_type_mismatch:              return "Cannot return value of type \"" + args[0] + "\" in a function that returns type \"" + args[1] + "\".";
+		case ERR_assignment_type_mismatch:          return "Cannot assign type \"" + args[0] + "\" to \"" + args[1] + "\".";
+		case ERR_return_type_mismatch:              return "Cannot return \"" + args[0] + "\" in a function that returns \"" + args[1] + "\".";
 		case ERR_operators_not_allowed:             return "Operators not allowed here. Wrap in grouping instead.";
 		case ERR_expected_boolean_expression:       return "Expected a boolean result in expression.";
 		case ERR_expected_string_expression:        return "Expected a string result in expression.";
@@ -174,7 +174,7 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 
 		case ERR_unexpected_char_at_expr_end:       return "Unexpected character \"" + args[0] + "\" at expression end.";
 		case ERR_invalid_character_for_construct:   return "Invalid character for " + args[0] + " construct: \"" + args[1] + "\".";
-		case ERR_cannot_dereference:                return "Cannot dereference value of type \"" + args[0] + "\".";
+		case ERR_cannot_dereference:                return "Cannot dereference \"" + args[0] + "\".";
 		case ERR_max_temporaries_in_use:            return "Maximum temporaries in use (" + args[0] + "/" + args[1] + "); Reduce one-off expression complexity.";
 		case ERR_not_iterable:                      return "Value is not iterable.";
 		case ERR_misplaced_operator:                return "Misplaced operator.";

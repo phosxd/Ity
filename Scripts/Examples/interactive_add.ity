@@ -4,7 +4,7 @@ import ANSI;
 
 
 func FLOAT add; arg FLOAT first; arg FLOAT second;
-	return a+b;
+	return first + second;
 /;
 
 

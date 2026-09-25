@@ -7,6 +7,8 @@
   a custom "path" which can be passed to a reference operator("@") which can use it to lookup the value via the path upon deref. This will require
   that custom accessor functions be made instead of being embedded in the access operator logic.
 
+
+- Implement "BigInt" module.
 - Fully implement StrUtil & ArrUtil modules.
 
 
