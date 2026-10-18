@@ -11,7 +11,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant input_args) {
 		ItyState* func_state = (func.script_path == state.path) ? &state : state.find_alt_from_path(func.script_path);
 		if (not func_state) {
 			emit_error(ERR_unexpected, {"CallFunc", "Cannot find function."});
-			return Variant{};
+			return new_none();
 		}
 		// Get function token.
 		const InstToken& func_token = func_state->seq[func.token_index];
@@ -22,7 +22,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant input_args) {
 		func_state->scope = create_new_scope(func_state->scope_current_id,
 			(ScopeMap_t){
 				{HASHED_NAMES.__AG, Variant{VT_ARR, std::move(args)}},
-				{HASHED_NAMES.__R,  Variant{}}, // Initialize return variable.
+				{HASHED_NAMES.__R,  new_none()}, // Initialize return variable.
 			},
 			old_scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
 		);
@@ -243,7 +243,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				continue;
 			}
 			// End string.
-			if (std::string(1,ch) == secondary_buffer) {
+			if (not secondary_buffer.empty() && ch == secondary_buffer[0]) {
 				is_string = false;
 				continue;
 			}
@@ -367,7 +367,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				is_start = false;
 			}
 
-			if (is_operator == false) {
+			if (not is_operator) {
 				// Separate expression.
 				if (ch == ',') {
 					clean_up_buffer(result.token, item, buffer);
@@ -377,7 +377,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				}
 
 				// Start operator.
-				else if (is_special_symbol(ch) == true) {
+				else if (is_special_symbol(ch)) {
 					clean_up_buffer(result.token, item, buffer);
 					item.var.t = VT_PLACEHOLDER;
 					is_operator = true;
@@ -399,8 +399,9 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				}
 
 				else if (item.var.t == VT_BOOL || item.var.t == VT_NONE) {
+					std::string buffer_plus_ch = (buffer+ch);
 					// If no longer matches the bool or none token, switch to a reference.
-					if ((buffer+ch).size() >= secondary_buffer.size() && (buffer+ch) != secondary_buffer) {
+					if (buffer_plus_ch.size() >= secondary_buffer.size() && buffer_plus_ch != secondary_buffer) {
 						item.var.t = VT_TREF;
 						secondary_buffer.clear();
 					}
@@ -431,7 +432,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 			}
 
 			// End operator.
-			if (is_operator == true && expr_len > i+1 && (expr[i+1] == ' ' or not is_special_symbol(expr[i+1])) ) {
+			if (is_operator && expr_len > i+1 && (expr[i+1] == ' ' or not is_special_symbol(expr[i+1])) ) {
 				const std::string op_symbol_str = (buffer+ch);
 				const OpDef* op_def = find_OpDef(OpSymbol__, op_symbol_str);
 				// Throw error if invalid operator.
@@ -622,7 +623,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 		;
 	}
 
-	if (not result) result = state.append_temp_var(Variant{});
+	if (not result) result = state.append_temp_var(new_none());
 
 	// Output result in debug mode.
 	#ifdef RUNTIME_DEBUG

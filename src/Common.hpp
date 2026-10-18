@@ -192,6 +192,11 @@ const Variant var_type_var(const VariantType type) {
 }
 
 
+const Variant new_none() {
+	return Variant{};
+}
+
+
 Variant none_var = {VT_NONE, std::monostate(), VariantMode_constant};
 
 // Collection of Variant presets used in various places within the codebase.
