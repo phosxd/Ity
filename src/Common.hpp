@@ -67,8 +67,8 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 	if (not s.expr.seq.empty()) os << ", expr=" << s.expr;
 	if (s.composite_size > 0) {os << ", comp_size=" << s.composite_size;}
 	if (s.linked_inst != InstSymbol__) {
-		os << ", linked_inst=" << s.linked_inst;
-		os << ", linked_inst_pos=" << s.linked_inst_pos;
+		os << ", l_inst=" << s.linked_inst;
+		os << ", l_inst_pos=" << s.linked_inst_pos;
 	}
 	os << '}';
 	return os;

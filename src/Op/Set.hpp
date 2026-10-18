@@ -1,4 +1,5 @@
 #pragma once
+// Fragment Size: 992
 
 
 static Variant OP_Set_arith_set(const OpSymbol& symbol, Variant*& o1, Variant*& o2) {

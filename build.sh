@@ -151,6 +151,7 @@ if [[ $DEBUG == 0 ]]; then
 	strip ity.bin # Better results than "-s" flag for gcc.
 	objcopy \
 		--remove-section=.gnu.version \
+		--remove-section=.note.gnu.build-id \
 		--remove-section=.note.ABI-tag \
 		--remove-section=.note.gnu.property \
 		--remove-section=.note.stapsdt \
@@ -184,7 +185,9 @@ end=$(date +%s)
 echo "Done in $((end-start))s."
 
 # Get size difference between this & the last build.
-bin_size=$(wc -c < ity.bin)
+bin_size=$(size -A ity.bin)
+bin_size=${bin_size#*"Total"}
+bin_size=${bin_size//[[:space:]]/}
 prev_bin_size=0
 if [[ -e ".last_build_size" ]]; then
 	prev_bin_size=$(cat .last_build_size)

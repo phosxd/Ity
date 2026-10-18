@@ -37,7 +37,7 @@ using FLOAT_t = double;
 using STR_t = std::string;
 using ARR_t = std::vector<Variant>;
 using MAP_t = std::unordered_map<STR_t,Variant>;
-using NativeFunc_t = Variant(*)(ItyState& state, const ARR_t& args);
+using NativeFunc_t = Variant(*)(ItyState& state, ARR_t& args);
 
 
 #pragma pack(1)

@@ -6,7 +6,7 @@ import Time;
 import Math;
 
 
-const INT FPS = 8;
+const INT FPS = 30;
 const INT FPS_ms = 1000 / FPS;
 
 const STR CELL_ON =  '██';

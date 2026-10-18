@@ -1,4 +1,5 @@
 #pragma once
+// Fragment Size: 682
 
 
 static void INST_End_exec(ItyState& state, InstToken& token) {

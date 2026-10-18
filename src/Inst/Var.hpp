@@ -1,10 +1,10 @@
 #pragma once
+// Fragment Size: 2880
 
 
 static void processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
 	std::string type_name = "*";
 	std::string name;
-	std::string op = "";
 	std::string expr;
 	std::string buffer;
 	bool is_expr = false;
@@ -31,10 +31,8 @@ static void processor(InstToken& token, const AnyMap_t& _extra, const unsigned i
 				name = type_name;
 				type_name = "*";
 			}
-			// Set `op`.
 			expr_start_ln = ln_;
 			expr_start_col = col_;
-			op = ch;
 			is_expr = true; // Expect everything after to be an expression.
 			continue;
 		}
@@ -74,7 +72,7 @@ static void processor(InstToken& token, const AnyMap_t& _extra, const unsigned i
 	}
 
 	// Set token properties.
-	token.meta = {name, string_hasher(name), op, type, mode};
+	token.meta = {name, string_hasher(name), type, mode};
 	token.expr = expr_tokenize(expr, ln-expr_start_ln, col-expr_start_col).token;
 }
 
@@ -116,24 +114,26 @@ static void exec(ItyState& state, InstToken& token) {
 	}
 
 	// Get variable type & infer it if needed.
-	VariantType type = AnyCastV(VariantType,token.meta[3]);
+	VariantType type = AnyCastV(VariantType,token.meta[2]);
 	if (type == VT_INFERRED) type = var.t;
 	// Set value to sane default if not explicitly set.
 	else if (var.t == VT_NONE && var.t != type) {
+		Variant var_ = {.t = type};
 		switch (type) {
-			case VT_REF:    {var = Variant{VT_REF, (STR_t)"noneref"}; break;}
-			case VT_BOOL:   {var = VPS.bool_false;      break;}
-			case VT_INT:    {var = Variant{VT_INT, (INT_t)0};         break;}
-			case VT_FLOAT:  {var = Variant{VT_FLOAT, (FLOAT_t)0};     break;}
-			case VT_STR:    {var = Variant{VT_STR, (STR_t)""};        break;}
-			case VT_ARR:    {var = Variant{VT_ARR, (ARR_t){}};        break;}
-			case VT_MAP:    {var = Variant{VT_MAP, (MAP_t){}};        break;}
+			case VT_REF:    {var_.d = (STR_t)"noneref"; break;}
+			case VT_BOOL:   {var_.d = false;            break;}
+			case VT_INT:    {var_.d = (INT_t)0;         break;}
+			case VT_FLOAT:  {var_.d = (FLOAT_t)0;       break;}
+			case VT_STR:    {var_.d = (STR_t)"";        break;}
+			case VT_ARR:    {var_.d = (ARR_t){};        break;}
+			case VT_MAP:    {var_.d = (MAP_t){};        break;}
 			default: break;
 		}
+		var = var_;
 	}
 
 	// Set data.
-	const VariantMode& mode = AnyCast(VariantMode,token.meta[4]);
+	const VariantMode& mode = AnyCast(VariantMode,token.meta[3]);
 	if (not var.matches(Variant{type, std::monostate(), mode})) return;
 	state.scope.set_data(name, Variant{var.t, var.d, mode}, hashed_name);
 }

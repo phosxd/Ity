@@ -1,4 +1,5 @@
 #pragma once
+// Fragment Size: 3642
 
 
 static void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {

@@ -1,4 +1,5 @@
 #pragma once
+// Fragment Size: 528
 
 
 void OP_Ternary_pre_exec(ItyState& state, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
@@ -14,7 +15,7 @@ void OP_Ternary_pre_exec(ItyState& state, Variant*& first, const OpSymbol& symbo
 }
 
 
-void OP_Ternary_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& _result, Variant*& result_ptr) {
+void OP_Ternary_exec(ItyState& _state, ExprState& _expr_state, Variant*& _first, Variant*& second, const OpSymbol& _symbol, Variant& _result, Variant*& result_ptr) {
 	result_ptr = second;
 }
 

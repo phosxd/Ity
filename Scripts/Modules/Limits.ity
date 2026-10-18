@@ -49,4 +49,7 @@ const MAP __module__ = {
 	'FLOAT64_max', f64_x,
 	'FLOAT64_min', f64_n,
 	'FLOAT64_inf', f64_inf,
+
+	'STR_byte_max', i8_x,
+	'STR_byte_min', i8_n,
 };

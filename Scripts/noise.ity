@@ -1,0 +1,44 @@
+import IO;
+import Time;
+import Math;
+import Limits;
+import FileSystem as FS;
+
+const STR PATH = 'noise.ppm';
+const INT DEPTH = 3;
+const ARR BYTE_RANGE = [(Limits.STR_byte_min), (Limits.STR_byte_max)];
+
+const INT HEIGHT = (IO.prompt:'Image height: '->INT);
+const INT WIDTH = (IO.prompt:'Image width: '->INT);
+const INT BYTE_COUNT = (WIDTH*HEIGHT*DEPTH);
+
+
+
+IO.print:'Generating...';
+const INT start = Time.now.ms;
+
+const FUNC rand = (Math.rand);
+Math.set_seed:start;
+
+
+# File bytes representing a PPM image.
+var STR file = (
+	'P6\n' # PPM binary format.
+	+ (WIDTH->STR)+' '+(HEIGHT->STR) + '\n' # Image dimensions.
+	+ '255\n' # Pixel max value.
+);
+
+
+file.reserve:BYTE_COUNT; # Reserve the amount of bytes we will be writing.
+# Generate randomized bytes & append each one at the end of the file.
+for i in BYTE_COUNT;
+	file.append:(rand:BYTE_RANGE);
+/;
+
+
+# Save file to disk.
+IO.print:'Saving...';
+FS.write:[PATH, file];
+IO.print:['\nDone in ', ((Time.now.ms-start) / 1000.0), ('s. Saved to: ' + PATH)];
+
+system:('xdg-open '+PATH); # Open file in preferred app.

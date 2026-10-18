@@ -118,10 +118,10 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		#ifdef RUNTIME_DEBUG
 		case ERR_unexpected:                        return "Unexpected (" + args[0] + "): " + args[1] + " Please report bug.";
 		#ifdef INCLUDE_SHELL
-		case ERR_expected_ity_extension:            return "Expected file with \".ity\" extension.";
+		case ERR_expected_ity_extension:            return "Expected \".ity\" file.";
 		case ERR_unable_to_open_script:             return "Unable to open script at \"" + args[0] + "\".";
 		#endif
-		case ERR_unknown_module:                    return "Cannot find module with name \"" + args[0] + "\".";
+		case ERR_unknown_module:                    return "Cannot find module \"" + args[0] + "\".";
 		case ERR_disallowed_member_in_safe_mode:    return "Member \"" + args[0] + "\" not permitted in safe mode (--safe).";
 
 		case ERR_max_composite_size:                return "Exceeded maximum instructions under a composite (65,535).";
@@ -169,7 +169,7 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		case ERR_no_property_with_name:             return "No property named \"" + args[0] + "\" in this object.";
 		case ERR_1__:                               return "";
 		case ERR_invalid_func_arg_count:            return "Function expected " + args[0] + " arguments, not " + args[1] + ".";
-		case ERR_invalid_func_arg_type:             return "Function argument " + args[0] + " expected vaue of type \"" + args[1] + "\", not \"" + args[2] + "\"";
+		case ERR_invalid_func_arg_type:             return "Function argument " + args[0] + " expected value of type \"" + args[1] + "\", not \"" + args[2] + "\"";
 		case ERR_no_args_available:                 return "No more arguments to capture.";
 
 		case ERR_unexpected_char_at_expr_end:       return "Unexpected character \"" + args[0] + "\" at expression end.";

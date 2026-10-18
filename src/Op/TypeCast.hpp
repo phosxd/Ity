@@ -1,4 +1,5 @@
 #pragma once
+// Fragment Size: 1152
 
 
 void OP_TypeCast_exec(ItyState& _state, ExprState& _expr_state, Variant*& first, Variant*& second, const OpSymbol& _symbol, Variant& result, Variant*& _result_ptr) {
@@ -7,16 +8,14 @@ void OP_TypeCast_exec(ItyState& _state, ExprState& _expr_state, Variant*& first,
 		return;
 	}
 
-	const INT_t& target = AnyCast(INT_t,second->d);
-	Variant var;
-
-	switch ((VariantType)target) {
-		case VT_BOOL:   {var.t = VT_BOOL;   var.d = first->to_bool();  break;}
-		case VT_INT:    {var.t = VT_INT;    var.d = first->to_int();   break;}
-		case VT_FLOAT:  {var.t = VT_FLOAT;  var.d = first->to_float(); break;}
-		case VT_STR:    {var.t = VT_STR;    var.d = first->to_str();   break;}
+	Variant var {.t = (VariantType)AnyCast(INT_t,second->d)};
+	switch (var.t) {
+		case VT_BOOL:   {var.d = first->to_bool();  break;}
+		case VT_INT:    {var.d = first->to_int();   break;}
+		case VT_FLOAT:  {var.d = first->to_float(); break;}
+		case VT_STR:    {var.d = first->to_str();   break;}
 		default: {
-			emit_error(ERR_invalid_cast, {get_variant_type_name(first->t), get_variant_type_name((VariantType)target)});
+			emit_error(ERR_invalid_cast, {get_variant_type_name(first->t), get_variant_type_name(var.t)});
 			return;
 		}
 	}
