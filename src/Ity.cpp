@@ -1,15 +1,15 @@
-#include <string>
-#include <vector>
-#include <unordered_map>
+#include "Ity.hpp"
 
 #include <iostream>
 #include <fstream>
 #include <chrono>
 #include <filesystem> // NOTE: "filesystem" is quirky across translation units, it is crucial it stays in the main file, otherwise we will get "std::bad_alloc" exceptions when trying to use it.
 
-#include "Registry.hpp"
+using namespace Ity;
+
 #include "Util.hpp"
 #include "Debug.hpp"
+using namespace ItyDebug;
 #include "Variant.hpp"
 
 const void* LIB_BI_G = nullptr; // Global reference to built-in lib.
@@ -17,7 +17,6 @@ ARR_t ARGS;
 
 #include "Common.hpp"
 #include "State.hpp"
-#include "Ity.hpp"
 const unsigned int RANDOM_SEED = (unsigned int)DurCast_ms(Clock::now() - std::chrono::time_point<std::chrono::high_resolution_clock>()).count();
 #include "Expression.hpp"
 

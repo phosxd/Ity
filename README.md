@@ -73,7 +73,7 @@ Mac is bit more complicated. The `g++` install on your system uses Clang instead
 3. Install Bash 5.3.0 or later, then use it to run `build.sh`.
 
 ## Windows Build
-To build on Windows, run the `build_windows.ps1` PowerShell script in your terminal. Automated testing not availale.
+To build on Windows, run the `build_windows.ps1` PowerShell script in your terminal. Automated testing not available.
 
 ## Build flags
 You can pass flags to the build script.
@@ -85,11 +85,11 @@ You can pass flags to the build script.
 	Statically link final binary. Comes at no performance benefiet & increases binary size about 1.5MB.
 - `-d` or `--debug`:
 	Build with debug symbols in-tact.
-- `-srd` or `--strip-runtime-debug`
+- `-srd` or `--strip-runtime-debug`:
 	Remove runtime error strings & debug flag branches.
 	Error codes & ln/col tracking are still kept.
 	Use this to save an extra few kilobytes.
-- `-nosh` or `--no-shell`
+- `-nosh` or `--no-shell`:
 	Remove interactive capability.
 - `-t` or `--test`:
 	Run tests after compilation.

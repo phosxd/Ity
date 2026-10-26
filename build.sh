@@ -24,7 +24,7 @@ OPTIM_balanced='-O2 -finline-limit=4'
 OPTIM_speed='-Ofast'
 OPTIM_size='-Os -finline-limit=0'
 
-LINKS='.Ity_tmp_generated.cpp -o ity.o Main.cpp -o ity.bin'
+LINKS='.Ity_tmp_generated.cpp -o ity.o ../Shell/Main.cpp -o ity.bin'
 
 
 if [[ "$(uname -s)" == "Darwin" ]]; then

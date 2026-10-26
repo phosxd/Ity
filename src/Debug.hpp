@@ -1,6 +1,9 @@
 #pragma once
 
 
+namespace ItyDebug {
+
+
 enum ERR_CODE : uint8_t {
 	ERR_custom,
 	ERR_unexpected,
@@ -217,4 +220,7 @@ void emit_error(const ERR_CODE code, const std::vector<std::string> args={}, uns
 
 	// Kill program.
 	exit(1);
+}
+
+
 }

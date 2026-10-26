@@ -1,5 +1,6 @@
 #pragma once
 
+
 // Include platform APIs
 #if _WIN32
 	#include <windef.h>
@@ -10,6 +11,9 @@
 #elif __APPLE__
 	#include "TargetConditionals.h"
 #endif
+
+
+namespace Ity {
 
 
 constexpr std::string ItyVersionString = "0.2.0";
@@ -239,3 +243,4 @@ enum VariantMode : uint8_t {
 
 
 // -------------------------------------------
+}
