@@ -187,9 +187,10 @@ static Variant LIB_BI_tm_str_arr_append(ItyState& _state, ARR_t& args) {
 			break;
 		}
 		case VT_STR: {
-			if (not expect_arg_types(args[1], {VT_STR}, 0)) return VPS.none;
+			if (not expect_arg_types(args[1], {VT_STR, VT_INT}, 0)) return VPS.none;
 			STR_t& data = AnyCastV(STR_t,var->d);
-			data.append(AnyCast(STR_t,args[1].d));
+			if (args[1].t == VT_STR) data.append(AnyCast(STR_t,args[1].d));
+			else data.push_back(char(AnyCast(INT_t,args[1].d))); // Add character to the string, from a code.
 			break;
 		}
 		default: break;
