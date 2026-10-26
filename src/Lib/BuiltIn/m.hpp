@@ -13,7 +13,7 @@ static Variant LIB_BI_set_max_depth(ItyState& state, ARR_t& args) {
 	if (not ExpectArgs(args, { {VT_INT} })) return VPS.none;
 
 	const INT_t& count = AnyCast(INT_t,args[0].d);
-	state.execution_depth_max = count;
+	state.execution_depth_max = (unsigned int)count;
 	return VPS.none;
 }
 
@@ -35,7 +35,7 @@ static Variant LIB_BI_system(ItyState& _state, ARR_t& args) {
 static Variant LIB_BI_sleep(ItyState& _state, ARR_t& args) {
 	if (not ExpectArgs(args, { {VT_INT,VT_FLOAT} })) return VPS.none;
 	const Variant& var = args[0];
-	std::this_thread::sleep_for(std::chrono::microseconds( (uint32_t)(((var.t == VT_INT) ? AnyCast(INT_t,var.d) : AnyCast(FLOAT_t,var.d))*1000000) ));
+	std::this_thread::sleep_for(std::chrono::microseconds( (uint32_t)(((var.t == VT_INT) ? (FLOAT_t)AnyCast(INT_t,var.d) : AnyCast(FLOAT_t,var.d))*1000000) ));
 	return VPS.none;
 }
 

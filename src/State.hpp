@@ -33,8 +33,8 @@ struct ItyScope {
 
 	// Returns the cumulative size of all Variants in the scope.
 	// This does *not* account for the data inside the scope's parent.
-	const unsigned int get_size() const {
-		unsigned int final_size = 0;
+	const size_t get_size() const {
+		size_t final_size = 0;
 		for (const ScopeItem& i : d) {
 			final_size += sizeof(i.key) + i.var.get_size();
 		}

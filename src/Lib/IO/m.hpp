@@ -11,7 +11,7 @@ static ItyState* LIB_IO_state = nullptr; // NOTE: Would prefer not to store this
 // Gets executed when we receive a system signal.
 static void LIB_IO_on_signal_received(const int sig) {
 	// Iterate on each connected function for this signal & call it...
-	for (const FUNC_t& func : LIB_IO_signal_functions[sig]) {
+	for (const FUNC_t& func : LIB_IO_signal_functions[(uint8_t)sig]) {
 		Variant args = Variant{VT_ARR, (ARR_t){}};
 		call_function(*LIB_IO_state, func, args);
 	}

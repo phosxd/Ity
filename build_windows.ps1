@@ -1,9 +1,10 @@
-$RESET="`e[0m"
-$BOLD="`e[1m"
-$BLACK="`e[30m"
-$RED="`e[31m"
-$GREEN="`e[32m"
-$ORANGE="`e[33m"
+$ESC=[char]27
+$RESET="$ESC[0m"
+$BOLD="$ESC[1m"
+$BLACK="$ESC[30m"
+$RED="$ESC[31m"
+$GREEN="$ESC[32m"
+$ORANGE="$ESC[33m"
 
 $GPP="g++"
 $BIN_SIZE_LIMIT=150000

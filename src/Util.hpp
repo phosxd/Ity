@@ -126,10 +126,10 @@ const bool exists_in_arr(const T v[], const size_t& size, const T& val) {
 
 
 // String multiplication.
-inline const std::string operator*(const std::string& a, const int32_t& b) {
+inline const std::string operator*(const std::string& a, const uint32_t& b) {
 	if (b < 1) return std::string();
 	std::string sum = a; sum.reserve(a.size()*b);
-	for (int32_t i=1; i<b; i++) sum.append(a);
+	for (uint32_t i=1; i<b; i++) sum.append(a);
 	return sum;
 }
 
@@ -144,8 +144,8 @@ std::ostream& operator<<(std::ostream& os, const uint8_t& s) {
 template<class T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& s) {
 	os << '[';
-	const unsigned int len = s.size();
-	for (unsigned int i = 0; i < len; i++) {
+	const size_t len = s.size();
+	for (size_t i = 0; i < len; i++) {
 		if (i != 0) os << ", ";
 		os << s[i];
 	}
@@ -157,7 +157,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& s) {
 template<class T, class T2>
 std::ostream& operator<<(std::ostream& os, const std::unordered_map<T,T2>& s) {
 	os << '{';
-	unsigned int idx = 0;
+	size_t idx = 0;
 	for (auto& i:s) {
 		if (idx != 0) os << ", ";
 		os << "\"" << i.first << "\"" << ": ";

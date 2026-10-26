@@ -232,7 +232,7 @@ const bool expect_arg_count(const ARR_t& args, const size_t& count) {
 }
 
 
-const bool expect_arg_types(const Variant& arg, std::vector<VariantType> types, const unsigned int arg_idx) {
+const bool expect_arg_types(const Variant& arg, std::vector<VariantType> types, const size_t& arg_idx) {
 	if (exists_in_vec(types, arg.t)) return true;
 	emit_error(ERR_invalid_func_arg_type, {std::to_string(arg_idx), multiple_types_str(types), get_variant_type_name(arg.t)});
 	return false;

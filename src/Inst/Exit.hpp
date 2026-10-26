@@ -15,7 +15,7 @@ static void INST_Exit_exec(ItyState& state, InstToken& token) {
 			return;
 		}
 
-		exit(AnyCast(INT_t,var->d));
+		exit((int)AnyCast(INT_t,var->d));
 	}
 
 	// Throw error.

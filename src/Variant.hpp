@@ -258,12 +258,12 @@ struct Variant {
 			// If a is int...
 			case VT_INT: {
 				if (b.t == VT_INT)        return AnyCast(INT_t,d) == AnyCast(INT_t,b.d);
-				else if (b.t == VT_FLOAT) return AnyCast(INT_t,d) == AnyCast(FLOAT_t,b.d);
+				else if (b.t == VT_FLOAT) return (FLOAT_t)AnyCast(INT_t,d) == AnyCast(FLOAT_t,b.d);
 				break;
 			}
 			// If a is float...
 			case VT_FLOAT: {
-				if (b.t == VT_INT)        return AnyCast(FLOAT_t,d) == AnyCast(INT_t,b.d);
+				if (b.t == VT_INT)        return AnyCast(FLOAT_t,d) == (FLOAT_t)AnyCast(INT_t,b.d);
 				else if (b.t == VT_FLOAT) return AnyCast(FLOAT_t,d) == AnyCast(FLOAT_t,b.d);
 				break;
 			}
@@ -291,17 +291,22 @@ struct Variant {
 	}
 
 
+	const bool operator!=(const Variant& b) const {
+		return not (*this == b)
+	}
+
+
 	const bool operator>(const Variant& b) const {
 		switch (t) {
 			// If a is int...
 			case VT_INT: {
 				if (b.t == VT_INT)        return AnyCast(INT_t,d) > AnyCast(INT_t,b.d);
-				else if (b.t == VT_FLOAT) return AnyCast(INT_t,d) > AnyCast(FLOAT_t,b.d);
+				else if (b.t == VT_FLOAT) return (FLOAT_t)AnyCast(INT_t,d) > AnyCast(FLOAT_t,b.d);
 				break;
 			}
 			// If a is float...
 			case VT_FLOAT: {
-				if (b.t == VT_INT)        return AnyCast(FLOAT_t,d) > AnyCast(INT_t,b.d);
+				if (b.t == VT_INT)        return AnyCast(FLOAT_t,d) > (FLOAT_t)AnyCast(INT_t,b.d);
 				else if (b.t == VT_FLOAT) return AnyCast(FLOAT_t,d) > AnyCast(FLOAT_t,b.d);
 				break;
 			}
@@ -315,24 +320,7 @@ struct Variant {
 
 
 	const bool operator<(const Variant& b) const {
-		switch (t) {
-			// If a is int...
-			case VT_INT: {
-				if (b.t == VT_INT)        return AnyCast(INT_t,d) < AnyCast(INT_t,b.d);
-				else if (b.t == VT_FLOAT) return AnyCast(INT_t,d) < AnyCast(FLOAT_t,b.d);
-				break;
-			}
-			// If a is float...
-			case VT_FLOAT: {
-				if (b.t == VT_INT)        return AnyCast(FLOAT_t,d) < AnyCast(INT_t,b.d);
-				else if (b.t == VT_FLOAT) return AnyCast(FLOAT_t,d) < AnyCast(FLOAT_t,b.d);
-			}
-			default: break;
-		}
-
-		// Throw error is none matched.
-		emit_operator_overload_error("Comp(<)", *this,b);
-		return false;
+		return not (*this > b) && not (b == *this);
 	}
 };
 
@@ -372,11 +360,11 @@ Variant operator+(const Variant& a, const Variant& b) {
 		// If a is int...
 		case VT_INT: {
 			if (b.t == VT_INT)         return Variant{VT_INT,   (AnyCast(INT_t,a.d) + AnyCast(INT_t,b.d))};
-			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(INT_t,a.d) + AnyCast(FLOAT_t,b.d))};
+			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, ((FLOAT_t)AnyCast(INT_t,a.d) + AnyCast(FLOAT_t,b.d))};
 		}
 		// If a is float...
 		case VT_FLOAT: {
-			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) + AnyCast(INT_t,b.d))};
+			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) + (FLOAT_t)AnyCast(INT_t,b.d))};
 			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) + AnyCast(FLOAT_t,b.d))};
 			break;
 		}
@@ -410,12 +398,12 @@ Variant operator-(const Variant& a, const Variant& b) {
 		// If a is int...
 		case VT_INT: {
 			if (b.t == VT_INT)         return Variant{VT_INT,   (AnyCast(INT_t,a.d) - AnyCast(INT_t,b.d))};
-			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(INT_t,a.d) - AnyCast(FLOAT_t,b.d))};
+			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, ((FLOAT_t)AnyCast(INT_t,a.d) - AnyCast(FLOAT_t,b.d))};
 			break;
 		}
 		// If a is float...
 		case VT_FLOAT: {
-			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) - AnyCast(INT_t,b.d))};
+			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) - (FLOAT_t)AnyCast(INT_t,b.d))};
 			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) - AnyCast(FLOAT_t,b.d))};
 			break;
 		}
@@ -433,12 +421,12 @@ Variant operator*(const Variant& a, const Variant& b) {
 		// If a is int...
 		case VT_INT: {
 			if (b.t == VT_INT)         return Variant{VT_INT,   (AnyCast(INT_t,a.d) * AnyCast(INT_t,b.d))};
-			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(INT_t,a.d) * AnyCast(FLOAT_t,b.d))};
+			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, ((FLOAT_t)AnyCast(INT_t,a.d) * AnyCast(FLOAT_t,b.d))};
 			break;
 		}
 		// If a is float...
 		case VT_FLOAT: {
-			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) * AnyCast(INT_t,b.d))};
+			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) * (FLOAT_t)AnyCast(INT_t,b.d))};
 			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) * AnyCast(FLOAT_t,b.d))};
 			break;
 		}
@@ -446,7 +434,7 @@ Variant operator*(const Variant& a, const Variant& b) {
 		case VT_STR: {
 			if (b.t == VT_INT) {
 				const INT_t& b_val = AnyCast(INT_t,b.d);
-				return Variant{VT_STR, (AnyCastV(STR_t,a.d) * b_val)};
+				return Variant{VT_STR, (AnyCastV(STR_t,a.d) * (uint32_t)b_val)};
 			}
 			break;
 		}
@@ -482,7 +470,7 @@ Variant operator/(const Variant& a, const Variant& b) {
 				emit_error(ERR_zero_division);
 			}
 			else if (b.t == VT_FLOAT) {
-				if (const FLOAT_t bd = AnyCast(FLOAT_t,b.d); bd != 0) return Variant{VT_FLOAT, (AnyCast(INT_t,a.d) / bd)};
+				if (const FLOAT_t bd = AnyCast(FLOAT_t,b.d); bd != 0) return Variant{VT_FLOAT, ((FLOAT_t)AnyCast(INT_t,a.d) / bd)};
 				emit_error(ERR_zero_division);
 			}
 			break;
@@ -490,7 +478,7 @@ Variant operator/(const Variant& a, const Variant& b) {
 		// If a is float...
 		case VT_FLOAT: {
 			if (b.t == VT_INT) {
-				if (const INT_t bd = AnyCast(INT_t,b.d); bd != 0) return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) / bd)};
+				if (const INT_t bd = AnyCast(INT_t,b.d); bd != 0) return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) / (FLOAT_t)bd)};
 				emit_error(ERR_zero_division);
 			}
 			else if (b.t == VT_FLOAT) {

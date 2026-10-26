@@ -12,7 +12,7 @@ ORANGE=$'\x1B[33m'
 GPP='g++'
 MAC_GPP_PATH="/opt/local/bin/g++-mp-14" # If you installed GCC (g++) through Homebrew, you will need to change this to the proper location.
 BIN_SIZE_LIMIT=150000
-COMMON_BUILD_ARGS='-std=c++26 -Wall -flto=4 -fno-exceptions -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt'
+COMMON_BUILD_ARGS='-std=c++26 -Wall -Wconversion -flto=4 -fno-exceptions -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables -fgcse-las -fno-plt'
 
 DO_TEST=0
 DEBUG=0

@@ -149,7 +149,7 @@ const bool is_special_symbol(const char& ch) {
 }
 
 
-const bool check_ahead(const std::string& text, const unsigned int& start_idx, const std::string& substr) {
+const bool check_ahead(const std::string& text, const size_t& start_idx, const std::string& substr) {
 	const size_t& substr_len = substr.size();
 	if (text.size() < start_idx+substr_len) return false;
 	for (size_t i = 0; i < substr_len; i++) {
@@ -172,7 +172,7 @@ void clean_up_buffer(ExprToken& result_token, ExprToken& item, std::string& buff
 
 struct ExprTokenizeResult {
 	ExprToken token;
-	unsigned int final_char_count = 0;
+	size_t final_char_count = 0;
 	char grouping_mode = '.';
 };
 
@@ -202,7 +202,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 	ExprToken item = {0,0, ExprTokenType_variant, {VT_PLACEHOLDER}};
 	unsigned int ln_offset = 0;
 	unsigned int col_offset = 0;
-	unsigned int skip_chars = 0;
+	size_t skip_chars = 0;
 
 	bool is_start        = true;
 	bool is_operator     = false;

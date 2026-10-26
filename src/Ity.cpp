@@ -18,7 +18,7 @@ ARR_t ARGS;
 #include "Common.hpp"
 #include "State.hpp"
 #include "Ity.hpp"
-const unsigned int RANDOM_SEED = DurCast_ms(Clock::now() - std::chrono::time_point<std::chrono::high_resolution_clock>()).count();
+const unsigned int RANDOM_SEED = (unsigned int)DurCast_ms(Clock::now() - std::chrono::time_point<std::chrono::high_resolution_clock>()).count();
 #include "Expression.hpp"
 
 // Lib imports...
@@ -499,8 +499,8 @@ void start_shell(int argc, char* argv[]) {
 			{DurCast_us(timers[1]-timers[0]).count(),   DurCast_ms(timers[1]-timers[0]).count()},
 		};
 		std::cout << "\n\n" << "Program results...\n------------------\n";
-		if (not source_script_path.empty()) {std::cout << "TIME (Token):    " << std::to_string(times[1][1]/1000.0) << "s (" << times[1][0] << "us).\n";}
-		std::cout <<                                      "TIME (Total):    " << std::to_string(times[0][1]/1000.0) << "s (" << times[0][0] << "us).\n";
+		if (not source_script_path.empty()) {std::cout << "TIME (Token):    " << std::to_string(times[1][1]/1000) << "s (" << times[1][0] << "us).\n";}
+		std::cout <<                                      "TIME (Total):    " << std::to_string(times[0][1]/1000) << "s (" << times[0][0] << "us).\n";
 		std::cout <<                                      "STATE SIZE:      " << state.scope.get_size() << " bytes." << '\n';
 		std::cout <<                                      "STATE MAXID:     " << state.scope_current_id << '\n';
 		std::cout << '\n';

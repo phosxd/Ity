@@ -7,7 +7,7 @@ static Variant LIB_MT_abs(ItyState& _state, const ARR_t& args) {
 	if (not ExpectArgs(args, { {VT_INT,VT_FLOAT} })) return VPS.none;
 	const Variant& v = args[0];
 	if (v.t == VT_INT) return Variant{v.t, (INT_t)std::abs(AnyCast(INT_t,v.d))};
-	return Variant{v.t, std::abs(AnyCast(double,v.d))};
+	return Variant{v.t, (FLOAT_t)std::abs(AnyCast(double,v.d))};
 }
 
 
@@ -23,7 +23,7 @@ static Variant LIB_MT_sqrt(ItyState& _state, const ARR_t& args) {
 	if (not ExpectArgs(args, { {VT_INT,VT_FLOAT} })) return VPS.none;
 	const Variant& v = args[0];
 	if (v.t == VT_INT) return Variant{v.t, (INT_t)std::sqrt((double)AnyCast(INT_t,v.d))};
-	return Variant{v.t, std::sqrtf(AnyCast(double,v.d))};
+	return Variant{v.t, (FLOAT_t)std::sqrtf((float)AnyCast(double,v.d))};
 }
 
 
@@ -59,10 +59,10 @@ static Variant LIB_MT_pow(ItyState& _state, const ARR_t& args) {
 static Variant LIB_MT_sum(ItyState& _state, const ARR_t& args) {
 	FLOAT_t sum = 0.0;
 	VariantType type = VT_INT;
-	for (size_t i = 0; i < args.size(); i++) {
+	for (unsigned int i = 0; i < (unsigned int)args.size(); i++) {
 		const Variant& arg = args[i];
 		switch (arg.t) {
-			case VT_INT:   {sum += AnyCast(INT_t,arg.d);   break;}
+			case VT_INT:   {sum += (FLOAT_t)AnyCast(INT_t,arg.d);   break;}
 			case VT_FLOAT: {
 				sum += AnyCast(FLOAT_t,arg.d);
 				type = VT_FLOAT;
@@ -91,7 +91,7 @@ static Variant LIB_MT_rand(ItyState& _state, const ARR_t& args) {
 static Variant LIB_MT_set_seed(ItyState& _state, const ARR_t& args) {
 	if (not ExpectArgs(args, { {VT_INT} })) return VPS.none;
 	const INT_t& seed = AnyCast(INT_t,args[0].d);
-	std::srand(seed);
+	std::srand((unsigned int)seed);
 	return VPS.none;
 }
 
