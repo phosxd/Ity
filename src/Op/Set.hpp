@@ -2,14 +2,23 @@
 // Fragment Size: 992
 
 
-static Variant OP_Set_arith_set(const OpSymbol& symbol, Variant*& o1, Variant*& o2) {
+static void OP_Set_arith_set(const OpSymbol& symbol, Variant*& o1, Variant*& o2) {
 	switch (symbol) {
-		case OpSymbol_add_set: {return *o1 + *o2;}
-		case OpSymbol_sub_set: {return *o1 - *o2;}
-		case OpSymbol_mul_set: {return *o1 * *o2;}
-		case OpSymbol_div_set: {return *o1 / *o2;}
-		case OpSymbol_mod_set: {return *o1 % *o2;}
-		default: return VPS.empty;
+		case OpSymbol_add_set: {*o1 = *o1 + *o2; break;}
+		case OpSymbol_sub_set: {*o1 = *o1 - *o2; break;}
+		case OpSymbol_mul_set: {
+			if (o1->t == VT_STR && o2->t == VT_INT) {
+				multiply_string(AnyCast(STR_t,o1->d), (uint32_t)AnyCast(INT_t,o2->d));
+			}
+			else if (o1->t == VT_ARR && o2->t == VT_INT) {
+				multiply_vector(AnyCast(ARR_t,o1->d), (uint32_t)AnyCast(INT_t,o2->d));
+			}
+			else *o1 = *o1 * *o2;
+			break;
+		}
+		case OpSymbol_div_set: {*o1 = *o1 / *o2; break;}
+		case OpSymbol_mod_set: {*o1 = *o1 % *o2; break;}
+		default: break;
 	}
 }
 
@@ -48,10 +57,10 @@ void OP_Set_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Varia
 		}
 
 		default: {
-			Variant var = OP_Set_arith_set(symbol, o1, o2);
-			if (not var.matches(*o1)) return;
-			var.m = o1->m;
-			*o1 = std::move(var);
+			VariantType t = o1->t;
+			VariantMode m = o1->m;
+			OP_Set_arith_set(symbol, o1, o2);
+			if (not o1->type_mode_matches(o1->t, o1->m, t, m)) return;
 			result_ptr = o1;
 			break;
 		};

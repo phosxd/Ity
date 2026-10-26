@@ -103,11 +103,14 @@ struct Variant {
 	VariantMode m = VariantMode_dynamic_type;
 
 
+	const bool type_mode_matches(const VariantType& a_t, const VariantMode& _a_m, const VariantType& b_t, const VariantMode& b_m, const bool do_emit_error = true) const {
+		if (b_m == VariantMode_dynamic_type || b_t == a_t) return true;
+		if (do_emit_error) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(a_t), get_variant_type_name(b_t)});
+		return false;
+	}
 	// Return true if `b` is applicable to this variant.
 	const bool matches(const Variant& b, const bool do_emit_error = true) const {
-		if (b.m == VariantMode_dynamic_type || b.t == t) return true;
-		if (do_emit_error) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(t), get_variant_type_name(b.t)});
-		return false;
+		return this->type_mode_matches(t, m, b.t, b.m, do_emit_error);
 	}
 
 
@@ -292,7 +295,7 @@ struct Variant {
 
 
 	const bool operator!=(const Variant& b) const {
-		return not (*this == b)
+		return not (*this == b);
 	}
 
 
@@ -432,24 +435,12 @@ Variant operator*(const Variant& a, const Variant& b) {
 		}
 		// If a is string & b is int.
 		case VT_STR: {
-			if (b.t == VT_INT) {
-				const INT_t& b_val = AnyCast(INT_t,b.d);
-				return Variant{VT_STR, (AnyCastV(STR_t,a.d) * (uint32_t)b_val)};
-			}
+			if (b.t == VT_INT) return Variant{VT_STR, (AnyCast(STR_t,a.d) * (uint32_t)AnyCast(INT_t,b.d))};
 			break;
 		}
 		// If a is array & b is int.
 		case VT_ARR: {
-			if (b.t == VT_INT) {
-				const INT_t& b_val = AnyCast(INT_t,b.d);
-				if (b_val < 1) return Variant{VT_ARR, ARR_t()};
-				ARR_t a_val = AnyCastV(ARR_t,a.d);
-				ARR_t sum; sum.reserve(a_val.size()*b_val);
-				for (INT_t i = 0; i < b_val; i++) {
-					for (auto& item : a_val) sum.push_back(item);
-				};
-				return Variant{VT_ARR, std::move(sum)};
-			}
+			if (b.t == VT_INT) return Variant{VT_ARR, (AnyCast(ARR_t,a.d) * (uint32_t)AnyCast(INT_t,b.d))};
 			break;
 		}
 		default: break;

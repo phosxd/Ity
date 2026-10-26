@@ -126,10 +126,35 @@ const bool exists_in_arr(const T v[], const size_t& size, const T& val) {
 
 
 // String multiplication.
+
+inline void multiply_string(std::string& a, const uint32_t& b) {
+	if (b < 1) {a.clear(); return;}
+	const std::string slice = a;
+	a.reserve(a.size()*b);
+	for (uint32_t i=1; i<b; i++) a.append(slice);
+}
+
 inline const std::string operator*(const std::string& a, const uint32_t& b) {
-	if (b < 1) return std::string();
-	std::string sum = a; sum.reserve(a.size()*b);
-	for (uint32_t i=1; i<b; i++) sum.append(a);
+	std::string sum = a; multiply_string(sum, b);
+	return sum;
+}
+
+
+// Vector multiplication.
+
+template<class T>
+inline void multiply_vector(std::vector<T>& a, const uint32_t& b) {
+	if (b < 1) {a.clear(); return;}
+	const std::vector<T> slice = a;
+	a.reserve(a.size()*b);
+	for (uint32_t i=1; i < b; i++) {
+		for (auto& item : slice) a.push_back(item);
+	};
+}
+
+template<class T>
+inline const std::vector<T> operator*(const std::vector<T>& a, const uint32_t& b) {
+	std::vector<T> sum = a; multiply_vector(sum, b);
 	return sum;
 }
 

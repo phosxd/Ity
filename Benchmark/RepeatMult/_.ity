@@ -1,0 +1,11 @@
+merge IO; merge Time;
+
+const INT n = 200_000;
+const INT start = now.ms;
+
+for i in n;
+	var x = 'abc' * 250;
+	out:['\e[0G', i, ' / ', n];
+/;
+
+print:['\nDone in ', (now.ms-start / 1000.0), 's.'];

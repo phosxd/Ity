@@ -1,0 +1,24 @@
+merge IO; merge Time;
+
+var INT n = 30;
+var INT start = now.ms;
+
+var ANY x = 'abc';
+for i in n;
+	x *= 2;
+	out:['\e[0G', (i+1), ' / ', n];
+/;
+
+print:['\nStrings done in ', (now.ms-start / 1000.0), 's.'];
+
+
+n = 25;
+start = (now.ms);
+
+x = [1];
+for i in n;
+	x *= 2;
+	out:['\e[0G', (i+1), ' / ', n];
+/;
+
+print:['\nArrays done in ', (now.ms-start / 1000.0), 's.'];

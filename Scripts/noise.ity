@@ -32,7 +32,7 @@ var STR file = (
 file.reserve:BYTE_COUNT; # Reserve the amount of bytes we will be writing.
 # Generate randomized bytes & append each one at the end of the file.
 for i in BYTE_COUNT;
-	file.append:(rand:BYTE_RANGE);
+	file.append:(''+(rand:BYTE_RANGE));
 /;
 
 
