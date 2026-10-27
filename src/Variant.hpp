@@ -12,6 +12,7 @@
 
 // Get VariantType from a string representation.
 inline const VariantType get_variant_type_from_name(const std::string& name) {
+	if (name == ".") return VT_NONE;
 	for (const auto& it : VARIANT_TYPE_NAMES) {
 		if (it.second == name) return it.first;
 	}

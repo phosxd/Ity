@@ -1,4 +1,5 @@
 #pragma once
+// Fragment Size: 3576
 
 #include <cmath>
 

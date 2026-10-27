@@ -2,8 +2,14 @@
 
 
 static void INST_Func_exec(ItyState& state, InstToken& token) {
-	const std::string& type_name = token.args[1];
-	const std::string& name = token.args[2];
+	std::string type_name;
+	std::string name;
+
+	if (token.args.size() == 2) name = token.args[1];
+	else {
+		type_name = token.args[1];
+		name = token.args[2];
+	}
 
 	if (not is_valid_name(name)) {
 		emit_error(ERR_name_must_not_contain_symbols, {name});
@@ -24,7 +30,7 @@ static void INST_Func_exec(ItyState& state, InstToken& token) {
 	// Create the function.
 	state.scope.set_data(
 		name, Variant{VT_FUNC, (FUNC_t){
-			.return_type = get_variant_type_from_name(type_name),
+			.return_type = (type_name.empty()) ? VT_ANY : get_variant_type_from_name(type_name),
 			.bound_args = (ARR_t){},
 			.token_index = token.i,
 			.definition_state_id = state.scope.id,
@@ -40,7 +46,7 @@ static void INST_Func_exec(ItyState& state, InstToken& token) {
 
 
 const Instruction* INST_Func = new Instruction{
-	.REQUIRED = 3,
+	.REQUIRED = 2,
 	.exec = INST_Func_exec,
 	.is_composite = true,
 };

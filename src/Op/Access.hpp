@@ -53,10 +53,10 @@ void OP_Access_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Va
 				return;
 			}
 			ARR_t& array = AnyCastV(ARR_t,o1->d);
-			const INT_t& array_len = (INT_t)array.size();
+			const size_t& array_len = array.size();
 			INT_t index = AnyCastV(INT_t,o2->d); if (index < 0) index = array_len+index;
 			// Throw error if index out of range.
-			if (index >= array_len || index < 0) {
+			if (index >= (INT_t)array_len || index < 0) {
 				emit_error(ERR_index_out_of_range, {std::to_string(AnyCast(INT_t,o2->d))}); // Use original given index for error to reduce confusion in negative index cases.
 				return;
 			}
@@ -73,9 +73,9 @@ void OP_Access_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Va
 				return;
 			}
 			const STR_t& str = AnyCast(STR_t,o1->d);
-			const INT_t& str_len = (INT_t)str.size();
+			const size_t& str_len = str.size();
 			INT_t index = AnyCastV(INT_t,o2->d); if (index < 0) index = str_len+index;
-			if (index >= str_len || index < 0) {
+			if (index >= (INT_t)str_len || index < 0) {
 				emit_error(ERR_index_out_of_range, {std::to_string(index)});
 				return;
 			}

@@ -31,7 +31,7 @@ Math.set_seed:SEED;
 
 
 
-func NONE _game_init;
+func . _game_init;
 	# Populate the world...
 	for y in WORLD_SIZE.y;
 		for x in WORLD_SIZE.x;
@@ -52,7 +52,7 @@ func NONE _game_init;
 /;
 
 
-func NONE _game_next;
+func . _game_next;
 	if GAME.stable; return; /;
 	GAME.last_frame <<= (GAME.frame);
 	GAME.alive_count = 0;

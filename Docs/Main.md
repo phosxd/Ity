@@ -488,22 +488,19 @@ number_2 = 20;      # "number" is unchanged.
 ---
 # Instructions
 The standard set of instructions in Ity provide you with everything you need to make programs of any ranging complexity.
+## Var
+Declare a name which holds a value that can be changed after declaration.
 
-## Var / Const
-These instructions are used to declare variables in the current scope.
-
-### Var
-If you need to declare a name that holds a value that can be changed after declaration, use the `var` instruction:
-
-`var [type] <varName> <assignmentOperator> <expression>`
+`var [type] <name> [<assignmentOperator> <expr>]`
 
 **Examples**:
 
 ```python
 var ANY this_can_be_anything_but_has_no_value_right_now;
 var NONE this_has_no_value;
+var . this_also_has_no_value;
 
-var NONE this_also_has_no_value = none;
+var NONE this_has_no_value_but_its_explicitly_set = none;
 var BOOL is_true = true;
 var INT the_number_one = 1;
 var FLOAT a_very_specific_number = 125.98765;
@@ -531,8 +528,10 @@ You need to be careful evaluating complex expressions after the assignment opera
 - Operator `+` adds the previous output to the next output.
 The result of this expression is `Hello World` but `a` only gets set to `'Hello '` because we added `World` to the *output* of `a = 'Hello '`. You can get around this by grouping multi-part expressions after your assignment operator like so: `a = ('Hello ' + 'World')`.
 
-### Const
-If you need to declare a name that has a value which **cannot** be modified or overwritten after declaration, use the `const` instruction. It has the same syntax as the `var` instruction.
+## Const
+Declare a name that has a value which **cannot** be modified or overwritten after declaration.
+
+`const [type] <name> [<assignmentOperator> <expr>]`
 
 **Examples**:
 ```python
@@ -551,6 +550,13 @@ Because constants cannot be modified, it would be useless to assign it the "ANY"
 ## If / Elif / Else
 These instructions can be used to test values for conditionally executing code. These are **composite** instructions, meaning in addition to taking arguments like a normal instruction, it also consumes all instructions that are defined after it, up until the `/` (end) instruction.
 
+`if <boolExpr`
+
+`elif <boolExpr`
+
+`else`
+
+**Examples:**
 ```python
 var INT a = 0;
 var INT b = 5;
@@ -581,9 +587,66 @@ if a != b;
 /;
 ```
 
+## Func / Arg / Return
+Declare a named block of code which can be called upon at a later time.
+
+`func [type] <name>`
+
+`arg [type] <name> [<assignmentOperator> <expr>]`
+
+`return <expr>`
+
+**Examples:**
+
+```python
+# Adds 2 numbers together then returns the result, guaranteed to be an `INT`.
+func INT add_numbers; arg INT a; arg INT b;
+	return a + b;
+/;
+
+
+## Adds any 2 values together then returns the result. This can cause an error as some types do not support addition.
+func ANY add_anything; arg a; arg b;
+	return a + b;
+/;
+
+
+# If a function does not return a value, you do not need to give it a type.
+func do_something;
+	# ...
+/;
+```
+
+Call a function by using the "access" (`:`) operator.
+
+```python
+var INT x = 0;
+
+func do_something;
+	x += 1;
+/;
+
+# Execute the function, without passing any arguments.
+do_something:[]; # "f:()" also works.
+
+
+func INT add; arg INT a; arg INT b;
+	return a + b;
+/;
+
+# Execute the function with arguments.
+add:[5,5];
+```
+
 ## While / Continue / Break
-You can repeatedly execute blocks of code using the `white` composite instruction.
-Before every iteration the given expression gets evaluated. If it returns `true` then the code block will run & return back to the beginning for the next iteration.
+You can repeatedly execute blocks of code using the `while` composite instruction.
+Before each iteration, the given expression gets evaluated. If it returns `true` then the code block will run & return back to the beginning for the next iteration.
+
+`while <boolExpr>`
+
+`continue`
+
+`break`
 
 ```python
 # Loop forever, the expression returns the literal "true" so the condition will always be met.
@@ -639,6 +702,8 @@ var INT i = -1; while true; i += 1;
 ## For
 A more convenient way to iterate over a set of items.
 
+`for <name> in <iterExpr>`
+
 ```python
 merge IO:
 
@@ -681,7 +746,11 @@ for i in RangeIter.new:[0,10,2];
 ```
 
 ## Throw / Exit
-You can terminate the program safely, or with an error, using `throw` or `exit`.
+Terminate the program safely, or with an error.
+
+`exit [code=0]`
+
+`throw [errorMessage]`
 
 This example throws an error once recursion depth reaches 1,000:
 
@@ -693,7 +762,7 @@ func NONE recurse; arg n = 0;
 	recurse:(n+1);
 /;
 
-recurse:[];
+recurse:();
 ```
 
 Using `exit` will quit the program with the given exit code (default `0`).
@@ -706,12 +775,16 @@ exit 1; # Exit with code 1.
 ## Import / Merge
 Modules allow you to expand the capabilities of your script, use the `import` instruction to add a module to the current scope. You can use the "as" keyword followed by a name to import the module & assign it under your custom name.
 
+`import <module> [as <alias>]`
+
+`merge <module>`
+
 ```python
 import IO; # Import IO built-in module.
 IO.print:'Hello World!';
 
 import IO as custom_name; # Import IO, but assign it a different name.
-custom_name.print:[];
+custom_name.print:();
 
 # Importing the same module more than once works as long as they have unique names.
 ```
@@ -728,13 +801,13 @@ if some_module.has:'print';
 /;
 ```
 
-Import modules located anywhere on the system.
+Import modules located anywhere on your file system.
 
 ```python
 import my_modules/foo;
 import 'my modules/bar'; # Wrap in quotes if path has a space.
-foo.hello:[];
-bar.hello:[];
+foo.hello:();
+bar.hello:();
 
 # These do the same things.
 import /usr/local/share/ity/Modules/RangeIterator as RI;
