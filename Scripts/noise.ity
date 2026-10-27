@@ -8,16 +8,16 @@ const STR PATH = 'noise.ppm';
 const INT DEPTH = 3;
 const ARR BYTE_RANGE = [(Limits.STR_byte_min), (Limits.STR_byte_max)];
 
-const INT HEIGHT = (IO.prompt:'Image height: '->INT);
-const INT WIDTH = (IO.prompt:'Image width: '->INT);
-const INT BYTE_COUNT = (WIDTH*HEIGHT*DEPTH);
+const INT HEIGHT = IO.prompt:'Image height: '->INT;
+const INT WIDTH = IO.prompt:'Image width: '->INT;
+const INT BYTE_COUNT = WIDTH*HEIGHT*DEPTH;
 
 
 
 IO.print:'Generating...';
 const INT start = Time.now.ms;
 
-const FUNC rand = (Math.rand);
+const FUNC rand = Math.rand;
 Math.set_seed:start;
 
 
