@@ -16,14 +16,14 @@
 namespace Ity {
 
 
-constexpr std::string ItyVersionString = "0.2.0";
+constexpr const char ItyVersionString[] = "0.2.0";
 // Last number indicates release type:
 //	0 = release.
 //	1 = beta / pre-release.
 //	2 = experimental / custom.
-constexpr uint8_t ItyVersion[4] = {0,2,0, 1};
+constexpr const uint8_t ItyVersion[4] = {0,2,0, 1};
 
-constexpr std::string OSName =
+constexpr const char OSName[] =
 #if _WIN32
 	"windows"
 #elif __linux__
@@ -59,29 +59,29 @@ const std::string GLOBAL_SHARE_PATH =
 ;
 
 
-constexpr unsigned int uint16_max = 65535;
+constexpr const unsigned int uint16_max = 65535;
 
-constexpr char COMMENT_SYMBOL = '#';
-constexpr char INST_END_SYMBOL = ';';
+constexpr const char COMMENT_SYMBOL = '#';
+constexpr const char INST_END_SYMBOL = ';';
 constexpr std::string ITY_FILE_EXT = ".ity";
 
 constexpr std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
 constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
 
-constexpr unsigned int MAX_TEMPORARY_POOL_RESERVE = 32;
+constexpr const uint8_t MAX_TEMPORARY_POOL_RESERVE = 32;
 
 
 
 namespace ANSI {
-	static constexpr std::string reset    = "\e[0m";
-	static constexpr std::string bold     = "\e[1m";
-	static constexpr std::string red      = "\e[31m";
-	static constexpr std::string green    = "\e[32m";
-	static constexpr std::string orange   = "\e[33m";
-	static constexpr std::string blue     = "\e[34m";
-	static constexpr std::string purple   = "\e[35m";
-	static constexpr std::string yellow   = "\e[93m";
-	static constexpr std::string norm     = "\e[39m";
+	static constexpr const char reset[]    = "\e[0m";
+	static constexpr const char bold[]     = "\e[1m";
+	static constexpr const char red[]      = "\e[31m";
+	static constexpr const char green[]    = "\e[32m";
+	static constexpr const char orange[]   = "\e[33m";
+	static constexpr const char blue[]     = "\e[34m";
+	static constexpr const char purple[]   = "\e[35m";
+	static constexpr const char yellow[]   = "\e[93m";
+	static constexpr const char norm[]     = "\e[39m";
 }
 
 
@@ -120,8 +120,8 @@ enum InstSymbol : uint8_t {
 
 
 // Declarative instructions.
-constexpr size_t DECL_INSTRUCTIONS_size = 6;
-constexpr InstSymbol DECL_INSTRUCTIONS[] = {
+constexpr const size_t DECL_INSTRUCTIONS_size = 6;
+constexpr const InstSymbol DECL_INSTRUCTIONS[] = {
 	InstSymbol_import,
 	InstSymbol_merge,
 

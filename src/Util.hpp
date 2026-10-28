@@ -36,7 +36,7 @@ constexpr std::string NUM = "0123456789";
 
 
 // Returns the string with all instances of `ch` removed from the start of it.
-const std::string trim_left(const std::string& text, const char ch) {
+const std::string trim_left(const std::string& text, const char& ch) {
 	const size_t& text_len = text.size();
 	if (text_len == 0 || text[0] != ch) return text;
 	bool ended = false;
@@ -63,7 +63,7 @@ const std::string join_str(const std::vector<std::string>& vec, const std::strin
 
 
 // Splits the `text` into a vector of strings, with each element separated by the given `sep`.
-const std::vector<std::string> split_str(const std::string& text, const char sep) {
+const std::vector<std::string> split_str(const std::string& text, const char& sep) {
 	if (text.empty()) return {};
 
 	std::stringstream ss (text);

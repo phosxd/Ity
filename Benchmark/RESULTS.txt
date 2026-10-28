@@ -63,6 +63,7 @@ These results were recordered using the following specs:
 |	3. Python	3.14.5											0.198s AVG
 |	4. Bash		5.3.0(1)-release (x86_64-redhat-linux-gnu)		0.312s AVG
 |	5. Kal		0.1.0											0.698s AVG
+|	6. NodeJS	22.22.2											0.858s AVG
 |
 |
 |

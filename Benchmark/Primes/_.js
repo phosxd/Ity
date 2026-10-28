@@ -1,3 +1,10 @@
+import { createInterface } from "readline" ;
+const readline = createInterface({
+	input: process.stdin,
+	output: process.stdout
+});
+
+
 function iSqrt(n) {
 	let x = n;
 	let y = (x+1) / 2;
@@ -21,14 +28,17 @@ function isPrime(n) {
 }
 
 
-const prompt = require("prompt-sync")({ sigint: true });
-const n = Number(prompt("Count: "));
-const start = Date.now();
+readline.question('Count: ', (ans) => {
+	readline.close();
+	const n = Number(ans);
+
+	const start = Date.now();
 
 
-for (let p = 2; p <= n; p++) {
-	if (isPrime(p)) console.log(p);
-}
+	for (let p = 2; p <= n; p++) {
+		if (isPrime(p)) console.log(p);
+	}
 
 
-console.log(`\nDone in ${(Date.now()-start) / 1000.0}s.`);
+	console.log(`\nDone in ${(Date.now()-start) / 1000.0}s.`);
+});

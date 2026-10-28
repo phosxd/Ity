@@ -1,7 +1,6 @@
 #pragma once
 
 
-#pragma pack(1)
 struct ScopeItem {
 	const size_t key;
 	Variant var;
@@ -10,7 +9,6 @@ struct ScopeItem {
 
 using ScopeMap_t = std::vector<ScopeItem>;
 
-#pragma pack(1)
 struct ItyScope {
 	ItyScope* p = nullptr;  // Parent scope.
 	ScopeMap_t d;           // Scope data.
@@ -209,7 +207,6 @@ ItyScope create_new_scope(UINT_t& scope_current_id, const ScopeMap_t& data={}, I
 
 
 
-#pragma pack(1)
 struct ItyState {
 	std::string path = "";
 	std::vector<ItyState> alts = {}; // Alternate states (script modules).
@@ -256,7 +253,7 @@ struct ItyState {
 	}
 
 
-	ItyState* find_alt_from_path(std::string target_path) {
+	ItyState* find_alt_from_path(const std::string& target_path) {
 		for (ItyState& alt : alts) {
 			if (alt.path == target_path) return &alt;
 		}

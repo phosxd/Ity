@@ -187,7 +187,7 @@ const STR_t var_get_obj_type(const MAP_t& map) {
 }
 
 
-const Variant var_type_var(const VariantType type) {
+const Variant var_type_var(const VariantType& type) {
 	return Variant{VT_INT, (INT_t)type, VariantMode_constant};
 }
 
