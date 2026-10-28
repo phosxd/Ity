@@ -1,0 +1,28 @@
+#EXPECT
+#Hello World!
+#1234
+#1.534
+#{"b": 2, "a": 1}
+#END
+
+merge IO;
+
+out:'H';
+out:'e';
+out:'l';
+out:'l';
+out:'o';
+out:' ';
+out:'World!';
+
+out:'\n';
+
+out:[1,2,3,4];
+
+out:'\n';
+
+out:1.534;
+
+out:'\n';
+
+out:{'a',1, 'b',2};

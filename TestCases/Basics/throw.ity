@@ -1,0 +1,5 @@
+#EXPECT
+#Error: 0
+#END
+
+throw 'Hello';

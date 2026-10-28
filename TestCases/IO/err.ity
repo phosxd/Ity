@@ -1,0 +1,7 @@
+#EXPECT
+#Hello World!
+#END
+
+merge IO;
+
+err:'Hello World!';

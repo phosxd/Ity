@@ -1,0 +1,10 @@
+#EXPECT
+#true
+#false
+#END
+
+merge IO;
+merge FileSystem;
+
+print:(file_exists:'StaticFile.txt');
+print:(file_exists:'nonexistent_file.txt');

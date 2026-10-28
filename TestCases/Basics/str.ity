@@ -1,0 +1,16 @@
+#EXPECT
+#END
+
+var STR _e = 'a';
+_e = 'a';
+_e = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+_e = '
+multi
+line
+string
+';
+_e = '\;';
+_e = '\'escape\'';
+
+var inferred = 'a';
+inferred = 'b';

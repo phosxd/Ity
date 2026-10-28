@@ -1,0 +1,9 @@
+#EXPECT
+#END
+
+
+# comment
+###
+# com;ment;
+
+1+1; # inline comment!

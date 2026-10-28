@@ -202,8 +202,8 @@ void emit_warn(const ERR_CODE code, const std::vector<std::string> args={}) {
 	if (emit_just_codes) std::cout << "Warning: " << std::to_string(code) << '\n';
 	else {
 		// Print pretty warning message.
-		std::cout << ANSI::yellow << "Warning " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
-		if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(current_line, current_column)) << '\n';
+		std::cerr << ANSI::yellow << "Warning " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
+		if (current_line != 0 || current_column != 0) std::cerr << indent(get_script_pos(current_line, current_column)) << '\n';
 	}
 }
 
@@ -214,8 +214,8 @@ void emit_error(const ERR_CODE code, const std::vector<std::string> args={}, uns
 		if (ln_override == 0) ln_override = current_line;
 		if (col_override == 0) col_override = current_column;
 		// Print pretty error message.
-		std::cout << ANSI::red << "Error " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
-		if (current_line != 0 || current_column != 0) std::cout << indent(get_script_pos(ln_override, col_override)) << '\n';
+		std::cerr << ANSI::red << "Error " << std::to_string(code) << ": " << ANSI::norm << make_err_message(code,args) << ANSI::reset << '\n';
+		if (current_line != 0 || current_column != 0) std::cerr << indent(get_script_pos(ln_override, col_override)) << '\n';
 	}
 
 	// Kill program.

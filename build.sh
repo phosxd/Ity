@@ -220,5 +220,5 @@ fi
 if [[ $DO_TESTS == 1 ]]; then
 	echo
 	echo "${BOLD}Running tests...${RESET}"
-	./test.sh
+	./run_tests.sh
 fi

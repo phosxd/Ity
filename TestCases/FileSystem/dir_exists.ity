@@ -1,0 +1,10 @@
+#EXPECT
+#true
+#false
+#END
+
+merge IO;
+merge FileSystem;
+
+print:(dir_exists:'StaticFolder');
+print:(dir_exists:'nonexistent_folder');

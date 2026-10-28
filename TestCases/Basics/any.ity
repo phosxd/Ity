@@ -1,0 +1,11 @@
+#EXPECT
+#END
+
+var ANY _j = none;
+_j = true;
+_j = false;
+_j = 0;
+_j = 1;
+_j = 1.123;
+_j = 'a';
+_j = 'abc';
