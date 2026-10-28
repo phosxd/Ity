@@ -132,6 +132,9 @@ static void exec(ItyState& state, InstToken& token) {
 		var = var_;
 	}
 
+	// Cast value type upward if needed.
+	if (type == VT_FLOAT && var.t == VT_INT) var = Variant{VT_FLOAT, var.to_float(), var.m};
+
 	// Set data.
 	const VariantMode& mode = AnyCast(VariantMode,token.meta[3]);
 	if (not var.matches(Variant{type, std::monostate(), mode})) return;

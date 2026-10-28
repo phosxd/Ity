@@ -82,7 +82,17 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 // ------------------
 
 
-const std::hash<std::string> string_hasher;
+// const std::hash<std::string> string_hasher;
+std::vector<std::string> string_hasher_id_map;
+size_t string_hasher(const std::string& str) {
+	const size_t len = string_hasher_id_map.size();
+	for (size_t i = 0; i < len; i++) {
+		if (str == string_hasher_id_map[i]) return i;
+	}
+
+	string_hasher_id_map.push_back(str);
+	return string_hasher_id_map.size()-1;
+}
 
 
 struct HASHED_NAMES_struct {
