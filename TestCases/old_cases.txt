@@ -1,52 +1,6 @@
 
 
 "
-merge IO;
-
-# While loop
-# ----------
-
-var INT i = 0;
-while i < 10;
-	i += 1;
-/;
-
-print:i;
-
-
-# Should not run.
-while false;
-	throw 'That\'s not right.';
-/;
-"
-
-"10"
-
-# 18
-
-"
-merge IO;
-
-# Nested while loop
-# -----------------
-
-var INT i = 0;
-while i < 10;
-	var INT j = 0;
-	while j < 10;
-		j += 1;
-	/;
-	i += 1;
-/;
-
-print:i;
-"
-
-"10"
-
-# 19
-
-"
 # Variable in while loop should be destroyed after each iteration
 var INT i = 0;
 while i < 4;

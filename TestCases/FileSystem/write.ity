@@ -1,0 +1,14 @@
+#EXPECT
+#true
+#1234
+#true
+#false
+#END
+
+merge IO;
+merge FileSystem;
+
+print:(write:['TestFile.txt', '1234']); # true
+print:(read:'TestFile.txt');
+print:(remove:'TestFile.txt');
+print:(write:['nonexistent_folder/TestFile.txt', '1234']); # false, parent directory does not exists, cannot create file.

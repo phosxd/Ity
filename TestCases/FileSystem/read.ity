@@ -1,0 +1,11 @@
+#EXPECT
+#Hello World!
+#
+#none
+#END
+
+merge IO;
+merge FileSystem;
+
+print:(read:'StaticFile.txt');
+print:(read:'nonexistent_file.txt');

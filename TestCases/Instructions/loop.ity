@@ -13,6 +13,8 @@
 #1
 #nested for
 #8
+#nested while
+#8
 #END
 
 merge IO;
@@ -24,6 +26,10 @@ print:'standard while';
 
 var INT i_=-1; while i_ < 2; i_+=1;
 	print:i_;
+/;
+
+while false;
+	throw 'That\'s not right.';
 /;
 
 
@@ -50,8 +56,27 @@ print:'nested for';
 
 var INT count = 0;
 for i in 2;
+	var j = 0;
 	for i2 in 2;
+		var k = 0;
 		for i3 in 2;
+			var l = 0;
+			count += 1;
+		/;
+	/;
+/;
+print:count; # 8
+
+
+# Nested While-Loop
+# ------------------
+
+print:'nested while';
+
+count = 0;
+i_=0; while i_ < 2; i_+=1;
+	var j=0; while j < 2; j+=1;
+		var k=0; while k < 2; k+=1;
 			count += 1;
 		/;
 	/;

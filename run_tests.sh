@@ -55,19 +55,24 @@ cd TestCases
 passed_count=0
 total_count=0
 # Iterate on each section.
-for section in "Basics" "IO" "Math" "Time" "FileSystem"; do
-	echo "${BOLD}[ ${section} ]${RESET}"
+for section in "Basics" "Instructions" "IO" "Math" "Time" "FileSystem"; do
+	echo "${BOLD}[${RESET}${section}${BOLD}]${RESET}"
 	cd $section
+	section_failed=0
 	# Iterate on each script in the section.
 	for file in *.ity; do
 		if [ -f "$file" ]; then
-			# Test the script.
+			name=${file::-4}
 			total_count=$((total_count+1))
+			printf "| ${name}"
+			# Test the script.
 			if run_test_on_file "${file}"; then
-				echo "| ${file}"
+				printf "${CLEAR_LINE}${RESET_POS}"
 				passed_count=$((passed_count+1))
 			else
-				echo "${RED}| ${file}${RESET}"
+				section_failed=1
+				printf "${CLEAR_LINE}${RESET_POS}"
+				printf "${RED}| ${name}${RESET}\n"
 				echo "   ${ORANGE}EXPECTED:${RESET}"
 				echo "${expected_results}" | sed "s/^/     /"
 				echo "   ."

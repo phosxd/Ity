@@ -1,0 +1,25 @@
+#EXPECT
+#comprehension done
+#Error: 29
+#END
+
+merge IO;
+
+# Const syntax comprehension
+# --------------------------
+
+const a=1;
+const b = 1;
+const INT c=1;
+const INT d =1;
+const BOOL e;
+const INT f;
+const FLOAT g;
+const STR h;
+const ARR i;
+const MAP j;
+
+print:'comprehension done';
+
+const INT con = 1;
+con = 2; # should throw error.
