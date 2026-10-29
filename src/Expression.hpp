@@ -77,10 +77,9 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 #include "Op/TypeCast.hpp"
 #include "Op/RefOps.hpp"
 
-#pragma pack(1)
 struct OpDef {
 	const OpSymbol sym;
-	const std::string str;
+	const char* str;
 	const Operation* op;
 };
 const OpDef OPERATIONS[] = {
@@ -547,7 +546,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 					return &none_var;
 				}
 				// Apply key.
-				key = AnyCast(STR_t,var->d);
+				key = AnyCastV(STR_t,var->d);
 				is_key = false;
 			}
 			else {

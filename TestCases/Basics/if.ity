@@ -1,0 +1,92 @@
+#EXPECT
+#simple
+#true is true
+#nested blocks
+#passed
+#chained blocks
+#Yes
+#Yes
+#Yes
+#scope correctness
+#1
+#Error: 27
+#END
+
+merge IO;
+
+print:'simple';
+
+if true == true;
+	print:'true is true';
+/; else; throw; /;
+if true == false;
+	print:'true is false';
+/;
+
+
+# Nested conditional blocks
+# -------------------------
+
+print:'nested blocks';
+
+if true == true;
+	if false == false;
+		if 1 == 1;
+			if 2 == 2;
+				if 1 == 0; throw; /;
+				elif 'A' != 'B';
+					print:'passed';
+				/; else; throw; /;
+			/; else; throw; /;
+		/; else; throw; /;
+	/; else; throw; /;
+/;
+
+
+# Chained conditional blocks
+# ---------------------------
+
+print:'chained blocks';
+
+if true;
+	print:'Yes';
+/;
+elif true;
+	throw 'No';
+/;
+else;
+	throw 'No';
+/;
+
+if false;
+	throw 'No';
+/;
+elif true;
+	print:'Yes';
+/;
+else;
+	throw 'No';
+/;
+
+if false;
+	throw 'No';
+/;
+elif false;
+	throw 'No';
+/;
+else;
+	print:'Yes';
+/;
+
+
+# Scoped conditional
+# ------------------
+
+print:'scope correctness';
+
+if true;
+	var INT x = 1;
+	print:x;
+/;
+
+x; # Should throw error

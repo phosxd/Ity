@@ -34,7 +34,7 @@ const Variant LIBS[] = {
 #pragma pack(1)
 struct InstDef {
 	const InstSymbol sym;
-	const std::string str;
+	const char* str;
 	const Instruction* inst;
 };
 const InstDef* find_InstDef(const InstSymbol& sym, const std::string& str);

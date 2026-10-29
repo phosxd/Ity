@@ -113,7 +113,7 @@ struct ItyScope {
 		// Output function call in debug mode...
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.data_assign) {
-			std::cout << ANSI::blue << "Data Assignment: " << ANSI::reset << "{name=" << name << ", data=" << data << "}\n";
+			std::cout << ANSI::blue << "SetData: " << ANSI::reset << "{name=" << name << ", data=" << data << "}\n";
 		}
 		#endif
 

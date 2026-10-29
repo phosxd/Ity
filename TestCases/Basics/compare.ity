@@ -1,0 +1,41 @@
+#EXPECT
+#true
+#false
+#false
+#
+#true
+#false
+#false
+#
+#true
+#false
+#true
+#
+#true
+#true
+#false
+#
+#false
+#true
+#END
+
+merge IO;
+
+print:(true == true);
+print:(true == false);
+print:(true != true);
+print:[];
+print:(1 == 1);
+print:(0 == 1);
+print:(1.3 == 1.4);
+print:[];
+print:(2 > 1);
+print:(2 < 1);
+print:(2 >= 2);
+print:[];
+print:(2 >= 1);
+print:(2 <= 2);
+print:(2 <= 1);
+print:[];
+print:('Hello' == 'World');
+print:('Hello' != 'World');

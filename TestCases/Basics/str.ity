@@ -1,16 +1,76 @@
 #EXPECT
+#addition
+#ab
+#abc
+#abcabc
+#access
+#a
+#e
+#methods
+#5
+#abcdefghi
+#97
 #END
 
-var STR _e = 'a';
-_e = 'a';
-_e = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-_e = '
+merge IO;
+
+# Declaration / Reassign
+# -----------------------
+
+const STR conststr = 'abcde';
+
+var STR str = 'a'; # Declare.
+str = 'b'; # Reassign.
+str = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'; # Long string.
+str = '
 multi
 line
 string
 ';
-_e = '\;';
-_e = '\'escape\'';
+str = '\;'; # Escaped statement terminator.
+str = '\'escape\''; # Escaped string quotations.
 
-var inferred = 'a';
-inferred = 'b';
+var inferred = 'a'; # Inferred string.
+inferred = 'b'; # Reassign inferred variable.
+
+str = conststr;
+
+
+# Addition
+# --------
+
+print:'addition';
+
+str = 'a';
+str += 'b';
+print:str; # ab
+str += 99; # 99 = "c" in ASCII.
+print:str; # abc
+
+# Multiply
+str *= 2;
+print:str; # abcabc
+
+
+# Access
+# ------
+
+print:'access';
+
+str = 'abcde';
+
+print:(str:0); # a
+print:(str: -1); # e
+
+
+# Methods
+# -------
+
+print:'methods';
+
+str = 'abcde';
+
+print:(str.length:()); # 5
+str.append:'fghi';
+print:str; # abcdefghi
+print:(str.raw:()); # Get integer representation of the first character (a = 97)

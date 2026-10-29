@@ -1,0 +1,59 @@
+#EXPECT
+#standard while
+#0
+#1
+#2
+#standard for
+#0
+#1
+#2
+#for i in arr
+#3
+#2
+#1
+#nested for
+#8
+#END
+
+merge IO;
+
+# While-Loop
+# ----------
+
+print:'standard while';
+
+var INT i_=-1; while i_ < 2; i_+=1;
+	print:i_;
+/;
+
+
+# For-Loop
+# --------
+
+print:'standard for';
+
+for i in 3;
+	print:i;
+/;
+
+print:'for i in arr';
+
+for i in [3,2,1];
+	print:i;
+/;
+
+
+# Nested For-Loop
+# ----------------
+
+print:'nested for';
+
+var INT count = 0;
+for i in 2;
+	for i2 in 2;
+		for i3 in 2;
+			count += 1;
+		/;
+	/;
+/;
+print:count; # 8
