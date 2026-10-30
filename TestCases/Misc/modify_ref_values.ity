@@ -1,0 +1,17 @@
+#EXPECT
+#[1, 2, 3]
+#END
+
+merge IO;
+
+func NONE do_modification; arg REF obj;
+	if obj.type:[] != ARR;
+		throw 'Invalid reference value, expected ARR, got ' + (type_name:(obj.type:[])) + '.';
+	/;
+	obj += [3]; # Add an item to the referenced array.
+/;
+
+
+var ARR my_arr = [1,2];
+do_modification:[(@my_arr)];
+print:[my_arr];

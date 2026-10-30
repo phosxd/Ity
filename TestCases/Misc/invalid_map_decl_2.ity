@@ -1,0 +1,6 @@
+#EXPECT
+#Error: 21
+#END
+
+# Ensure script properly ends when given invalid map syntax.
+{'a': 1+1, 'b': 2};

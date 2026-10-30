@@ -1,0 +1,15 @@
+#EXPECT
+#3
+#2
+#1
+#END
+
+merge IO;
+
+var MAP map = {'a',1, 'b',2, 'c',3};
+const ARR keys = map.keys:[];
+
+var INT i = 0; while i < (keys.length:[]);
+	print:(map:(keys:i));
+	i+=1;
+/;

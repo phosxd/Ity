@@ -1,0 +1,6 @@
+#EXPECT
+#Error: 21
+#END
+
+# Ensure script properly ends when given invalid array syntax.
+[1+1, 2, 3];

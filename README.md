@@ -1,6 +1,8 @@
 
 <div align="middle">
 
+<img src="git_assets/icon.png" align=""></img>
+
 **Version:** 0.2.0
 
 <img src="https://noailist.org/images/badge.png" align=""></img>
