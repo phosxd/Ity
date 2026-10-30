@@ -1,13 +1,7 @@
 #pragma once
 
 
-struct ScopeItem {
-	const size_t key;
-	Variant var;
-};
-
-
-using ScopeMap_t = std::vector<ScopeItem>;
+using ScopeMap_t = std::vector<Variant*>;
 
 struct ItyScope {
 	ItyScope* p = nullptr;  // Parent scope.
@@ -15,8 +9,34 @@ struct ItyScope {
 	UINT_t id;              // Scope UID.
 
 
+	// Initialize.
+	ItyScope(ItyScope* p_=nullptr, ScopeMap_t d_={}, UINT_t id_=0) : p(p_), d(d_), id(id_) {}
+
+
+	// Destroy.
+	~ItyScope() {
+		flush();
+	}
+
+
+	// Move initialize.
+	ItyScope(ItyScope&& other) : p(std::move(other.p)), d(std::move(other.d)), id(std::move(other.id)) {}
+
+
+	// Move assignemnt.
+	ItyScope& operator=(ItyScope&& other) {
+		if (this != &other) {
+			flush();
+			p = std::move(other.p);
+			d = std::move(other.d);
+			id = std::move(other.id);
+		}
+		return *this;
+	}
+
+
 	// Returns the first parent scope with a matching ID.
-	ItyScope* get_scope_at_id(unsigned int target_id) {
+	ItyScope* get_scope_at_id(const UINT_t& target_id) {
 		if (id != target_id) {
 			ItyScope* current = p;
 			while (current) {
@@ -33,8 +53,9 @@ struct ItyScope {
 	// This does *not* account for the data inside the scope's parent.
 	const size_t get_size() const {
 		size_t final_size = 0;
-		for (const ScopeItem& i : d) {
-			final_size += sizeof(i.key) + i.var.get_size();
+		for (const Variant* i : d) {
+			if (not i) continue;
+			final_size += i->get_size();
 		}
 		return final_size;
 	}
@@ -44,7 +65,6 @@ struct ItyScope {
 	// This will effectively change the depth of the current scope while preserving the scope reference.
 	void in(UINT_t& scope_current_id) {
 		p = new ItyScope{std::move(p), std::move(d), std::move(id)};
-		flush();
 		scope_current_id += 1;
 		id = scope_current_id;
 
@@ -60,12 +80,9 @@ struct ItyScope {
 			emit_error(ERR_unexpected, {"ScopeOut", "Minimum depth reached."});
 			return;
 		}
-		ItyScope* p_ = p;
 
-		p = std::move(p_->p);
-		d = std::move(p_->d);
-		id =std::move(p_->id);
-		delete p_;
+		ItyScope* p_ = p;
+		*this = std::move(*p_);
 
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.scoping) std::cout << ANSI::orange << "Scope Out (" + std::to_string(id) + ")\n" << ANSI::reset;
@@ -73,25 +90,19 @@ struct ItyScope {
 	}
 
 
-	// Clears all data in the scope. Useful for loops that reuse the same scope.
-	inline void flush() {
+	// Clears all data in the scope.
+	void flush() {
+		for (Variant* i : d) delete i;
 		d.clear();
 	}
 
 
-	// Get item container in the scope data from a hash value.
-	ScopeItem* raw_get_data(const size_t& hashed_name, ScopeItem* default_value=nullptr) {
-		for (ScopeItem& item : d) {
-			if (item.key == hashed_name) return &item;
-		}
-		return default_value;
-	}
-
-
 	// Gets the data for name in the current scope. Returns `nullptr` or `default_value` if no data found.
-	Variant* get_data(const std::string& name, Variant* default_value=nullptr, const size_t& hashed_name=0) {
-		if (ScopeItem* item = raw_get_data((hashed_name == 0) ? string_hasher(name) : hashed_name); item) return &item->var;
-		return default_value;
+	Variant* get_data(const std::string& name, Variant* default_value=nullptr, size_t hashed_name=0) {
+		if (hashed_name == 0) hashed_name = string_hasher(name);
+		if (hashed_name+1 >= d.size()) d.resize(hashed_name+1, nullptr);
+		Variant* var = d[hashed_name];
+		return (var) ? var : default_value;
 	}
 
 
@@ -102,24 +113,28 @@ struct ItyScope {
 	}
 
 
-	inline void raw_set_data(const size_t& hashed_name, const Variant& data, ScopeItem*& item) {
-		if (item) item->var = std::move(data);
-		else d.push_back(ScopeItem(hashed_name, std::move(data)));
-	}
-
-
 	// Sets the data for name in this scope.
-	void set_data(const std::string& name, const Variant& data, const size_t hashed_name) {
+	void set_data(const std::string& name, const Variant& data, size_t hashed_name=0) {
+		if (hashed_name == 0) hashed_name = string_hasher(name);
+
 		// Output function call in debug mode...
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.data_assign) {
-			std::cout << ANSI::blue << "SetData: " << ANSI::reset << "{name=" << name << ", data=" << data << "}\n";
+			std::cout << ANSI::blue << "SetData: " << ANSI::reset << "{name=" << name << ", hash=" << hashed_name << ", data=" << data << "}\n";
 		}
 		#endif
 
-		ScopeItem* item = raw_get_data(hashed_name);
-		if (item && item->var.m == VariantMode_constant) emit_error(ERR_cannot_change_constant); // Throw error if is a constant.
-		raw_set_data(hashed_name, data, item);
+		Variant* previous_var = get_data(name, nullptr, hashed_name);
+		if (previous_var) {
+			// Throw error if is a constant.
+			if (previous_var->m == VariantMode_constant) {
+				emit_error(ERR_cannot_change_constant);
+				return;
+			}
+			// Delete.
+			delete previous_var;
+		}
+		d[hashed_name] = new Variant(std::move(data));
 	}
 
 
@@ -163,7 +178,7 @@ struct ItyScope {
 				return;
 			}
 			// Copy member to a variable in the scope.
-			set_data(prop_name, Variant{i.second.t, i.second.d, i.second.m}, string_hasher(prop_name));
+			set_data(prop_name, Variant{i.second.t, i.second.d, i.second.m});
 		}
 	}
 
@@ -240,13 +255,13 @@ struct ItyState {
 
 	void init() {
 		// Add basic info.
-		scope.d.push_back({string_hasher("__VERSION__"),              Variant{VT_ARR,  (ARR_t){Variant{VT_INT,(INT_t)ItyVersion[0]}, Variant{VT_INT,(INT_t)ItyVersion[1]}, Variant{VT_INT,(INT_t)ItyVersion[2]}, Variant{VT_INT,(INT_t)ItyVersion[3]}}, VariantMode_constant}});
-		scope.d.push_back({string_hasher("__VERSION_STRING__"),       Variant{VT_STR,  (STR_t)ItyVersionString, VariantMode_constant}});
-		scope.d.push_back({string_hasher("__SCRIPT_PATH__"),          Variant(VT_STR,  (STR_t)path, VariantMode_constant)});
-		scope.d.push_back({string_hasher("__OS_NAME__"),              Variant{VT_STR,  (STR_t)OSName, VariantMode_constant}});
-		scope.d.push_back({string_hasher("__HAS_RUNTIME_DEBUG__"),    Variant(VT_BOOL, has_runtime_debug, VariantMode_constant)});
-		scope.d.push_back({string_hasher("__CMD_ARGS__"),             Variant{VT_ARR,  ARGS, VariantMode_constant}});
-		scope.d.push_back({HASHED_NAMES.__IMPORTED__,                 VPS.bool_false});
+		scope.set_data("__VERSION__",              Variant{VT_ARR,  (ARR_t){Variant{VT_INT,(INT_t)ItyVersion[0]}, Variant{VT_INT,(INT_t)ItyVersion[1]}, Variant{VT_INT,(INT_t)ItyVersion[2]}, Variant{VT_INT,(INT_t)ItyVersion[3]}}, VariantMode_constant});
+		scope.set_data("__VERSION_STRING__",       Variant{VT_STR,  (STR_t)ItyVersionString, VariantMode_constant});
+		scope.set_data("__SCRIPT_PATH__",          Variant{VT_STR,  (STR_t)path, VariantMode_constant});
+		scope.set_data("__OS_NAME__",              Variant{VT_STR,  (STR_t)OSName, VariantMode_constant});
+		scope.set_data("__HAS_RUNTIME_DEBUG__",    Variant(VT_BOOL, has_runtime_debug, VariantMode_constant));
+		scope.set_data("__CMD_ARGS__",             Variant{VT_ARR,  ARGS, VariantMode_constant});
+		scope.set_data("__IMPORTED__",             VPS.bool_false);
 		// Merge built-in library.
 		scope.merge_module(AnyCast(MAP_t,((Variant*)LIB_BI_G)->d));
 		scope.in(scope_current_id); // Keep built-ins a scope higher than everything else.
@@ -264,6 +279,7 @@ struct ItyState {
 	// Scope out of all ongoing scopes & call emergency cleanup functions if needed.
 	void exit_ongoing_scopes(ItyScope& scope) {
 		for (InstToken* token : scoped_tokens) {
+			if (not token) continue;
 			if (token->inst->emergency_scope_exit) token->inst->emergency_scope_exit(token);
 			scope.out();
 		}

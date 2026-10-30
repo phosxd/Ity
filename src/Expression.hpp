@@ -16,21 +16,21 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant input_args) {
 		// Get function token.
 		const InstToken& func_token = func_state->seq[func.token_index];
 
-		// Create alternate scope for function execution.
+		#ifdef RUNTIME_DEBUG
+		if (debug_flags.scoping) std::cout << ANSI::orange << "Entered: " << func_token.args << "\n" << ANSI::reset;
+		#endif
+
+		// Create alt scope for function execution.
 		ItyScope old_scope = std::move(func_state->scope);
 		std::vector<InstToken*> old_scoped_tokens = std::move(func_state->scoped_tokens);
-		func_state->scope = create_new_scope(func_state->scope_current_id,
-			(ScopeMap_t){
-				{HASHED_NAMES.__AG, Variant{VT_ARR, std::move(args)}},
-				{HASHED_NAMES.__R,  new_none()}, // Initialize return variable.
-			},
+		func_state->scope = create_new_scope(
+			func_state->scope_current_id,
+			{},
 			old_scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
 		);
+		func_state->scope.set_data("__AG", Variant{VT_ARR, std::move(args)}, HASHED_NAMES.__AG); // Set function arguments.
+		func_state->scope.set_data("__R", new_none(), HASHED_NAMES.__R); // Initialize return variable.
 		const VariantType return_type = func.return_type;
-
-		#ifdef RUNTIME_DEBUG
-		if (debug_flags.scoping) std::cout << ANSI::orange << "New Alt Scope From: " << func_token.args[2] << "\n" << ANSI::reset;
-		#endif
 
 		// Execute funtion.
 		Ity::exec(*func_state, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
@@ -39,15 +39,15 @@ Variant call_function(ItyState& state, const FUNC_t& func, Variant input_args) {
 		// NOTE: Use of "func" is now unsafe after this point, reference potentially modified or deleted as expression temporaries are overwritten.
 
 		// Get result & check if return type matches.
-		const Variant func_result = std::move(func_state->scope.raw_get_data(HASHED_NAMES.__R)->var);
+		const Variant func_result = std::move(*(func_state->scope.get_data("__R", nullptr, HASHED_NAMES.__R)));
 		if (func_result.t != return_type && return_type != VT_ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(return_type)});
 
-		// Restore values & return result.
-		func_state->scope = std::move(old_scope); // Restore original scope in definition state.
-		func_state->scoped_tokens = std::move(old_scoped_tokens); // Restore original scoped tokens tracker.
+		// Restore original scope.
+		func_state->scope = std::move(old_scope);
+		func_state->scoped_tokens = std::move(old_scoped_tokens);
 
 		#ifdef RUNTIME_DEBUG
-		if (debug_flags.scoping) std::cout << ANSI::orange << "Destroyed Alt Scope From: " << func_token.args[2] << " \n" << ANSI::reset;
+		if (debug_flags.scoping) std::cout << ANSI::orange << "Exited: " << func_token.args << " \n" << ANSI::reset;
 		#endif
 
 		return func_result;

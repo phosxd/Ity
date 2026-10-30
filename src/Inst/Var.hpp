@@ -85,7 +85,7 @@ static void exec(ItyState& state, InstToken& token) {
 
 	if (state.scope.get_data_globally(name, nullptr, hashed_name)) {
 		// Give error if the var name is not free on the current scope.
-		if (state.scope.raw_get_data(hashed_name)) {
+		if (state.scope.get_data("", nullptr, hashed_name)) {
 			emit_error(ERR_name_is_taken, {name});
 			return;
 		}
@@ -99,9 +99,9 @@ static void exec(ItyState& state, InstToken& token) {
 
 	if (token.symbol == InstSymbol_arg) {
 		// Throw error if this scope holds no arguments.
-		if (ScopeItem* args_it = state.scope.raw_get_data(HASHED_NAMES.__AG); args_it) {
+		if (Variant* args_it = state.scope.get_data("", nullptr, HASHED_NAMES.__AG); args_it) {
 			// Get argument if available.
-			ARR_t& scope_args = AnyCastV(ARR_t,args_it->var.d);
+			ARR_t& scope_args = AnyCastV(ARR_t,args_it->d);
 			if (not scope_args.empty()) {
 				var = std::move(scope_args.front());
 				scope_args.erase(scope_args.begin());

@@ -68,7 +68,7 @@ static void INST_Import_exec(ItyState& state, InstToken& token) {
 			state.alts.push_back(ItyState{
 				.path = path,
 				.seq = tokens,
-				.scope = {.p = state.scope.get_scope_at_id(1)} // Use top-most scope as parent in the module scope.
+				.scope = {state.scope.get_scope_at_id(1)} // Use top-most scope as parent in the module scope.
 			});
 			ItyState& alt = state.alts.back();
 			alt.scope.set_data("__IMPORTED__", Variant{VT_BOOL, true, VariantMode_constant}, HASHED_NAMES.__IMPORTED__); // Set imported flag.
