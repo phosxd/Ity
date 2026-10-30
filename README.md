@@ -1,7 +1,7 @@
 
 <div align="middle">
 
-<img src="git_assets/icon.png" align=""></img>
+<img src="git_assets/icon.png" width="200" height="200" align=""></img>
 
 **Version:** 0.2.0
 
