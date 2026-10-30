@@ -1,0 +1,29 @@
+#EXPECT
+#Warning: 25
+#1
+#5
+#END
+
+merge IO;
+
+# Should throw a shadowed name warning, because 'a' is defined in the same scope as the function declaration.
+func test; arg ANY a;
+	print:[a];
+/;
+
+
+var INT a = 1;
+test:a;
+
+
+
+# Does not throw a warning, because outer var 'b' is not in the same scope as the function declaration
+func test_2; arg ANY b;
+	print:[b];
+/;
+
+
+if true;
+	var INT b = 5;
+	test_2:b;
+/;

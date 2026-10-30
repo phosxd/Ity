@@ -6,14 +6,15 @@ GREEN=$'\x1B[32m'
 ORANGE=$'\x1B[33m'
 CLEAR_LINE=$'\x1B[2K'
 RESET_POS=$'\x1B[1G'
+WORKING_DIR=$(pwd)
 
-test_result_path="../.test_result.txt"
+test_result_path="${WORKING_DIR}/TestCases/.test_result.txt"
 
 
 test_results=""
 expeted_results=""
 run_test_on_file() {
-	../../ity.bin -c $1 2&> $test_result_path # Run test code, then output the result to a file.
+	${WORKING_DIR}/ity.bin -c $1 2&> $test_result_path # Run test code, then output the result to a file.
 	code=$?
 	test_results="$(cat $test_result_path)" # Get test results.
 
@@ -55,7 +56,7 @@ cd TestCases
 passed_count=0
 total_count=0
 # Iterate on each section.
-for section in "Basics" "Instructions" "IO" "Math" "Time" "FileSystem"; do
+for section in "Instructions" "Basics" "Misc" "Modules/IO" "Modules/Math" "Modules/Time" "Modules/FileSystem"; do
 	echo "${BOLD}[${RESET}${section}${BOLD}]${RESET}"
 	cd $section
 	section_failed=0
@@ -83,7 +84,7 @@ for section in "Basics" "Instructions" "IO" "Math" "Time" "FileSystem"; do
 			fi
 		fi
 	done
-	cd ../
+	cd "${WORKING_DIR}/TestCases"
 done
 
 

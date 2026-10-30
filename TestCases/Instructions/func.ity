@@ -1,0 +1,21 @@
+#EXPECT
+#Hello there!
+#6
+#END
+
+merge IO;
+
+# Function with no arguments.
+func say_hi;
+	print:'Hello there!';
+/;
+
+say_hi:();
+
+
+# Function with arguments & explicit return type.
+func INT add_int; arg INT a; arg INT b;
+	return a+b;
+/;
+
+print:(add_int:[3,3]);

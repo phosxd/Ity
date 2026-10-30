@@ -32,69 +32,6 @@ var INT i = 0; while i < 5;
 
 ""
 
-# 21
-
-"
-merge IO;
-
-# Function definition
-# -------------------
-
-func NONE say_hi;
-	print:['Hello there!'];
-/;
-
-say_hi:[];
-
-
-# With arguments
-
-func INT add; arg INT a; arg INT b;
-	return a+b;
-/;
-
-print:(add:[4,5]);
-"
-
-"Hello there!
-9"
-
-# 22
-
-"
-merge IO;
-
-# Function scope correctness.
-# ---------------------------
-
-# Should throw a shadowed name warning, because 'a' is defined in the same scope as the function declaration.
-func NONE test; arg ANY a;
-	print:[a];
-/;
-
-
-var INT a = 1;
-test:a;
-
-
-
-# Does not throw a warning, because outer var 'b' is not in the same scope as the function declaration
-func NONE test_2; arg ANY b;
-	print:[b];
-/;
-
-
-if true;
-	var INT b = 5;
-	test_2:b;
-/;
-"
-
-"Warning: 25
-1
-5"
-
-# 23
 
 "
 # Early exit conditional check
@@ -127,33 +64,6 @@ true"
 "
 merge IO;
 
-# Type casting
-# ------------
-
-print:( 'true' -> BOOL );
-print:( 'false' -> BOOL );
-print:( 'invalid representation' -> BOOL );
-print:( '12.76' -> INT );
-print:( '12.78' -> FLOAT );
-print:( 'invalid representation' -> FLOAT );
-print:( (100 -> STR) + '.' );
-print:( (10.8760 -> STR) + '.' );
-"
-
-"true
-false
-false
-12
-12.78
-0
-100.
-10.876."
-
-# 25
-
-"
-merge IO;
-
 # Early exit
 # ----------
 
@@ -168,75 +78,6 @@ var INT i = 0; while i < 10;
 
 "0123"
 
-# 26
-
-"
-merge IO;
-
-# Array/Map property assignment
-# -----------------------------
-
-
-# Array...
-var ARR a = [1,2,3,4];
-print:[a];
-
-a:1 *= 10;
-print:[a];
-
-
-print:[];
-
-
-# Map...
-var MAP b = {'a',1, 'b',2, 'c',3};
-print:b;
-
-b.a = 'hello';
-print:b;
-"
-
-"[1, 2, 3, 4]
-[1, 20, 3, 4]
-
-{\"c\": 3, \"b\": 2, \"a\": 1}
-{\"c\": 3, \"b\": 2, \"a\": \"hello\"}"
-
-# 27
-
-"
-merge IO;
-
-# Nested Array/Map property assignment
-# ------------------------------------
-
-
-# Array...
-var ARR a = [1,2,3,[4,5,6]];
-print:[a];
-
-a:3:1 = 500;
-print:[a];
-
-
-print:[];
-
-
-# Map...
-var MAP b = {'a',1, 'b',2, 'c',{'key','value'}};
-print:b;
-
-b.c.key = [1,2,3];
-print:b;
-"
-
-"[1, 2, 3, [4, 5, 6]]
-[1, 2, 3, [4, 500, 6]]
-
-{\"c\": {\"key\": \"value\"}, \"b\": 2, \"a\": 1}
-{\"c\": {\"key\": [1, 2, 3]}, \"b\": 2, \"a\": 1}"
-
-# 28
 
 "
 # Loop continue / break
