@@ -7,16 +7,57 @@
 
 
 // Get string representation of a VariantType.
-#define get_variant_type_name(type) (VARIANT_TYPE_NAMES.at(type))
+#define get_variant_type_name(type) (VARIANT_TYPE_NAMES.at(type)[0])
 
 
 // Get VariantType from a string representation.
-inline const VariantType get_variant_type_from_name(const std::string& name) {
+const VariantType get_variant_type_from_name(const std::string& name) {
 	if (name == ".") return VT_NONE;
 	for (const auto& it : VARIANT_TYPE_NAMES) {
-		if (it.second == name) return it.first;
+		if (exists_in_vec(it.second, name)) return it.first;
 	}
 	return VT_PLACEHOLDER;
+}
+
+
+// Get highest order type.
+const VariantType get_highest_order_type(const VariantType& a, const VariantType& b) {
+	return (a < b) ? a : b; // Enum values are arranged in order of most significant to least.
+}
+
+
+const bool type_is_int(const VariantType& t) {
+	switch (t) {
+		case VT_INT64:
+		case VT_INT32:
+		case VT_INT16:
+		case VT_INT8: return true;
+		default: return false;
+	}
+}
+
+
+const bool type_is_uint(const VariantType& t) {
+	switch (t) {
+		case VT_UINT64:
+		case VT_UINT32:
+		case VT_UINT16:
+		case VT_UINT8: return true;
+		default: return false;
+	}
+}
+
+
+const bool type_is_float(const VariantType& t) {
+	switch (t) {
+		case VT_FLOAT64: return true;
+		default: return false;
+	}
+}
+
+
+const bool type_is_number(const VariantType& t) {
+	return type_is_int(t) || type_is_uint(t) || type_is_float(t);
 }
 
 
@@ -32,32 +73,29 @@ struct ItyState;
 struct CompositeItem;
 struct OpDef;
 
-using INT_t = int64_t;
-using UINT_t = uint32_t;
-using FLOAT_t = double;
+using FLOAT64_t = double;
 using STR_t = std::string;
 using ARR_t = std::vector<Variant>;
 using MAP_t = std::unordered_map<STR_t,Variant>;
 using NativeFunc_t = Variant(*)(ItyState& state, ARR_t& args);
 
 
-#pragma pack(1)
 struct FUNC_t {
 	// Common parameters...
 	VariantType return_type = VT_NONE;
 	ARR_t bound_args = {};
 
 	// Script functions only...
-	UINT_t token_index = 0;
-	UINT_t definition_state_id = 0;
+	uint32_t token_index = 0;
+	uint32_t definition_state_id = 0;
 	STR_t script_path = "";
 
 	// Native functions only...
 	NativeFunc_t native_callable = nullptr;
+	std::vector<std::vector<VariantType>> args_schema = {};
 };
 
 
-#pragma pack(1)
 struct TREF_t {
 	std::string str;
 	size_t hash = 0;
@@ -67,9 +105,17 @@ using VariantData = std::variant<
 	Variant*,
 	std::monostate,
 	bool,
-	INT_t,
-	UINT_t,
-	FLOAT_t,
+
+	int64_t,
+	int32_t,
+	int16_t,
+	int8_t,
+	uint64_t,
+	uint32_t,
+	uint16_t,
+	uint8_t,
+	FLOAT64_t,
+
 	STR_t,
 	ARR_t,
 	MAP_t,
@@ -77,7 +123,6 @@ using VariantData = std::variant<
 
 	// Internal types.
 	TREF_t,
-	size_t,
 	VariantType,
 	VariantMode,
 
@@ -119,10 +164,18 @@ struct Variant {
 	const size_t get_size() const {
 		size_t size = sizeof(t) + sizeof(m);
 		switch (t) {
-			case VT_INT:    {size += sizeof(AnyCast(INT_t,d));   break;}
-			case VT_FLOAT:  {size += sizeof(AnyCast(FLOAT_t,d)); break;}
+			case VT_INT64:   {size += sizeof(to_int64());           break;}
+			case VT_INT32:   {size += sizeof(AnyCast(int32_t,d));   break;}
+			case VT_INT16:   {size += sizeof(AnyCast(int16_t,d));   break;}
+			case VT_INT8:    {size += sizeof(AnyCast(int8_t,d));    break;}
+			case VT_UINT64:  {size += sizeof(AnyCast(uint64_t,d));  break;}
+			case VT_UINT32:  {size += sizeof(AnyCast(uint32_t,d));  break;}
+			case VT_UINT16:  {size += sizeof(AnyCast(uint16_t,d));  break;}
+			case VT_UINT8:   {size += sizeof(AnyCast(uint8_t,d));   break;}
+			case VT_FLOAT64: {size += sizeof(to_float64());         break;}
+
 			case VT_REF:
-			case VT_STR:    {size += AnyCast(STR_t,d).size();    break;}
+			case VT_STR: {size += AnyCast(STR_t,d).size(); break;}
 
 			case VT_ARR: {
 				const ARR_t& d_ = AnyCast(ARR_t,d);
@@ -148,15 +201,47 @@ struct Variant {
 	}
 
 
-	// Conversion Functions.
+	// CHECKER FUNCTIONS
 
 
-	// Get boolean representation.
+	bool is_int() const {
+		return type_is_int(t);
+	}
+
+
+	bool is_uint() const {
+		return type_is_uint(t);
+	}
+
+
+	bool is_float() const {
+		return type_is_float(t);
+	}
+
+
+	bool is_number() const {
+		return type_is_number(t);
+	}
+
+
+	// DATA COPY CONVERSION FUNCTIONS
+
+
+	// Get boolean.
 	bool to_bool() const {
 		switch (t) {
 			case VT_BOOL:   return AnyCast(bool,d);
-			case VT_INT:    return (bool)AnyCast(INT_t,d);
-			case VT_FLOAT:  return (bool)AnyCast(FLOAT_t,d);
+
+			case VT_INT64:   return (bool)AnyCast(int64_t,d);
+			case VT_INT32:   return (bool)AnyCast(int32_t,d);
+			case VT_INT16:   return (bool)AnyCast(int16_t,d);
+			case VT_INT8:    return (bool)AnyCast(int8_t,d);
+			case VT_UINT64:  return (bool)AnyCast(uint64_t,d);
+			case VT_UINT32:  return (bool)AnyCast(uint32_t,d);
+			case VT_UINT16:  return (bool)AnyCast(uint16_t,d);
+			case VT_UINT8:   return (bool)AnyCast(uint8_t,d);
+			case VT_FLOAT64: return (bool)AnyCast(FLOAT64_t,d);
+
 			case VT_STR:    return AnyCast(STR_t,d) == "true";
 
 			default: return false;
@@ -164,12 +249,21 @@ struct Variant {
 	}
 
 
-	// Get integer representation.
-	INT_t to_int() const {
+	// Get integer.
+	int64_t to_int64() const {
 		switch (t) {
-			case VT_BOOL:   return (INT_t)AnyCast(bool,d);
-			case VT_INT:    return AnyCast(INT_t,d);
-			case VT_FLOAT:  return (INT_t)AnyCast(FLOAT_t,d);
+			case VT_BOOL:   return (int64_t)AnyCast(bool,d);
+
+			case VT_INT64:   return AnyCast(int64_t,d);
+			case VT_INT32:   return (int64_t)AnyCast(int32_t,d);
+			case VT_INT16:   return (int64_t)AnyCast(int16_t,d);
+			case VT_INT8:    return (int64_t)AnyCast(int8_t,d);
+			case VT_UINT64:  return (int64_t)AnyCast(uint64_t,d);
+			case VT_UINT32:  return (int64_t)AnyCast(uint32_t,d);
+			case VT_UINT16:  return (int64_t)AnyCast(uint16_t,d);
+			case VT_UINT8:   return (int64_t)AnyCast(uint8_t,d);
+			case VT_FLOAT64: return (int64_t)AnyCast(FLOAT64_t,d);
+
 			case VT_STR: {
 				const STR_t& d_ = AnyCast(STR_t,d);
 				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos) return 0;
@@ -181,12 +275,147 @@ struct Variant {
 	}
 
 
-	// Get float representation.
-	FLOAT_t to_float() const {
+	// Get i32.
+	int32_t to_int32() const {
 		switch (t) {
-			case VT_BOOL:   return (FLOAT_t)AnyCast(bool,d);
-			case VT_INT:    return (FLOAT_t)AnyCast(INT_t,d);
-			case VT_FLOAT:  return AnyCast(FLOAT_t,d);
+			case VT_INT64:   return (int32_t)AnyCast(int64_t,d);
+			case VT_INT32:   return AnyCast(int32_t,d);
+			case VT_INT16:   return (int32_t)AnyCast(int16_t,d);
+			case VT_INT8:    return (int32_t)AnyCast(int8_t,d);
+			case VT_UINT64:  return (int32_t)AnyCast(uint64_t,d);
+			case VT_UINT32:  return (int32_t)AnyCast(uint32_t,d);
+			case VT_UINT16:  return (int32_t)AnyCast(uint16_t,d);
+			case VT_UINT8:   return (int32_t)AnyCast(uint8_t,d);
+			case VT_FLOAT64: return (int32_t)AnyCast(FLOAT64_t,d);
+
+			default: return 0;
+		}
+	}
+
+
+	// Get i16.
+	int16_t to_int16() const {
+		switch (t) {
+			case VT_INT64:   return (int16_t)AnyCast(int64_t,d);
+			case VT_INT32:   return (int16_t)AnyCast(int32_t,d);
+			case VT_INT16:   return AnyCast(int16_t,d);
+			case VT_INT8:    return (int16_t)AnyCast(int8_t,d);
+			case VT_UINT64:  return (int16_t)AnyCast(uint64_t,d);
+			case VT_UINT32:  return (int16_t)AnyCast(uint32_t,d);
+			case VT_UINT16:  return (int16_t)AnyCast(uint16_t,d);
+			case VT_UINT8:   return (int16_t)AnyCast(uint8_t,d);
+			case VT_FLOAT64: return (int16_t)AnyCast(FLOAT64_t,d);
+
+			default: return 0;
+		}
+	}
+
+
+	// Get i8.
+	int8_t to_int8() const {
+		switch (t) {
+			case VT_INT64:   return (int8_t)AnyCast(int64_t,d);
+			case VT_INT32:   return (int8_t)AnyCast(int32_t,d);
+			case VT_INT16:   return (int8_t)AnyCast(int16_t,d);
+			case VT_INT8:    return AnyCast(int8_t,d);
+			case VT_UINT64:  return (int8_t)AnyCast(uint64_t,d);
+			case VT_UINT32:  return (int8_t)AnyCast(uint32_t,d);
+			case VT_UINT16:  return (int8_t)AnyCast(uint16_t,d);
+			case VT_UINT8:   return (int8_t)AnyCast(uint8_t,d);
+			case VT_FLOAT64: return (int8_t)AnyCast(FLOAT64_t,d);
+
+			default: return 0;
+		}
+	}
+
+
+	// Get unsigned integer.
+	uint64_t to_uint64() const {
+		switch (t) {
+			case VT_INT64:   return (uint64_t)AnyCast(int64_t,d);
+			case VT_INT32:   return (uint64_t)AnyCast(int32_t,d);
+			case VT_INT16:   return (uint64_t)AnyCast(int16_t,d);
+			case VT_INT8:    return (uint64_t)AnyCast(int8_t,d);
+			case VT_UINT64:  return AnyCast(uint64_t,d);
+			case VT_UINT32:  return (uint64_t)AnyCast(uint32_t,d);
+			case VT_UINT16:  return (uint64_t)AnyCast(uint16_t,d);
+			case VT_UINT8:   return (uint64_t)AnyCast(uint8_t,d);
+			case VT_FLOAT64: return (uint64_t)AnyCast(FLOAT64_t,d);
+
+			default: return 0;
+		}
+	}
+
+
+	// Get ui32.
+	uint32_t to_uint32() const {
+		switch (t) {
+			case VT_INT64:   return (uint32_t)AnyCast(int64_t,d);
+			case VT_INT32:   return (uint32_t)AnyCast(int32_t,d);
+			case VT_INT16:   return (uint32_t)AnyCast(int16_t,d);
+			case VT_INT8:    return (uint32_t)AnyCast(int8_t,d);
+			case VT_UINT64:  return (uint32_t)AnyCast(uint64_t,d);
+			case VT_UINT32:  return AnyCast(uint32_t,d);
+			case VT_UINT16:  return (uint32_t)AnyCast(uint16_t,d);
+			case VT_UINT8:   return (uint32_t)AnyCast(uint8_t,d);
+			case VT_FLOAT64: return (uint32_t)AnyCast(FLOAT64_t,d);
+
+			default: return 0;
+		}
+	}
+
+
+	// Get ui16.
+	uint16_t to_uint16() const {
+		switch (t) {
+			case VT_INT64:   return (uint16_t)AnyCast(int64_t,d);
+			case VT_INT32:   return (uint16_t)AnyCast(int32_t,d);
+			case VT_INT16:   return (uint16_t)AnyCast(int16_t,d);
+			case VT_INT8:    return (uint16_t)AnyCast(int8_t,d);
+			case VT_UINT64:  return (uint16_t)AnyCast(uint64_t,d);
+			case VT_UINT32:  return (uint16_t)AnyCast(uint32_t,d);
+			case VT_UINT16:  return AnyCast(uint16_t,d);
+			case VT_UINT8:   return (uint16_t)AnyCast(uint8_t,d);
+			case VT_FLOAT64: return (uint16_t)AnyCast(FLOAT64_t,d);
+
+			default: return 0;
+		}
+	}
+
+
+	// Get ui8.
+	uint8_t to_uint8() const {
+		switch (t) {
+			case VT_INT64:   return (uint8_t)AnyCast(int64_t,d);
+			case VT_INT32:   return (uint8_t)AnyCast(int32_t,d);
+			case VT_INT16:   return (uint8_t)AnyCast(int16_t,d);
+			case VT_INT8:    return (uint8_t)AnyCast(int8_t,d);
+			case VT_UINT64:  return (uint8_t)AnyCast(uint64_t,d);
+			case VT_UINT32:  return (uint8_t)AnyCast(uint32_t,d);
+			case VT_UINT16:  return (uint8_t)AnyCast(uint16_t,d);
+			case VT_UINT8:   return AnyCast(uint8_t,d);
+			case VT_FLOAT64: return (uint8_t)AnyCast(FLOAT64_t,d);
+
+			default: return 0;
+		}
+	}
+
+
+	// Get float.
+	FLOAT64_t to_float64() const {
+		switch (t) {
+			case VT_BOOL:   return (FLOAT64_t)AnyCast(bool,d);
+
+			case VT_INT64:   return (FLOAT64_t)AnyCast(int64_t,d);
+			case VT_INT32:   return (FLOAT64_t)AnyCast(int32_t,d);
+			case VT_INT16:   return (FLOAT64_t)AnyCast(int16_t,d);
+			case VT_INT8:    return (FLOAT64_t)AnyCast(int8_t,d);
+			case VT_UINT64:  return (FLOAT64_t)AnyCast(uint64_t,d);
+			case VT_UINT32:  return (FLOAT64_t)AnyCast(uint32_t,d);
+			case VT_UINT16:  return (FLOAT64_t)AnyCast(uint16_t,d);
+			case VT_UINT8:   return (FLOAT64_t)AnyCast(uint8_t,d);
+			case VT_FLOAT64: return AnyCast(FLOAT64_t,d);
+
 			case VT_STR: {
 				const STR_t& d_ = AnyCast(STR_t,d);
 				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos) return 0.0;
@@ -198,7 +427,7 @@ struct Variant {
 	}
 
 
-	// Get string representation.
+	// Get string.
 	STR_t to_str() const {
 		switch (t) {
 			case VT_OP:   return "OP";
@@ -208,9 +437,17 @@ struct Variant {
 			case VT_PTR:   return "PTR";
 			case VT_REF:   return "REF:" + AnyCast(STR_t,d);
 			case VT_BOOL:  return (AnyCast(bool,d) ? "true":"false");
-			case VT_UINT:  return std::to_string(AnyCast(UINT_t,d));
-			case VT_INT:   return std::to_string(AnyCast(INT_t,d));
-			case VT_FLOAT: return std::to_string(AnyCast(FLOAT_t,d));
+
+			case VT_INT64:   return std::to_string(AnyCast(int64_t,d));
+			case VT_INT32:   return std::to_string(AnyCast(int32_t,d));
+			case VT_INT16:   return std::to_string(AnyCast(int16_t,d));
+			case VT_INT8:    return std::to_string(AnyCast(int8_t,d));
+			case VT_UINT64:  return std::to_string(AnyCast(uint64_t,d));
+			case VT_UINT32:  return std::to_string(AnyCast(uint32_t,d));
+			case VT_UINT16:  return std::to_string(AnyCast(uint16_t,d));
+			case VT_UINT8:   return std::to_string(AnyCast(uint8_t,d));
+			case VT_FLOAT64: return std::to_string(AnyCast(FLOAT64_t,d));
+
 			case VT_STR:   return AnyCast(STR_t,d);
 
 			case VT_ARR: {
@@ -248,46 +485,75 @@ struct Variant {
 	}
 
 
+	// Get array.
+	ARR_t to_arr() const {
+		switch (t) {
+			case VT_ARR: return AnyCast(ARR_t,d);
+			default: return (ARR_t){};
+		}
+	}
+
+
+	// Get map.
+	MAP_t to_map() const {
+		switch (t) {
+			case VT_MAP: return AnyCast(MAP_t,d);
+			default: return (MAP_t){};
+		}
+	}
+
+
+	// Get func.
+	FUNC_t to_func() const {
+		switch (t) {
+			case VT_FUNC: return AnyCast(FUNC_t,d);
+			default: return (FUNC_t){};
+		}
+	}
+
+
+	// FULL CONVERSION FUNCTIONS
+
+
+	Variant* make_into_type(const VariantType& t_) {
+		switch (t_) {
+			case VT_BOOL: {d = to_bool(); break;}
+
+			case VT_INT64:   {d = to_int64();   break;}
+			case VT_INT32:   {d = to_int32();   break;}
+			case VT_INT16:   {d = to_int16();   break;}
+			case VT_INT8:    {d = to_int8();    break;}
+			case VT_UINT64:  {d = to_uint64();  break;}
+			case VT_UINT32:  {d = to_uint32();  break;}
+			case VT_UINT16:  {d = to_uint16();  break;}
+			case VT_UINT8:   {d = to_uint8();   break;}
+			case VT_FLOAT64: {d = to_float64(); break;}
+
+			case VT_STR: {d = to_str(); break;}
+			default: {
+				emit_error(ERR_invalid_cast, {get_variant_type_name(t), get_variant_type_name(t_)});
+				return this;
+			};
+		} t = t_;
+		return this;
+	}
+
+
 
 	// COMPARISON OPERATORS
 
 
 	const bool operator==(const Variant& b) const {
-		switch (t) {
-			// If a is bool & b is bool...
-			case VT_BOOL: {
-				if (b.t == VT_BOOL) return AnyCast(bool,d) == AnyCast(bool,b.d);
-				break;
-			}
-			// If a is int...
-			case VT_INT: {
-				if (b.t == VT_INT)        return AnyCast(INT_t,d) == AnyCast(INT_t,b.d);
-				else if (b.t == VT_FLOAT) return (FLOAT_t)AnyCast(INT_t,d) == AnyCast(FLOAT_t,b.d);
-				break;
-			}
-			// If a is float...
-			case VT_FLOAT: {
-				if (b.t == VT_INT)        return AnyCast(FLOAT_t,d) == (FLOAT_t)AnyCast(INT_t,b.d);
-				else if (b.t == VT_FLOAT) return AnyCast(FLOAT_t,d) == AnyCast(FLOAT_t,b.d);
-				break;
-			}
-			// If a is string & b is string...
-			case VT_STR: {
-				if (b.t == VT_STR) return AnyCast(STR_t,d) == AnyCast(STR_t,b.d);
-				break;
-			}
-			// If a is array & b is array...
-			case VT_ARR: {
-				if (b.t == VT_ARR) return AnyCast(ARR_t,d) == AnyCast(ARR_t,b.d);
-				break;
-			}
-			// If a is map & b is map...
-			case VT_MAP: {
-				if (b.t == VT_MAP) return AnyCast(MAP_t,d) == AnyCast(MAP_t,b.d);
-				break;
-			}
-			default: break;
-		}
+		if (t == VT_BOOL && b.t == VT_BOOL) return to_bool() == b.to_bool();
+
+		// Numbers..,
+		else if (is_int() && b.is_int()) return to_int64() == b.to_int64();
+		else if (is_uint() && b.is_uint()) return to_uint64() == b.to_uint64();
+		else if (is_number() && b.is_number()) return to_float64() == b.to_float64();
+
+		else if (t == VT_STR && b.t == VT_STR) return to_str() == b.to_str();
+		else if (t == VT_ARR && b.t == VT_ARR) return to_arr() == b.to_arr();
+		else if (t == VT_MAP && b.t == VT_MAP) return to_map() == b.to_map();
 
 		// Throw error is none matched.
 		emit_operator_overload_error("Comp(==)", *this,b);
@@ -301,21 +567,10 @@ struct Variant {
 
 
 	const bool operator>(const Variant& b) const {
-		switch (t) {
-			// If a is int...
-			case VT_INT: {
-				if (b.t == VT_INT)        return AnyCast(INT_t,d) > AnyCast(INT_t,b.d);
-				else if (b.t == VT_FLOAT) return (FLOAT_t)AnyCast(INT_t,d) > AnyCast(FLOAT_t,b.d);
-				break;
-			}
-			// If a is float...
-			case VT_FLOAT: {
-				if (b.t == VT_INT)        return AnyCast(FLOAT_t,d) > (FLOAT_t)AnyCast(INT_t,b.d);
-				else if (b.t == VT_FLOAT) return AnyCast(FLOAT_t,d) > AnyCast(FLOAT_t,b.d);
-				break;
-			}
-			default: break;
-		}
+		// Numbers...
+		if (is_int() && b.is_int()) return to_int64() > b.to_int64();
+		else if (is_uint() && b.is_uint()) return to_uint64() > b.to_uint64();
+		else if (is_number() && b.is_number()) return to_float64() > b.to_float64();
 
 		// Throw error is none matched.
 		emit_operator_overload_error("Comp(>)", *this,b);
@@ -360,36 +615,19 @@ MAP_t operator+(const MAP_t& a, const MAP_t& b) {
 
 
 Variant operator+(const Variant& a, const Variant& b) {
-	switch (a.t) {
-		// If a is int...
-		case VT_INT: {
-			if (b.t == VT_INT)         return Variant{VT_INT,   (AnyCast(INT_t,a.d) + AnyCast(INT_t,b.d))};
-			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, ((FLOAT_t)AnyCast(INT_t,a.d) + AnyCast(FLOAT_t,b.d))};
-		}
-		// If a is float...
-		case VT_FLOAT: {
-			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) + (FLOAT_t)AnyCast(INT_t,b.d))};
-			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) + AnyCast(FLOAT_t,b.d))};
-			break;
-		}
-		// If a is string...
-		case VT_STR: {
-			if (b.t == VT_STR)       return Variant{VT_STR, (AnyCast(STR_t,a.d) + AnyCast(STR_t,b.d))};
-			else if (b.t == VT_INT)  return Variant{VT_STR, (AnyCast(STR_t,a.d) + char(AnyCast(INT_t,b.d)))}; // Add character to the string, from a code.
-			break;
-		}
-		// If a is array & b is array...
-		case VT_ARR: {
-			if (b.t == VT_ARR) return Variant{VT_ARR, (AnyCast(ARR_t,a.d) + AnyCast(ARR_t,b.d))};
-			break;
-		}
-		// If a is map & b is map...
-		case VT_MAP: {
-			if (b.t == VT_MAP) return Variant{VT_MAP, (AnyCast(MAP_t,a.d) + AnyCast(MAP_t,b.d))};
-			break;
-		}
-		default: break;
+	// Numbers...
+	if (a.is_int() && b.is_int())            return *Variant{VT_INT64, a.to_int64() + b.to_int64()}.make_into_type(get_highest_order_type(a.t, b.t));
+	else if (a.is_uint() && b.is_uint())     return *Variant{VT_UINT64, a.to_uint64() + b.to_uint64()}.make_into_type(get_highest_order_type(a.t, b.t));
+	else if (a.is_number() && b.is_number()) return *Variant{VT_FLOAT64, a.to_float64() + b.to_float64()}.make_into_type(get_highest_order_type(a.t, b.t));
+	// If both string...
+	else if (a.t == VT_STR) {
+		if (b.t == VT_STR)         return Variant{VT_STR, (a.to_str() + b.to_str())};
+		else if (b.is_number())    return Variant{VT_STR, (a.to_str() + char(b.to_int64()))}; // Add character to the string, from a code.
 	}
+	// If both array...
+	else if (a.t == VT_ARR && b.t == VT_ARR) return Variant(VT_ARR, a.to_arr() + b.to_arr());
+	// If both map...
+	else if (a.t == VT_MAP && b.t == VT_MAP) return Variant(VT_MAP, a.to_map() + b.to_map());
 
 	// Throw error is none matched.
 	emit_operator_overload_error("Arith(+)", a,b);
@@ -398,21 +636,10 @@ Variant operator+(const Variant& a, const Variant& b) {
 
 
 Variant operator-(const Variant& a, const Variant& b) {
-	switch (a.t) {
-		// If a is int...
-		case VT_INT: {
-			if (b.t == VT_INT)         return Variant{VT_INT,   (AnyCast(INT_t,a.d) - AnyCast(INT_t,b.d))};
-			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, ((FLOAT_t)AnyCast(INT_t,a.d) - AnyCast(FLOAT_t,b.d))};
-			break;
-		}
-		// If a is float...
-		case VT_FLOAT: {
-			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) - (FLOAT_t)AnyCast(INT_t,b.d))};
-			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) - AnyCast(FLOAT_t,b.d))};
-			break;
-		}
-		default: break;
-	}
+	// Numbers...
+	if (a.is_int() && b.is_int())            return *Variant{VT_INT64, a.to_int64() - b.to_int64()}.make_into_type(get_highest_order_type(a.t, b.t));
+	else if (a.is_uint() && b.is_uint())     return *Variant{VT_UINT64, a.to_uint64() - b.to_uint64()}.make_into_type(get_highest_order_type(a.t, b.t));
+	else if (a.is_number() && b.is_number()) return *Variant{VT_FLOAT64, a.to_float64() - b.to_float64()}.make_into_type(get_highest_order_type(a.t, b.t));
 
 	// Throw error is none matched.
 	emit_operator_overload_error("Arith(-)", a,b);
@@ -421,31 +648,14 @@ Variant operator-(const Variant& a, const Variant& b) {
 
 
 Variant operator*(const Variant& a, const Variant& b) {
-	switch (a.t) {
-		// If a is int...
-		case VT_INT: {
-			if (b.t == VT_INT)         return Variant{VT_INT,   (AnyCast(INT_t,a.d) * AnyCast(INT_t,b.d))};
-			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, ((FLOAT_t)AnyCast(INT_t,a.d) * AnyCast(FLOAT_t,b.d))};
-			break;
-		}
-		// If a is float...
-		case VT_FLOAT: {
-			if (b.t == VT_INT)         return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) * (FLOAT_t)AnyCast(INT_t,b.d))};
-			else if (b.t == VT_FLOAT)  return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) * AnyCast(FLOAT_t,b.d))};
-			break;
-		}
-		// If a is string & b is int.
-		case VT_STR: {
-			if (b.t == VT_INT) return Variant{VT_STR, (AnyCast(STR_t,a.d) * (uint32_t)AnyCast(INT_t,b.d))};
-			break;
-		}
-		// If a is array & b is int.
-		case VT_ARR: {
-			if (b.t == VT_INT) return Variant{VT_ARR, (AnyCast(ARR_t,a.d) * (uint32_t)AnyCast(INT_t,b.d))};
-			break;
-		}
-		default: break;
-	}
+	// Numbers...
+	if (a.is_int() && b.is_int())            return *Variant{VT_INT64, a.to_int64() * b.to_int64()}.make_into_type(get_highest_order_type(a.t, b.t));
+	else if (a.is_uint() && b.is_uint())     return *Variant{VT_UINT64, a.to_uint64() * b.to_uint64()}.make_into_type(get_highest_order_type(a.t, b.t));
+	else if (a.is_number() && b.is_number()) return *Variant{VT_FLOAT64, a.to_float64() * b.to_float64()}.make_into_type(get_highest_order_type(a.t, b.t));
+	// If a is string & b is number...
+	else if (a.t == VT_STR && b.is_number()) return Variant{VT_STR, (a.to_str() * (uint32_t)b.to_int64())};
+	// If a is array & b is number...
+	else if (a.t == VT_ARR && b.is_number()) return Variant{VT_ARR, (a.to_arr() * (uint32_t)b.to_int64())};
 
 	// Throw error is none matched.
 	emit_operator_overload_error("Arith(*)", a,b);
@@ -454,32 +664,9 @@ Variant operator*(const Variant& a, const Variant& b) {
 
 
 Variant operator/(const Variant& a, const Variant& b) {
-	switch (a.t) {
-		// If a is int...
-		case VT_INT: {
-			if (b.t == VT_INT) {
-				if (const INT_t bd = AnyCast(INT_t,b.d); bd != 0) return Variant{VT_INT, (AnyCast(INT_t,a.d) / bd)};
-				emit_error(ERR_zero_division);
-			}
-			else if (b.t == VT_FLOAT) {
-				if (const FLOAT_t bd = AnyCast(FLOAT_t,b.d); bd != 0) return Variant{VT_FLOAT, ((FLOAT_t)AnyCast(INT_t,a.d) / bd)};
-				emit_error(ERR_zero_division);
-			}
-			break;
-		}
-		// If a is float...
-		case VT_FLOAT: {
-			if (b.t == VT_INT) {
-				if (const INT_t bd = AnyCast(INT_t,b.d); bd != 0) return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) / (FLOAT_t)bd)};
-				emit_error(ERR_zero_division);
-			}
-			else if (b.t == VT_FLOAT) {
-				if (const FLOAT_t bd = AnyCast(FLOAT_t,b.d); bd != 0) return Variant{VT_FLOAT, (AnyCast(FLOAT_t,a.d) / bd)};
-				emit_error(ERR_zero_division);
-			}
-			break;
-		}
-		default: break;
+	if (a.is_number() && b.is_number()) {
+		if (const FLOAT64_t bd = b.to_float64(); bd != 0) return *Variant{VT_FLOAT64, a.to_float64() / b.to_float64()}.make_into_type(get_highest_order_type(a.t, b.t));
+		emit_error(ERR_zero_division);
 	}
 
 	// Throw error is none matched.
@@ -489,9 +676,8 @@ Variant operator/(const Variant& a, const Variant& b) {
 
 
 Variant operator%(const Variant& a, const Variant& b) {
-	// If a is int & b is int...
-	if (a.t == VT_INT && b.t == VT_INT) {
-		if (const INT_t& bd = AnyCast(INT_t,b.d); bd != 0) return Variant{VT_INT, (AnyCast(INT_t,a.d) % bd)};
+	if (a.is_number() && b.is_number()) {
+		if (const int64_t& bd = b.to_int64(); bd != 0) return *Variant{VT_INT64, (a.to_int64() % bd)}.make_into_type(get_highest_order_type(a.t, b.t));
 		emit_error(ERR_zero_division);
 	};
 

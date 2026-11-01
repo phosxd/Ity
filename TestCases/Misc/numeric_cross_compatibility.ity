@@ -1,0 +1,139 @@
+#EXPECT
+#add int types
+#I64, 2
+#I64, 2
+#I64, 2
+#
+#I32, 2
+#I32, 2
+#I32, 2
+#
+#I16, 2
+#I16, 2
+#I16, 2
+#
+#I8, 2
+#
+#add uint types
+#UI64, 2
+#UI64, 2
+#UI64, 2
+#
+#UI32, 2
+#UI32, 2
+#UI32, 2
+#
+#UI16, 2
+#UI16, 2
+#UI16, 2
+#
+#UI8, 2
+#END
+
+# Hierarchy:
+# - 64
+# - 32
+# - 16
+# - 8
+#
+# - FLOAT
+# - INT
+# - UINT
+
+# Adding 2 differing number types together should result
+# in a variant with a type equal to the highest order
+# variant in the operation.
+
+merge IO;
+
+func check; arg ANY v;
+	print:[(type_name:(type:v)), ', ', v];
+/;
+
+# Define variables...
+
+var ANY x;
+
+var I64 i64 = 1;
+var I32 i32 = 1;
+var I16 i16 = 1;
+var I8 i8 = 1;
+
+var UI64 ui64 = 1;
+var UI32 ui32 = 1;
+var UI16 ui16 = 1;
+var UI8 ui8 = 1;
+
+var F64 f64 = 1;
+
+
+# Add within int types
+# --------------------
+
+print:'add int types';
+
+x = (i64 + i64);
+check:x; # I64
+x = (i64 + i32);
+check:x; # I64
+x = (i32 + i64);
+check:x; # I64
+
+print:[];
+
+x = (i32 + i32);
+check:x; # I32
+x = (i32 + i16);
+check:x; # I32
+x = (i16 + i32);
+check:x; # I32
+
+print:[];
+
+x = (i16 + i16);
+check:x; # I16
+x = (i16 + i8);
+check:x; # I16
+x = (i8 + i16);
+check:x; # I16
+
+print:[];
+
+x = (i8 + i8);
+check:x; # I8
+
+
+# Add within uint types
+# ----------------------
+
+print:'\nadd uint types';
+
+x = (ui64 + ui64);
+check:x; # UI64
+x = (ui64 + ui32);
+check:x; # UI64
+x = (ui32 + ui64);
+check:x; # UI64
+
+print:[];
+
+x = (ui32 + ui32);
+check:x; # UI32
+x = (ui32 + ui16);
+check:x; # UI32
+x = (ui16 + ui32);
+check:x; # UI32
+
+print:[];
+
+x = (ui16 + ui16);
+check:x; # UI16
+x = (ui16 + ui8);
+check:x; # UI16
+x = (ui8 + ui16);
+check:x; # UI16
+
+print:[];
+
+x = (ui8 + ui8);
+check:x; # UI8

@@ -12,7 +12,7 @@ static void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const 
 			VPS.empty, // For loop iterable.
 			VPS.empty, // For loop current item in iterable.
 		},
-		(UINT_t)0,  // For loop iteration index.
+		(uint32_t)0,  // For loop iteration index.
 	};
 
 
@@ -43,7 +43,7 @@ static void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const 
 
 
 static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
-	const UINT_t& index = AnyCast(UINT_t,token.meta[4]);
+	const uint32_t& index = AnyCast(uint32_t,token.meta[4]);
 	ARR_t& token_vars = AnyCastV(ARR_t,token.meta[3]);
 	// Get iterable.
 	Variant* iterable = &(token_vars[0]);
@@ -52,47 +52,48 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 		iterable = &(token_vars[0]);
 	}
 
-
-	switch (iterable->t) {
-		// Get item from integer.
-		case VT_INT: {
-			if (AnyCast(INT_t,iterable->d) > (INT_t)index) {
-				value = true;
-				token_vars[1].t = VT_INT;
-				token_vars[1].d = (INT_t)index;
-			} break;
+	// Get item from number.
+	if (iterable->is_number()) {
+		if (iterable->to_uint64() > (uint64_t)index) {
+			value = true;
+			token_vars[1].t = VT_UINT64;
+			token_vars[1].d = (uint64_t)index;
 		}
-		// Get item from string.
-		case VT_STR: {
-			const STR_t& data = AnyCast(STR_t,iterable->d);
-			if (data.size() > index) {
-				value = true;
-				token_vars[1].t = VT_STR;
-				token_vars[1].d = (STR_t)(std::string(1,data[index]));
-			} break;
-		}
-		// Get item from array.
-		case VT_ARR: {
-			ARR_t& data = AnyCastV(ARR_t,iterable->d);
-			if (data.size() > index) {
-				value = true;
-				token_vars[1] = data[index];
-			} break;
-		}
-		// Get item from function.
-		case VT_FUNC: {
-			const Variant& result = call_function(state, AnyCast(FUNC_t,iterable->d), Variant{VT_ARR,(ARR_t){token_vars[1]}});
-			if (result.t == VT_ARR) {
-				if (const ARR_t& arr = AnyCast(ARR_t,result.d); arr.size() == 2 && arr[0].t == VT_BOOL) {
-					value = AnyCast(bool,arr[0].d);
-					token_vars[1] = arr[1];
-				}
-			} break;
-		}
-		// Throw error if variant is not iterable.
-		default: {
-			emit_error(ERR_not_iterable);
-			return;
+	}
+	else {
+		switch (iterable->t) {
+			// Get item from string.
+			case VT_STR: {
+				const STR_t& data = AnyCast(STR_t,iterable->d);
+				if ((uint32_t)data.size() > index) {
+					value = true;
+					token_vars[1].t = VT_STR;
+					token_vars[1].d = (STR_t)(std::string(1,data[index]));
+				} break;
+			}
+			// Get item from array.
+			case VT_ARR: {
+				ARR_t& data = AnyCastV(ARR_t,iterable->d);
+				if ((uint32_t)data.size() > index) {
+					value = true;
+					token_vars[1] = data[index];
+				} break;
+			}
+			// Get item from function.
+			case VT_FUNC: {
+				const Variant& result = call_function(state, AnyCast(FUNC_t,iterable->d), Variant{VT_ARR,(ARR_t){token_vars[1]}});
+				if (result.t == VT_ARR) {
+					if (const ARR_t& arr = AnyCast(ARR_t,result.d); arr.size() == 2 && arr[0].t == VT_BOOL) {
+						value = AnyCast(bool,arr[0].d);
+						token_vars[1] = arr[1];
+					}
+				} break;
+			}
+			// Throw error if variant is not iterable.
+			default: {
+				emit_error(ERR_not_iterable);
+				return;
+			}
 		}
 	}
 }
@@ -137,7 +138,7 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 
 		// Reset token state.
 		token.meta[3] = (ARR_t){VPS.empty, VPS.empty};
-		token.meta[4] = (UINT_t)0;
+		token.meta[4] = (uint32_t)0;
 		return;
 	}
 
@@ -161,7 +162,7 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 	if (token.symbol == InstSymbol_for && value) {
 		ARR_t& token_vars = AnyCastV(ARR_t,token.meta[3]);
 		state.scope.set_data(AnyCast(STR_t,token.meta[1]), Variant{token_vars[1].t, std::move(token_vars[1].d), VariantMode_dynamic_type}, AnyCast(size_t,token.meta[2]));
-		AnyCast(UINT_t,token.meta[4]) += 1;
+		AnyCast(uint32_t,token.meta[4]) += 1;
 	}
 }
 
@@ -171,7 +172,7 @@ static void INST_Loop_emergency_scope_exit(InstToken*& token) {
 	// Reset token state.
 	token->meta[0] = false;
 	token->meta[3] = (ARR_t){VPS.empty, VPS.empty};
-	token->meta[4] = (UINT_t)0;
+	token->meta[4] = (uint32_t)0;
 }
 
 

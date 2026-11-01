@@ -7,11 +7,11 @@ static void OP_Set_arith_set(const OpSymbol& symbol, Variant*& o1, Variant*& o2)
 		case OpSymbol_add_set: {*o1 = *o1 + *o2; break;}
 		case OpSymbol_sub_set: {*o1 = *o1 - *o2; break;}
 		case OpSymbol_mul_set: {
-			if (o1->t == VT_STR && o2->t == VT_INT) {
-				multiply_string(AnyCast(STR_t,o1->d), (uint32_t)AnyCast(INT_t,o2->d));
+			if (o1->t == VT_STR && o2->is_number()) {
+				multiply_string(AnyCast(STR_t,o1->d), o2->to_uint32());
 			}
-			else if (o1->t == VT_ARR && o2->t == VT_INT) {
-				multiply_vector(AnyCast(ARR_t,o1->d), (uint32_t)AnyCast(INT_t,o2->d));
+			else if (o1->t == VT_ARR && o2->is_number()) {
+				multiply_vector(AnyCast(ARR_t,o1->d), o2->to_uint32());
 			}
 			else *o1 = *o1 * *o2;
 			break;
@@ -35,9 +35,11 @@ void OP_Set_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Varia
 
 	switch (symbol) {
 		case OpSymbol_set: {
-			if (not (*o2).matches(*o1)) return;
-			o1->t = o2->t;
-			o1->d = o2->d;
+			Variant var = *o2;
+			if (o1->is_number() && var.is_number() && get_highest_order_type(o1->t, var.t) == o1->t) var.make_into_type(o1->t); // Promote new var to old var type if possible.
+			if (not var.matches(*o1)) return;
+			o1->t = var.t;
+			o1->d = var.d;
 			result_ptr = o1;
 			break;
 		}

@@ -16,7 +16,7 @@ static void INST_If_processor(InstToken& token, const AnyMap_t& extra, const uns
 
 		// Link token to the previous conditional.
 		token.linked_inst = last_comp_item.token.symbol;
-		token.linked_inst_pos = -(int32_t)AnyCast(UINT_t,extra.at("lcid"));
+		token.linked_inst_pos = -(int32_t)AnyCast(uint32_t,extra.at("lcid"));
 	}
 }
 

@@ -4,7 +4,36 @@
 // Call a function.
 Variant call_function(ItyState& state, const FUNC_t& func, Variant input_args) {
 	ARR_t args = func.bound_args + AnyCastV(ARR_t,input_args.d);
-	if (func.native_callable) return func.native_callable(state, args);
+
+	// Check args against the func's schema...
+	if (not func.args_schema.empty()) {
+		int16_t i = -1; for (const std::vector<VariantType>& types : func.args_schema) {i++;
+			const Variant& var = ((int16_t)args.size() <= i) ? new_none() : args[i]; // Assume var as type NONE if no arg supplied at this index.
+			bool matches = false;
+			// Iterate through each expected type in this index, in order, until one matches...
+			for (const VariantType& type : types) {
+				if (var.t == type || type == VT_ANY) {matches = true; break;}
+				// Convert number.
+				else if (type_is_number(type) && var.is_number()) {
+					args[i] = *args[i].make_into_type(type);
+					matches = true;
+					break;
+				}
+			}
+			// Emit error no types match.
+			if (not matches) {
+				emit_error(ERR_invalid_func_arg_type, {std::to_string(i), multiple_types_str(types), get_variant_type_name(var.t)});
+				return VPS.none;
+			}
+		}
+	}
+
+	if (func.native_callable) {
+		Variant result = func.native_callable(state, args);
+		// Check if return type matches.
+		if (result.t != func.return_type && func.return_type != VT_ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(result.t), get_variant_type_name(func.return_type)});
+		return result;
+	}
 
 	else {
 		// Throw error if could not find state.
@@ -306,7 +335,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				};
 				// Set type integer.
 				if ((NUM.find(ch) != std::string::npos) || (ch == '-' && (expr_len > i && NUM.find(expr[i+1]) != std::string::npos ))) {
-					item.var.t = VT_INT;
+					item.var.t = (ch == '-') ? VT_INT64 : VT_UINT64;
 					buffer += ch;
 					is_start = false;
 					continue;
@@ -383,13 +412,13 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				}
 
 				// Skip over underscore in numbers.
-				else if ((item.var.t == VT_INT || item.var.t == VT_FLOAT) && ch == '_') {
+				else if (item.var.is_number() && ch == '_') {
 					continue;
 				}
 
-				else if (item.var.t == VT_INT) {
+				else if (item.var.is_int() || item.var.is_uint()) {
 					// If "." found in INT, convert to FLOAT.
-					if (ch == '.') item.var.t = VT_FLOAT;
+					if (ch == '.') item.var.t = VT_FLOAT64;
 					// Throw error if invalid character found.
 					else if ((NUM.find(ch) == std::string::npos)) {
 						emit_error(ERR_invalid_character_for_construct, {"number", std::string(1,ch)}, ln+ln_offset, col+col_offset);

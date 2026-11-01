@@ -201,9 +201,20 @@ enum VariantType : uint8_t {
 	VT_REF,         // Name reference.
 	VT_NONE,        // Monostate data.
 	VT_BOOL,        // Boolean data.
-	VT_UINT,        // UInt32 data.
-	VT_INT,         // Int32 data.
-	VT_FLOAT,       // Float64 data.
+
+	// Float types.
+	VT_FLOAT64,
+	// Int types.
+	VT_INT64,
+	VT_INT32,
+	VT_INT16,
+	VT_INT8,
+	// Unsigned int types.
+	VT_UINT64,
+	VT_UINT32,
+	VT_UINT16,
+	VT_UINT8,
+
 	VT_STR,         // String data.
 	VT_ARR,         // Array of Variants.
 	VT_MAP,         // Unordered String:Variant pairs.
@@ -211,26 +222,39 @@ enum VariantType : uint8_t {
 };
 
 
-const std::unordered_map<const VariantType, const std::string> VARIANT_TYPE_NAMES = {
+const std::unordered_map<const VariantType, const std::vector<std::string>> VARIANT_TYPE_NAMES = {
 	// Meta types.
-	{VT_PLACEHOLDER,  "PLACEHOLDER"},
-	{VT_INTERNAL,     "INTERNAL"},
-	{VT_INFERRED,     "*"},
-	{VT_ANY,          "ANY"},
-	{VT_OP,           "OP"},
-	{VT_TREF,         "TREF"},
-	{VT_PTR,          "PTR"},
+	{VT_PLACEHOLDER,  {"PLACEHOLDER"}},
+	{VT_INTERNAL,     {"INTERNAL"}},
+	{VT_INFERRED,     {"*"}},
+	{VT_ANY,          {"ANY"}},
+	{VT_OP,           {"OP"}},
+	{VT_TREF,         {"TREF"}},
+	{VT_PTR,          {"PTR"}},
+
 	// Real types.
-	{VT_REF,          "REF"},
-	{VT_NONE,         "NONE"},
-	{VT_BOOL,         "BOOL"},
-	{VT_UINT,         "UINT"},
-	{VT_INT,          "INT"},
-	{VT_FLOAT,        "FLOAT"},
-	{VT_STR,          "STR"},
-	{VT_ARR,          "ARR"},
-	{VT_MAP,          "MAP"},
-	{VT_FUNC,         "FUNC"},
+
+	{VT_REF,          {"REF"}},
+	{VT_NONE,         {"NONE"}},
+	{VT_BOOL,         {"BOOL"}},
+
+	// Int types.
+	{VT_INT64,        {"I64", "INT"}},
+	{VT_INT32,        {"I32"}},
+	{VT_INT16,        {"I16"}},
+	{VT_INT8,         {"I8"}},
+	// Unsigned int types.
+	{VT_UINT64,       {"UI64", "UINT"}},
+	{VT_UINT32,       {"UI32"}},
+	{VT_UINT16,       {"UI16"}},
+	{VT_UINT8,        {"UI8"}},
+	// Float types.
+	{VT_FLOAT64,      {"F64", "FLOAT"}},
+
+	{VT_STR,          {"STR"}},
+	{VT_ARR,          {"ARR"}},
+	{VT_MAP,          {"MAP"}},
+	{VT_FUNC,         {"FUNC"}},
 };
 
 

@@ -6,8 +6,8 @@ import Time;
 import Math;
 
 
-const INT FPS = 30;
-const INT FPS_ms = 1000 / FPS;
+const UI8 FPS = 30;
+const UINT FPS_ms = 1000 / FPS;
 
 const STR CELL_ON =  '██';
 const STR CELL_OFF = '  ';
@@ -15,8 +15,8 @@ const STR CELL_OFF = '  ';
 # Allow user defined world size.
 const WORLD_SIZE = {'x',25, 'y',20};
 if __CMD_ARGS__.length:() > 1;
-	WORLD_SIZE.x = (__CMD_ARGS__:0 -> INT);
-	WORLD_SIZE.y = (__CMD_ARGS__:1 -> INT);
+	WORLD_SIZE.x = (__CMD_ARGS__:0 -> UINT);
+	WORLD_SIZE.y = (__CMD_ARGS__:1 -> UINT);
 /;
 
 # Get world seed.
@@ -150,13 +150,13 @@ while true;
 	out:['Alive: ',(GAME.alive_count),' | '];
 	# Print frame time info.
 	out:'Frame time: ';
-	(sleep_time <= 0) ? (out:(ANSI.fg_red)) -- (out:(ANSI.fg_green));
+	(sleep_time <= 0.0) ? (out:(ANSI.fg_red)) -- (out:(ANSI.fg_green));
 	out:(delta/1_000.0);
 	out:(ANSI.reset);
 	out:[' / ',(FPS_ms/1_000.0)];
 
 	# Sleep for the remainder of the frame time.
-	if sleep_time > 0;
+	if sleep_time > 0.0;
 		sleep:sleep_time;
 	/;
 /;

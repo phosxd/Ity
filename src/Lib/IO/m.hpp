@@ -20,8 +20,8 @@ static void LIB_IO_on_signal_received(const int sig) {
 
 // Connect a system signal to a function.
 static Variant LIB_IO_signal(ItyState& state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2) || not expect_arg_types(args[0], {VT_INT}, 0) || not expect_arg_types(args[1], {VT_FUNC}, 1)) return VPS.none;
-	const uint8_t signal_number = (uint8_t)AnyCast(INT_t,args[0].d);
+	if (not expect_arg_count(args, 2) || not expect_arg_types(args[0], {VT_INT64}, 0) || not expect_arg_types(args[1], {VT_FUNC}, 1)) return VPS.none;
+	const uint8_t signal_number = (uint8_t)AnyCast(int64_t,args[0].d);
 
 	LIB_IO_state = &state;
 	if (LIB_IO_signal_functions[signal_number].size() == 0) signal(signal_number, LIB_IO_on_signal_received);
@@ -124,15 +124,15 @@ const Variant LIB_IO {
 		// System signals.
 		{"SIGNAL", Variant{
 			VT_MAP, (MAP_t){
-				{"abort",      Variant{VT_INT, (INT_t)SIGABRT, VariantMode_constant}},
-				{"illegal",    Variant{VT_INT, (INT_t)SIGILL,  VariantMode_constant}},
-				{"interrupt",  Variant{VT_INT, (INT_t)SIGINT,  VariantMode_constant}},
-				{"seg_fault",  Variant{VT_INT, (INT_t)SIGSEGV, VariantMode_constant}},
-				{"terminate",  Variant{VT_INT, (INT_t)SIGTERM, VariantMode_constant}},
+				{"abort",      Variant{VT_INT64, (int64_t)SIGABRT, VariantMode_constant}},
+				{"illegal",    Variant{VT_INT64, (int64_t)SIGILL,  VariantMode_constant}},
+				{"interrupt",  Variant{VT_INT64, (int64_t)SIGINT,  VariantMode_constant}},
+				{"seg_fault",  Variant{VT_INT64, (int64_t)SIGSEGV, VariantMode_constant}},
+				{"terminate",  Variant{VT_INT64, (int64_t)SIGTERM, VariantMode_constant}},
 				#ifdef SIGQUIT // Unix specific signals.
-				{"quit",       Variant{VT_INT, (INT_t)SIGQUIT, VariantMode_constant}},
-				{"user1",      Variant{VT_INT, (INT_t)SIGUSR1, VariantMode_constant}},
-				{"user2",      Variant{VT_INT, (INT_t)SIGUSR2, VariantMode_constant}},
+				{"quit",       Variant{VT_INT64, (int64_t)SIGQUIT, VariantMode_constant}},
+				{"user1",      Variant{VT_INT64, (int64_t)SIGUSR1, VariantMode_constant}},
+				{"user2",      Variant{VT_INT64, (int64_t)SIGUSR2, VariantMode_constant}},
 				#endif
 			}, VariantMode_constant }},
 

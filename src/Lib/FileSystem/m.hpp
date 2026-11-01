@@ -106,7 +106,7 @@ const Variant LIB_FileSystem {
 		{"file_exists",   NativeFuncTrans(VT_BOOL,  LIB_FS_file_exists)},
 		{"dir_exists",    NativeFuncTrans(VT_BOOL,  LIB_FS_dir_exists)},
 
-		{"read",          NativeFuncTrans(VT_STR,   LIB_FS_read)},
+		{"read",          NativeFuncTrans(VT_ANY,   LIB_FS_read)},
 		{"write",         NativeFuncTrans(VT_BOOL,  LIB_FS_write)},
 
 		{"make_dir",      NativeFuncTrans(VT_BOOL,  LIB_FS_make_dir)},

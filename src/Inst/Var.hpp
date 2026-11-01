@@ -122,18 +122,27 @@ static void exec(ItyState& state, InstToken& token) {
 		switch (type) {
 			case VT_REF:    {var_.d = (STR_t)"noneref"; break;}
 			case VT_BOOL:   {var_.d = false;            break;}
-			case VT_INT:    {var_.d = (INT_t)0;         break;}
-			case VT_FLOAT:  {var_.d = (FLOAT_t)0;       break;}
-			case VT_STR:    {var_.d = (STR_t)"";        break;}
-			case VT_ARR:    {var_.d = (ARR_t){};        break;}
-			case VT_MAP:    {var_.d = (MAP_t){};        break;}
+
+			case VT_INT64:    {var_.d = (int64_t)0;    break;}
+			case VT_INT32:    {var_.d = (int32_t)0;    break;}
+			case VT_INT16:    {var_.d = (int16_t)0;    break;}
+			case VT_INT8:     {var_.d = (int8_t)0;     break;}
+			case VT_UINT64:   {var_.d = (uint64_t)0;   break;}
+			case VT_UINT32:   {var_.d = (uint32_t)0;   break;}
+			case VT_UINT16:   {var_.d = (uint16_t)0;   break;}
+			case VT_UINT8:    {var_.d = (uint8_t)0;    break;}
+			case VT_FLOAT64:  {var_.d = (FLOAT64_t)0;  break;}
+
+			case VT_STR:    {var_.d = (STR_t)""; break;}
+			case VT_ARR:    {var_.d = (ARR_t){}; break;}
+			case VT_MAP:    {var_.d = (MAP_t){}; break;}
 			default: break;
 		}
 		var = var_;
 	}
 
-	// Cast value type upward if needed.
-	if (type == VT_FLOAT && var.t == VT_INT) var = Variant{VT_FLOAT, var.to_float(), var.m};
+	// Recast number type to desired variation.
+	if (var.is_number() && type_is_number(type)) var.make_into_type(type);
 
 	// Set data.
 	const VariantMode& mode = AnyCast(VariantMode,token.meta[3]);

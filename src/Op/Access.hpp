@@ -48,16 +48,16 @@ void OP_Access_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Va
 	switch (o1->t) {
 		// Access array element.
 		case VT_ARR: {
-			if (o2->t != VT_INT) {
+			if (not o2->is_int() && not o2->is_uint()) {
 				emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 				return;
 			}
 			ARR_t& array = AnyCastV(ARR_t,o1->d);
 			const size_t& array_len = array.size();
-			INT_t index = AnyCastV(INT_t,o2->d); if (index < 0) index = array_len+index;
+			int64_t index = o2->to_int64(); if (index < 0) index = array_len+index;
 			// Throw error if index out of range.
-			if (index >= (INT_t)array_len || index < 0) {
-				emit_error(ERR_index_out_of_range, {std::to_string(AnyCast(INT_t,o2->d))}); // Use original given index for error to reduce confusion in negative index cases.
+			if (index >= (int64_t)array_len || index < 0) {
+				emit_error(ERR_index_out_of_range, {std::to_string(AnyCast(int64_t,o2->d))}); // Use original given index for error to reduce confusion in negative index cases.
 				return;
 			}
 			// Return reference to array element.
@@ -68,14 +68,14 @@ void OP_Access_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Va
 
 		// Access string character.
 		case VT_STR: {
-			if (o2->t != VT_INT) {
+			if (not o2->is_int() && not o2->is_uint()) {
 				emit_error(ERR_invalid_property_access, {get_variant_type_name(o1->t), get_variant_type_name(o2->t)});
 				return;
 			}
 			const STR_t& str = AnyCast(STR_t,o1->d);
 			const size_t& str_len = str.size();
-			INT_t index = AnyCastV(INT_t,o2->d); if (index < 0) index = str_len+index;
-			if (index >= (INT_t)str_len || index < 0) {
+			int64_t index = o2->to_int64(); if (index < 0) index = str_len+index;
+			if (index >= (int64_t)str_len || index < 0) {
 				emit_error(ERR_index_out_of_range, {std::to_string(index)});
 				return;
 			}

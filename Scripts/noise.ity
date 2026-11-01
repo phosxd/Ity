@@ -5,12 +5,12 @@ import Limits;
 import FileSystem as FS;
 
 const STR PATH = 'noise.ppm';
-const INT DEPTH = 3;
+const UI8 DEPTH = 3;
 const ARR BYTE_RANGE = [(Limits.STR_byte_min), (Limits.STR_byte_max)];
 
-const INT HEIGHT = IO.prompt:'Image height: '->INT;
-const INT WIDTH = IO.prompt:'Image width: '->INT;
-const INT BYTE_COUNT = WIDTH*HEIGHT*DEPTH;
+const UI32 HEIGHT = IO.prompt:'Image height: '->INT;
+const UI32 WIDTH = IO.prompt:'Image width: '->INT;
+const UI64 BYTE_COUNT = WIDTH*HEIGHT*DEPTH;
 
 
 

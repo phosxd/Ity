@@ -10,12 +10,12 @@ static void INST_Exit_exec(ItyState& state, InstToken& token) {
 		}
 
 		const Variant* var = expr_exec(state, token.expr);
-		if (var->t != VT_INT) {
+		if (var->t != VT_INT64) {
 			emit_error(ERR_invalid_syntax, {"Expected integer expression"});
 			return;
 		}
 
-		exit((int)AnyCast(INT_t,var->d));
+		exit((int)AnyCast(int64_t,var->d));
 	}
 
 	// Throw error.

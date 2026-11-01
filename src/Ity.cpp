@@ -95,20 +95,20 @@ std::vector<InstToken> tokenize(const std::string& src) {
 	std::vector<InstToken> sequence;
 	std::string buffer; buffer.reserve(src_len);
 	InstToken item;
-	unsigned int ln = 1;
-	unsigned int col = 0;
+	uint32_t ln = 1;
+	uint32_t col = 0;
 
 	bool is_start = true;
 	bool is_comment = false;
 	bool is_string = false;
 	bool is_escaped_char = false;
-	unsigned int str_start_ln = ln;
-	unsigned int str_start_col = col;
+	uint32_t str_start_ln = ln;
+	uint32_t str_start_col = col;
 	char string_type;
 
 	std::vector<CompositeItem> composite_nest;
 	CompositeItem last_comp_item;
-	UINT_t last_comp_item_dist = 0;
+	uint32_t last_comp_item_dist = 0;
 
 	for (size_t i=0; i<src_len; i++) {
 		const char& ch = src[i];
@@ -129,7 +129,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 		// Skip over spaces & tabs at the start of the item.
 		if (is_start) {
 			if (ch == ' ' || ch == '\n' || ch == '\t') continue;
-			item = InstToken{(unsigned int)sequence.size(), ln,col};
+			item = InstToken{(uint32_t)sequence.size(), ln,col};
 			is_start = false;
 		}
 
@@ -229,7 +229,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 						// Start composite item...
 						if (inst->is_composite) {
-							composite_nest.push_back(CompositeItem{item, (unsigned int)sequence.size(), 0, ln,col});
+							composite_nest.push_back(CompositeItem{item, (uint32_t)sequence.size(), 0, ln,col});
 						}
 						// End composite item...
 						else if (inst_symbol == InstSymbol_end) {
@@ -241,7 +241,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 								comp_item.token.composite_size = comp_item.size;
 								comp_item.token.declarative_composite = comp_item.declarative;
 								if (comp_item.token.symbol == InstSymbol_func) {
-									comp_item.token.meta = {(unsigned int)sequence.size()};
+									comp_item.token.meta = {(uint32_t)sequence.size()};
 								}
 								sequence[comp_item.index] = comp_item.token;
 								item.linked_inst = comp_item.token.symbol;
@@ -263,7 +263,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 					// Instruction is a standalone expression.
 					else {
 						std::string expr_string; expr_string.reserve(item.args.size());
-						unsigned int i_ = 0; for (const std::string& arg : item.args) {
+						uint32_t i_ = 0; for (const std::string& arg : item.args) {
 							if (i_ > 0) expr_string += ' ';
 							expr_string += arg;
 							i_++;
@@ -493,7 +493,7 @@ void start_shell(int argc, char* argv[]) {
 	#ifdef RUNTIME_DEBUG
 	if (debug_flags.result) {
 		const auto total_end = std::chrono::high_resolution_clock::now();
-		const std::vector<std::vector<long int>> times = {
+		const std::vector<std::vector<int64_t>> times = {
 			{DurCast_us(total_end-clock_start).count(), DurCast_ms(total_end-clock_start).count()},
 			{DurCast_us(timers[1]-timers[0]).count(),   DurCast_ms(timers[1]-timers[0]).count()},
 		};

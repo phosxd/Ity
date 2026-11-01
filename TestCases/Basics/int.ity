@@ -1,15 +1,59 @@
 #EXPECT
+#standard int
+#-1000
+#decl other int types
+#I64
+#I32
+#I16
+#I8
 #END
 
-var INT _c = 0;
-_c = 00;
-_c = 0_0;
-_c = 0 0;
-_c = 01;
-_c = 00000000000000000001;
-_c = -0;
-_c = -1;
-_c = -10 0_0;
+merge IO;
+
+# Standard INT
+# ------------
+
+print:'standard int';
+
+var INT int = 0;
+int = 00;
+int = 0_0;
+int = 0 0;
+int = 01;
+int = 00000000000000000001;
+int = -0;
+int = -1;
+int = -10 0_0;
+
+print:int;
 
 var inferred = 0;
 inferred = 100;
+
+
+# Other INT types
+# ---------------
+
+print:'decl other int types';
+
+# I64 is the same as INT.
+var I64 int_64 = 1;
+int_64 = int;
+print:(type_name:(type:int_64));
+
+var I32 int_32 = 1;
+print:(type_name:(type:int_32));
+
+var I16 int_16 = 1;
+print:(type_name:(type:int_16));
+
+var I8 int_8 = 1;
+print:(type_name:(type:int_8));
+
+
+
+
+
+
+
+

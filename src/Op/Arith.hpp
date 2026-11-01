@@ -2,7 +2,7 @@
 
 
 void OP_Arith_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& _result_ptr) {
-	// All logic for actually getting the results of an arithmetic operation are in `Common.hpp`.
+	// All logic for actually getting the results of an arithmetic operation are in `Variant.hpp`.
 	Variant* o1 = resovlve_potential_ref(state, first);
 	Variant* o2 = resovlve_potential_ref(state, second);
 	switch (symbol) {

@@ -6,11 +6,11 @@ using ScopeMap_t = std::vector<Variant*>;
 struct ItyScope {
 	ItyScope* p = nullptr;  // Parent scope.
 	ScopeMap_t d;           // Scope data.
-	UINT_t id;              // Scope UID.
+	uint32_t id;            // Scope UID.
 
 
 	// Initialize.
-	ItyScope(ItyScope* p_=nullptr, ScopeMap_t d_={}, UINT_t id_=0) : p(p_), d(d_), id(id_) {}
+	ItyScope(ItyScope* p_=nullptr, ScopeMap_t d_={}, uint32_t id_=0) : p(p_), d(d_), id(id_) {}
 
 
 	// Destroy.
@@ -36,7 +36,7 @@ struct ItyScope {
 
 
 	// Returns the first parent scope with a matching ID.
-	ItyScope* get_scope_at_id(const UINT_t& target_id) {
+	ItyScope* get_scope_at_id(const uint32_t& target_id) {
 		if (id != target_id) {
 			ItyScope* current = p;
 			while (current) {
@@ -63,7 +63,7 @@ struct ItyScope {
 
 	// Transforms into an empty scope & copies the current scope into the new scope's parent.
 	// This will effectively change the depth of the current scope while preserving the scope reference.
-	void in(UINT_t& scope_current_id) {
+	void in(uint32_t& scope_current_id) {
 		p = new ItyScope{std::move(p), std::move(d), std::move(id)};
 		scope_current_id += 1;
 		id = scope_current_id;
@@ -206,7 +206,7 @@ struct ItyScope {
 
 
 // Create a new scope.
-ItyScope create_new_scope(UINT_t& scope_current_id, const ScopeMap_t& data={}, ItyScope* parent=nullptr, UINT_t id=0) {
+ItyScope create_new_scope(uint32_t& scope_current_id, const ScopeMap_t& data={}, ItyScope* parent=nullptr, uint32_t id=0) {
 	if (id == 0) {
 		scope_current_id += 1;
 		id = scope_current_id;
@@ -227,11 +227,11 @@ struct ItyState {
 	std::vector<ItyState> alts = {}; // Alternate states (script modules).
 	std::vector<InstToken> seq = {}; // Instruction token sequence.
 	ItyScope scope;
-	UINT_t scope_current_id = 0;
+	uint32_t scope_current_id = 0;
 	std::vector<InstToken*> scoped_tokens; // Tracker for tokens responsible for a scope.
 
-	unsigned int execution_depth_max = 1500;
-	unsigned int execution_depth = 0;
+	uint16_t execution_depth_max = 1500;
+	uint16_t execution_depth = 0;
 
 	Variant last_expr_result = VPS.empty;
 	// Instruction jump values.
@@ -255,7 +255,7 @@ struct ItyState {
 
 	void init() {
 		// Add basic info.
-		scope.set_data("__VERSION__",              Variant{VT_ARR,  (ARR_t){Variant{VT_INT,(INT_t)ItyVersion[0]}, Variant{VT_INT,(INT_t)ItyVersion[1]}, Variant{VT_INT,(INT_t)ItyVersion[2]}, Variant{VT_INT,(INT_t)ItyVersion[3]}}, VariantMode_constant});
+		scope.set_data("__VERSION__",              Variant{VT_ARR,  (ARR_t){Variant{VT_INT64,(int64_t)ItyVersion[0]}, Variant{VT_INT64,(int64_t)ItyVersion[1]}, Variant{VT_INT64,(int64_t)ItyVersion[2]}, Variant{VT_INT64,(int64_t)ItyVersion[3]}}, VariantMode_constant});
 		scope.set_data("__VERSION_STRING__",       Variant{VT_STR,  (STR_t)ItyVersionString, VariantMode_constant});
 		scope.set_data("__SCRIPT_PATH__",          Variant{VT_STR,  (STR_t)path, VariantMode_constant});
 		scope.set_data("__OS_NAME__",              Variant{VT_STR,  (STR_t)OSName, VariantMode_constant});

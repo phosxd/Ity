@@ -148,11 +148,11 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		case ERR_misplaced_inst:                    return "Misplaced \"" + args[0] + "\" instruction.";
 
 		case ERR_operand_type_mismatch: {
-			std::string part = "\".";
+			std::string part = ".";
 			if (args[2].size() > 0) {
-				part = "\" with value of type \"" + args[2] + part;
+				part = " & " + args[2] + part;
 			}
-			return "Cannot perform operation \"" + args[0] + "\" on value of type \"" + args[1] + part;
+			return "Cannot perform " + args[0] + " on " + args[1] + part;
 		}
 		case ERR_assignment_type_mismatch:          return "Cannot assign type \"" + args[0] + "\" to \"" + args[1] + "\".";
 		case ERR_return_type_mismatch:              return "Cannot return \"" + args[0] + "\" in a function that returns \"" + args[1] + "\".";

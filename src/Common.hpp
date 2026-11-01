@@ -175,8 +175,10 @@ VariantData get_literal_from_str(const VariantType& type, const std::string& str
 		case VT_REF:
 		case VT_STR:  return str_val;
 		case VT_BOOL: return str_val == "true";
-		case VT_INT:  return (INT_t)std::stol(str_val);
-		case VT_FLOAT: return (FLOAT_t)std::stod(str_val);
+		// TODO: replace number parsing functions with custom solution that DOESNT CRASH WHEN IT GOES OUT OF RANGE. Ahem.
+		case VT_INT64:   return (int64_t)std::stol(str_val);
+		case VT_UINT64:  return (uint64_t)std::stoul(str_val);
+		case VT_FLOAT64: return (FLOAT64_t)std::stod(str_val);
 		default: return std::monostate();
 	}
 }
@@ -197,7 +199,7 @@ const STR_t var_get_obj_type(const MAP_t& map) {
 
 
 const Variant var_type_var(const VariantType& type) {
-	return Variant{VT_INT, (INT_t)type, VariantMode_constant};
+	return Variant{VT_UINT8, (uint8_t)type, VariantMode_constant};
 }
 
 
@@ -219,12 +221,13 @@ const VariantPresets_struct VPS;
 
 
 // Translate a native function to a usable function object.
-const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t& native_func) {
+const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t& native_func, const std::vector<std::vector<VariantType>> args_schema={}) {
 	return Variant{
 		VT_FUNC, (FUNC_t){
 			.return_type = return_type,
 			.bound_args = (ARR_t){},
-			.native_callable = native_func
+			.native_callable = native_func,
+			.args_schema = args_schema
 		},
 		VariantMode_constant,
 	};
