@@ -2,8 +2,19 @@
 
 #include <variant>
 
+// Gets a constant reference to the value.
 #define AnyCast(T, var) std::get<T>(var)
+// Gets a mutable reference to the value.
 #define AnyCastV(T, var) std::get<T>(var)
+// Gets a copy of the value.
+#define AnyCastC(T, var) std::get<T>(var)
+
+// // Gets a constant reference to the value.
+// #define AnyCast(T, var) std::any_cast<const T&>(var)
+// // Gets a mutable reference to the value.
+// #define AnyCastV(T, var) std::any_cast<T&>(var)
+// // Gets a copy of the value.
+// #define AnyCastC(T, var) std::any_cast<T>(var)
 
 
 // Get string representation of a VariantType.
@@ -101,6 +112,7 @@ struct TREF_t {
 	size_t hash = 0;
 };
 
+// using VariantData = std::any;
 using VariantData = std::variant<
 	Variant*,
 	std::monostate,
@@ -141,16 +153,20 @@ using AnyMap_t = std::unordered_map<std::string, VariantData>;
 
 void emit_operator_overload_error(const std::string& operation, const Variant& a, const Variant& b);
 
-
-#pragma pack(1)
 struct Variant {
 	VariantType t = VT_NONE;
 	VariantData d = std::monostate();
-	VariantMode m = VariantMode_dynamic_type;
+	VariantMode m = VM_dynamic_type;
+
+
+	template<class T>
+	void set(T v) {
+		d = v;
+	}
 
 
 	const bool type_mode_matches(const VariantType& a_t, const VariantMode& _a_m, const VariantType& b_t, const VariantMode& b_m, const bool do_emit_error = true) const {
-		if (b_m == VariantMode_dynamic_type || b_t == a_t) return true;
+		if (b_m == VM_dynamic_type || b_t == a_t) return true;
 		if (do_emit_error) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(a_t), get_variant_type_name(b_t)});
 		return false;
 	}
@@ -341,6 +357,12 @@ struct Variant {
 			case VT_UINT16:  return (uint64_t)AnyCast(uint16_t,d);
 			case VT_UINT8:   return (uint64_t)AnyCast(uint8_t,d);
 			case VT_FLOAT64: return (uint64_t)AnyCast(FLOAT64_t,d);
+
+			case VT_STR: {
+				const STR_t& d_ = AnyCast(STR_t,d);
+				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos) return 0;
+				return std::stoull(d_);
+			}
 
 			default: return 0;
 		}

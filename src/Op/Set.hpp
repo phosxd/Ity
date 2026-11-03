@@ -8,10 +8,10 @@ static void OP_Set_arith_set(const OpSymbol& symbol, Variant*& o1, Variant*& o2)
 		case OpSymbol_sub_set: {*o1 = *o1 - *o2; break;}
 		case OpSymbol_mul_set: {
 			if (o1->t == VT_STR && o2->is_number()) {
-				multiply_string(AnyCast(STR_t,o1->d), o2->to_uint32());
+				multiply_string(AnyCastV(STR_t,o1->d), o2->to_uint32());
 			}
 			else if (o1->t == VT_ARR && o2->is_number()) {
-				multiply_vector(AnyCast(ARR_t,o1->d), o2->to_uint32());
+				multiply_vector(AnyCastV(ARR_t,o1->d), o2->to_uint32());
 			}
 			else *o1 = *o1 * *o2;
 			break;
@@ -28,7 +28,7 @@ void OP_Set_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Varia
 	Variant* o2 = resovlve_potential_ref(state, second);
 
 	// Throw error if target variant is constant.
-	if (o1->m == VariantMode_constant) {
+	if (o1->m == VM_const) {
 		emit_error(ERR_cannot_change_constant);
 		return;
 	}
@@ -36,7 +36,10 @@ void OP_Set_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Varia
 	switch (symbol) {
 		case OpSymbol_set: {
 			Variant var = *o2;
-			if (o1->is_number() && var.is_number() && get_highest_order_type(o1->t, var.t) == o1->t) var.make_into_type(o1->t); // Promote new var to old var type if possible.
+			// Convert number type to the holder's number type.
+			if (o1->t != var.t && o1->is_number() && var.is_number()) {
+				if (o1->m == VM_const_type) var.make_into_type(o1->t);
+			}
 			if (not var.matches(*o1)) return;
 			o1->t = var.t;
 			o1->d = var.d;
@@ -48,7 +51,7 @@ void OP_Set_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Varia
 		case OpSymbol_mov_set: {
 			if (not o2->matches(*o1)) return;
 			// Throw error if source variant is constant.
-			if (second->m == VariantMode_constant) {
+			if (second->m == VM_const) {
 				emit_error(ERR_cannot_change_constant);
 				return;
 			}

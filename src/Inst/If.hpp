@@ -6,7 +6,7 @@ static void INST_If_processor(InstToken& token, const AnyMap_t& extra, const uns
 	token.meta = {false};
 
 	if (token.symbol == InstSymbol_elif || token.symbol == InstSymbol_else) {
-		const CompositeItem& last_comp_item = *AnyCast(CompositeItem*,extra.at("lci"));
+		const CompositeItem& last_comp_item = *AnyCastC(CompositeItem*,extra.at("lci"));
 
 		// Throw error if previous composite item was not a valid conditional.
 		if (last_comp_item.token.symbol != InstSymbol_if && last_comp_item.token.symbol != InstSymbol_elif) {

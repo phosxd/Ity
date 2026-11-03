@@ -199,7 +199,7 @@ const STR_t var_get_obj_type(const MAP_t& map) {
 
 
 const Variant var_type_var(const VariantType& type) {
-	return Variant{VT_UINT8, (uint8_t)type, VariantMode_constant};
+	return Variant{VT_UINT8, (uint8_t)type, VM_const};
 }
 
 
@@ -208,14 +208,14 @@ const Variant new_none() {
 }
 
 
-Variant none_var = {VT_NONE, std::monostate(), VariantMode_constant};
+Variant none_var = {VT_NONE, std::monostate(), VM_const};
 
 // Collection of Variant presets used in various places within the codebase.
 struct VariantPresets_struct {
-	const Variant none        {VT_NONE, std::monostate(), VariantMode_constant};
-	const Variant empty       {VT_PLACEHOLDER, std::monostate(), VariantMode_constant};
-	const Variant bool_true   {VT_BOOL, true, VariantMode_constant};
-	const Variant bool_false  {VT_BOOL, false, VariantMode_constant};
+	const Variant none        {VT_NONE, std::monostate(), VM_const};
+	const Variant empty       {VT_PLACEHOLDER, std::monostate(), VM_const};
+	const Variant bool_true   {VT_BOOL, true, VM_const};
+	const Variant bool_false  {VT_BOOL, false, VM_const};
 };
 const VariantPresets_struct VPS;
 
@@ -229,7 +229,7 @@ const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t
 			.native_callable = native_func,
 			.args_schema = args_schema
 		},
-		VariantMode_constant,
+		VM_const,
 	};
 }
 

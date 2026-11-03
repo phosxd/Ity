@@ -6,7 +6,7 @@ static void INST_Continue_processor(InstToken& token, const AnyMap_t& extra, con
 	if (token.symbol != InstSymbol_continue && token.symbol != InstSymbol_break) return;
 
 	bool found = false;
-	std::vector<CompositeItem> reverse_nest = *AnyCast(std::vector<CompositeItem>*,extra.at("cn"));
+	std::vector<CompositeItem> reverse_nest = *AnyCastC(std::vector<CompositeItem>*,extra.at("cn"));
 	std::reverse(reverse_nest.begin(), reverse_nest.end());
 	for (const CompositeItem& comp_item : reverse_nest) {
 		if (comp_item.token.symbol != InstSymbol_while && comp_item.token.symbol != InstSymbol_for) continue;

@@ -30,10 +30,10 @@ static Variant LIB_TI_now(ItyState& state, ARR_t& args) {return LIB_TI_get_time(
 
 const Variant LIB_Time {
 	VT_MAP, (MAP_t){
-		{"__name",      Variant{VT_STR, (STR_t)"Time", VariantMode_constant}},
+		{"__name",      Variant{VT_STR, (STR_t)"Time", VM_const}},
 		{"__safe",      VPS.bool_true},
 		{"snow",        NativeFuncTrans(VT_UINT64,   LIB_TI_snow,  { {VT_STR} })},
 		{"now",         NativeFuncTrans(VT_UINT64,   LIB_TI_now,   { {VT_STR} })},
 	},
-	VariantMode_constant
+	VM_const
 };

@@ -35,7 +35,7 @@ static void INST_Func_exec(ItyState& state, InstToken& token) {
 			.token_index = token.i,
 			.definition_state_id = state.scope.id,
 			.script_path = state.path
-		}, VariantMode_constant}
+		}, VM_const}
 	);
 	// Jump past function body.
 	state.exec_jump_value += token.composite_size;

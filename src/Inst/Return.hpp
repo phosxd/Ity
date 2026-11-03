@@ -3,7 +3,7 @@
 
 static void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
 	bool found = false;
-	std::vector<CompositeItem> reverse_nest = *AnyCast(std::vector<CompositeItem>*,extra.at("cn"));
+	std::vector<CompositeItem> reverse_nest = *AnyCastC(std::vector<CompositeItem>*,extra.at("cn"));
 	std::reverse(reverse_nest.begin(), reverse_nest.end());
 	for (const CompositeItem& comp_item : reverse_nest) {
 		if (comp_item.token.symbol != InstSymbol_func) continue;

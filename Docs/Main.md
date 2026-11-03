@@ -9,63 +9,10 @@ As a little challenge, try one of these starter projects:
 
 Each statement is separated by a semi-colon `;` character. Some instructions may require white space separation between sections (E.g. `var INT x=1`). `var` & `INT` require a space, otherwise they would be treated as a single string.
 
-
-# Comments
-Comments are defined by the "#" character. When a comment is defined, all characters after it until the new line are ignored. In this regard, it acts just the same as Python.
-
-```python
-# This is a comment
-"# this is not a comment, we're in a string";
-```
-
-The reason for using a "#" character instead of "//" or "/\*" is because it's simple, plays nicely with [shebangs](https://en.wikipedia.org/wiki/Shebang_%28Unix%29) while being familiar.
-
-# Expressions
-
-Expressions don't have any strict rules on spacing & can be used for defining literals, calling functions, & performing mathematical operations.
-
-`1+1;`
-
-You can use named variables inside expressions.
-
-`a+b;`
-
-You can use parenthesis to evaluate an expression inside of another expression.
-
-`(1+1) + 2; # Equals 4;`
-
-Evaluating a named variable resolves into a reference of the original value, allowing operators to modify it directly.
-However, setting a variable to a reference of another variable does not link the two, because the assignment operators do not set the target to the actual given variant, but instead copies the data from the given variant into the already existing variant inside the target.
-
-```python
-# "a" is unaffected
-var INT a = 5;
-var INT b = a;
-b = 10;
-a; # Resolves to 5
-```
-
 ---
 # Types / Literals
-## NONE
-This type holds no value. You can pass it by typing `none`.
 
-## BOOL
-Holds a binary value (0 or 1). You can pass it by typing `true` or `false`.
-
-```python
-true;
-false;
-```
-
-## INT
-Holds a 64-bit signed integer.  It has a range of −9.223e18 to 9.223e18. Trying to manually type out & initialize a value larger than the capacity will crash the program with no explanation.
-
-```python
-1; 2; 3;
--1; -2; -3;
-```
-
+[Type System](Type System.md)
 ## FLOAT
 Holds a 64-bit signed floating point number.  It has a range of −1.798e308 to 1.798e308. Trying to manually type out & initialize a value larger than the capacity will crash the program with no explanation.
 

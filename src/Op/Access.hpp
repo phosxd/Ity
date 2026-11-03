@@ -18,7 +18,7 @@ const bool OP_Access_type_method(const std::string& type_name, const STR_t& meth
 		FUNC_t func = AnyCastV(FUNC_t,it->second.d); // Copy function.
 		func.bound_args = func.bound_args + (ARR_t){Variant{VT_PTR, o1}}; // Bind first variant to the function copy.
 		// Return copied function.
-		result = Variant{VT_FUNC, std::move(func), VariantMode_constant};
+		result = Variant{VT_FUNC, std::move(func), VM_const};
 		return true;
 	}
 	return false;

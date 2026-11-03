@@ -12,7 +12,7 @@ static void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const 
 			VPS.empty, // For loop iterable.
 			VPS.empty, // For loop current item in iterable.
 		},
-		(uint32_t)0,  // For loop iteration index.
+		(uint64_t)0,  // For loop iteration index.
 	};
 
 
@@ -43,7 +43,7 @@ static void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const 
 
 
 static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
-	const uint32_t& index = AnyCast(uint32_t,token.meta[4]);
+	const uint64_t& index = AnyCast(uint64_t,token.meta[4]);
 	ARR_t& token_vars = AnyCastV(ARR_t,token.meta[3]);
 	// Get iterable.
 	Variant* iterable = &(token_vars[0]);
@@ -54,10 +54,10 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 
 	// Get item from number.
 	if (iterable->is_number()) {
-		if (iterable->to_uint64() > (uint64_t)index) {
+		if (iterable->to_uint64() > index) {
 			value = true;
 			token_vars[1].t = VT_UINT64;
-			token_vars[1].d = (uint64_t)index;
+			token_vars[1].d = index;
 		}
 	}
 	else {
@@ -65,7 +65,7 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 			// Get item from string.
 			case VT_STR: {
 				const STR_t& data = AnyCast(STR_t,iterable->d);
-				if ((uint32_t)data.size() > index) {
+				if (data.size() > index) {
 					value = true;
 					token_vars[1].t = VT_STR;
 					token_vars[1].d = (STR_t)(std::string(1,data[index]));
@@ -74,7 +74,7 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 			// Get item from array.
 			case VT_ARR: {
 				ARR_t& data = AnyCastV(ARR_t,iterable->d);
-				if ((uint32_t)data.size() > index) {
+				if (data.size() > index) {
 					value = true;
 					token_vars[1] = data[index];
 				} break;
@@ -138,7 +138,7 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 
 		// Reset token state.
 		token.meta[3] = (ARR_t){VPS.empty, VPS.empty};
-		token.meta[4] = (uint32_t)0;
+		token.meta[4] = (uint64_t)0;
 		return;
 	}
 
@@ -161,8 +161,8 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 	// If for loop, set the variable.
 	if (token.symbol == InstSymbol_for && value) {
 		ARR_t& token_vars = AnyCastV(ARR_t,token.meta[3]);
-		state.scope.set_data(AnyCast(STR_t,token.meta[1]), Variant{token_vars[1].t, std::move(token_vars[1].d), VariantMode_dynamic_type}, AnyCast(size_t,token.meta[2]));
-		AnyCast(uint32_t,token.meta[4]) += 1;
+		state.scope.set_data(AnyCast(STR_t,token.meta[1]), Variant{token_vars[1].t, std::move(token_vars[1].d), VM_dynamic_type}, AnyCast(size_t,token.meta[2]));
+		AnyCastV(uint64_t,token.meta[4]) += 1;
 	}
 }
 
@@ -172,7 +172,7 @@ static void INST_Loop_emergency_scope_exit(InstToken*& token) {
 	// Reset token state.
 	token->meta[0] = false;
 	token->meta[3] = (ARR_t){VPS.empty, VPS.empty};
-	token->meta[4] = (uint32_t)0;
+	token->meta[4] = (uint64_t)0;
 }
 
 

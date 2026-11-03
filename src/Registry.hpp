@@ -244,10 +244,10 @@ const std::unordered_map<const VariantType, const std::vector<std::string>> VARI
 	{VT_INT16,        {"I16"}},
 	{VT_INT8,         {"I8"}},
 	// Unsigned int types.
-	{VT_UINT64,       {"UI64", "UINT"}},
-	{VT_UINT32,       {"UI32"}},
-	{VT_UINT16,       {"UI16"}},
-	{VT_UINT8,        {"UI8"}},
+	{VT_UINT64,       {"U64", "UINT"}},
+	{VT_UINT32,       {"U32"}},
+	{VT_UINT16,       {"U16"}},
+	{VT_UINT8,        {"U8"}},
 	// Float types.
 	{VT_FLOAT64,      {"F64", "FLOAT"}},
 
@@ -259,9 +259,9 @@ const std::unordered_map<const VariantType, const std::vector<std::string>> VARI
 
 
 enum VariantMode : uint8_t {
-	VariantMode_dynamic_type,  // Variant can have any type.
-	VariantMode_constant,      // Variant data should never change.
-	VariantMode_locked_type,   // Variant type should never change.
+	VM_dynamic_type,  // Variant can have any type.
+	VM_const_type,    // Variant type should never change.
+	VM_const,   // Variant data should never change..
 };
 
 

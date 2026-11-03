@@ -22,7 +22,7 @@ const UI16 ui16_x = 65_535;
 const UI16 ui16_n = 0;
 const UI32 ui32_x = 4_294_967_296;
 const UI32 ui32_n = 0;
-const UI64 ui64_x = 18_446_744_073_709_551_616;
+const UI64 ui64_x = 18_446_744_073_709_551_616u;
 const UI64 ui64_n = 0;
 
 # Min/max are not the true limits, only an approximation.

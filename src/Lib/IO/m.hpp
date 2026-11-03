@@ -20,8 +20,7 @@ static void LIB_IO_on_signal_received(const int sig) {
 
 // Connect a system signal to a function.
 static Variant LIB_IO_signal(ItyState& state, const ARR_t& args) {
-	if (not expect_arg_count(args, 2) || not expect_arg_types(args[0], {VT_INT64}, 0) || not expect_arg_types(args[1], {VT_FUNC}, 1)) return VPS.none;
-	const uint8_t signal_number = (uint8_t)AnyCast(int64_t,args[0].d);
+	const uint8_t signal_number = AnyCast(uint8_t,args[0].d);
 
 	LIB_IO_state = &state;
 	if (LIB_IO_signal_functions[signal_number].size() == 0) signal(signal_number, LIB_IO_on_signal_received);
@@ -35,7 +34,6 @@ static Variant LIB_IO_signal(ItyState& state, const ARR_t& args) {
 
 // Wait for then return a response.
 static Variant LIB_IO_in(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 0)) return VPS.none;
 	std::string input_line;
 	std::getline(std::cin, input_line);
 	return Variant{VT_STR, (STR_t)input_line};
@@ -44,8 +42,6 @@ static Variant LIB_IO_in(ItyState& _state, const ARR_t& args) {
 
 // Wait for a key press then return it.
 static Variant LIB_IO_key_in(ItyState& _state, const ARR_t& args) {
-	if (not expect_arg_count(args, 0)) return VPS.none;
-
 	char input;
 
 	// If on Windows, use built-in API...
@@ -118,33 +114,33 @@ static Variant LIB_IO_prompt(ItyState& state, const ARR_t& args) {
 
 const Variant LIB_IO {
 	VT_MAP, (MAP_t){
-		{"__name",  Variant{VT_STR, (STR_t)"IO", VariantMode_constant}},
+		{"__name",  Variant{VT_STR, (STR_t)"IO", VM_const}},
 		{"__safe",  VPS.bool_true},
 
 		// System signals.
 		{"SIGNAL", Variant{
 			VT_MAP, (MAP_t){
-				{"abort",      Variant{VT_INT64, (int64_t)SIGABRT, VariantMode_constant}},
-				{"illegal",    Variant{VT_INT64, (int64_t)SIGILL,  VariantMode_constant}},
-				{"interrupt",  Variant{VT_INT64, (int64_t)SIGINT,  VariantMode_constant}},
-				{"seg_fault",  Variant{VT_INT64, (int64_t)SIGSEGV, VariantMode_constant}},
-				{"terminate",  Variant{VT_INT64, (int64_t)SIGTERM, VariantMode_constant}},
+				{"abort",      Variant{VT_UINT8, (uint8_t)SIGABRT, VM_const}},
+				{"illegal",    Variant{VT_UINT8, (uint8_t)SIGILL,  VM_const}},
+				{"interrupt",  Variant{VT_UINT8, (uint8_t)SIGINT,  VM_const}},
+				{"seg_fault",  Variant{VT_UINT8, (uint8_t)SIGSEGV, VM_const}},
+				{"terminate",  Variant{VT_UINT8, (uint8_t)SIGTERM, VM_const}},
 				#ifdef SIGQUIT // Unix specific signals.
-				{"quit",       Variant{VT_INT64, (int64_t)SIGQUIT, VariantMode_constant}},
-				{"user1",      Variant{VT_INT64, (int64_t)SIGUSR1, VariantMode_constant}},
-				{"user2",      Variant{VT_INT64, (int64_t)SIGUSR2, VariantMode_constant}},
+				{"quit",       Variant{VT_UINT8, (uint8_t)SIGQUIT, VM_const}},
+				{"user1",      Variant{VT_UINT8, (uint8_t)SIGUSR1, VM_const}},
+				{"user2",      Variant{VT_UINT8, (uint8_t)SIGUSR2, VM_const}},
 				#endif
-			}, VariantMode_constant }},
+			}, VM_const }},
 
 		// Functions.
-		{"signal",     NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_IO_signal)},
+		{"signal",     NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_IO_signal, { {VT_UINT8}, {VT_FUNC} })},
 
-		{"in",         NativeFuncTrans(VT_STR,   (NativeFunc_t)LIB_IO_in)},
-		{"key_in",     NativeFuncTrans(VT_STR,   (NativeFunc_t)LIB_IO_key_in)},
-		{"out",        NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_IO_out)},
-		{"err",        NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_IO_err)},
-		{"print",      NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_IO_print)},
-		{"prompt",     NativeFuncTrans(VT_STR,   (NativeFunc_t)LIB_IO_prompt)},
+		{"in",         NativeFuncTrans(VT_STR,   (NativeFunc_t)LIB_IO_in,     {})},
+		{"key_in",     NativeFuncTrans(VT_STR,   (NativeFunc_t)LIB_IO_key_in, {})},
+		{"out",        NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_IO_out,    {})},
+		{"err",        NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_IO_err,    {})},
+		{"print",      NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_IO_print,  {})},
+		{"prompt",     NativeFuncTrans(VT_STR,   (NativeFunc_t)LIB_IO_prompt, {})},
 	},
-	VariantMode_constant
+	VM_const
 };

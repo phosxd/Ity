@@ -92,7 +92,7 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 }
 
 
-#define resovlve_potential_ref(state, var) ((var->t == VT_REF) ? state.scope.get_data_globally(AnyCast(STR_t,var->d), &none_var) : ((var->t == VT_PTR) ? AnyCast(Variant*,var->d) : var))
+#define resovlve_potential_ref(state, var) ((var->t == VT_REF) ? state.scope.get_data_globally(AnyCastV(STR_t,var->d), &none_var) : ((var->t == VT_PTR) ? AnyCastV(Variant*,var->d) : var))
 
 
 
@@ -335,7 +335,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 				};
 				// Set type integer.
 				if ((NUM.find(ch) != std::string::npos) || (ch == '-' && (expr_len > i && NUM.find(expr[i+1]) != std::string::npos ))) {
-					item.var.t = (ch == '-') ? VT_INT64 : VT_UINT64;
+					item.var.t = VT_INT64;
 					buffer += ch;
 					is_start = false;
 					continue;
@@ -411,14 +411,12 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 					is_operator = true;
 				}
 
-				// Skip over underscore in numbers.
-				else if (item.var.is_number() && ch == '_') {
-					continue;
-				}
-
-				else if (item.var.is_int() || item.var.is_uint()) {
-					// If "." found in INT, convert to FLOAT.
-					if (ch == '.') item.var.t = VT_FLOAT64;
+				else if (item.var.is_number()) {
+					if (ch == '_') continue; // Skip over underscore in numbers.
+					// If "u" found, convert to UINT.
+					else if (ch == 'u') item.var.t = VT_UINT64;
+					// If "." found, convert to FLOAT.
+					else if (ch == '.') item.var.t = VT_FLOAT64;
 					// Throw error if invalid character found.
 					else if ((NUM.find(ch) == std::string::npos)) {
 						emit_error(ERR_invalid_character_for_construct, {"number", std::string(1,ch)}, ln+ln_offset, col+col_offset);
@@ -565,7 +563,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 		for (ExprToken& subtoken : token.seq) {
 			if (is_key) {
 				// Get key.
-				const Variant* var = (subtoken.t == ExprTokenType_sequence)
+				Variant* var = (subtoken.t == ExprTokenType_sequence)
 					? expr_exec_(state, subtoken, expr_state, true)
 					: resolve_variant(state, expr_state, subtoken.var)
 				;

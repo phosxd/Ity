@@ -366,7 +366,7 @@ void start_shell(int argc, char* argv[]) {
 
 		// Append to script arguments.
 		if (not source_script_path.empty()) {
-			script_args.push_back(Variant{VT_STR, (STR_t)s, VariantMode_constant});
+			script_args.push_back(Variant{VT_STR, (STR_t)s, VM_const});
 		}
 
 		// Parse flags.

@@ -2,7 +2,7 @@
 // Fragment Size: 2880
 
 
-static void processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
+static void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
 	std::string type_name = "*";
 	std::string name;
 	std::string expr;
@@ -61,14 +61,14 @@ static void processor(InstToken& token, const AnyMap_t& _extra, const unsigned i
 	}
 
 	const VariantType type = get_variant_type_from_name(type_name);
-	VariantMode mode = VariantMode_locked_type;
-	if (token.symbol == InstSymbol_const) mode = VariantMode_constant;
+	VariantMode mode = VM_const_type;
+	if (token.symbol == InstSymbol_const) mode = VM_const;
 	if (type == VT_ANY) {
-		if (mode == VariantMode_constant) {
+		if (mode == VM_const) {
 			emit_error(ERR_constant_type_not_explicit);
 			return;
 		}
-		mode = VariantMode_dynamic_type;
+		mode = VM_dynamic_type;
 	}
 
 	// Set token properties.
@@ -79,7 +79,7 @@ static void processor(InstToken& token, const AnyMap_t& _extra, const unsigned i
 
 
 
-static void exec(ItyState& state, InstToken& token) {
+static void INST_Var_exec(ItyState& state, InstToken& token) {
 	const std::string& name = AnyCast(std::string,token.meta[0]);
 	const size_t& hashed_name = AnyCast(size_t,token.meta[1]);
 
@@ -155,7 +155,7 @@ static void exec(ItyState& state, InstToken& token) {
 
 const Instruction* INST_Var = new Instruction{
 	.REQUIRED = 2,
-	.exec = exec,
+	.exec = INST_Var_exec,
 	.clear_args = true,
-	.processor = processor,
+	.processor = INST_Var_processor,
 };

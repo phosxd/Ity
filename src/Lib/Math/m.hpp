@@ -115,7 +115,7 @@ static Variant LIB_MT_set_seed(ItyState& _state, ARR_t& args) {
 
 const Variant LIB_Math {
 	VT_MAP, (MAP_t){
-		{"__name",     Variant{VT_STR, (STR_t)"Math", VariantMode_constant}},
+		{"__name",     Variant{VT_STR, (STR_t)"Math", VM_const}},
 		{"__safe",     VPS.bool_true},
 		{"abs",        NativeFuncTrans(VT_ANY,      LIB_MT_abs,      { {VT_INT64,VT_FLOAT64} })},
 		{"round",      NativeFuncTrans(VT_INT64,    LIB_MT_round,    { {VT_FLOAT64} })},
@@ -130,5 +130,5 @@ const Variant LIB_Math {
 		{"rand",       NativeFuncTrans(VT_INT64,    LIB_MT_rand,     { {VT_INT64}, {VT_INT64} })},
 		{"set_seed",   NativeFuncTrans(VT_NONE,     LIB_MT_set_seed, { {VT_INT64} })},
 	},
-	VariantMode_constant
+	VM_const
 };

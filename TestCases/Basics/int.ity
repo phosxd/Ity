@@ -6,6 +6,13 @@
 #I32
 #I16
 #I8
+#unsigned int
+#1000
+#decl other uint types
+#U64
+#U32
+#U16
+#U8
 #END
 
 merge IO;
@@ -51,7 +58,33 @@ var I8 int_8 = 1;
 print:(type_name:(type:int_8));
 
 
+# UINT
+# -----
 
+print:'unsigned int';
+
+var UINT uint = 1000u;
+print:uint;
+
+
+# Other UINT types
+# ---------------
+
+print:'decl other uint types';
+
+# I64 is the same as INT.
+var U64 uint_64 = 1;
+uint_64 = uint;
+print:(type_name:(type:uint_64));
+
+var U32 uint_32 = 1;
+print:(type_name:(type:uint_32));
+
+var U16 uint_16 = 1;
+print:(type_name:(type:uint_16));
+
+var U8 uint_8 = 1;
+print:(type_name:(type:uint_8));
 
 
 
