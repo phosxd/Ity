@@ -7,6 +7,13 @@
 #0
 #100.
 #10.876.
+#convert between int types
+#1
+#1
+#1
+#1
+#1
+#1
 #END
 
 merge IO;
@@ -19,3 +26,22 @@ print:( '12.78' -> FLOAT );
 print:( 'invalid representation' -> FLOAT );
 print:( (100 -> STR) + '.' );
 print:( (10.8760 -> STR) + '.' );
+
+
+# Convert between INT types.
+# --------------------------
+
+print:'convert between int types';
+
+const I64 i64 = 1;
+const I64 i32 = 1;
+const I64 i16 = 1;
+const I64 i8 = 1;
+
+print:(i64 -> I32);
+print:(i64 -> I16);
+print:(i64 -> I8);
+
+print:(i32 -> I64);
+print:(i32 -> I16);
+print:(i32 -> I8);

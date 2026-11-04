@@ -6,8 +6,8 @@ import Time;
 import Math;
 
 
-const UI8 FPS = 30;
-const UINT FPS_ms = 1000 / FPS;
+const U8 FPS = 30;
+const UINT FPS_ms = 1000u / FPS;
 
 const STR CELL_ON =  '██';
 const STR CELL_OFF = '  ';
@@ -20,11 +20,11 @@ if __CMD_ARGS__.length:() > 1;
 /;
 
 # Get world seed.
-var INT SEED;
+var UINT SEED;
 var STR SEED_in = prompt:'Set seed (default 0): ';
 if SEED_in.length:() == 0; SEED_in = '0'; /;
 for ch in SEED_in;
-	SEED += 1;
+	SEED += 1u;
 	SEED *= (ch.raw:()); # Convert character to ASCII code & multiply that with the seed.
 /;
 Math.set_seed:SEED;
@@ -36,9 +36,9 @@ func . _game_init;
 	for y in WORLD_SIZE.y;
 		for x in WORLD_SIZE.x;
 			# If boundary, always set to 0.
-			if x == 0 || (x == (WORLD_SIZE.x-1))
-			|| (y == 0) || (y == (WORLD_SIZE.y-1));
-				GAME.cells.append:0;
+			if x == 0u || (x == (WORLD_SIZE.x-1))
+			|| (y == 0u) || (y == (WORLD_SIZE.y-1));
+				GAME.cells.append:0u;
 			/;
 			# Otherwise set to random state.
 			else; GAME.cells.append:(Math.rand:[0,1]); /;
@@ -55,8 +55,8 @@ func . _game_init;
 func . _game_next;
 	if GAME.stable; return; /;
 	GAME.last_frame <<= (GAME.frame);
-	GAME.alive_count = 0;
-	GAME.generation += 1;
+	GAME.alive_count = 0u;
+	GAME.generation += 1u;
 
 	const INT w = WORLD_SIZE.x;
 	var ARR buf = GAME.cells; # Copy cells into writable buffer.
@@ -82,11 +82,11 @@ func . _game_next;
 			/;
 		/;
 		elif neighbors == 3;
-			buf:i = 1;
+			buf:i = 1u;
 		/;
 
 		# Put cell into frame buffer.
-		(buf:i == 1) ? ((GAME.alive_count += 1),(GAME.frame += CELL_ON)) -- (GAME.frame += CELL_OFF);
+		(buf:i == 1u) ? ((GAME.alive_count += 1u),(GAME.frame += CELL_ON)) -- (GAME.frame += CELL_OFF);
 		if GAME.cell_x:(i+2) == 0;
 			GAME.frame += '\n';
 		/;
@@ -111,11 +111,11 @@ const MAP GAME = {
 	'init', _game_init,
 	'next', _game_next,
 	'cell_x', [],
-	'cell_count', 0,
+	'cell_count', 0u,
 
 	'stable', false,
-	'generation', 0,
-	'alive_count', 0,
+	'generation', 0u,
+	'alive_count', 0u,
 	'frame', '',
 	'last_frame', '',
 	'cells', [],
@@ -128,7 +128,7 @@ GAME.init:();
 
 
 while true;
-	const INT start_time = Time.now.ms;
+	const UINT start_time = Time.now.ms;
 
 	# Tick game.
 	GAME.next:();
@@ -141,7 +141,7 @@ while true;
 	];
 
 	# Calculate time taken to run.
-	const INT delta = (Time.now.ms - start_time);
+	const UINT delta = (Time.now.ms - start_time);
 	const FLOAT sleep_time = (FPS_ms-delta) / 1_000.0;
 
 	# Print details.

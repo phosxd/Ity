@@ -30,7 +30,7 @@ Ity is a work-in-progress, light-weight & embeddable interpreted programming lan
 
 
 # Features
-- **Tiny & portable.** 124KB executable. All self-contained.
+- **Tiny & portable.** 66KB (compressed, 140kb otherwise) executable. All self-contained.
 - **Efficient memory usage.** 400KB runtime (Python: 11.2MB, Node: 45MB, Bash: 3.2MB).
 - **Platform agnostic.** No platform dependent source code.
 - **No build setup.** Requires no third-party libraries.
@@ -65,7 +65,7 @@ If your platform is not on this list, open an issue so I can get to work on addi
 
 ## Linux Build
 The build process for the Ity interpreter is very straight-forward on Linux. After cloning this repository you should notice a `build.sh` Bash script inside the root directory.
-Run the build script by typing `./build.sh` in your terminal, doing so will build the source code using the GCC compiler on your system. GCC (g++) version 14 or later is required.
+Run the build script by typing `./build.sh` in your terminal, doing so will build the source code using the GCC compiler on your system & compress it using [UPX](https://github.com/upx/upx) if available on your system. GCC (g++) version 14 or later is required.
 
 ## MacOS Build
 Mac is bit more complicated. The `g++` install on your system uses Clang instead of the required GCC. Before running the build script you will have to go through some setup.
@@ -75,7 +75,7 @@ Mac is bit more complicated. The `g++` install on your system uses Clang instead
 3. Install Bash 5.3.0 or later, then use it to run `build.sh`.
 
 ## Windows Build
-To build on Windows, run the `build_windows.ps1` PowerShell script in your terminal. Automated testing not available.
+To build on Windows, run the `build_windows.ps1` PowerShell script in your terminal. Automated testing & UPX compression not available.
 
 ## Build flags
 You can pass flags to the build script.
@@ -83,6 +83,10 @@ You can pass flags to the build script.
 - `-o=` or `--optimize=`:
 	Set optimization level.
 	"balanced", "speed", or "size".
+- `-nx` or `--no-upx`:
+	Disable UPX compression.
+	Compression has little to no performance or memory impact.
+	Disabling it usually isn't a good idea unless you have a specific reason.
 - `-s` or `--static`:
 	Statically link final binary. Comes at no performance benefiet & increases binary size about 1.5MB.
 - `-d` or `--debug`:
@@ -91,7 +95,7 @@ You can pass flags to the build script.
 	Remove runtime error strings & debug flag branches.
 	Error codes & ln/col tracking are still kept.
 	Use this to save an extra few kilobytes.
-- `-nosh` or `--no-shell`:
+- `-ns` or `--no-shell`:
 	Remove interactive capability.
 - `-t` or `--test`:
 	Run tests after compilation.

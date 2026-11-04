@@ -2,11 +2,8 @@
 
 #include <variant>
 
-// Gets a constant reference to the value.
 #define AnyCast(T, var) std::get<T>(var)
-// Gets a mutable reference to the value.
 #define AnyCastV(T, var) std::get<T>(var)
-// Gets a copy of the value.
 #define AnyCastC(T, var) std::get<T>(var)
 
 // // Gets a constant reference to the value.
@@ -178,42 +175,37 @@ struct Variant {
 
 	// Return the number of bytes that the Variant takes up.
 	const size_t get_size() const {
-		size_t size = sizeof(t) + sizeof(m);
-		switch (t) {
-			case VT_INT64:   {size += sizeof(to_int64());           break;}
-			case VT_INT32:   {size += sizeof(AnyCast(int32_t,d));   break;}
-			case VT_INT16:   {size += sizeof(AnyCast(int16_t,d));   break;}
-			case VT_INT8:    {size += sizeof(AnyCast(int8_t,d));    break;}
-			case VT_UINT64:  {size += sizeof(AnyCast(uint64_t,d));  break;}
-			case VT_UINT32:  {size += sizeof(AnyCast(uint32_t,d));  break;}
-			case VT_UINT16:  {size += sizeof(AnyCast(uint16_t,d));  break;}
-			case VT_UINT8:   {size += sizeof(AnyCast(uint8_t,d));   break;}
-			case VT_FLOAT64: {size += sizeof(to_float64());         break;}
-
-			case VT_REF:
-			case VT_STR: {size += AnyCast(STR_t,d).size(); break;}
-
-			case VT_ARR: {
-				const ARR_t& d_ = AnyCast(ARR_t,d);
-				size += sizeof(d_);
-				for (const Variant& var : d_) {
-					size += var.get_size();
-				}
-				break;
+		return std::visit([](const auto& v) -> size_t {
+			using T = std::decay_t<decltype(v)>;
+			if constexpr (std::is_same_v<T, std::monostate>) {
+				return 0;
 			}
-
-			case VT_MAP: {
-				const MAP_t& d_ = AnyCast(MAP_t,d);
-				size += sizeof(d_);
-				for (const auto& it : d_) {
-					size += it.first.size() + it.second.get_size();
-				}
-				break;
+			// Numbers.
+			else if constexpr (std::is_arithmetic_v<T>) {
+				return sizeof(T);
 			}
-			default: break;
-		}
-
-		return size;
+			// String.
+			else if constexpr (std::is_same_v<T, STR_t>) {
+				return v.size();
+			}
+			// Array.
+			else if constexpr (std::is_same_v<T, ARR_t>) {
+				size_t size_ = sizeof(v);
+				for (const Variant& var : v) {
+					size_ += var.get_size();
+				}
+				return size_;
+			}
+			// Map.
+			else if constexpr (std::is_same_v<T, ARR_t>) {
+				size_t size_ = sizeof(v);
+				for (const auto& it : v) {
+					size_ += it.first.size() + it.second.get_size();
+				}
+				return size_;
+			}
+			else return 0;
+		}, d) + sizeof(t) + sizeof(m);
 	}
 
 
@@ -245,208 +237,48 @@ struct Variant {
 
 	// Get boolean.
 	bool to_bool() const {
-		switch (t) {
-			case VT_BOOL:   return AnyCast(bool,d);
-
-			case VT_INT64:   return (bool)AnyCast(int64_t,d);
-			case VT_INT32:   return (bool)AnyCast(int32_t,d);
-			case VT_INT16:   return (bool)AnyCast(int16_t,d);
-			case VT_INT8:    return (bool)AnyCast(int8_t,d);
-			case VT_UINT64:  return (bool)AnyCast(uint64_t,d);
-			case VT_UINT32:  return (bool)AnyCast(uint32_t,d);
-			case VT_UINT16:  return (bool)AnyCast(uint16_t,d);
-			case VT_UINT8:   return (bool)AnyCast(uint8_t,d);
-			case VT_FLOAT64: return (bool)AnyCast(FLOAT64_t,d);
-
-			case VT_STR:    return AnyCast(STR_t,d) == "true";
-
-			default: return false;
-		}
+		return std::visit([](const auto& v) -> bool {
+			using VT = std::decay_t<decltype(v)>;
+			if constexpr (std::is_same_v<VT, bool> || std::is_arithmetic_v<VT>) return (bool)v;
+			else if constexpr (std::is_same_v<VT, STR_t>) return v == "true";
+			else return false;
+		}, d);
 	}
 
 
+	template<class T>
+	T _to_number() const {
+		return std::visit([](const auto& v) -> T {
+			using VT = std::decay_t<decltype(v)>;
+			if constexpr (std::is_same_v<VT, bool> || std::is_arithmetic_v<VT>) return (T)v;
+			else if constexpr (std::is_same_v<VT, STR_t>) {
+				if (v.size() == 0 || NUM.find(v[0]) == std::string::npos) return 0;
+				else if constexpr (std::is_unsigned_v<T>) return (T)std::stoull(v);
+				else if constexpr (std::is_floating_point_v<T>) return (T)std::stod(v);
+				else return (T)std::stoll(v);
+			}
+			else return 0;
+		}, d);
+	}
 	// Get integer.
-	int64_t to_int64() const {
-		switch (t) {
-			case VT_BOOL:   return (int64_t)AnyCast(bool,d);
-
-			case VT_INT64:   return AnyCast(int64_t,d);
-			case VT_INT32:   return (int64_t)AnyCast(int32_t,d);
-			case VT_INT16:   return (int64_t)AnyCast(int16_t,d);
-			case VT_INT8:    return (int64_t)AnyCast(int8_t,d);
-			case VT_UINT64:  return (int64_t)AnyCast(uint64_t,d);
-			case VT_UINT32:  return (int64_t)AnyCast(uint32_t,d);
-			case VT_UINT16:  return (int64_t)AnyCast(uint16_t,d);
-			case VT_UINT8:   return (int64_t)AnyCast(uint8_t,d);
-			case VT_FLOAT64: return (int64_t)AnyCast(FLOAT64_t,d);
-
-			case VT_STR: {
-				const STR_t& d_ = AnyCast(STR_t,d);
-				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos) return 0;
-				return std::stol(d_);
-			}
-
-			default: return 0;
-		}
-	}
-
-
+	int64_t to_int64() const {return _to_number<int64_t>();}
 	// Get i32.
-	int32_t to_int32() const {
-		switch (t) {
-			case VT_INT64:   return (int32_t)AnyCast(int64_t,d);
-			case VT_INT32:   return AnyCast(int32_t,d);
-			case VT_INT16:   return (int32_t)AnyCast(int16_t,d);
-			case VT_INT8:    return (int32_t)AnyCast(int8_t,d);
-			case VT_UINT64:  return (int32_t)AnyCast(uint64_t,d);
-			case VT_UINT32:  return (int32_t)AnyCast(uint32_t,d);
-			case VT_UINT16:  return (int32_t)AnyCast(uint16_t,d);
-			case VT_UINT8:   return (int32_t)AnyCast(uint8_t,d);
-			case VT_FLOAT64: return (int32_t)AnyCast(FLOAT64_t,d);
-
-			default: return 0;
-		}
-	}
-
-
+	int32_t to_int32() const {return (int32_t)to_int64();}
 	// Get i16.
-	int16_t to_int16() const {
-		switch (t) {
-			case VT_INT64:   return (int16_t)AnyCast(int64_t,d);
-			case VT_INT32:   return (int16_t)AnyCast(int32_t,d);
-			case VT_INT16:   return AnyCast(int16_t,d);
-			case VT_INT8:    return (int16_t)AnyCast(int8_t,d);
-			case VT_UINT64:  return (int16_t)AnyCast(uint64_t,d);
-			case VT_UINT32:  return (int16_t)AnyCast(uint32_t,d);
-			case VT_UINT16:  return (int16_t)AnyCast(uint16_t,d);
-			case VT_UINT8:   return (int16_t)AnyCast(uint8_t,d);
-			case VT_FLOAT64: return (int16_t)AnyCast(FLOAT64_t,d);
-
-			default: return 0;
-		}
-	}
-
-
+	int16_t to_int16() const {return (int16_t)to_int64();}
 	// Get i8.
-	int8_t to_int8() const {
-		switch (t) {
-			case VT_INT64:   return (int8_t)AnyCast(int64_t,d);
-			case VT_INT32:   return (int8_t)AnyCast(int32_t,d);
-			case VT_INT16:   return (int8_t)AnyCast(int16_t,d);
-			case VT_INT8:    return AnyCast(int8_t,d);
-			case VT_UINT64:  return (int8_t)AnyCast(uint64_t,d);
-			case VT_UINT32:  return (int8_t)AnyCast(uint32_t,d);
-			case VT_UINT16:  return (int8_t)AnyCast(uint16_t,d);
-			case VT_UINT8:   return (int8_t)AnyCast(uint8_t,d);
-			case VT_FLOAT64: return (int8_t)AnyCast(FLOAT64_t,d);
-
-			default: return 0;
-		}
-	}
-
-
+	int8_t to_int8()   const {return (int8_t)to_int64();}
 	// Get unsigned integer.
-	uint64_t to_uint64() const {
-		switch (t) {
-			case VT_INT64:   return (uint64_t)AnyCast(int64_t,d);
-			case VT_INT32:   return (uint64_t)AnyCast(int32_t,d);
-			case VT_INT16:   return (uint64_t)AnyCast(int16_t,d);
-			case VT_INT8:    return (uint64_t)AnyCast(int8_t,d);
-			case VT_UINT64:  return AnyCast(uint64_t,d);
-			case VT_UINT32:  return (uint64_t)AnyCast(uint32_t,d);
-			case VT_UINT16:  return (uint64_t)AnyCast(uint16_t,d);
-			case VT_UINT8:   return (uint64_t)AnyCast(uint8_t,d);
-			case VT_FLOAT64: return (uint64_t)AnyCast(FLOAT64_t,d);
-
-			case VT_STR: {
-				const STR_t& d_ = AnyCast(STR_t,d);
-				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos) return 0;
-				return std::stoull(d_);
-			}
-
-			default: return 0;
-		}
-	}
-
-
+	uint64_t to_uint64() const {return _to_number<uint64_t>();}
 	// Get ui32.
-	uint32_t to_uint32() const {
-		switch (t) {
-			case VT_INT64:   return (uint32_t)AnyCast(int64_t,d);
-			case VT_INT32:   return (uint32_t)AnyCast(int32_t,d);
-			case VT_INT16:   return (uint32_t)AnyCast(int16_t,d);
-			case VT_INT8:    return (uint32_t)AnyCast(int8_t,d);
-			case VT_UINT64:  return (uint32_t)AnyCast(uint64_t,d);
-			case VT_UINT32:  return AnyCast(uint32_t,d);
-			case VT_UINT16:  return (uint32_t)AnyCast(uint16_t,d);
-			case VT_UINT8:   return (uint32_t)AnyCast(uint8_t,d);
-			case VT_FLOAT64: return (uint32_t)AnyCast(FLOAT64_t,d);
-
-			default: return 0;
-		}
-	}
-
-
+	uint32_t to_uint32() const {return (uint32_t)to_uint64();}
 	// Get ui16.
-	uint16_t to_uint16() const {
-		switch (t) {
-			case VT_INT64:   return (uint16_t)AnyCast(int64_t,d);
-			case VT_INT32:   return (uint16_t)AnyCast(int32_t,d);
-			case VT_INT16:   return (uint16_t)AnyCast(int16_t,d);
-			case VT_INT8:    return (uint16_t)AnyCast(int8_t,d);
-			case VT_UINT64:  return (uint16_t)AnyCast(uint64_t,d);
-			case VT_UINT32:  return (uint16_t)AnyCast(uint32_t,d);
-			case VT_UINT16:  return AnyCast(uint16_t,d);
-			case VT_UINT8:   return (uint16_t)AnyCast(uint8_t,d);
-			case VT_FLOAT64: return (uint16_t)AnyCast(FLOAT64_t,d);
-
-			default: return 0;
-		}
-	}
-
-
+	uint16_t to_uint16() const {return (uint16_t)to_uint64();}
 	// Get ui8.
-	uint8_t to_uint8() const {
-		switch (t) {
-			case VT_INT64:   return (uint8_t)AnyCast(int64_t,d);
-			case VT_INT32:   return (uint8_t)AnyCast(int32_t,d);
-			case VT_INT16:   return (uint8_t)AnyCast(int16_t,d);
-			case VT_INT8:    return (uint8_t)AnyCast(int8_t,d);
-			case VT_UINT64:  return (uint8_t)AnyCast(uint64_t,d);
-			case VT_UINT32:  return (uint8_t)AnyCast(uint32_t,d);
-			case VT_UINT16:  return (uint8_t)AnyCast(uint16_t,d);
-			case VT_UINT8:   return AnyCast(uint8_t,d);
-			case VT_FLOAT64: return (uint8_t)AnyCast(FLOAT64_t,d);
-
-			default: return 0;
-		}
-	}
-
+	uint8_t to_uint8()   const {return (uint8_t)to_uint64();}
 
 	// Get float.
-	FLOAT64_t to_float64() const {
-		switch (t) {
-			case VT_BOOL:   return (FLOAT64_t)AnyCast(bool,d);
-
-			case VT_INT64:   return (FLOAT64_t)AnyCast(int64_t,d);
-			case VT_INT32:   return (FLOAT64_t)AnyCast(int32_t,d);
-			case VT_INT16:   return (FLOAT64_t)AnyCast(int16_t,d);
-			case VT_INT8:    return (FLOAT64_t)AnyCast(int8_t,d);
-			case VT_UINT64:  return (FLOAT64_t)AnyCast(uint64_t,d);
-			case VT_UINT32:  return (FLOAT64_t)AnyCast(uint32_t,d);
-			case VT_UINT16:  return (FLOAT64_t)AnyCast(uint16_t,d);
-			case VT_UINT8:   return (FLOAT64_t)AnyCast(uint8_t,d);
-			case VT_FLOAT64: return AnyCast(FLOAT64_t,d);
-
-			case VT_STR: {
-				const STR_t& d_ = AnyCast(STR_t,d);
-				if (d_.size() == 0 || NUM.find(d_[0]) == std::string::npos) return 0.0;
-				return std::stod(d_);
-			}
-
-			default: return 0.0;
-		}
-	}
+	FLOAT64_t to_float64() const {return _to_number<FLOAT64_t>();}
 
 
 	// Get string.

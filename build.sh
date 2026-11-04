@@ -19,6 +19,7 @@ DEBUG=0
 RUNTIME_DEBUG=1
 INCLUDE_SHELL=1
 DO_CAPTURE=0
+USE_UPX=1
 OPTIM='balanced'
 OPTIM_balanced='-O2 -finline-limit=4'
 OPTIM_speed='-Ofast'
@@ -47,10 +48,13 @@ for i in "$@"; do
 		-o=*|--optimize=*)
 			OPTIM="${i#*=}"
 		;;
+		-nx|--no-upx)
+			USE_UPX=0
+		;;
 		-srd|--strip-runtime-debug)
 			RUNTIME_DEBUG=0
 		;;
-		-nosh|--no-shell)
+		-ns|--no-shell)
 			INCLUDE_SHELL=0
 		;;
 		--capture)
@@ -175,6 +179,17 @@ if (( $result != 0 )); then
 	exit 1
 fi
 
+
+# Run through UPX.
+if [[ $USE_UPX -eq 1 ]]; then
+	if command -v upx >/dev/null 2>&1; then
+		upx --best ity.bin >/dev/null
+	else
+		echo "${ORANGE}UPX (upx) not installed, binary not compressed.${RESET}"
+	fi
+fi
+
+
 cd ../
 mv src/ity.bin ity.bin
 rm src/.Ity_tmp_generated.cpp
@@ -188,7 +203,12 @@ end=$(date +%s)
 echo "Done in $((end-start))s."
 
 # Get size difference between this & the last build.
-bin_size=$(size -A ity.bin)
+bin_size=""
+if [[ $USE_UPX -eq 1 ]]; then
+	bin_size=$(stat --format=%s ity.bin)
+else
+	bin_size=$(size -A ity.bin)
+fi
 bin_size=${bin_size#*"Total"}
 bin_size=${bin_size//[[:space:]]/}
 prev_bin_size=0
