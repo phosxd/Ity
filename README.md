@@ -102,11 +102,11 @@ You can pass flags to the build script.
 
 ## Optimization profiles
 As mentioned in the flags section, you can choose from 3 optimization profiles. Balanced is the default & is what is used for benchmarks, but it is not the most performant.
-If you're looking to get the most speed out of Ity, use the "speed" profile which increases overall speed by about 28% but comes at the cost of a slightly larger binary (still under 250kb).
-On the other hand, if you are *really* constrained with file size & are willing to deal with an about 9% slower runtime then you can use the "size" profile, which decreases the final binary size to almost exactly 100kb (11kb compressed).
+If you're looking to get the most speed out of Ity, use the "speed" profile which increases overall speed by about 28% but comes at the cost of a slightly larger binary.
+On the other hand, if you are *really* constrained with file size & are willing to deal with an about 9% slower runtime then you can use the "size" profile.
 
-The overall differences between each profile is largely insignificant in most real-word cases, so unless you are working with tight constraints I wouldn't worry about changing the optimization profile.
-Modifying the source code to remove built-ins or even entire operators & instructions that you don't use in your codebase, will probably be much more valuable if you need to make the most of every kilobyte.
+The overall differences between each profile is largely insignificant in most real-word cases, so usually I wouldn't worry about changing the optimization profile.
+Consider excluding unused libraries as well, if you need to make the most of every kilobyte.
 
 ## Linux / MacOS Installation
 You can install Ity on your system as a command called `ity` by running the `install.sh` Bash script. Installing will also copy all modules in `Scripts/Modules` over to `/usr/local/share/ity/Modules` so they can be imported from anywhere on the system using the module's global name.
@@ -148,7 +148,6 @@ Running the interpreter without passing a script path will run it in "interactiv
 ```bash
 ./ity.bin
 * Ity (0.2.0)
-* Runing interactive mode interpreter.
 * Type "quit" or "q" to stop.
 
 >> 1+1
