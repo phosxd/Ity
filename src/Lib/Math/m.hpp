@@ -102,7 +102,7 @@ static Variant LIB_MT_rand(ItyState& _state, ARR_t& args) {
 
 // Return a random number in range of `min` & `max` integer arguments.
 static Variant LIB_MT_set_seed(ItyState& _state, ARR_t& args) {
-	const int64_t& seed = AnyCast(int64_t,args[0].d);
+	const uint32_t& seed = AnyCast(uint32_t,args[0].d);
 	std::srand((unsigned int)seed);
 	return VPS.none;
 }
@@ -128,7 +128,7 @@ const Variant LIB_Math {
 		{"lerp",       NativeFuncTrans(VT_FLOAT64,  LIB_MT_lerp,     { {VT_FLOAT64}, {VT_FLOAT64}, {VT_FLOAT64} })},
 		{"remap",      NativeFuncTrans(VT_FLOAT64,  LIB_MT_remap,    { {VT_FLOAT64}, {VT_FLOAT64}, {VT_FLOAT64}, {VT_FLOAT64}, {VT_FLOAT64} })},
 		{"rand",       NativeFuncTrans(VT_INT64,    LIB_MT_rand,     { {VT_INT64}, {VT_INT64} })},
-		{"set_seed",   NativeFuncTrans(VT_NONE,     LIB_MT_set_seed, { {VT_INT64} })},
+		{"set_seed",   NativeFuncTrans(VT_NONE,     LIB_MT_set_seed, { {VT_UINT32} })},
 	},
 	VM_const
 };

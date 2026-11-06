@@ -30,7 +30,7 @@ Ity is a work-in-progress, light-weight & embeddable interpreted programming lan
 
 
 # Features
-- **Tiny & portable.** 66KB (compressed, 140kb otherwise) executable. All self-contained.
+- **Tiny & portable.** 65KB (compressed, 140kb otherwise) executable. All self-contained.
 - **Efficient memory usage.** 400KB runtime (Python: 11.2MB, Node: 45MB, Bash: 3.2MB).
 - **Platform agnostic.** No platform dependent source code.
 - **No build setup.** Requires no third-party libraries.
@@ -103,7 +103,7 @@ You can pass flags to the build script.
 ## Optimization profiles
 As mentioned in the flags section, you can choose from 3 optimization profiles. Balanced is the default & is what is used for benchmarks, but it is not the most performant.
 If you're looking to get the most speed out of Ity, use the "speed" profile which increases overall speed by about 28% but comes at the cost of a slightly larger binary (still under 250kb).
-On the other hand, if you are *really* constrained with file size & are willing to deal with an about 9% slower runtime then you can use the "size" profile, which decreases the final binary size to almost exactly 100kb.
+On the other hand, if you are *really* constrained with file size & are willing to deal with an about 9% slower runtime then you can use the "size" profile, which decreases the final binary size to almost exactly 100kb (11kb compressed).
 
 The overall differences between each profile is largely insignificant in most real-word cases, so unless you are working with tight constraints I wouldn't worry about changing the optimization profile.
 Modifying the source code to remove built-ins or even entire operators & instructions that you don't use in your codebase, will probably be much more valuable if you need to make the most of every kilobyte.
@@ -204,7 +204,7 @@ But if you prefer to be lazy, here are some quick examples:
 ### Declare
 ```python
 # Types:
-# 	ANY, NONE, BOOL, INT, FLOAT, STR, ARR, MAP, REF.
+# 	ANY, NONE, BOOL, I64 (INT) to 8 & unsigned (U*), F64 (FLOAT), STR, ARR, MAP, REF.
 
 var a = 0; # Type is inferred as INT.
 var INT b; # Value defaults to 0.
@@ -220,7 +220,7 @@ print:(type:c)
 merge IO;
 
 # Based af loop.
-var INT i=0; while i < 100; i+=1;
+var UINT i=0; while i < 100; i+=1;
 	print:i;
 /;
 
@@ -255,9 +255,9 @@ add:[4,5];
 ```python
 # fibonacci.ity
 import IO;
-const n = IO.prompt:'Number: ' -> INT;
+const n = IO.prompt:'Number: ' -> U64;
 
-var FLOAT a=0.0; var FLOAT b=1.0;
+var F64 a=0.0; var F64 b=1.0;
 
 for i in n;
 	const c = a+b;

@@ -5,17 +5,17 @@ import Limits;
 import FileSystem as FS;
 
 const STR PATH = 'noise.ppm';
-const UI8 DEPTH = 3;
+const U8 DEPTH = 3;
 const ARR BYTE_RANGE = [(Limits.STR_byte_min), (Limits.STR_byte_max)];
 
-const UI32 HEIGHT = IO.prompt:'Image height: '->INT;
-const UI32 WIDTH = IO.prompt:'Image width: '->INT;
-const UI64 BYTE_COUNT = WIDTH*HEIGHT*DEPTH;
+const U32 HEIGHT = IO.prompt:'Image height: '->INT;
+const U32 WIDTH = IO.prompt:'Image width: '->INT;
+const UINT BYTE_COUNT = WIDTH*HEIGHT*DEPTH;
 
 
 
 IO.print:'Generating...';
-const INT start = Time.now.ms;
+const UINT start = Time.now.ms;
 
 const FUNC rand = Math.rand;
 Math.set_seed:start;
@@ -31,7 +31,7 @@ var STR file = (
 
 file.reserve:BYTE_COUNT; # Reserve the amount of bytes we will be writing.
 # Generate randomized bytes & append each one at the end of the file.
-for i in BYTE_COUNT;
+for _i in BYTE_COUNT;
 	file.append:(rand:BYTE_RANGE);
 /;
 

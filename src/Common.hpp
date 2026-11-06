@@ -177,7 +177,7 @@ VariantData get_literal_from_str(const VariantType& type, const std::string& str
 		case VT_BOOL: return str_val == "true";
 		// TODO: replace number parsing functions with custom solution that DOESNT CRASH WHEN IT GOES OUT OF RANGE. Ahem.
 		case VT_INT64:   return (int64_t)std::stol(str_val);
-		case VT_UINT64:  return (uint64_t)std::stoul(str_val);
+		case VT_UINT64:  return (uint64_t)std::stod(str_val);
 		case VT_FLOAT64: return (FLOAT64_t)std::stod(str_val);
 		default: return std::monostate();
 	}

@@ -32,7 +32,7 @@ static Variant LIB_BI_system(ItyState& _state, const ARR_t& args) {
 // Pause thread execution for the given number of seconds.
 static Variant LIB_BI_sleep(ItyState& _state, const ARR_t& args) {
 	const Variant& var = args[0];
-	std::this_thread::sleep_for(std::chrono::microseconds( (uint32_t)(((var.t == VT_UINT64) ? (FLOAT64_t)AnyCast(uint64_t,var.d) : AnyCast(FLOAT64_t,var.d))*1000000) ));
+	std::this_thread::sleep_for(std::chrono::microseconds( (uint32_t)(var.to_float64()*1000000) ));
 	return VPS.none;
 }
 
@@ -184,7 +184,7 @@ static Variant LIB_BI_tm_str_arr_append(ItyState& _state, ARR_t& args) {
 
 static Variant LIB_BI_tm_str_arr_reserve(ItyState& _state, ARR_t& args) {
 	Variant* var = AnyCastV(Variant*,args[0].d);
-	const int64_t& count = AnyCast(int64_t,args[1].d);
+	const uint64_t& count = AnyCast(uint64_t,args[1].d);
 
 	// Throw error if the variant is a constant.
 	if (var->m == VM_const) {
@@ -383,7 +383,7 @@ const Variant LIB_BI {
 		{"set_max_depth",  NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_BI_set_max_depth, { {VT_UINT16} })},
 
 		{"system",      NativeFuncTrans(VT_UINT32, (NativeFunc_t)LIB_BI_system,     { {VT_STR} })},
-		{"sleep",       NativeFuncTrans(VT_NONE,   (NativeFunc_t)LIB_BI_sleep,      { {VT_UINT64,VT_INT64,VT_FLOAT64} })},
+		{"sleep",       NativeFuncTrans(VT_NONE,   (NativeFunc_t)LIB_BI_sleep,      { {VT_FLOAT64} })},
 		{"is_defined",  NativeFuncTrans(VT_BOOL,   (NativeFunc_t)LIB_BI_is_defined, { {VT_STR} })},
 		{"type",        NativeFuncTrans(VT_UINT8,  (NativeFunc_t)LIB_BI_type,       { {VT_ANY} })},
 		{"type_name",   NativeFuncTrans(VT_STR,    (NativeFunc_t)LIB_BI_type_name,  { {VT_UINT8} })},

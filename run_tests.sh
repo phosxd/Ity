@@ -52,6 +52,8 @@ run_test_on_file() {
 }
 
 
+start="$(date +%s%N)"
+
 cd TestCases
 passed_count=0
 total_count=0
@@ -87,6 +89,8 @@ for section in "Instructions" "Basics" "Misc" "Modules/IO" "Modules/Math" "Modul
 	cd "${WORKING_DIR}/TestCases"
 done
 
+end="$(date +%s%N)"
+
 
 echo
 if [[ $passed_count != $total_count ]]; then
@@ -94,3 +98,5 @@ if [[ $passed_count != $total_count ]]; then
 else
 	echo "${GREEN}${passed_count}/${total_count} tests passed.${RESET}"
 fi
+
+echo "Time: $( bc -l <<< "(${end}-${start})/1000000000" )s."

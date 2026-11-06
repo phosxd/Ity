@@ -34,36 +34,17 @@ const VariantType get_highest_order_type(const VariantType& a, const VariantType
 }
 
 
+// Type categorization checkers.
+
 const bool type_is_int(const VariantType& t) {
-	switch (t) {
-		case VT_INT64:
-		case VT_INT32:
-		case VT_INT16:
-		case VT_INT8: return true;
-		default: return false;
-	}
+	return t > VT_INT64-1 && t < VT_INT8+1;
 }
-
-
 const bool type_is_uint(const VariantType& t) {
-	switch (t) {
-		case VT_UINT64:
-		case VT_UINT32:
-		case VT_UINT16:
-		case VT_UINT8: return true;
-		default: return false;
-	}
+	return t > VT_UINT64-1 && t < VT_UINT8+1;
 }
-
-
 const bool type_is_float(const VariantType& t) {
-	switch (t) {
-		case VT_FLOAT64: return true;
-		default: return false;
-	}
+	return t == VT_FLOAT64;
 }
-
-
 const bool type_is_number(const VariantType& t) {
 	return type_is_int(t) || type_is_uint(t) || type_is_float(t);
 }
@@ -239,7 +220,7 @@ struct Variant {
 	bool to_bool() const {
 		return std::visit([](const auto& v) -> bool {
 			using VT = std::decay_t<decltype(v)>;
-			if constexpr (std::is_same_v<VT, bool> || std::is_arithmetic_v<VT>) return (bool)v;
+			if constexpr (std::is_arithmetic_v<VT>) return (bool)v;
 			else if constexpr (std::is_same_v<VT, STR_t>) return v == "true";
 			else return false;
 		}, d);
@@ -248,9 +229,9 @@ struct Variant {
 
 	template<class T>
 	T _to_number() const {
-		return std::visit([](const auto& v) -> T {
+		return std::visit([](const auto& v) -> T const {
 			using VT = std::decay_t<decltype(v)>;
-			if constexpr (std::is_same_v<VT, bool> || std::is_arithmetic_v<VT>) return (T)v;
+			if constexpr (std::is_arithmetic_v<VT>) return (T)v;
 			else if constexpr (std::is_same_v<VT, STR_t>) {
 				if (v.size() == 0 || NUM.find(v[0]) == std::string::npos) return 0;
 				else if constexpr (std::is_unsigned_v<T>) return (T)std::stoull(v);
@@ -370,6 +351,7 @@ struct Variant {
 
 
 	Variant* make_into_type(const VariantType& t_) {
+		if (t == t_) return this;
 		switch (t_) {
 			case VT_BOOL: {d = to_bool(); break;}
 
@@ -398,16 +380,16 @@ struct Variant {
 
 
 	const bool operator==(const Variant& b) const {
-		if (t == VT_BOOL && b.t == VT_BOOL) return to_bool() == b.to_bool();
+		if (t == VT_BOOL && b.t == VT_BOOL) return AnyCast(bool,d) == AnyCast(bool,b.d);
 
-		// Numbers..,
+		// Numbers...
 		else if (is_int() && b.is_int()) return to_int64() == b.to_int64();
 		else if (is_uint() && b.is_uint()) return to_uint64() == b.to_uint64();
 		else if (is_number() && b.is_number()) return to_float64() == b.to_float64();
 
-		else if (t == VT_STR && b.t == VT_STR) return to_str() == b.to_str();
-		else if (t == VT_ARR && b.t == VT_ARR) return to_arr() == b.to_arr();
-		else if (t == VT_MAP && b.t == VT_MAP) return to_map() == b.to_map();
+		else if (t == VT_STR && b.t == VT_STR) return AnyCast(STR_t,d) == AnyCast(STR_t,b.d);
+		else if (t == VT_ARR && b.t == VT_ARR) return AnyCast(ARR_t,d) == AnyCast(ARR_t,b.d);
+		else if (t == VT_MAP && b.t == VT_MAP) return AnyCast(MAP_t,d) == AnyCast(MAP_t,b.d);
 
 		// Throw error is none matched.
 		emit_operator_overload_error("Comp(==)", *this,b);
@@ -475,13 +457,13 @@ Variant operator+(const Variant& a, const Variant& b) {
 	else if (a.is_number() && b.is_number()) return *Variant{VT_FLOAT64, a.to_float64() + b.to_float64()}.make_into_type(get_highest_order_type(a.t, b.t));
 	// If both string...
 	else if (a.t == VT_STR) {
-		if (b.t == VT_STR)         return Variant{VT_STR, (a.to_str() + b.to_str())};
-		else if (b.is_number())    return Variant{VT_STR, (a.to_str() + char(b.to_int64()))}; // Add character to the string, from a code.
+		if (b.t == VT_STR)         return Variant{VT_STR, (AnyCast(STR_t,a.d) + AnyCast(STR_t,b.d))};
+		else if (b.is_number())    return Variant{VT_STR, (AnyCast(STR_t,a.d) + char(b.to_int64()))}; // Add character to the string, from a code.
 	}
 	// If both array...
-	else if (a.t == VT_ARR && b.t == VT_ARR) return Variant(VT_ARR, a.to_arr() + b.to_arr());
+	else if (a.t == VT_ARR && b.t == VT_ARR) return Variant(VT_ARR, AnyCast(ARR_t,a.d) + AnyCast(ARR_t,b.d));
 	// If both map...
-	else if (a.t == VT_MAP && b.t == VT_MAP) return Variant(VT_MAP, a.to_map() + b.to_map());
+	else if (a.t == VT_MAP && b.t == VT_MAP) return Variant(VT_MAP, AnyCast(MAP_t,a.d) + AnyCast(MAP_t,b.d));
 
 	// Throw error is none matched.
 	emit_operator_overload_error("Arith(+)", a,b);
@@ -507,9 +489,9 @@ Variant operator*(const Variant& a, const Variant& b) {
 	else if (a.is_uint() && b.is_uint())     return *Variant{VT_UINT64, a.to_uint64() * b.to_uint64()}.make_into_type(get_highest_order_type(a.t, b.t));
 	else if (a.is_number() && b.is_number()) return *Variant{VT_FLOAT64, a.to_float64() * b.to_float64()}.make_into_type(get_highest_order_type(a.t, b.t));
 	// If a is string & b is number...
-	else if (a.t == VT_STR && b.is_number()) return Variant{VT_STR, (a.to_str() * (uint32_t)b.to_int64())};
+	else if (a.t == VT_STR && b.is_number()) return Variant{VT_STR, (AnyCast(STR_t,a.d) * (uint32_t)b.to_int64())};
 	// If a is array & b is number...
-	else if (a.t == VT_ARR && b.is_number()) return Variant{VT_ARR, (a.to_arr() * (uint32_t)b.to_int64())};
+	else if (a.t == VT_ARR && b.is_number()) return Variant{VT_ARR, (AnyCast(ARR_t,a.d) * (uint32_t)b.to_int64())};
 
 	// Throw error is none matched.
 	emit_operator_overload_error("Arith(*)", a,b);
@@ -519,7 +501,7 @@ Variant operator*(const Variant& a, const Variant& b) {
 
 Variant operator/(const Variant& a, const Variant& b) {
 	if (a.is_number() && b.is_number()) {
-		if (const FLOAT64_t bd = b.to_float64(); bd != 0) return *Variant{VT_FLOAT64, a.to_float64() / b.to_float64()}.make_into_type(get_highest_order_type(a.t, b.t));
+		if (const FLOAT64_t& bd = b.to_float64(); bd != 0) return Variant{VT_FLOAT64, (FLOAT64_t)(a.to_float64() / b.to_float64())};
 		emit_error(ERR_zero_division);
 	}
 
@@ -531,7 +513,7 @@ Variant operator/(const Variant& a, const Variant& b) {
 
 Variant operator%(const Variant& a, const Variant& b) {
 	if (a.is_number() && b.is_number()) {
-		if (const int64_t& bd = b.to_int64(); bd != 0) return *Variant{VT_INT64, (a.to_int64() % bd)}.make_into_type(get_highest_order_type(a.t, b.t));
+		if (const int64_t& bd = b.to_int64(); bd != 0) return Variant{VT_INT64, (a.to_int64() % bd)};
 		emit_error(ERR_zero_division);
 	};
 

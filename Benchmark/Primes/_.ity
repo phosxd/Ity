@@ -3,19 +3,19 @@ merge IO; merge Time;
 
 func UINT isqrt; arg UINT n;
 	var x = n;
-	var y = ((x+1) / 2); while y < x;
+	var y = ((x+1u) / 2u); while y < x;
 		x = y;
-		y = ( ((n/x) + x) / 2);
+		y = ( ((n/x) + x) / 2u);
 	/; return x;
 /;
 
 
 func BOOL is_prime; arg UINT n;
-	if n%2 == 0; return n == 2; /;
-	const r = isqrt:n + 1;
-	var i=3; while i < r;
-		if n%i == 0; return false; /;
-		i+=2;
+	if n%2u == 0u; return n == 2u; /;
+	const r = isqrt:n + 1u;
+	var i=3u; while i < r;
+		if n%i == 0u; return false; /;
+		i+=2u;
 	/;
 	return true;
 /;
