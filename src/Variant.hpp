@@ -158,11 +158,8 @@ struct Variant {
 	const size_t get_size() const {
 		return std::visit([](const auto& v) -> size_t {
 			using T = std::decay_t<decltype(v)>;
-			if constexpr (std::is_same_v<T, std::monostate>) {
-				return 0;
-			}
 			// Numbers.
-			else if constexpr (std::is_arithmetic_v<T>) {
+			if constexpr (std::is_arithmetic_v<T>) {
 				return sizeof(T);
 			}
 			// String.
@@ -234,8 +231,7 @@ struct Variant {
 			if constexpr (std::is_arithmetic_v<VT>) return (T)v;
 			else if constexpr (std::is_same_v<VT, STR_t>) {
 				if (v.size() == 0 || NUM.find(v[0]) == std::string::npos) return 0;
-				else if constexpr (std::is_unsigned_v<T>) return (T)std::stoull(v);
-				else if constexpr (std::is_floating_point_v<T>) return (T)std::stod(v);
+				else if constexpr (std::is_floating_point_v<T> || std::is_unsigned_v<T>) return (T)std::stod(v);
 				else return (T)std::stoll(v);
 			}
 			else return 0;

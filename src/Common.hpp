@@ -23,8 +23,8 @@ struct ExprState {
 #ifdef RUNTIME_DEBUG
 std::ostream& operator<<(std::ostream& os, const ExprToken& s) {
 	os << "{ln=" << s.ln << ", col=" << s.col;
-	os << ", var=" << get_variant_type_name(s.var.t);
-	if (not s.seq.empty()) os << ", seq=" << s.seq;
+	os << ", v=" << get_variant_type_name(s.var.t);
+	if (not s.seq.empty()) os << ", s=" << s.seq;
 	os << '}';
 	return os;
 }
@@ -63,12 +63,12 @@ struct InstToken {
 #ifdef RUNTIME_DEBUG
 std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 	os << "{ln=" << s.ln << ", col=" << s.col;
-	if (not s.args.empty()) os << ", args=" << s.args;
-	if (not s.expr.seq.empty()) os << ", expr=" << s.expr;
-	if (s.composite_size > 0) {os << ", comp_size=" << s.composite_size;}
+	if (not s.args.empty()) os << ", ag=" << s.args;
+	if (not s.expr.seq.empty()) os << ", ex=" << s.expr;
+	if (s.composite_size > 0) {os << ", cs=" << s.composite_size;}
 	if (s.linked_inst != InstSymbol__) {
-		os << ", l_inst=" << s.linked_inst;
-		os << ", l_inst_pos=" << s.linked_inst_pos;
+		os << ", li=" << s.linked_inst;
+		os << ", lip=" << s.linked_inst_pos;
 	}
 	os << '}';
 	return os;

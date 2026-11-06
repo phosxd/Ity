@@ -208,7 +208,7 @@ std::unordered_map<std::string, std::vector<ExprTokenizeResult>> expr_cache;
 
 
 // Tokenize an expression. Returns an ExprToken with type "ExprTokenType_sequence".
-ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=0, const unsigned int col=0, const char grouping_mode='.') {
+ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int& ln=0, const unsigned int& col=0, const char& grouping_mode='.') {
 	ExprTokenizeResult result = {
 		.token = ExprToken{.ln=ln, .col=col, .t=ExprTokenType_sequence},
 		.grouping_mode = grouping_mode,
@@ -349,17 +349,17 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 					continue;
 				}
 				// Set type bool.
-				else if (check_ahead(expr, i, "true")) {
-					secondary_buffer = "true";
+				else if (check_ahead(expr, i, Keywords::true_)) {
+					secondary_buffer = Keywords::true_;
 					item.var.t = VT_BOOL;
 				}
-				else if (check_ahead(expr, i, "false")) {
-					secondary_buffer = "false";
+				else if (check_ahead(expr, i, Keywords::false_)) {
+					secondary_buffer = Keywords::false_;
 					item.var.t = VT_BOOL;
 				}
 				// Set type none.
-				else if (check_ahead(expr, i, "none")) {
-					secondary_buffer = "none";
+				else if (check_ahead(expr, i, Keywords::none_)) {
+					secondary_buffer = Keywords::none_;
 					item.var.t = VT_NONE;
 				}
 				// Set type reference.
@@ -569,7 +569,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 				;
 				// Throw error if key is not a string.
 				if (var->t != VT_STR) {
-					emit_error(ERR_invalid_syntax, {"Map key must be a string"});
+					emit_error(ERR_invalid_syntax, {"Map key must be string"});
 					return &none_var;
 				}
 				// Apply key.
@@ -654,7 +654,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 	// Output result in debug mode.
 	#ifdef RUNTIME_DEBUG
 	if (debug_flags.expr_result && not subexpr) {
-		std::cout << ANSI::purple << "Expression Result: " << ANSI::reset << *result << "\n";
+		std::cout << ANSI::purple << "ExprResult: " << ANSI::reset << *result << "\n";
 	};
 	#endif
 

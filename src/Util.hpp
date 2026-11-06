@@ -80,7 +80,7 @@ const std::vector<std::string> split_str(const std::string& text, const char& se
 // Return new `text` with each line indented `count` times.
 const std::string indent(const std::string& text, const std::string& indent_text="  ") {
 	std::string result;
-	unsigned int i = 0;
+	size_t i = 0;
 	for (const std::string& line : split_str(text, '\n')) {
 		if (i != 0) result += '\n';
 		result += indent_text + line;
@@ -91,9 +91,9 @@ const std::string indent(const std::string& text, const std::string& indent_text
 
 
 // Returns the number of strings that are empty inside the given vector.
-const unsigned int count_non_empty_strings(const std::vector<std::string>& items) {
+const size_t count_non_empty_strings(const std::vector<std::string>& items) {
 	const size_t& items_len = items.size();
-	unsigned int count = 0;
+	size_t count = 0;
 	for (size_t i = 0; i < items_len; i++) {
 		if (not items[i].empty()) count++;
 	}

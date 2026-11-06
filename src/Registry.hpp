@@ -72,6 +72,11 @@ constexpr const uint8_t MAX_TEMPORARY_POOL_RESERVE = 32;
 
 
 
+namespace Keywords {
+	static constexpr const std::string none_  = "none";
+	static constexpr const std::string true_  = "true";
+	static constexpr const std::string false_ = "false";
+}
 namespace ANSI {
 	static constexpr const char reset[]    = "\e[0m";
 	static constexpr const char bold[]     = "\e[1m";

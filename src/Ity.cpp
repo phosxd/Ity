@@ -299,7 +299,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 
 // Execute a sequence of instruction tokens.
-void exec(ItyState& state, const size_t start_idx, const int end_idx) {
+void exec(ItyState& state, const size_t& start_idx, const int& end_idx) {
 	current_script_path = &state.path;
 	state.execution_depth += 1;
 	// Throw error if maximum execution depth is reached.
@@ -454,7 +454,6 @@ void start_shell(int argc, char* argv[]) {
 	#ifdef INCLUDE_SHELL
 	else {
 		std::cout << "* " << ANSI::yellow << "Ity (" << ItyVersionString << ")" << ANSI::reset << '\n'
-		<< "* " << ANSI::purple << "Running interactive mode interpreter." << ANSI::reset << '\n'
 		<< "* " << ANSI::purple << "Type \"quit\" or \"q\" to stop." << ANSI::reset << '\n';
 
 		current_line = 1;
@@ -497,7 +496,7 @@ void start_shell(int argc, char* argv[]) {
 			{DurCast_us(total_end-clock_start).count(), DurCast_ms(total_end-clock_start).count()},
 			{DurCast_us(timers[1]-timers[0]).count(),   DurCast_ms(timers[1]-timers[0]).count()},
 		};
-		std::cout << "\n\n" << "Program results...\n------------------\n";
+		std::cout << "\n\n" << "Prog. results...\n----------------\n";
 		if (not source_script_path.empty()) {std::cout << "TIME (Token):    " << std::to_string(times[1][1]/1000) << "s (" << times[1][0] << "us).\n";}
 		std::cout <<                                      "TIME (Total):    " << std::to_string(times[0][1]/1000) << "s (" << times[0][0] << "us).\n";
 		std::cout <<                                      "STATE SIZE:      " << state.scope.get_size() << " bytes." << '\n';

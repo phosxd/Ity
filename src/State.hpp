@@ -120,7 +120,7 @@ struct ItyScope {
 		// Output function call in debug mode...
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.data_assign) {
-			std::cout << ANSI::blue << "SetData: " << ANSI::reset << "{name=" << name << ", hash=" << hashed_name << ", data=" << data << "}\n";
+			std::cout << ANSI::blue << "SetData: " << ANSI::reset << "{n=" << name << ", h=" << hashed_name << ", d=" << data << "}\n";
 		}
 		#endif
 
@@ -255,6 +255,7 @@ struct ItyState {
 
 	void init() {
 		// Add basic info.
+		// Fragment Size: 1040
 		scope.set_data("__VERSION__",              Variant{VT_ARR,  (ARR_t){Variant{VT_INT64,(int64_t)ItyVersion[0]}, Variant{VT_INT64,(int64_t)ItyVersion[1]}, Variant{VT_INT64,(int64_t)ItyVersion[2]}, Variant{VT_INT64,(int64_t)ItyVersion[3]}}, VM_const});
 		scope.set_data("__VERSION_STRING__",       Variant{VT_STR,  (STR_t)ItyVersionString, VM_const});
 		scope.set_data("__SCRIPT_PATH__",          Variant{VT_STR,  (STR_t)path, VM_const});
