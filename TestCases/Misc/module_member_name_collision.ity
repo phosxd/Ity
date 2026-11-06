@@ -1,0 +1,6 @@
+#EXPECT
+#Error: 24
+#END
+
+merge IO;
+merge IO;

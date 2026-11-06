@@ -1,0 +1,12 @@
+#EXPECT
+#Error: 10
+#END
+
+
+merge IO;
+
+func recurse;
+	recurse:();
+/;
+
+recurse:();

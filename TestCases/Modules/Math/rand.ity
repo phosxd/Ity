@@ -1,0 +1,26 @@
+#EXPECT
+#1
+#32
+#47
+#84
+#55
+#-3
+#0.884667
+#END
+
+merge IO;
+import Math;
+
+
+Math.set_seed:0;
+
+print:(Math.rand:[0,1]);
+print:(Math.rand:[0,100]);
+
+print:(Math.rand:[-100,100]);
+print:(Math.rand:[-100,100]);
+print:(Math.rand:[-100,100]);
+print:(Math.rand:[-100,100]);
+
+# 0 to 1 float.
+print:(Math.rand:[0, 1_000_000] / 1_000_000);

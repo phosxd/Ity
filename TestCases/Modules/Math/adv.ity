@@ -1,0 +1,38 @@
+#EXPECT
+#linear interpolation
+#-50
+#0
+#50
+#77.6
+#linear remapping
+#-50
+#0
+#50
+#-33.33333333333334
+#END
+
+merge IO;
+import Math;
+
+
+# Linear interpolation
+# ---------------------
+
+print:'linear interpolation';
+
+print:(Math.lerp:[-100, 100, 0.25]);
+print:(Math.lerp:[-100, 100, 0.5]);
+print:(Math.lerp:[-100, 100, 0.75]);
+print:(Math.lerp:[-100, 100, 0.888]);
+
+
+# Linear remapping
+# ----------------
+
+print:'linear remapping';
+
+print:(Math.remap:[0,1, -100,100, 0.25]);
+print:(Math.remap:[0,1, -100,100, 0.5]);
+print:(Math.remap:[0,1, -100,100, 0.75]);
+
+print:(Math.remap:[0, 1.5, -100,100, 0.5]);
