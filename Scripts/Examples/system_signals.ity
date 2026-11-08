@@ -2,13 +2,13 @@
 import IO;
 
 
-func NONE interrupt_handler;
+func interrupt_handler;
 	IO.print:'\nInterupted';
 	exit; # Should always call `exit` when connecting to signals that are supposed to end the process.
 /;
 
 
-func NONE user_signal_handler;
+func user_signal_handler;
 	IO.print:'\nReceived custom signal 1';
 /;
 

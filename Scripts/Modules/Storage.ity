@@ -1,0 +1,13 @@
+# Storage
+# --------
+#
+# Implements convenient methods for reading & writing data.
+# Only compatible with Linux systems.
+#
+#
+# PART OF THE STANDARD SET OF ITY MODULES.
+
+
+const MAP __module__ = {
+	'__name', 'Storage',
+};
