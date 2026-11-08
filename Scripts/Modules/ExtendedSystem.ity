@@ -6,18 +6,27 @@
 #
 # PART OF THE STANDARD SET OF ITY MODULES.
 
-
 import Math;
-import FileSystem;
+import FileSystem as FS;
 
 
+# Generate a temporary path, unique to this script instance.
+const STR tmp_path = '/tmp/ity_es_' + (Math.rand:[0, 100_000]/100_000.0 -> STR);
+const STR tmp_out_path = tmp_path+'_out';
+const STR tmp_err_path = tmp_path+'_err';
+
+
+# Execute command & return the output
 func MAP ES_call; arg STR cmd;
-	const STR tmp_path = '/tmp/ity_' + (Math.rand:[0, 100_000]/100_000.0 -> STR); # Generate random temp path.
 	const MAP res = {
-		'code', (system:(cmd + ' > ' + tmp_path)), # Run command.
-		'out',  (FileSystem.read:tmp_path), # Read output file.
+		'code', (system:(cmd + ' >'+tmp_out_path + ' 2>'+tmp_err_path)), # Run command.
+		'out',  (FS.read:tmp_out_path), # Read output file.
+		'err',  (FS.read:tmp_err_path), # Read error file.
 	};
-	FileSystem.remove:tmp_path; # Delete file.
+	# Delete files.
+	FS.remove:tmp_out_path;
+	FS.remove:tmp_err_path;
+
 	return res;
 /;
 
@@ -26,5 +35,10 @@ func MAP ES_call; arg STR cmd;
 
 const MAP __module__ = {
 	'__name', 'ExtendedSystem',
+
+	'tmp_path', tmp_path,
+	'tmp_out_path', tmp_out_path,
+	'tmp_err_path', tmp_err_path,
+
 	'call', ES_call,
 };
