@@ -1,0 +1,29 @@
+#EXPECT
+#3
+#33
+#2
+#22
+#END
+
+merge IO;
+
+# Array...
+
+var ARR array = [1,2,3,4];
+const PTR arr_item_ptr = @>(array:2); # Point to INT '3'.
+print:(~arr_item_ptr);
+
+array:2 = 33; # Overwrite value at index 2.
+print:(~arr_item_ptr); # Should be 33 now.
+
+# Map...
+
+var MAP map = {'a',1, 'b',2, 'c',3};
+const PTR map_item_ptr = @>(map.b); # Point to INT '2'.
+print:(~map_item_ptr);
+
+map.b = 22; # Overwrite value at 'b'.
+print:(~map_item_ptr); # Should be 22 now.
+
+map = {}; # Delete all items.
+var unstable = ~map_item_ptr; # Pointer usage is unstable, value is undetermined.

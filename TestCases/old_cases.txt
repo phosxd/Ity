@@ -30,54 +30,6 @@ var INT i = 0; while i < 5;
 /;
 "
 
-""
-
-
-"
-# Early exit conditional check
-# ----------------------------
-
-func BOOL test;
-	throw 'This should not run';
-/;
-
-func BOOL test2;
-	return true;
-/;
-
-
-merge IO;
-
-print:( (1 == 0) && (test:[]) );
-print:( (1 == 1) && (test2:[]) );
-print:( (1 == 0) || (test2:[]) );
-print:( (1 == 1) || (test:[]) );
-"
-
-"false
-true
-true
-true"
-
-# 24
-
-"
-merge IO;
-
-# Early exit
-# ----------
-
-var INT i = 0; while i < 10;
-	if i == 4;
-		exit;
-	/;
-	out:i;
-	i += 1;
-/;
-"
-
-"0123"
-
 
 "
 # Loop continue / break
@@ -104,19 +56,6 @@ print:'Done';
 5
 Done"
 
-# 30
-
-"
-# System command
-# --------------
-
-var INT code = system:['echo hello'];
-if code != 0; throw 'Wrong code'; /;
-"
-
-"hello"
-
-# 31
 
 "
 # Complex data addition
@@ -464,63 +403,3 @@ function:[]; # The definition scope no longer exists, falls back to the scope ab
 
 "Hello!
 Error: 27"
-
-# 62
-
-"
-# Pointer syntax
-# --------------
-
-merge IO;
-
-const INT a = 9;
-const PTR ptr = @>a;
-
-print:ptr;
-print:(~ptr);
-
-const PTR val_ptr = (@> 99);
-print:val_ptr;
-print:(~val_ptr);
-
-"
-
-"PTR
-9
-PTR
-99"
-
-# 63
-
-"
-# Pointer reference container data
-# ---------------------------------
-
-merge IO;
-
-# Array...
-
-var ARR array = [1,2,3,4];
-const PTR arr_item_ptr = @>(array:2); # Point to INT '3'.
-print:(~arr_item_ptr);
-
-array:2 = 33; # Overwrite value at index 2.
-print:(~arr_item_ptr); # Should be 33 now.
-
-# Map...
-
-var MAP map = {'a',1, 'b',2, 'c',3};
-const PTR map_item_ptr = @>(map.b); # Point to INT '2'.
-print:(~map_item_ptr);
-
-map.b = 22; # Overwrite value at 'b'.
-print:(~map_item_ptr); # Should be 22 now.
-
-map = {}; # Delete all items.
-var unstable = ~map_item_ptr; # Pointer usage is unstable, value is undetermined.
-"
-
-"3
-33
-2
-22"

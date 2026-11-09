@@ -1,0 +1,13 @@
+#EXPECT
+#0123
+#END
+
+merge IO;
+
+var INT i = 0; while i < 10;
+	if i == 4;
+		exit;
+	/;
+	out:i;
+	i += 1;
+/;

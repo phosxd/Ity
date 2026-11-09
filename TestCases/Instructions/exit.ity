@@ -1,4 +1,5 @@
 #EXPECT
 #END
 
-exit
+exit;
+throw 'This should not run';

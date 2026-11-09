@@ -1,0 +1,23 @@
+#EXPECT
+#false
+#true
+#true
+#true
+#END
+
+merge IO;
+
+
+func BOOL test;
+	throw 'This should not run';
+/;
+
+func BOOL test2;
+	return true;
+/;
+
+
+print:( (1 == 0) && (test:[]) );
+print:( (1 == 1) && (test2:[]) );
+print:( (1 == 0) || (test2:[]) );
+print:( (1 == 1) || (test:[]) );

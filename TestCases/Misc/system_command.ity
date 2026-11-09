@@ -1,0 +1,7 @@
+#EXPECT
+#Hello World!
+#0
+#END
+
+const result = system:'echo Hello World!';
+system:('echo ' + (result->STR));

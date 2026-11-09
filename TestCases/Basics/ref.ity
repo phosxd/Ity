@@ -1,0 +1,19 @@
+#EXPECT
+#REF:a
+#9
+#REF:
+#none
+#END
+
+merge IO;
+
+const INT a = 9;
+const REF ref = @a;
+
+print:ref;
+print:(~ref);
+
+# Invalid reference, literals cannot be referenced.
+const REF val_ref = @99;
+print:val_ref;
+print:(~val_ref); # Prints "none".
