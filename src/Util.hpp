@@ -2,7 +2,7 @@
 
 
 const std::string ALPHA = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"; // Too long to be constexpr.
-constexpr std::string NUM = "0123456789";
+constexpr const std::string NUM = "0123456789";
 
 
 

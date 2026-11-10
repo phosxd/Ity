@@ -81,11 +81,11 @@ static void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const u
 
 static void INST_Var_exec(ItyState& state, InstToken& token) {
 	const std::string& name = AnyCast(std::string,token.meta[0]);
-	const size_t& hashed_name = AnyCast(size_t,token.meta[1]);
+	const var_key_t& key = AnyCast(var_key_t,token.meta[1]);
 
-	if (state.scope.get_data_globally(name, nullptr, hashed_name)) {
+	if (state.scope.get_data_globally(name, nullptr, key)) {
 		// Give error if the var name is not free on the current scope.
-		if (state.scope.get_data("", nullptr, hashed_name)) {
+		if (state.scope.get_data("", nullptr, key)) {
 			emit_error(ERR_name_is_taken, {name});
 			return;
 		}
@@ -147,7 +147,7 @@ static void INST_Var_exec(ItyState& state, InstToken& token) {
 	// Set data.
 	const VariantMode& mode = AnyCast(VariantMode,token.meta[3]);
 	if (not var.matches(Variant{type, std::monostate(), mode})) return;
-	state.scope.set_data(name, Variant{var.t, var.d, mode}, hashed_name);
+	state.scope.set_data(name, Variant{var.t, var.d, mode}, key);
 }
 
 

@@ -2,8 +2,8 @@
 
 
 // Call a function.
-Variant call_function(ItyState& state, const FUNC_t& func, Variant input_args) {
-	ARR_t args = func.bound_args + AnyCastV(ARR_t,input_args.d);
+Variant call_function(ItyState& state, const FUNC_t& func, ARR_t& input_args) {
+	ARR_t args = func.bound_args + input_args;
 
 	// Check args against the func's schema...
 	if (not func.args_schema.empty()) {
@@ -143,7 +143,7 @@ const OpDef OPERATIONS[] = {
 
 	{OpSymbol_ref,    "@",   OP_RefOps},
 	{OpSymbol_ptrref, "@>",  OP_RefOps},
-	{OpSymbol_deref,  "~",   OP_RefOps},
+	{OpSymbol_deref,  "~",   OP_RefOps}
 };
 const OpDef* find_OpDef(const OpSymbol& sym = OpSymbol__, const std::string& str = "") {
 	for (const OpDef& def : OPERATIONS) {
@@ -168,7 +168,7 @@ const bool is_valid_name(const std::string& name) {
 }
 
 
-const bool is_special_symbol(const char& ch) {
+const bool is_special_symbol(const char ch) {
 	return (
 		ALPHA.find(ch) == std::string::npos
 		&& NUM.find(ch) == std::string::npos
@@ -177,7 +177,7 @@ const bool is_special_symbol(const char& ch) {
 }
 
 
-const bool check_ahead(const std::string& text, const size_t& start_idx, const std::string& substr) {
+const bool check_ahead(const std::string& text, const size_t start_idx, const std::string& substr) {
 	const size_t& substr_len = substr.size();
 	if (text.size() < start_idx+substr_len) return false;
 	for (size_t i = 0; i < substr_len; i++) {
@@ -208,7 +208,7 @@ std::unordered_map<std::string, std::vector<ExprTokenizeResult>> expr_cache;
 
 
 // Tokenize an expression. Returns an ExprToken with type "ExprTokenType_sequence".
-ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int& ln=0, const unsigned int& col=0, const char& grouping_mode='.') {
+ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=0, const unsigned int col=0, const char grouping_mode='.') {
 	ExprTokenizeResult result = {
 		.token = ExprToken{.ln=ln, .col=col, .t=ExprTokenType_sequence},
 		.grouping_mode = grouping_mode,
@@ -513,7 +513,7 @@ Variant* resolve_variant(ItyState& state, ExprState& expr_state, Variant& item) 
 		expr_state.path = tref.str;
 
 		// Get variable.
-		Variant* ptr = state.scope.get_data_globally(tref.str, nullptr, tref.hash);
+		Variant* ptr = state.scope.get_data_globally(tref.str, nullptr, tref.key);
 		// Throw error if variable is undefined.
 		if (not ptr) {
 			emit_error(ERR_name_does_not_exist, {tref.str});
@@ -592,7 +592,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 	const unsigned int ln_ = current_line;
 	const unsigned int col_ = current_column;
 
-	const size_t& seq_len = token.seq.size();
+	const size_t seq_len = token.seq.size();
 	Variant* result = nullptr;
 	Variant* second = nullptr;
 	// Pre initialized variables.
@@ -677,7 +677,7 @@ Variant* expr_exec(ItyState& state, ExprToken& token, const bool subexpr=false) 
 
 // Inserts a tokenized expression with proper meta data into the given `token.expr`.
 // Expression is assumed to start at `start_idx` in `token.args`.
-std::vector<std::string> tokenize_expr_from_inst_args(InstToken& token, const unsigned int& start_idx = 0) {
+std::vector<std::string> tokenize_expr_from_inst_args(InstToken& token, const unsigned int start_idx = 0) {
 	std::vector<std::string> new_args; new_args.reserve(start_idx);
 	std::string expr_string;
 	unsigned int i = 0;
@@ -689,7 +689,7 @@ std::vector<std::string> tokenize_expr_from_inst_args(InstToken& token, const un
 			new_args.push_back(arg);
 		}
 		else {
-			expr_string += ' '+token.args[i];
+			expr_string += ' '+arg;
 		}
 		i++;
 	}

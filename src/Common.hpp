@@ -84,22 +84,22 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 
 // const std::hash<std::string> string_hasher;
 std::vector<std::string> string_hasher_id_map = {""}; // Index 0 is reserved empty.
-size_t string_hasher(const std::string& str) {
+var_key_t string_hasher(const std::string& str) {
 	const size_t& len = string_hasher_id_map.size();
 	for (size_t i = 1; i < len; i++) {
-		if (str == string_hasher_id_map[i]) return i;
+		if (str == string_hasher_id_map[i]) return (var_key_t)i;
 	}
 
 	string_hasher_id_map.push_back(str);
-	return string_hasher_id_map.size()-1;
+	return (var_key_t)string_hasher_id_map.size()-1;
 }
 
 
 struct HASHED_NAMES_struct {
-	const size_t __AG   = string_hasher("__AG");
-	const size_t __R    = string_hasher("__R");
-	const size_t __tm__ = string_hasher("__tm__");
-	const size_t __IMPORTED__ = string_hasher("__IMPORTED__");
+	const var_key_t __AG   = string_hasher("__AG");
+	const var_key_t __R    = string_hasher("__R");
+	const var_key_t __tm__ = string_hasher("__tm__");
+	const var_key_t __IMPORTED__ = string_hasher("__IMPORTED__");
 };
 const HASHED_NAMES_struct HASHED_NAMES;
 
@@ -168,8 +168,8 @@ VariantData get_literal_from_str(const VariantType& type, const std::string& str
 	switch (type) {
 		case VT_TREF: {
 			return TREF_t{
-				.str  = str_val,
-				.hash = string_hasher(str_val),
+				.str = str_val,
+				.key = string_hasher(str_val),
 			};
 		}
 		case VT_REF:
@@ -248,14 +248,4 @@ const bool expect_arg_types(const Variant& arg, std::vector<VariantType> types, 
 	if (exists_in_vec(types, arg.t)) return true;
 	emit_error(ERR_invalid_func_arg_type, {std::to_string(arg_idx), multiple_types_str(types), get_variant_type_name(arg.t)});
 	return false;
-}
-
-
-const bool ExpectArgs(const ARR_t& args, const std::vector<std::vector<VariantType>> types) {
-	if (not expect_arg_count(args, types.size())) return false;
-	size_t i = 0; for (const Variant& arg : args) {
-		if (not expect_arg_types(arg, types[i], i)) return false;
-		i++;
-	}
-	return true;
 }

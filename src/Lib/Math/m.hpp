@@ -31,11 +31,9 @@ static Variant LIB_MT_round(ItyState& state, ARR_t& args) {
 	return Variant{VT_INT64, (int64_t)std::round(AnyCast(FLOAT64_t,args[0].d))};
 }
 static Variant LIB_MT_floor(ItyState& state, ARR_t& args) {
-	if (not ExpectArgs(args, { {VT_FLOAT64} })) return VPS.none;
 	return Variant{VT_INT64, (int64_t)std::floor(AnyCast(FLOAT64_t,args[0].d))};
 }
 static Variant LIB_MT_ceil(ItyState& state, ARR_t& args) {
-	if (not ExpectArgs(args, { {VT_FLOAT64} })) return VPS.none;
 	return Variant{VT_INT64, (int64_t)std::ceil(AnyCast(FLOAT64_t,args[0].d))};
 }
 

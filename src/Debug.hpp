@@ -111,6 +111,8 @@ bool emit_warnings = true;
 bool safe_mode = false;
 // If true. wait for confirmation to run the next instruction.
 bool step_mode = false;
+// If true, errors will not kill the program & will try to carry on as if nothing is wrong.
+bool persist_mode = false;
 
 
 
@@ -219,7 +221,7 @@ void emit_error(const ERR_CODE code, const std::vector<std::string> args={}, uns
 	}
 
 	// Kill program.
-	exit(1);
+	if (not persist_mode) exit(1);
 }
 
 

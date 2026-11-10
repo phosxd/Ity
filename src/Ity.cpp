@@ -406,6 +406,7 @@ void start_shell(int argc, char* argv[]) {
 			else if (s == "--nowarn")               emit_warnings = false;
 			else if (s == "-s" || s == "--safe")    safe_mode = true;
 			else if (s == "--step")                 step_mode = true;
+			else if (s == "-p" || s == "--persist") persist_mode = true;
 		}
 
 		// Set script path.

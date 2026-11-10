@@ -62,6 +62,8 @@ struct ItyState;
 struct CompositeItem;
 struct OpDef;
 
+using var_key_t = uint32_t;
+
 using FLOAT64_t = double;
 using STR_t = std::string;
 using ARR_t = std::vector<Variant>;
@@ -87,7 +89,7 @@ struct FUNC_t {
 
 struct TREF_t {
 	std::string str;
-	size_t hash = 0;
+	var_key_t key = 0;
 };
 
 // using VariantData = std::any;

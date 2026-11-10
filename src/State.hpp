@@ -1,38 +1,15 @@
 #pragma once
 
+#include <utility>
 
-using ScopeMap_t = std::vector<Variant*>;
+
+using ScopeMapCell_t = std::pair<uint32_t,Variant>;
+using ScopeMap_t = std::vector<ScopeMapCell_t>;
 
 struct ItyScope {
 	ItyScope* p = nullptr;  // Parent scope.
 	ScopeMap_t d;           // Scope data.
 	uint32_t id;            // Scope UID.
-
-
-	// Initialize.
-	ItyScope(ItyScope* p_=nullptr, ScopeMap_t d_={}, uint32_t id_=0) : p(p_), d(d_), id(id_) {}
-
-
-	// Destroy.
-	~ItyScope() {
-		flush();
-	}
-
-
-	// Move initialize.
-	ItyScope(ItyScope&& other) : p(std::move(other.p)), d(std::move(other.d)), id(std::move(other.id)) {}
-
-
-	// Move assignemnt.
-	ItyScope& operator=(ItyScope&& other) {
-		if (this != &other) {
-			flush();
-			p = std::move(other.p);
-			d = std::move(other.d);
-			id = std::move(other.id);
-		}
-		return *this;
-	}
 
 
 	// Returns the first parent scope with a matching ID.
@@ -53,9 +30,8 @@ struct ItyScope {
 	// This does *not* account for the data inside the scope's parent.
 	const size_t get_size() const {
 		size_t final_size = 0;
-		for (const Variant* i : d) {
-			if (not i) continue;
-			final_size += i->get_size();
+		for (const std::pair<var_key_t,Variant>& pair : d) {
+			final_size += pair.second.get_size();
 		}
 		return final_size;
 	}
@@ -92,56 +68,60 @@ struct ItyScope {
 
 	// Clears all data in the scope.
 	void flush() {
-		for (Variant* i : d) delete i;
 		d.clear();
 	}
 
 
+	ScopeMapCell_t* get_data_cell(const var_key_t key=0) {
+		for (ScopeMapCell_t& cell : d) {
+			if (cell.first == key) return &cell;
+		}
+		return nullptr;
+	}
+
+
 	// Gets the data for name in the current scope. Returns `nullptr` or `default_value` if no data found.
-	Variant* get_data(const std::string& name, Variant* default_value=nullptr, size_t hashed_name=0) {
-		if (hashed_name == 0) hashed_name = string_hasher(name);
-		if (hashed_name+1 >= d.size()) d.resize(hashed_name+1, nullptr);
-		Variant* var = d[hashed_name];
-		return (var) ? var : default_value;
+	Variant* get_data(const std::string& name, Variant* default_value=nullptr, const var_key_t key=0) {
+		ScopeMapCell_t* cell = get_data_cell((key == 0) ? string_hasher(name): key);
+		return (cell) ? &cell->second : default_value;
 	}
 
 
 	// Gets the data for name in this scope or any scope above it. Returns `nullptr` or `default_value` if no data found.
-	Variant* get_data_globally(const std::string& name, Variant* default_value=nullptr, const size_t& hashed_name=0) {
-		if (Variant* var = get_data(name, nullptr, hashed_name); var) return var;
-		return (p) ? p->get_data_globally(name, default_value, hashed_name) : default_value;
+	Variant* get_data_globally(const std::string& name, Variant* default_value=nullptr, const var_key_t key=0) {
+		if (Variant* var = get_data(name, nullptr, key); var) return var;
+		return (p) ? p->get_data_globally(name, default_value, key) : default_value;
 	}
 
 
 	// Sets the data for name in this scope.
-	void set_data(const std::string& name, const Variant& data, size_t hashed_name=0) {
-		if (hashed_name == 0) hashed_name = string_hasher(name);
+	void set_data(const std::string& name, const Variant& data, var_key_t key=0) {
+		if (key == 0) key = string_hasher(name.data());
 
 		// Output function call in debug mode...
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.data_assign) {
-			std::cout << ANSI::blue << "SetData: " << ANSI::reset << "{n=" << name << ", h=" << hashed_name << ", d=" << data << "}\n";
+			std::cout << ANSI::blue << "SetData: " << ANSI::reset << "{n=" << name << ", h=" << key << ", d=" << data << "}\n";
 		}
 		#endif
 
-		Variant* previous_var = get_data(name, nullptr, hashed_name);
-		if (previous_var) {
+		ScopeMapCell_t* cell = get_data_cell(key);
+		if (cell) {
 			// Throw error if is a constant.
-			if (previous_var->m == VM_const) {
+			if (cell->second.m == VM_const) {
 				emit_error(ERR_cannot_change_constant);
 				return;
 			}
-			// Delete.
-			delete previous_var;
+			cell->second = std::move(data);
 		}
-		d[hashed_name] = new Variant(std::move(data));
+		else d.push_back( ScopeMapCell_t{key, std::move(data)} );
 	}
 
 
-	void set_data_globally(const std::string& name, const Variant& data, const size_t& hashed_name=0) {
+	void set_data_globally(const std::string& name, const Variant& data, const var_key_t key=0) {
 		return (p)
-			? p->set_data_globally(name, data, hashed_name)
-			: set_data(name, data, hashed_name)
+			? p->set_data_globally(name, data, key)
+			: set_data(name, data, key)
 		;
 	}
 

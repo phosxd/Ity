@@ -20,9 +20,9 @@ const U8 u8_x = 255;
 const U8 u8_n = 0;
 const U16 u16_x = 65_535;
 const U16 u16_n = 0;
-const U32 u32_x = 4_294_967_296;
+const U32 u32_x = 4_294_967_295;
 const U32 u32_n = 0;
-const U64 u64_x = 18_446_744_073_709_551_616u;
+const U64 u64_x = 18_446_744_073_709_551_615u;
 const U64 u64_n = 0;
 
 # Min/max are not the true limits, only an approximation.

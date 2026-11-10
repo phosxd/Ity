@@ -81,7 +81,8 @@ static void INST_Loop_for_loop(ItyState& state, InstToken& token, bool& value) {
 			}
 			// Get item from function.
 			case VT_FUNC: {
-				const Variant& result = call_function(state, AnyCast(FUNC_t,iterable->d), Variant{VT_ARR,(ARR_t){token_vars[1]}});
+				ARR_t args = {token_vars[1]};
+				const Variant& result = call_function(state, AnyCast(FUNC_t,iterable->d), args);
 				if (result.t == VT_ARR) {
 					if (const ARR_t& arr = AnyCast(ARR_t,result.d); arr.size() == 2 && arr[0].t == VT_BOOL) {
 						value = AnyCast(bool,arr[0].d);
@@ -151,7 +152,7 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 		if (token.symbol == InstSymbol_for) {
 			// Give warning if the var name is shadowing another var name.
 			const STR_t& var_name = AnyCast(STR_t,token.meta[1]);
-			if (state.scope.p->get_data_globally(var_name, nullptr, AnyCast(size_t,token.meta[2]))) {
+			if (state.scope.p->get_data_globally(var_name, nullptr, AnyCast(var_key_t,token.meta[2]))) {
 				emit_warn(ERR_name_is_shadowed, {var_name});
 			}
 		}
@@ -161,7 +162,7 @@ static void INST_Loop_exec(ItyState& state, InstToken& token) {
 	// If for loop, set the variable.
 	if (token.symbol == InstSymbol_for && value) {
 		ARR_t& token_vars = AnyCastV(ARR_t,token.meta[3]);
-		state.scope.set_data(AnyCast(STR_t,token.meta[1]), Variant{token_vars[1].t, std::move(token_vars[1].d), VM_dynamic_type}, AnyCast(size_t,token.meta[2]));
+		state.scope.set_data(AnyCast(STR_t,token.meta[1]), Variant{token_vars[1].t, std::move(token_vars[1].d), VM_dynamic_type}, AnyCast(var_key_t,token.meta[2]));
 		AnyCastV(uint64_t,token.meta[4]) += 1;
 	}
 }
