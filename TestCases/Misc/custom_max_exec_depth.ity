@@ -9,10 +9,10 @@
 
 merge IO;
 
-func NONE recurse; arg INT i=0;
+func recurse; arg INT i=0;
 	print:i;
 	recurse:(i+1);
 /;
 
-set_max_depth:5;
+set_ity_prop:['max_depth', 5];
 recurse:();

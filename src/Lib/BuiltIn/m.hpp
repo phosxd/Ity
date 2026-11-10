@@ -3,16 +3,33 @@
 #include <thread> // Needed for sleep.
 
 
-
-// Override maximum execution depth.
-static Variant LIB_BI_set_max_depth(ItyState& state, const ARR_t& args) {
+// Get interpreter property value.
+static Variant LIB_BI_get_ity_prop(ItyState& state, const ARR_t& args) {
 	if (safe_mode) {
-		emit_error(ERR_disallowed_member_in_safe_mode, {"set_max_depth"});
+		emit_error(ERR_disallowed_member_in_safe_mode, {"get_ity_prop"});
 		return VPS.none;
 	}
 
-	const uint16_t& count = AnyCast(uint16_t,args[0].d);
-	state.execution_depth_max = count;
+	const STR_t& prop = AnyCast(STR_t,args[0].d);
+	if (prop == "persist") return Variant{VT_BOOL, (bool)ItyDebug::persist_mode};
+	else if (prop == "max_depth") return Variant{VT_UINT16, (uint16_t)state.execution_depth_max};
+
+	return VPS.none;
+}
+
+
+// Set interpreter property value.
+static Variant LIB_BI_set_ity_prop(ItyState& state, const ARR_t& args) {
+	if (safe_mode) {
+		emit_error(ERR_disallowed_member_in_safe_mode, {"set_ity_prop"});
+		return VPS.none;
+	}
+
+	const STR_t& prop = AnyCast(STR_t,args[0].d);
+	const Variant& value = args[1];
+	if (prop == "persist") ItyDebug::persist_mode = value.to_bool();
+	else if (prop == "max_depth") state.execution_depth_max = value.to_uint16();
+
 	return VPS.none;
 }
 
@@ -380,7 +397,8 @@ const Variant LIB_BI {
 
 
 		// Utility functions.
-		{"set_max_depth",  NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_BI_set_max_depth, { {VT_UINT16} })},
+		{"get_ity_prop",     NativeFuncTrans(VT_ANY,   (NativeFunc_t)LIB_BI_get_ity_prop,      { {VT_STR} })},
+		{"set_ity_prop",     NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_BI_set_ity_prop,      { {VT_STR}, {VT_ANY} })},
 
 		{"system",      NativeFuncTrans(VT_UINT32, (NativeFunc_t)LIB_BI_system,     { {VT_STR} })},
 		{"sleep",       NativeFuncTrans(VT_NONE,   (NativeFunc_t)LIB_BI_sleep,      { {VT_FLOAT64} })},

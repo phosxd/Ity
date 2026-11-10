@@ -9,7 +9,7 @@ Expressions can be grouped using parenthesis characters `(` & `)`. An empty grou
 
 Here is an example of how grouping may be used to change the result of an expression.
 
-```
+```python
 2*4+4; # This equals 12.
 2*(4+4); # This equals 16, same variables, same order, different grouping.
 ```

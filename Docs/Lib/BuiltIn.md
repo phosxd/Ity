@@ -42,13 +42,21 @@ if __IMPORTED__ == false;
 ```
 
 ### \[Types\]
-Every built-in data type, represented as a string. They share the same names as the ones you would use to declare a variable.
-
-E.g. `NONE` = "NONE"
+Every built-in data type, represented as a `U8`. They share the same names as the ones you would use to declare a variable.
 
 # Standard Global Functions
 
-### (INT) system (STR command)
+### (ANY) get_ity_prop (STR prop)
+Get an interpreter property value.
+
+**Properties:**
+- `BOOL` "persist"
+- `U32` "max_depth"
+
+### (NONE) set_ity_prop (STR prop, ANY value)
+Set an interpreter property value.
+
+### (U32) system (STR command)
 Run a system command string then return the exit status code.
 
 ```python
@@ -58,7 +66,7 @@ system:'NonExistentCommand'; # Returns 32512.
 # sh: line 1: NonExistentCommand: command not found
 ```
 
-### (NONE) sleep (INT/FLOAT seconds)
+### (NONE) sleep (FLOAT seconds)
 Pause thread execution by the given number of seconds.
 
 ```python
@@ -66,7 +74,7 @@ sleep:1; # Pause for 1 second.
 sleep:0.5; # Pause for half of a second.
 ```
 
-### (STR) type_name (INT type)
+### (STR) type_name (U8 type)
 Return a `STR` representation of the given type number .
 
 ```python
@@ -76,10 +84,10 @@ const INT type_value = type:123;
 type_name:type_value; # Returns "INT".
 ```
 
-### (INT) type (ANY var)
-Return an `INT` representing the active type of a given variable. Equal to built-in type constants (E.g. `BOOL`, `INT`, `FLOAT`, etc).
+### (U8) type (ANY var)
+Return a `U8` representing the active type of a given variable. Equal to built-in type constants (E.g. `BOOL`, `INT`, `FLOAT`, etc).
 
-The literal `INT` value returned by `type` should not be relied upon as they may vary across different versions of Ity. Always compare against the type constants or use `type_name`.
+The literal value returned by `type` should not be relied upon as they may vary across different versions of Ity. Always compare against the type constants or use `type_name`.
 
 ```python
 type:'Hello World!'; # Returns 12 (STR).
@@ -91,8 +99,8 @@ if type:'string' == STR;
 /;
 ```
 
-### (INT) size (ANY var)
-Return an `INT` representing the size (in bytes) of a given variable. Including variant type & mode data (2 bytes extra).
+### (U64) size (ANY var)
+Return a `U64` representing the size (in bytes) of a given variable. Including variant type & mode data (2 bytes extra).
 
 ```python
 size:0;              # Returns 8 (64-bit int) + 2 (type & mode info).
@@ -129,7 +137,7 @@ const REF c_ref = @a;
 ref.reassign:(@b); # Fails, `c_ref` is permanently linked to `a`.
 ```
 
-### (INT) `REF/PTR`.type ()
+### (U8) `REF/PTR`.type ()
 Return the data's type referenced by the `REF` or `PTR`.
 
 ```python
@@ -149,7 +157,7 @@ const STR string = 'a';
 string.raw:(); # Returns 97.
 ```
 
-### (INT) `STR/ARR`.length ()
+### (U64) `STR/ARR`.length ()
 Get the string or array length. For strings, it is equal to the number of bytes representing the string, for arrays it is the length of the array.
 
 ```python
@@ -160,7 +168,7 @@ const ARR array = [1,2,3];
 array.length:(); # 3.
 ```
 
-### (NONE) `ARR`.erase (INT index)
+### (NONE) `ARR`.erase (U64 index)
 Delete an item inside the array.
 
 ```python

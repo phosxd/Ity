@@ -1,6 +1,6 @@
 # Methods
 
-### ANY \[abs,log,sqrt\] (INT/FLOAT number)
+### ANY \[abs,log,sqrt\] (FLOAT number)
 Operates on the given number & returns the result. The output type will match the input type.
 
 ```python
@@ -24,11 +24,11 @@ floor:2.7; # Returns 2.
 ceil:2.1; # Returns 3.
 ```
 
-### FLOAT pow (INT/FLOAT base, INT/FLOAT exp)
-Returns `base` to the power of `exp` as a `FLOAT` regardless of the input types.
+### FLOAT pow (FLOAT base, FLOAT exp)
+Returns `base` to the power of `exp` as a `FLOAT`.
 
-### ANY sum (INT/FLOAT ...numbers)
-Returns the accumulation of all the given `INT`/`FLOAT` numbers. The return type will be `INT` if all inputs are `INT`, if even a single input is `FLOAT`, then the result will be `FLOAT`.
+### ANY sum (FLOAT ...numbers)
+Returns the accumulation of all the given numbers. The return type will be `INT` if all inputs are `INT`, if even a single input is `FLOAT`, then the result will be `FLOAT`.
 
 ```python
 import Math;
