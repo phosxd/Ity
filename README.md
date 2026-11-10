@@ -196,7 +196,7 @@ Flags:
 ---
 
 # Language
-The full documentation is available [here](Docs/Main.md). This explains everything in great detail.
+The full documentation is available [here](Docs/README.md). This explains everything in great detail.
 
 But if you prefer to be lazy, here are some quick examples:
 
