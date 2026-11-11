@@ -174,6 +174,8 @@ Flags:
 	Don't emit any warning messages.
 - `--step`:
 	Wait for confirmation before running the next instruction.
+- `-p` or `--persist`:
+	Errors will not kill the program & will try to carry on as if nothing is wrong.
 
 - `-d` or `--d-full`:
 	Enable all debug flags.
