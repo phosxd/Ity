@@ -49,7 +49,7 @@ foreach ($argument in $args) {
 			$DO_CAPTURE=1
 		}
 		default {
-			Write-Host "${RED}Unknown option `"$argument`".$RESET"
+			Write-Host "${RED}Unknown option `"$argument`".${RESET}"
 			exit 1
 		}
 	}
@@ -69,26 +69,26 @@ if (Test-Path "BuildWithLibs.txt") {
 
 
 # Choose optimization profile...
-$optim=""
+$optim_="" # Sidenote: of course powershell variables have to be case-insensitive, this caused me a lot of headache.
 switch ($OPTIM) {
 	"balanced" {
-		$optim=$OPTIM_balanced
+		$optim_=$OPTIM_balanced
 	}
 	"speed" {
-		$optim=$OPTIM_speed
+		$optim_=$OPTIM_speed
 	}
 	"size" {
-		$optim=$OPTIM_size
+		$optim_=$OPTIM_size
 	}
 }
 
-Write-Host "(Optimization: $OPTIM)"
+Write-Host "(Optimization: ${OPTIM})"
 
 
 
 
 # Put everything into a final BUILD_ARGS variable.
-$BUILD_ARGS=$optim+" "+$COMMON_BUILD_ARGS+" "+$LINKS
+$BUILD_ARGS=$optim_+" "+$COMMON_BUILD_ARGS+" "+$LINKS
 if ($DEBUG -eq 0) {
 	$BUILD_ARGS+=" -Wl,-s"
 }
@@ -122,10 +122,10 @@ foreach ($line in $sourceLines) {
 $newSource | Set-Content -Path "src/.Ity_tmp_generated.cpp" -Encoding utf8
 
 if ($DEBUG) {
-	Write-Host "${BOLD}Building debug binary...$RESET"
+	Write-Host "${BOLD}Building debug binary...${RESET}"
 }
 else {
-	Write-Host "${BOLD}Building production binary...$RESET"
+	Write-Host "${BOLD}Building production binary...${RESET}"
 }
 
 $start = Get-Date
