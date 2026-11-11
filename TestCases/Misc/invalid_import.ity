@@ -1,0 +1,5 @@
+#EXPECT
+#Error: 4
+#END
+
+import BogusModuleName;

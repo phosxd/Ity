@@ -8,7 +8,7 @@ No reference counting, no convoluted garbage collection. Your data simply goes w
 # Persistence
 Anytime you have to pass data to a new location, it is *always* going to be copied. However this works differently inside expression fields. Everything is treated as a reference when inside of an expression!
 
-You can make use of the `REF` data type to store a reference to a named variable, which avoids copying the data you want to reference. However `REF`s will return a `noneref` if the variable it references no longer exists.
+You can make use of the `REF` data type to store a reference to a variant storage cell (variable name, array item, or map item), which avoids copying the data you want to reference. However `REF`s will return a `noneref` if the variable it references no longer exists.
 
 # Moving data
 Anytime you have to pass data to a new location in the scope, it is *always* going to be copied. However, you can transfer the ownership of a value by using the "move" assignment operator (`<<=`). Here's an example of that in use:
@@ -16,7 +16,6 @@ Anytime you have to pass data to a new location in the scope, it is *always* goi
 ```python
 # Simple script to measure the performance cost of moving
 # large blobs of data versus copying it into an array.
-merge IO;
 import Time;
 
 var all_the_data = [];

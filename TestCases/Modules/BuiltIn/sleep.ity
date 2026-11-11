@@ -1,0 +1,13 @@
+#EXPECT
+#5
+#5
+#5
+#END
+
+import Time;
+
+for i in 3;
+	const UINT start = Time.now:'ms';
+	sleep:0.005;
+	print:(Time.now.ms - start); # Should always be exactly 5ms (with some microsecond noise which is not captured).
+/;

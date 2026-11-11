@@ -1,0 +1,16 @@
+#EXPECT
+#3
+#true
+#END
+
+
+const STR module_name = 'Math';
+import @module_name as MOD;
+print:(MOD.sum:[1,1,1]);
+
+
+# Import from file path
+# ---------------------
+
+import /usr/local/share/ity/Modules/ANSI;
+print:(is_defined:'ANSI');

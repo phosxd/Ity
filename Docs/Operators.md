@@ -104,19 +104,17 @@ x==99 ? (f1:[]) -- (f2:[]);
 ```
 
 ### Reference ( `@` )
-The reference operation creates a new `REF` variant which references the variable name given on the right-side of the operator.
+The reference operation creates a new `REF` variant which references the variant path given on the right-side of the operator. A path can be a simple variable name, or nested keys / indices.
 
 ```python
 const INT x = 99;
 const REF ref = @(x);
-```
-### Pointer Reference ( `@>` )
-The pointer reference operation creates a new `PTR` variant which references the value on the right-side of the operator.
 
-```python
-const ARR array = [1,2,3];
-const PTR ptr = &>(array:0);
+var ARR arr = [1,[2,[3,4]]];
+const REF nested_ref = @(arr:0:0:1); # References `4`.
 ```
+### Dereference ( `~` )
+The dereference unary operator takes a `REF` or `PTR` & returns a copy of the referenced variant. For `REF`, if the path is no longer valid, returns `none`. Trying to dereference an invalid `PTR` will result in unexpected behavior or a crash.
 
 ## Assignment
 Assignment operators allow you to modify the value of a variant. This is useful for setting the value of named variables after declaration.

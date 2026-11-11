@@ -8,7 +8,10 @@ void OP_RefOps_pre_exec(ItyState& state, ExprState& expr_state, Variant*& first,
 
 void OP_RefOps_exec(ItyState& state, ExprState& expr_state, Variant*& _first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& result_ptr) {
 	// Make reference.
-	if (symbol == OpSymbol_ref) result = Variant{VT_REF, expr_state.path};
+	if (symbol == OpSymbol_ref) {
+		result = Variant{VT_REF, expr_state.path};
+		expr_state.record_path = false;
+	}
 
 	// Dereference.
 	else if (symbol == OpSymbol_deref) {

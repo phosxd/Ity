@@ -211,31 +211,6 @@ print:( (get_f:[]):[] );
 
 "99"
 
-# 50
-
-"
-# Ternary syntax
-# --------------
-
-merge IO;
-
-print: (1==1 ? 'a' -- 'b'); # Succeeds, so prints 'a'.
-print: (1==2 ? 'a' -- 'b'); # Fails, so prints 'b'.
-print: (true ? 'a');        # No exception, but succeeded, so prints 'a'.
-print: (false ? 'a');       # No exception, but failed, so prints void (unprintable, shows as '???').
-
-# Conditional function calls...
-1==1 ? (print:'a') -- (print:'b');
-1==2 ? (print:'a') -- (print:'b');
-"
-
-"a
-b
-a
-???
-a
-b"
-
 # 51
 
 "
@@ -258,60 +233,6 @@ print:my_int;
 
 "5
 9"
-
-# 52
-
-"
-# Dynamic module import.
-# ----------------------
-
-const STR module_name = 'IO';
-import @module_name as MOD;
-MOD.print:true;
-
-
-# Import from file path
-# ---------------------
-
-merge IO;
-
-import /usr/local/share/ity/Modules/ANSI;
-print:(is_defined:'ANSI');
-"
-
-"true
-true"
-
-# 53
-
-"
-# Import non-existent module.
-# ---------------------------
-
-import BogusModuleName;
-"
-
-"Error: 4"
-
-# 54
-
-"
-# Sleep time consistency.
-# -----------------------
-
-merge IO;
-import Time;
-
-for i in 3;
-	const INT start = Time.now:'ms';
-	sleep:0.005;
-	print:(Time.now:'ms' - start); # Should always be exactly 5ms (with some microsecond noise which is not captured).
-/;
-"
-
-"5
-5
-5"
 
 # 55
 

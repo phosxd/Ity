@@ -1,14 +1,12 @@
-Holds a reference to a variable stored in the scope. This will act exactly like the referenced variable for most cases.
+Holds a reference to a storage cell containing a variant. This can reference simple variable names, nested array items, or nested maps items.
 
 `PTR` (different from `REF`) is more of an internal type which should not be used if possible. The only time is should be used is when it is fully required, usually in type methods & iterator functions.
 
 Setting, accessing, comparing, or in any way operating on a reference/pointer will most of the time apply to the referenced variable, not the reference itself. Think of it as the 2 variables are hard-linked. This makes it really convenient to work with. You can dereference a `REF` or `PTR` by using the `~` (tilda) (deref) unary operator.
 
 ```python
-merge IO;
-
 var my_var = 100;
-const my_ref = @my_var; # "@" unary operator creates a reference to a variable name.
+const REF my_ref = @my_var; # "@" unary operator creates a reference to a variable name.
 
 print:(~my_ref); # 100.
 my_var = 101;
@@ -20,19 +18,21 @@ print:my_var; # 99.
 # my_ref & my_var are essentially interchangable in most cases.
 ```
 
-The `@` unary operator can only be used on variable names to create a `REF` to it. To create a `PTR` you must use the `@>` unary operator. What makes this so powerful (and dangerous) is that pointers can reference *any* value located *anywhere* (array items, map items, values in other modules, etc).
+The `@` unary operator can be used to create a `REF` to a variable name, or to *any* value located *anywhere* (array items, map items, values in other modules, etc).
+
+`PTR` cannot be created in Ity, it must be passed from the interpreter.
 
 ```python
-const INT my_var = 100;
-const PTR ptr = @>my_var;
-print:(~ptr); # 100.
-
-# Point to variant in a container...
+# Reference to variant in a container...
 const ARR array = [1,2,3];
-const PTR arr_item_ptr = @>(array:0);
-print:(~arr_item_ptr); # 1.
+const REF arr_item_ref = @(array:0);
+print:(~arr_item_ref); # 1.
 array:0 = 11;
-print:(~arr_item_ptr); # 11.
+print:(~arr_item_ref); # 11.
+
+# Changes are immediately reflected.
+arr_item_ref = 22;
+print:(array:0); # 22.
 ```
 
 The `type` built-in function if used on a `REF` or `PTR` will return the `REF` or `PTR` type, not the type of the value being referenced. To get the proper type you can use `type` as a type-method on the `REF` / `PTR` itself.
@@ -49,7 +49,7 @@ print:(type_name:(type:(~my_ref))); # Prints "INT", the actual held value type.
 print:(type_name:(my_ref.type:[])); # Prints "INT", this is better for performance, not passing a copy of the value to the `type` function.
 ```
 
-To reassign the reference you can use the `reassign` type-method. `PTR` variants cannot be reassigned currently.
+To reassign the reference you can use the `reassign` type-method. `PTR` variants cannot be reassigned.
 
 ```python
 merge IO;
@@ -66,8 +66,6 @@ print:(~my_ref); # Prints "b".
 If the referenced value ever gets destroyed or goes out of scope, then the `REF` will be reset to reference `none`. `PTR` on the other hand is *unsafe*, destroying the referenced value then trying to access it through a pointer is undefined behavior & should never be done. **Always** ensure that a pointer is not used after it's value is destroyed.
 
 ```python
-merge IO;
-
 const STR other_global_value = 'Other Global';
 
 
