@@ -2,5 +2,4 @@
 #Error: 44
 #END
 
-merge IO;
 print:(2/0);

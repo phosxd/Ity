@@ -1,5 +1,4 @@
 #!/usr/local/bin/ity
-import IO;
 import ANSI;
 
 
@@ -8,9 +7,9 @@ func FLOAT add; arg FLOAT first; arg FLOAT second;
 /;
 
 
-IO.print:[(ANSI.bold), 'Add 2 numbers...', (ANSI.reset)];
+print:[(ANSI.bold), 'Add 2 numbers...', (ANSI.reset)];
 
 const a = IO.prompt:'Value 1: ' -> FLOAT;
 const b = IO.prompt:'Value 2: ' -> FLOAT;
 
-IO.print:[(ANSI.fg_yellow), 'Sum: ', (add:[a,b]), (ANSI.reset)];
+print:[(ANSI.fg_yellow), 'Sum: ', (add:[a,b]), (ANSI.reset)];

@@ -19,8 +19,6 @@
 #true
 #END
 
-merge IO;
-
 print:(true == true);
 print:(true == false);
 print:(true != true);

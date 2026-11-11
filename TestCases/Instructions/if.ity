@@ -12,8 +12,6 @@
 #Error: 27
 #END
 
-merge IO;
-
 print:'simple';
 
 if true == true;

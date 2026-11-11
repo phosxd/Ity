@@ -182,7 +182,6 @@ enum OpSymbol : uint8_t {
 	OpSymbol_access,
 
 	OpSymbol_ref,
-	OpSymbol_ptrref,
 	OpSymbol_deref,
 };
 

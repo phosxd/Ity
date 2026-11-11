@@ -2,8 +2,6 @@
 #[1, 2, 3]
 #END
 
-merge IO;
-
 func NONE do_modification; arg REF obj;
 	if obj.type:[] != ARR;
 		throw 'Invalid reference value, expected ARR, got ' + (type_name:(obj.type:[])) + '.';

@@ -1,5 +1,4 @@
 #!/usr/local/bin/ity
-import IO;
 import FileSystem as FS;
 import ExtendedSystem as ES;
 
@@ -39,4 +38,4 @@ elif LANG == 'js';
 
 
 FS.remove:PATH;
-IO.print:(result.out);
+print:(result.out);

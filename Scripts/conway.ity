@@ -1,6 +1,5 @@
 #!/usr/local/bin/ity
 
-merge IO;
 import ANSI;
 import Time;
 import Math;

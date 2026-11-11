@@ -58,7 +58,7 @@ cd TestCases
 passed_count=0
 total_count=0
 # Iterate on each section.
-for section in "Instructions" "Basics" "Misc" "Modules/IO" "Modules/Math" "Modules/Time" "Modules/FileSystem"; do
+for section in "Instructions" "Basics" "Misc" "Modules/BuiltIn" "Modules/Math" "Modules/Time" "Modules/FileSystem"; do
 	echo "${BOLD}[${RESET}${section}${BOLD}]${RESET}"
 	cd $section
 	section_failed=0

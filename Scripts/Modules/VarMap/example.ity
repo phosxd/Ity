@@ -1,5 +1,4 @@
 import VarMap;
-merge IO;
 
 # Create a VarMap.
 var MAP my_vmap = VarMap.new:[];

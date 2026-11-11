@@ -1,4 +1,4 @@
-merge IO; merge Time;
+merge Time;
 
 const INT n = 200_000;
 const INT start = now.ms;

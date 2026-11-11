@@ -1,5 +1,4 @@
 #!/usr/local/bin/ity
-import IO;
 
 # Largest "n": 1476 (1.3069892237633987e+308)
 # Using Ity's `FLOAT` type.
@@ -24,5 +23,5 @@ for i in n;
 	const c = a+b;
 	a = b;
 	b = c;
-	IO.print:a;
+	print:a;
 /;

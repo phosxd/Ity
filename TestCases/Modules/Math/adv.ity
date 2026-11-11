@@ -11,7 +11,6 @@
 #-33.33333333333334
 #END
 
-merge IO;
 import Math;
 
 

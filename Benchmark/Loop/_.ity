@@ -1,4 +1,4 @@
-merge IO; merge Time;
+merge Time;
 
 const n = prompt:'Count: ' -> INT;
 const INT start = now.ms;

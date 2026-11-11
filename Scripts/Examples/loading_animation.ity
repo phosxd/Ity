@@ -1,5 +1,4 @@
 #!/usr/local/bin/ity
-import IO;
 import ANSI;
 
 
@@ -8,10 +7,10 @@ const ARR frames = ['|','/','-','\\'];
 
 # Run through the animation forever.
 func NONE do_animation;
-	IO.out:(ANSI.cursor_off); # Hide the terminal cursor.
+	out:(ANSI.cursor_off); # Hide the terminal cursor.
 	while true;
 		for i in frames.length:[];
-			IO.out:['\e[1G',' ',(frames:i)];
+			out:['\e[1G',' ',(frames:i)];
 			sleep:0.133;
 		/;
 	/;
@@ -20,14 +19,14 @@ func NONE do_animation;
 
 # Called when the program is interrupted or finished.
 func NONE done;
-	IO.out:(ANSI.cursor_on); # Show the terminal cursor.
-	IO.out:'\e[2K\e[1G'; # Clear the line & set the cursor to the beginning.
-	IO.print:'Done!';
+	out:(ANSI.cursor_on); # Show the terminal cursor.
+	out:'\e[2K\e[1G'; # Clear the line & set the cursor to the beginning.
+	print:'Done!';
 
 	exit;
 /;
 
 
-IO.signal:[(IO.SIGNAL.interrupt), done];
+signal:[(SIGNAL.interrupt), done];
 do_animation:[];
 done:[];

@@ -4,7 +4,6 @@
 #none
 #END
 
-merge IO;
 merge FileSystem;
 
 print:(read:'StaticFile.txt');

@@ -1,4 +1,4 @@
-merge IO; merge Time; merge FileSystem;
+merge Time; merge FileSystem;
 
 const INT start = now.ms;
 const STR blob = read:'Benchmark/Allocation/Blob.txt' * 1_000;

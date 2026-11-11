@@ -1,4 +1,3 @@
-import IO;
 import Time;
 import Math;
 import Limits;
@@ -8,13 +7,13 @@ const STR PATH = 'noise.ppm';
 const U8 DEPTH = 3;
 const ARR BYTE_RANGE = [(Limits.STR_byte_min), (Limits.STR_byte_max)];
 
-const U32 HEIGHT = IO.prompt:'Image height: '->INT;
-const U32 WIDTH = IO.prompt:'Image width: '->INT;
+const U32 HEIGHT = prompt:'Image height: '->INT;
+const U32 WIDTH = prompt:'Image width: '->INT;
 const UINT BYTE_COUNT = WIDTH*HEIGHT*DEPTH;
 
 
 
-IO.print:'Generating...';
+print:'Generating...';
 const UINT start = Time.now.ms;
 
 const FUNC rand = Math.rand;
@@ -37,8 +36,8 @@ for _i in BYTE_COUNT;
 
 
 # Save file to disk.
-IO.print:'Saving...';
+print:'Saving...';
 FS.write:[PATH, file];
-IO.print:['\nDone in ', ((Time.now.ms-start) / 1000.0), ('s. Saved to: ' + PATH)];
+print:['\nDone in ', ((Time.now.ms-start) / 1000.0), ('s. Saved to: ' + PATH)];
 
 system:('xdg-open '+PATH); # Open file in preferred app.

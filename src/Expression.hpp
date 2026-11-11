@@ -92,7 +92,7 @@ inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) 
 }
 
 
-#define resovlve_potential_ref(state, var) ((var->t == VT_REF) ? state.scope.get_data_globally(AnyCastV(STR_t,var->d), &none_var) : ((var->t == VT_PTR) ? AnyCastV(Variant*,var->d) : var))
+#define resovlve_potential_ref(state, var) ((var->t == VT_REF) ? state.scope.resolve_path(AnyCastV(STR_t,var->d), &none_var) : ((var->t == VT_PTR) ? AnyCastV(Variant*,var->d) : var))
 
 
 
@@ -142,7 +142,6 @@ const OpDef OPERATIONS[] = {
 	{OpSymbol_access,    ":",   OP_Access},
 
 	{OpSymbol_ref,    "@",   OP_RefOps},
-	{OpSymbol_ptrref, "@>",  OP_RefOps},
 	{OpSymbol_deref,  "~",   OP_RefOps}
 };
 const OpDef* find_OpDef(const OpSymbol& sym = OpSymbol__, const std::string& str = "") {
@@ -510,7 +509,7 @@ Variant* resolve_variant(ItyState& state, ExprState& expr_state, Variant& item) 
 	// If typed reference...
 	if (item.t == VT_TREF) {
 		const TREF_t& tref = AnyCast(TREF_t,item.d);
-		expr_state.path = tref.str;
+		if (expr_state.record_path && expr_state.path.empty()) expr_state.path = tref.str;
 
 		// Get variable.
 		Variant* ptr = state.scope.get_data_globally(tref.str, nullptr, tref.key);
@@ -619,7 +618,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 				bool eval_second_operand = true;
 				pre_exec_result.t = VT_PLACEHOLDER; // Reset the type for reuse.
 				// Run pre-executor.
-				op_def->op->pre_exec(state, result, op_def->sym, eval_second_operand, pre_exec_result, result);
+				op_def->op->pre_exec(state, expr_state, result, op_def->sym, eval_second_operand, pre_exec_result, result);
 				if (not eval_second_operand) {
 					if (pre_exec_result.t != VT_PLACEHOLDER) result = state.append_temp_var(pre_exec_result);
 					op_def = nullptr;

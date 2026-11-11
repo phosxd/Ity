@@ -13,8 +13,6 @@
 #2
 #END
 
-merge IO;
-
 const exprs = [
 	(0 + 0),
 	(1+1),

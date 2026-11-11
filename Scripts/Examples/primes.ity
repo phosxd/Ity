@@ -1,5 +1,5 @@
 #!/usr/local/bin/ity
-import IO; import Time;
+import Time;
 
 
 func INT int_square_root; arg INT n;
@@ -36,16 +36,16 @@ func BOOL is_prime; arg INT n;
 
 
 
-const count = IO.prompt:'Count: ' -> INT;
+const count = prompt:'Count: ' -> INT;
 const INT start = Time.now.ms;
 
 
 var INT p = 2; while p <= count;
 	if is_prime:p;
-		IO.print:p;
+		print:p;
 	/;
 	p += 1;
 /;
 
 
-IO.print:['\nDone in ', ((Time.now.ms-start) / 1000.0), 's.'];
+print:['\nDone in ', ((Time.now.ms-start) / 1000.0), 's.'];

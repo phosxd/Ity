@@ -1,5 +1,4 @@
 import RangeIter;
-merge IO;
 
 # Allocation-less range iteration.
 for i in RangeIter.new:[0,100_000,2];

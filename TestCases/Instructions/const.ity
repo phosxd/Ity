@@ -3,11 +3,6 @@
 #Error: 29
 #END
 
-merge IO;
-
-# Const syntax comprehension
-# --------------------------
-
 const a=1;
 const b = 1;
 const INT c=1;

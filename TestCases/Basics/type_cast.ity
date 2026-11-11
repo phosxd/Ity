@@ -16,8 +16,6 @@
 #1
 #END
 
-merge IO;
-
 print:( 'true' -> BOOL );
 print:( 'false' -> BOOL );
 print:( 'invalid representation' -> BOOL );

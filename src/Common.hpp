@@ -16,7 +16,8 @@ struct ExprToken {
 
 
 struct ExprState {
-	STR_t path = ""; // W.I.P.
+	STR_t path = ""; // Path to the Variant returned, if available.
+	bool record_path = false; // If true, will record the path of the resulting Variant into `path`.
 };
 
 
@@ -141,8 +142,8 @@ struct CompositeItem {
 
 
 struct Operation {
-	void (*exec)(ItyState&, ExprState& expr_state, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& result_ptr) = nullptr;
-	void (*pre_exec)(ItyState&, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& result_ptr) = nullptr;
+	void (*exec)(ItyState&, ExprState&, Variant*& first, Variant*& second, const OpSymbol& symbol, Variant& result, Variant*& result_ptr) = nullptr;
+	void (*pre_exec)(ItyState&, ExprState&, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& result_ptr) = nullptr;
 	const bool unary = false;
 };
 

@@ -5,8 +5,6 @@
 #true
 #END
 
-merge IO;
-
 
 func BOOL test;
 	throw 'This should not run';

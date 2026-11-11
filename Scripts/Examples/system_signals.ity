@@ -1,21 +1,20 @@
 #!/usr/local/bin/ity
-import IO;
 
 
 func interrupt_handler;
-	IO.print:'\nInterupted';
+	print:'\nInterupted';
 	exit; # Should always call `exit` when connecting to signals that are supposed to end the process.
 /;
 
 
 func user_signal_handler;
-	IO.print:'\nReceived custom signal 1';
+	print:'\nReceived custom signal 1';
 /;
 
 
 # Connect signal to our `interrupt_handler` function.
-IO.signal:[(IO.SIGNAL.interrupt), interrupt_handler];
-IO.signal:[(IO.SIGNAL.user1), user_signal_handler];
+signal:[(SIGNAL.interrupt), interrupt_handler];
+signal:[(SIGNAL.user1), user_signal_handler];
 
 
 # Sleep...

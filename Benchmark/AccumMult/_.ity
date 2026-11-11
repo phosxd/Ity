@@ -1,4 +1,4 @@
-merge IO; merge Time;
+merge Time;
 
 var INT n = 30;
 var INT start = now.ms;

@@ -6,9 +6,6 @@
 #Error: 10
 #END
 
-
-merge IO;
-
 func recurse; arg INT i=0;
 	print:i;
 	recurse:(i+1);

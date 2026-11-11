@@ -5,8 +5,6 @@
 #{"b": 2, "a": 1}
 #END
 
-merge IO;
-
 print:'Hello World!';
 
 print:[1,2,3,4];

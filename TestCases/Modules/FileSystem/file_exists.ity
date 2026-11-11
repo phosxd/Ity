@@ -3,7 +3,6 @@
 #false
 #END
 
-merge IO;
 merge FileSystem;
 
 print:(file_exists:'StaticFile.txt');

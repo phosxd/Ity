@@ -3,9 +3,9 @@
 #9
 #REF:
 #none
+#pathed references
+#2
 #END
-
-merge IO;
 
 const INT a = 9;
 const REF ref = @a;
@@ -17,3 +17,13 @@ print:(~ref);
 const REF val_ref = @99;
 print:val_ref;
 print:(~val_ref); # Prints "none".
+
+
+# Pathed references
+# ------------------
+
+print:'pathed references';
+
+var ARR arr = [1,2,3,4];
+const REF arr_index_ref = @(arr:1); # References `2`.
+print:(~arr_index_ref);

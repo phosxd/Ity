@@ -4,7 +4,6 @@
 #5
 #END
 
-merge IO;
 
 # Should throw a shadowed name warning, because 'a' is defined in the same scope as the function declaration.
 func test; arg ANY a;

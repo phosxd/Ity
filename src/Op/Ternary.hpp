@@ -2,7 +2,7 @@
 // Fragment Size: 528
 
 
-void OP_Ternary_pre_exec(ItyState& state, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
+void OP_Ternary_pre_exec(ItyState& state, ExprState& _expr_state, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
 	Variant* o1 = resovlve_potential_ref(state, first);
 
 	if (symbol == OpSymbol_ternary) {
@@ -23,6 +23,6 @@ void OP_Ternary_exec(ItyState& _state, ExprState& _expr_state, Variant*& _first,
 
 
 const auto OP_Ternary = new Operation{
-	OP_Ternary_exec,
-	OP_Ternary_pre_exec,
+	.exec = OP_Ternary_exec,
+	.pre_exec = OP_Ternary_pre_exec,
 };

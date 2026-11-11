@@ -5,8 +5,6 @@
 #{"b": 2, "a": 1}
 #END
 
-merge IO;
-
 out:'H';
 out:'e';
 out:'l';

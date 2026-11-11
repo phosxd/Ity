@@ -1,6 +1,6 @@
 #pragma once
 
-#include <utility>
+#include <utility> // For "std::pair".
 
 
 using ScopeMapCell_t = std::pair<uint32_t,Variant>;
@@ -91,6 +91,39 @@ struct ItyScope {
 	Variant* get_data_globally(const std::string& name, Variant* default_value=nullptr, const var_key_t key=0) {
 		if (Variant* var = get_data(name, nullptr, key); var) return var;
 		return (p) ? p->get_data_globally(name, default_value, key) : default_value;
+	}
+
+
+	// Get the Variant at `path`.
+	// Path should use ":" to separate parts. Each part leads to the next Variant.
+	Variant* resolve_path(const std::string& path, Variant* default_value=nullptr) {
+		const std::vector<std::string> split_path = split_str(path, ':');
+		Variant* result = nullptr;
+		for (const std::string& part : split_path) {
+			if (not result) result = get_data_globally(part);
+			// Resolve array index...
+			else if (result->t == VT_ARR) {
+				ARR_t& data = AnyCastV(ARR_t,result->d);
+				const size_t index = std::stoull(part);
+				// Break if invalid index.
+				if (index >= data.size()) {
+					result = nullptr;
+					break;
+				}
+				result = &data[index];
+			}
+			// Resolve map key...
+			else if (result->t == VT_MAP) {
+				MAP_t& data = AnyCastV(MAP_t,result->d);
+				if (const MAP_t::iterator& it = data.find(part); it != data.end()) result = &it->second;
+				// Break if invalid key.
+				else {
+					result = nullptr;
+					break;
+				}
+			}
+		}
+		return (result) ? result : default_value;
 	}
 
 

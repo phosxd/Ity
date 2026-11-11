@@ -2,7 +2,7 @@
 // Fragment Size: 2004
 
 
-void OP_Compare_pre_exec(ItyState& state, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
+void OP_Compare_pre_exec(ItyState& state, ExprState& _expr_state, Variant*& first, const OpSymbol& symbol, bool& eval_second_operand, Variant& result, Variant*& _result_ptr) {
 	Variant* o1 = resovlve_potential_ref(state, first);
 
 	if (symbol == OpSymbol_cmp_and) {

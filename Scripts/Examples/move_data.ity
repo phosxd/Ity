@@ -1,5 +1,4 @@
 #!/usr/local/bin/ity
-merge IO;
 import Time;
 
 

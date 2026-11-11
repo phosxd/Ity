@@ -44,8 +44,6 @@
 # in a variant with a type equal to the highest order
 # variant in the operation.
 
-merge IO;
-
 func check;
 	print:[(type_name:(type:x)), ', ', x];
 	x = 0;
