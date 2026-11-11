@@ -1,0 +1,34 @@
+# ANSI
+# ----
+#
+# Implements common format conversion functions.
+#
+#
+# PART OF THE STANDARD SET OF ITY MODULES.
+
+
+import StrUtil;
+
+
+func STR STR_format; arg PTR S;
+	var STR result = ~S;
+	# Iterate remaining arguments.
+	for ar in __AG;
+		result = result.replace:['%', (ar->STR)];
+	/;
+	return result;
+/;
+
+
+# Set type method locally.
+__tm__.set:['STR:format', STR_format];
+
+
+
+const MAP __module__ = {
+	'__name', 'Formation',
+
+	'__tm', {
+		'STR:format', STR_format,
+	},
+};

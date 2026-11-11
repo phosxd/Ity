@@ -39,6 +39,7 @@ func INT STR_find; arg PTR S; arg STR substr; arg INT start = 0; arg INT end = -
 
 	return -1;
 /;
+__tm__.set:['STR:find', STR_find];
 
 
 # Erase a character from the string, by index.
@@ -50,6 +51,7 @@ func NONE STR_erase; arg PTR S; arg INT index;
 	/;
 	S = new_str;
 /;
+__tm__.set:['STR:erase', STR_erase];
 
 
 # Get a slice of the string.
@@ -62,30 +64,33 @@ func STR STR_slice; arg PTR S; arg INT start = 0; arg INT end = -1;
 	/;
 	return str_slice;
 /;
+__tm__.set:['STR:slice', STR_slice];
 
 
 # Find & replace the first occurance of `a` with `b` in the string, returning a new string.
 func STR STR_replace; arg PTR S; arg STR a; arg STR b;
-	const INT index = STR_find:[S, a];
+	const INT index = S.find:a;
 	if index == -1; return ~S; /;
 
 	# Slice around `a` & return a string with `b` placed in between the slices.
-	const STR part_1 = STR_slice:[S, 0, (index-1)];
-	const STR part_2 = STR_slice:[S, (index+(a.length:[])), -1];
+	const STR part_1 = S.slice:[0, (index-1)];
+	const STR part_2 = S.slice:[(index+(a.length:[])), -1];
 	return part_1 + b + part_2;
 /;
+__tm__.set:['STR:replace', STR_replace];
 
 
 # Find & replace the all occurances of `a` with `b` in the string, returning a new string.
 func STR STR_replace_all; arg PTR S; arg STR a; arg STR b;
 	var STR new_str = ~S;
 	while true;
-		var STR new_str_ = STR_replace:[(@>new_str), a,b];
+		var STR new_str_ = new_str.replace:[a,b];
 		if new_str_ == new_str; break; /;
 		new_str <<= new_str_;
 	/;
 	return new_str;
 /;
+__tm__.set:['STR:replace_all', STR_replace_all];
 
 
 
