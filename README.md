@@ -25,7 +25,7 @@ Ity is a work-in-progress, light-weight & embeddable interpreted programming lan
   - [Interactive mode](#interactive-mode)
   - [Interpreter flags](#interpreter-flags)
 - [Language](#language)
-  - [Docs](Docs/Main.md)
+  - [Docs](Docs/README.md)
   - [Examples](Scripts/)
 
 
