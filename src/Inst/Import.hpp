@@ -55,7 +55,7 @@ static void INST_Import_exec(ItyState& state, InstToken& token) {
 		std::ifstream f (path, std::ios::in | std::ios::binary);
 		// If not in user defined path, check relative to global modules path.
 		if (not f.is_open()) {
-			path = GLOBAL_SHARE_PATH+"Modules/"+path;
+			path = std::string(GLOBAL_SHARE_PATH) + "Modules/" + path;
 			f = std::ifstream(path, std::ios::in | std::ios::binary);
 		}
 

@@ -197,6 +197,7 @@ void clean_up_buffer(ExprToken& result_token, ExprToken& item, std::string& buff
 }
 
 
+#pragma pack(1)
 struct ExprTokenizeResult {
 	ExprToken token;
 	size_t final_char_count = 0;
@@ -283,7 +284,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const uint32_t ln=0, c
 				// Tokenize sub-expression & add to sequence.
 				ExprTokenizeResult result_ = expr_tokenize(subexpr, ln+ln_offset, col+col_offset, secondary_buffer[0]);
 				item.seq = result_.token.seq;
-				result.token.seq.push_back(item);
+				result.token.seq.emplace_back(item);
 				// Throw error if operator token found in array or map.
 				if (!is_grouping) {
 					for (const ExprToken& subtoken : item.seq) {
@@ -361,7 +362,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const uint32_t ln=0, c
 					secondary_buffer = Keywords::none_;
 					item.var.t = VT_NONE;
 				}
-				// Set type reference.
+				// Set type typed-reference.
 				else if (is_valid_name(std::string(1,ch))) {
 					if (next_ref_is_str_) item.var.t = VT_STR; // Set type as string but don't set `is_string` so it's not treated as a string.
 					else item.var.t = VT_TREF;
@@ -424,7 +425,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const uint32_t ln=0, c
 				}
 
 				else if (item.var.t == VT_BOOL || item.var.t == VT_NONE) {
-					std::string buffer_plus_ch = (buffer+ch);
+					const std::string buffer_plus_ch = (buffer+ch);
 					// If no longer matches the bool or none token, switch to a reference.
 					if (buffer_plus_ch.size() >= secondary_buffer.size() && buffer_plus_ch != secondary_buffer) {
 						item.var.t = VT_TREF;
@@ -596,6 +597,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 	Variant* second = nullptr;
 	// Pre initialized variables.
 	Variant pre_exec_result = VPS.empty;
+	bool eval_second_operand = true;
 	Variant op_result = VPS.empty;
 
 	const OpDef* op_def = nullptr;
@@ -615,7 +617,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 			// Run operator pre-exec.
 			if (op_def->op->pre_exec) {
 				// Skip evaluation of second Variant if pre_exec says so...
-				bool eval_second_operand = true;
+				eval_second_operand = true;
 				pre_exec_result.t = VT_PLACEHOLDER; // Reset the type for reuse.
 				// Run pre-executor.
 				op_def->op->pre_exec(state, expr_state, result, op_def->sym, eval_second_operand, pre_exec_result, result);
@@ -688,7 +690,7 @@ std::vector<std::string> tokenize_expr_from_inst_args(InstToken& token, const ui
 			new_args.push_back(arg);
 		}
 		else {
-			expr_string += ' '+arg;
+			expr_string.append(' '+arg);
 		}
 		i++;
 	}

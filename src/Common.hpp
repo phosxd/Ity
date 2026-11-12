@@ -15,6 +15,7 @@ struct ExprToken {
 };
 
 
+#pragma pack(1)
 struct ExprState {
 	STR_t path = ""; // Path to the Variant returned, if available.
 	bool record_path = false; // If true, will record the path of the resulting Variant into `path`.
@@ -86,13 +87,14 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 // const std::hash<std::string> string_hasher;
 std::vector<std::string> string_hasher_id_map = {""}; // Index 0 is reserved empty.
 var_key_t string_hasher(const std::string& str) {
-	const size_t& len = string_hasher_id_map.size();
-	for (size_t i = 1; i < len; i++) {
-		if (str == string_hasher_id_map[i]) return (var_key_t)i;
+	const var_key_t len = (var_key_t)string_hasher_id_map.size();
+	var_key_t i = 1; while (i < len) {
+		if (str == string_hasher_id_map[i]) return i;
+		i++;
 	}
 
 	string_hasher_id_map.push_back(str);
-	return (var_key_t)string_hasher_id_map.size()-1;
+	return i;
 }
 
 

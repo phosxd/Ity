@@ -1,6 +1,7 @@
 #pragma once
 
 #include <variant>
+#include <cmath> // Needed for "std::fmod" function.
 
 #define AnyCast(T, var) std::get<T>(var)
 #define AnyCastV(T, var) std::get<T>(var)
@@ -195,18 +196,12 @@ struct Variant {
 	bool is_int() const {
 		return type_is_int(t);
 	}
-
-
 	bool is_uint() const {
 		return type_is_uint(t);
 	}
-
-
 	bool is_float() const {
 		return type_is_float(t);
 	}
-
-
 	bool is_number() const {
 		return type_is_number(t);
 	}
@@ -249,11 +244,11 @@ struct Variant {
 	int8_t to_int8()   const {return (int8_t)to_int64();}
 	// Get unsigned integer.
 	uint64_t to_uint64() const {return _to_number<uint64_t>();}
-	// Get ui32.
+	// Get u32.
 	uint32_t to_uint32() const {return (uint32_t)to_uint64();}
-	// Get ui16.
+	// Get u16.
 	uint16_t to_uint16() const {return (uint16_t)to_uint64();}
-	// Get ui8.
+	// Get u8.
 	uint8_t to_uint8()   const {return (uint8_t)to_uint64();}
 
 	// Get float.
@@ -271,14 +266,14 @@ struct Variant {
 			case VT_REF:   return "REF:" + AnyCast(STR_t,d);
 			case VT_BOOL:  return (AnyCast(bool,d) ? "true":"false");
 
-			case VT_INT64:   return std::to_string(AnyCast(int64_t,d));
-			case VT_INT32:   return std::to_string(AnyCast(int32_t,d));
-			case VT_INT16:   return std::to_string(AnyCast(int16_t,d));
-			case VT_INT8:    return std::to_string(AnyCast(int8_t,d));
-			case VT_UINT64:  return std::to_string(AnyCast(uint64_t,d));
-			case VT_UINT32:  return std::to_string(AnyCast(uint32_t,d));
-			case VT_UINT16:  return std::to_string(AnyCast(uint16_t,d));
-			case VT_UINT8:   return std::to_string(AnyCast(uint8_t,d));
+			case VT_INT64:
+			case VT_INT32:
+			case VT_INT16:
+			case VT_INT8:    return std::to_string(to_int64());
+			case VT_UINT64:
+			case VT_UINT32:
+			case VT_UINT16:
+			case VT_UINT8:   return std::to_string(to_uint64());
 			case VT_FLOAT64: return std::to_string(AnyCast(FLOAT64_t,d));
 
 			case VT_STR:   return AnyCast(STR_t,d);
@@ -511,7 +506,7 @@ Variant operator/(const Variant& a, const Variant& b) {
 
 Variant operator%(const Variant& a, const Variant& b) {
 	if (a.is_number() && b.is_number()) {
-		if (const int64_t& bd = b.to_int64(); bd != 0) return Variant{VT_INT64, (a.to_int64() % bd)};
+		if (const FLOAT64_t& bd = b.to_float64(); bd != 0) return Variant{VT_FLOAT64, (FLOAT64_t)std::fmod(a.to_float64(), bd)};
 		emit_error(ERR_zero_division);
 	};
 

@@ -44,7 +44,7 @@ constexpr const char OSName[] =
 ;
 
 
-const std::string GLOBAL_SHARE_PATH =
+constexpr const char GLOBAL_SHARE_PATH[] =
 #if _WIN32
 	"%LOCALAPPDATA%/ity/"
 #elif __APPLE__
@@ -63,10 +63,10 @@ constexpr const unsigned int uint16_max = 65535;
 
 constexpr const char COMMENT_SYMBOL = '#';
 constexpr const char INST_END_SYMBOL = ';';
-constexpr std::string ITY_FILE_EXT = ".ity";
+constexpr const std::string ITY_FILE_EXT = ".ity";
 
-constexpr std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
-constexpr std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
+constexpr const std::string STRING_SYMBOLS = "'\""; // String identifier symbols.
+constexpr const std::string MISC_RESERVED_SYMBOLS = "_.,()[]{}" + STRING_SYMBOLS; // Symbols reserved for special functionality. Operation symbols should not contain any of these characters.
 
 constexpr const uint8_t MAX_TEMPORARY_POOL_RESERVE = 32;
 
