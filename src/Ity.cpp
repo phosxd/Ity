@@ -17,7 +17,7 @@ ARR_t ARGS;
 
 #include "Common.hpp"
 #include "State.hpp"
-const unsigned int RANDOM_SEED = (unsigned int)DurCast_ms(Clock::now() - std::chrono::time_point<std::chrono::high_resolution_clock>()).count();
+const uint32_t RANDOM_SEED = (uint32_t)DurCast_ms(Clock::now() - std::chrono::time_point<std::chrono::high_resolution_clock>()).count();
 #include "Expression.hpp"
 
 // Lib imports...
@@ -87,6 +87,7 @@ namespace Ity {
 
 void init() {
 	LIB_BI_G = &LIB_BI;
+	std::srand(RANDOM_SEED);
 }
 
 
@@ -190,7 +191,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 				// Handle composite instructions.
 				for (CompositeItem& comp_item : composite_nest) {
-					// Throw error if composite size is about to go over the max for a 16-bit unsigned integer.
+					// Throw error if composite size is about to go over the max for a 16-bit uint32_teger.
 					if (comp_item.size == uint16_max) {
 						emit_error(ERR_max_composite_size, {}, ln,col);
 						return sequence;
@@ -215,11 +216,13 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 						// Call token processor.
 						if (inst->processor) {;
-							inst->processor(item, (AnyMap_t){
-								{"lcid",  last_comp_item_dist},
-								{"lci",   &last_comp_item},
-								{"cn",    &composite_nest}
-							}, ln,col);
+							inst->processor(item, {
+								.composite_nest      = &composite_nest,
+								.last_comp_item      = &last_comp_item,
+								.last_comp_item_dist = last_comp_item_dist,
+								.ln  = ln,
+								.col = col
+							});
 						}
 
 						// Tokenize expression if possible...
@@ -420,7 +423,6 @@ void start_shell(int argc, char* argv[]) {
 	ARGS = script_args;
 	ItyState state = ItyState{.path = source_script_path}; state.init();
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
-	std::srand(RANDOM_SEED);
 
 
 	// Parse & execute script file...
@@ -455,7 +457,7 @@ void start_shell(int argc, char* argv[]) {
 	#ifdef INCLUDE_SHELL
 	else {
 		std::cout << "* " << ANSI::yellow << "Ity (" << ItyVersionString << ")" << ANSI::reset << '\n'
-		<< "* " << ANSI::purple << "Type \"quit\" or \"q\" to stop." << ANSI::reset << '\n';
+		<< "* " << ANSI::purple << "\"q\" to quit." << ANSI::reset << '\n';
 
 		current_line = 1;
 		current_column = 1;
@@ -466,7 +468,7 @@ void start_shell(int argc, char* argv[]) {
 		while (true) {
 			std::cout << ANSI::purple << "\n>> " << ANSI::norm << ANSI::reset;
 			std::getline(std::cin, command);
-			if (command == "quit" || command == "q") {
+			if (command == "q") {
 				break;
 			}
 

@@ -2,7 +2,7 @@
 // Fragment Size: 3642
 
 
-static void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
+static void INST_Loop_processor(InstToken& token, const InstProcArgs& args) {
 	token.meta = {
 		false,     // Multi.
 
@@ -19,14 +19,14 @@ static void INST_Loop_processor(InstToken& token, const AnyMap_t& _extra, const 
 	if (token.symbol == InstSymbol_for) {
 		// Throw error if not enough args, or third arg is not the required keyword.
 		if (token.args.size() < 4 || token.args[2] != "in") {
-			emit_error(ERR_invalid_syntax, {"Expected keyword \"in\""}, ln, col);
+			emit_error(ERR_invalid_syntax, {"Expected keyword \"in\""}, args.ln, args.col);
 			return;
 		}
 
 		const STR_t& name = token.args[1];
 		// Throw error if invalid name.
 		if (not is_valid_name(name)) {
-			emit_error(ERR_name_must_not_contain_symbols, {name}, ln, col);
+			emit_error(ERR_name_must_not_contain_symbols, {name}, args.ln, args.col);
 			return;
 		}
 

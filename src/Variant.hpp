@@ -71,6 +71,7 @@ using MAP_t = std::unordered_map<STR_t,Variant>;
 using NativeFunc_t = Variant(*)(ItyState& state, ARR_t& args);
 
 
+#pragma pack(1)
 struct FUNC_t {
 	// Common parameters...
 	VariantType return_type = VT_NONE;
@@ -123,8 +124,6 @@ using VariantData = std::variant<
 	const OpDef*
 >;
 
-using AnyMap_t = std::unordered_map<std::string, VariantData>;
-
 
 
 // Variant.
@@ -133,6 +132,7 @@ using AnyMap_t = std::unordered_map<std::string, VariantData>;
 
 void emit_operator_overload_error(const std::string& operation, const Variant& a, const Variant& b);
 
+#pragma pack(1)
 struct Variant {
 	VariantType t = VT_NONE;
 	VariantData d = std::monostate();
@@ -310,7 +310,7 @@ struct Variant {
 
 			case VT_FUNC: {
 				const FUNC_t& func = AnyCast(FUNC_t,d);
-				return "FUNC:" + std::to_string((uintptr_t)&func.native_callable) + ':' + std::to_string(func.token_index);
+				return "FUNC:" + get_variant_type_name(func.return_type) + ':' + std::to_string(func.token_index);
 			}
 
 			default: return "???";

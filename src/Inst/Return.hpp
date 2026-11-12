@@ -1,9 +1,9 @@
 #pragma once
 
 
-static void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+static void INST_Return_processor(InstToken& token, const InstProcArgs& args) {
 	bool found = false;
-	std::vector<CompositeItem> reverse_nest = *AnyCastC(std::vector<CompositeItem>*,extra.at("cn"));
+	std::vector<CompositeItem> reverse_nest = *args.composite_nest;
 	std::reverse(reverse_nest.begin(), reverse_nest.end());
 	for (const CompositeItem& comp_item : reverse_nest) {
 		if (comp_item.token.symbol != InstSymbol_func) continue;
@@ -13,7 +13,7 @@ static void INST_Return_processor(InstToken& token, const AnyMap_t& extra, const
 
 	// Throw error if there if instruciton is not under a function.
 	if (not found) {
-		emit_error(ERR_misplaced_inst, {token.args[0]}, ln,col);
+		emit_error(ERR_misplaced_inst, {token.args[0]}, args.ln, args.col);
 		return;
 	}
 }

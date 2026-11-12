@@ -2,21 +2,21 @@
 // Fragment Size: 1072
 
 
-static void INST_If_processor(InstToken& token, const AnyMap_t& extra, const unsigned int& ln, const unsigned int& col) {
+static void INST_If_processor(InstToken& token, const InstProcArgs& args) {
 	token.meta = {false};
 
 	if (token.symbol == InstSymbol_elif || token.symbol == InstSymbol_else) {
-		const CompositeItem& last_comp_item = *AnyCastC(CompositeItem*,extra.at("lci"));
+		const CompositeItem& last_comp_item = *args.last_comp_item;
 
 		// Throw error if previous composite item was not a valid conditional.
 		if (last_comp_item.token.symbol != InstSymbol_if && last_comp_item.token.symbol != InstSymbol_elif) {
-			emit_error(ERR_misplaced_inst, {token.args[0]}, ln,col);
+			emit_error(ERR_misplaced_inst, {token.args[0]}, args.ln, args.col);
 			return;
 		}
 
 		// Link token to the previous conditional.
 		token.linked_inst = last_comp_item.token.symbol;
-		token.linked_inst_pos = -(int32_t)AnyCast(uint32_t,extra.at("lcid"));
+		token.linked_inst_pos = -(int32_t)args.last_comp_item_dist;
 	}
 }
 

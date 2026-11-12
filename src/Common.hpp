@@ -7,8 +7,8 @@
 
 #pragma pack(1)
 struct ExprToken {
-	unsigned int ln = 0;
-	unsigned int col = 0;
+	uint32_t ln = 0;
+	uint32_t col = 0;
 	ExprTokenType t = ExprTokenType_variant;
 	Variant var;
 	std::vector<ExprToken> seq;
@@ -43,9 +43,9 @@ struct Instruction;
 
 #pragma pack(1)
 struct InstToken {
-	unsigned int i = 0;
-	unsigned int ln = 0;
-	unsigned int col = 0;
+	uint32_t i = 0;
+	uint32_t ln = 0;
+	uint32_t col = 0;
 	InstSymbol symbol = InstSymbol__;
 	std::vector<std::string> args;
 	const Instruction* inst = nullptr;
@@ -112,25 +112,35 @@ const HASHED_NAMES_struct HASHED_NAMES;
 
 
 #pragma pack(1)
+struct CompositeItem {
+	InstToken token;
+	uint32_t index = 0;
+	uint16_t size = 0;
+	uint32_t ln = 0;
+	uint32_t col = 0;
+	bool declarative = false;
+};
+
+
+#pragma pack(1)
+struct InstProcArgs {
+	const std::vector<CompositeItem>* composite_nest;
+	const CompositeItem* last_comp_item;
+	const uint32_t last_comp_item_dist;
+	const uint32_t ln;
+	const uint32_t col;
+};
+
+
+#pragma pack(1)
 struct Instruction {
 	const uint8_t REQUIRED = 0;
 	void (*exec)(ItyState&, InstToken&) = nullptr;
 	const bool is_composite = false;
 	const bool has_expr = false;
 	const bool clear_args = false;
-	void (*processor)(InstToken&, const AnyMap_t&, const unsigned int& ln, const unsigned int& col) = nullptr;
+	void (*processor)(InstToken&, const InstProcArgs&) = nullptr;
 	void (*emergency_scope_exit)(InstToken*&) = nullptr;
-};
-
-
-#pragma pack(1)
-struct CompositeItem {
-	InstToken token;
-	unsigned int index = 0;
-	uint16_t size = 0;
-	unsigned int ln = 0;
-	unsigned int col = 0;
-	bool declarative = false;
 };
 
 
@@ -155,7 +165,7 @@ struct Operation {
 
 const std::string multiple_types_str(const std::vector<VariantType>& types) {
 	std::string result; result.reserve(types.size());
-	unsigned int i = 0;
+	uint32_t i = 0;
 	for (const VariantType& type : types) {
 		if (i != 0) result += " or ";
 		result += get_variant_type_name(type);
@@ -205,7 +215,7 @@ const Variant var_type_var(const VariantType& type) {
 
 
 const Variant new_none() {
-	return Variant{};
+	return Variant{VT_NONE, std::monostate(), VM_dynamic_type};
 }
 
 

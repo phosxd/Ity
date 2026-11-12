@@ -62,7 +62,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, ARR_t& input_args) {
 		const VariantType return_type = func.return_type;
 
 		// Execute funtion.
-		Ity::exec(*func_state, func_token.i+1, AnyCast(unsigned int,func_token.meta[0])); // Execute the tokens in the function.
+		Ity::exec(*func_state, func_token.i+1, AnyCast(uint32_t,func_token.meta[0])); // Execute the tokens in the function.
 		current_script_path = &state.path; // Reset current script path.
 
 		// NOTE: Use of "func" is now unsafe after this point, reference potentially modified or deleted as expression temporaries are overwritten.
@@ -85,7 +85,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, ARR_t& input_args) {
 
 
 
-inline void LN_COL_COUNTER(const char& ch, unsigned int& ln, unsigned int& col) {
+inline void LN_COL_COUNTER(const char& ch, uint32_t& ln, uint32_t& col) {
 	if (ch == '\t') col += tab_col_value; // IDEs want to be funny & have a tab count as multiple columns, so allow the user to set the tab value depending on their IDE settings.
 	else if (ch == '\n') {ln++; col = 0;}
 	else col++;
@@ -207,7 +207,7 @@ std::unordered_map<std::string, std::vector<ExprTokenizeResult>> expr_cache;
 
 
 // Tokenize an expression. Returns an ExprToken with type "ExprTokenType_sequence".
-ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=0, const unsigned int col=0, const char grouping_mode='.') {
+ExprTokenizeResult expr_tokenize(const std::string& expr, const uint32_t ln=0, const uint32_t col=0, const char grouping_mode='.') {
 	ExprTokenizeResult result = {
 		.token = ExprToken{.ln=ln, .col=col, .t=ExprTokenType_sequence},
 		.grouping_mode = grouping_mode,
@@ -227,8 +227,8 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const unsigned int ln=
 	std::string buffer; buffer.reserve(expr_len);
 	std::string secondary_buffer;
 	ExprToken item = {0,0, ExprTokenType_variant, {VT_PLACEHOLDER}};
-	unsigned int ln_offset = 0;
-	unsigned int col_offset = 0;
+	uint32_t ln_offset = 0;
+	uint32_t col_offset = 0;
 	size_t skip_chars = 0;
 
 	bool is_start        = true;
@@ -588,8 +588,8 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 	}
 
 
-	const unsigned int ln_ = current_line;
-	const unsigned int col_ = current_column;
+	const uint32_t ln_ = current_line;
+	const uint32_t col_ = current_column;
 
 	const size_t seq_len = token.seq.size();
 	Variant* result = nullptr;
@@ -676,12 +676,12 @@ Variant* expr_exec(ItyState& state, ExprToken& token, const bool subexpr=false) 
 
 // Inserts a tokenized expression with proper meta data into the given `token.expr`.
 // Expression is assumed to start at `start_idx` in `token.args`.
-std::vector<std::string> tokenize_expr_from_inst_args(InstToken& token, const unsigned int start_idx = 0) {
+std::vector<std::string> tokenize_expr_from_inst_args(InstToken& token, const uint32_t start_idx = 0) {
 	std::vector<std::string> new_args; new_args.reserve(start_idx);
 	std::string expr_string;
-	unsigned int i = 0;
-	unsigned int ln = 0;
-	unsigned int col = 0;
+	uint32_t i = 0;
+	uint32_t ln = 0;
+	uint32_t col = 0;
 	for (const std::string& arg : token.args) {
 		if (i < start_idx) {
 			for (const char& ch : arg) LN_COL_COUNTER(ch,ln,col);

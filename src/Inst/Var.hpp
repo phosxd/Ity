@@ -2,7 +2,7 @@
 // Fragment Size: 2880
 
 
-static void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const unsigned int& ln, const unsigned int& col) {
+static void INST_Var_processor(InstToken& token, const InstProcArgs& args) {
 	std::string type_name = "*";
 	std::string name;
 	std::string expr;
@@ -56,7 +56,7 @@ static void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const u
 
 	// Throw error if invalid name.
 	if (not is_valid_name(name)) {
-		emit_error(ERR_name_must_not_contain_symbols, {name}, ln, col);
+		emit_error(ERR_name_must_not_contain_symbols, {name}, args.ln, args.col);
 		return;
 	}
 
@@ -73,7 +73,7 @@ static void INST_Var_processor(InstToken& token, const AnyMap_t& _extra, const u
 
 	// Set token properties.
 	token.meta = {name, string_hasher(name), type, mode};
-	token.expr = expr_tokenize(expr, ln-expr_start_ln, col-expr_start_col).token;
+	token.expr = expr_tokenize(expr, args.ln-expr_start_ln, args.col-expr_start_col).token;
 }
 
 

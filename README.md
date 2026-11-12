@@ -80,23 +80,24 @@ To build on Windows, run the `build_windows.ps1` PowerShell script in your termi
 ## Build flags
 You can pass flags to the build script.
 
+- `-m` or `--minimal`:
+	Select every option that reduces file size.
 - `-o=` or `--optimize=`:
 	Set optimization level.
 	"balanced", "speed", or "size".
 - `-nx` or `--no-upx`:
 	Disable UPX compression.
 	Compression has little to no performance or memory impact.
-	Disabling it usually isn't a good idea unless you have a specific reason.
-- `-s` or `--static`:
-	Statically link final binary. Comes at no performance benefiet & increases binary size about 1.5MB.
-- `-d` or `--debug`:
-	Build with debug symbols in-tact.
 - `-srd` or `--strip-runtime-debug`:
 	Remove runtime error strings & debug flag branches.
-	Error codes & ln/col tracking are still kept.
-	Use this to save an extra few kilobytes.
+	Error codes & ln/col tracking are kept.
 - `-ns` or `--no-shell`:
-	Remove interactive capability.
+	Remove interactive shell.
+
+- `-s` or `--static`:
+	Statically link final binary.
+- `-d` or `--debug`:
+	Build with debug symbols in-tact.
 - `-t` or `--test`:
 	Run tests after compilation.
 
@@ -148,7 +149,7 @@ Running the interpreter without passing a script path will run it in "interactiv
 ```bash
 ./ity.bin
 * Ity (0.2.0)
-* Type "quit" or "q" to stop.
+* "q" to quit.
 
 >> 1+1
 2
