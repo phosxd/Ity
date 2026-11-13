@@ -18,3 +18,4 @@ test.ity
 Shell/.Main.cpp
 
 Scripts/Modules/BigInt.ity
+Scripts/Modules/Storage.ity
