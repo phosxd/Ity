@@ -86,6 +86,7 @@ struct FUNC_t {
 	// Native functions only...
 	NativeFunc_t native_callable = nullptr;
 	std::vector<std::vector<VariantType>> args_schema = {};
+	bool is_safe = true;
 };
 
 

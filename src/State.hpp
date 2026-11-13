@@ -176,8 +176,9 @@ struct ItyScope {
 			// Check safety.
 			if (prop_name == "__safe") {
 				const bool& safe = AnyCast(bool,i.second.d);
+				// Emit error if in safe mode & module is unsafe.
 				if (not safe && safe_mode) {
-					emit_error(ERR_disallowed_member_in_safe_mode, {"(?)"});
+					emit_error(ERR_unsafe);
 					return;
 				}
 			}
@@ -201,8 +202,9 @@ struct ItyScope {
 		bool safe = true;
 		const auto& safe_it = map.find("__safe");
 		if (safe_it != map.end()) safe = AnyCast(bool,safe_it->second.d);
+		// Emit error if in safe mode & module is unsafe.
 		if (not safe && safe_mode) {
-			emit_error(ERR_disallowed_member_in_safe_mode, {"(?)"});
+			emit_error(ERR_unsafe);
 			return;
 		}
 

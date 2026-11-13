@@ -178,8 +178,9 @@ enum OpSymbol : uint8_t {
 	OpSymbol_ternary,
 	OpSymbol_ternary_else,
 
-	OpSymbol_type_cast,
 	OpSymbol_access,
+
+	OpSymbol_type_cast,
 
 	OpSymbol_ref,
 	OpSymbol_deref,

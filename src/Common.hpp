@@ -234,13 +234,14 @@ const VariantPresets_struct VPS;
 
 
 // Translate a native function to a usable function object.
-const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t& native_func, const std::vector<std::vector<VariantType>> args_schema={}) {
+const Variant NativeFuncTrans(const VariantType& return_type, const NativeFunc_t& native_func, const std::vector<std::vector<VariantType>> args_schema={}, const bool is_safe=true) {
 	return Variant{
 		VT_FUNC, (FUNC_t){
 			.return_type = return_type,
 			.bound_args = (ARR_t){},
 			.native_callable = native_func,
-			.args_schema = args_schema
+			.args_schema = args_schema,
+			.is_safe = is_safe
 		},
 		VM_const,
 	};

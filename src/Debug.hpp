@@ -10,7 +10,7 @@ enum ERR_CODE : uint8_t {
 	ERR_expected_ity_extension,
 	ERR_unable_to_open_script,
 	ERR_unknown_module,
-	ERR_disallowed_member_in_safe_mode,
+	ERR_unsafe,
 
 	// 6
 	ERR_max_composite_size,
@@ -127,7 +127,7 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		case ERR_unable_to_open_script:             return "Unable to open script at \"" + args[0] + "\".";
 		#endif
 		case ERR_unknown_module:                    return "Cannot find module \"" + args[0] + "\".";
-		case ERR_disallowed_member_in_safe_mode:    return "Member \"" + args[0] + "\" not permitted in safe mode (--safe).";
+		case ERR_unsafe:                            return "Unsafe action blocked (--safe).";
 
 		case ERR_max_composite_size:                return "Exceeded maximum instructions under a composite (65,535).";
 		case ERR_no_composite_requiring_end:        return "No instruction requiring an end here.";
@@ -146,7 +146,7 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 		}
 		case ERR_invalid_assignment_op:             return "Invalid assignment operator \"" + args[0] + "\" for instruction \"" + args[1] + "\".";
 		case ERR_missing_operand:                   return "Operator is missing an operand.";
-		case ERR_invalid_cast:                      return "Cannot type cast from \"" + args[0] + " to \"" + args[1] + "\".";
+		case ERR_invalid_cast:                      return "Cannot cast from \"" + args[0] + " to \"" + args[1] + "\".";
 		case ERR_misplaced_inst:                    return "Misplaced \"" + args[0] + "\" instruction.";
 
 		case ERR_operand_type_mismatch: {

@@ -112,11 +112,6 @@ static Variant LIB_IO_prompt(ItyState& state, const ARR_t& args) {
 
 // Get interpreter property value.
 static Variant LIB_BI_get_ity_prop(ItyState& state, const ARR_t& args) {
-	if (safe_mode) {
-		emit_error(ERR_disallowed_member_in_safe_mode, {"get_ity_prop"});
-		return VPS.none;
-	}
-
 	const STR_t& prop = AnyCast(STR_t,args[0].d);
 	if (prop == "persist") return Variant{VT_BOOL, (bool)ItyDebug::persist_mode};
 	else if (prop == "max_depth") return Variant{VT_UINT16, (uint16_t)state.execution_depth_max};
@@ -127,11 +122,6 @@ static Variant LIB_BI_get_ity_prop(ItyState& state, const ARR_t& args) {
 
 // Set interpreter property value.
 static Variant LIB_BI_set_ity_prop(ItyState& state, const ARR_t& args) {
-	if (safe_mode) {
-		emit_error(ERR_disallowed_member_in_safe_mode, {"set_ity_prop"});
-		return VPS.none;
-	}
-
 	const STR_t& prop = AnyCast(STR_t,args[0].d);
 	const Variant& value = args[1];
 	if (prop == "persist") ItyDebug::persist_mode = value.to_bool();
@@ -143,13 +133,7 @@ static Variant LIB_BI_set_ity_prop(ItyState& state, const ARR_t& args) {
 
 // Call a system comamnd. Returns the exit status code.
 static Variant LIB_BI_system(ItyState& _state, const ARR_t& args) {
-	if (safe_mode) {
-		emit_error(ERR_disallowed_member_in_safe_mode, {"system"});
-		return VPS.none;
-	}
-
-	const char* command = AnyCast(STR_t,args[0].d).c_str();
-	return Variant{VT_UINT32, (uint32_t)system(command)};
+	return Variant{VT_UINT32, (uint32_t)system(AnyCast(STR_t,args[0].d).data())};
 }
 
 
@@ -183,29 +167,6 @@ static Variant LIB_BI_type(ItyState& _state, const ARR_t& args) {
 static Variant LIB_BI_size(ItyState& state, ARR_t& args) {
 	Variant* var = &args[0];
 	return Variant{VT_INT64, (int64_t)(resovlve_potential_ref(state, var)->get_size())};
-}
-
-
-// Return an array of integers from the given start, end, & step.
-static Variant LIB_BI_range(ItyState& _state, ARR_t& args) {
-	int64_t step = 1;
-	int64_t start = 0;
-	int64_t end = AnyCastV(int64_t,args[0].d);
-	if (args.size() > 1) {
-		start = end;
-		end = AnyCastV(int64_t,args[1].d);
-	}
-	if (args.size() > 2) {
-		step = AnyCastV(int64_t,args[2].d);
-	}
-
-
-	ARR_t data; data.reserve(end);
-	for (int64_t i = start; i < end; i += step) {
-		data.push_back(Variant{VT_INT64, i});
-	}
-
-	return Variant{VT_ARR, data};
 }
 
 
@@ -450,17 +411,17 @@ const Variant LIB_BI {
 		{"__tm", Variant{
 			VT_MAP, (MAP_t){
 				{"REF:reassign",  NativeFuncTrans(VT_NONE,  LIB_BI_tm_ref_reassign, { {VT_PTR}, {VT_REF} })},
-				{"REF:type",      NativeFuncTrans(VT_UINT8, (NativeFunc_t)LIB_BI_tm_ref_type,     { {VT_PTR} })},
-				{"PTR:type",      NativeFuncTrans(VT_UINT8, (NativeFunc_t)LIB_BI_tm_ref_type,     { {VT_PTR} })},
+				{"REF:type",      NativeFuncTrans(VT_UINT8, (NativeFunc_t)LIB_BI_tm_ref_type, { {VT_PTR} })},
+				{"PTR:type",      NativeFuncTrans(VT_UINT8, (NativeFunc_t)LIB_BI_tm_ref_type, { {VT_PTR} })},
 
-				{"STR:raw",     NativeFuncTrans(VT_INT64,  (NativeFunc_t)LIB_BI_tm_str_raw,           { {VT_PTR} })},
-				{"STR:length",  NativeFuncTrans(VT_UINT64, (NativeFunc_t)LIB_BI_tm_str_arr_length,    { {VT_PTR} })},
-				{"STR:append",  NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_append,    { {VT_PTR}, {VT_ANY} })},
-				{"STR:reserve", NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_reserve,   { {VT_PTR}, {VT_UINT64} })},
-				{"ARR:length",  NativeFuncTrans(VT_UINT64, (NativeFunc_t)LIB_BI_tm_str_arr_length,    { {VT_PTR} })},
-				{"ARR:erase",   NativeFuncTrans(VT_NONE,                 LIB_BI_tm_arr_map_erase,     { {VT_PTR}, {VT_UINT64,VT_STR} })},
-				{"ARR:append",  NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_append,    { {VT_PTR}, {VT_ANY} })},
-				{"ARR:reserve", NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_reserve,   { {VT_PTR}, {VT_UINT64} })},
+				{"STR:raw",     NativeFuncTrans(VT_INT64,  (NativeFunc_t)LIB_BI_tm_str_raw,          { {VT_PTR} })},
+				{"STR:length",  NativeFuncTrans(VT_UINT64, (NativeFunc_t)LIB_BI_tm_str_arr_length,   { {VT_PTR} })},
+				{"STR:append",  NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_append,   { {VT_PTR}, {VT_ANY} })},
+				{"STR:reserve", NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_reserve,  { {VT_PTR}, {VT_UINT64} })},
+				{"ARR:length",  NativeFuncTrans(VT_UINT64, (NativeFunc_t)LIB_BI_tm_str_arr_length,   { {VT_PTR} })},
+				{"ARR:erase",   NativeFuncTrans(VT_NONE,                 LIB_BI_tm_arr_map_erase,    { {VT_PTR}, {VT_UINT64,VT_STR} })},
+				{"ARR:append",  NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_append,   { {VT_PTR}, {VT_ANY} })},
+				{"ARR:reserve", NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_reserve,  { {VT_PTR}, {VT_UINT64} })},
 
 				{"MAP:erase",   NativeFuncTrans(VT_NONE,  LIB_BI_tm_arr_map_erase, { {VT_PTR}, {VT_UINT64,VT_STR} })},
 				{"MAP:keys",    NativeFuncTrans(VT_ARR,   LIB_BI_tm_map_keys,      { {VT_PTR} })},
@@ -504,16 +465,15 @@ const Variant LIB_BI {
 
 
 		// Utility functions.
-		{"get_ity_prop",     NativeFuncTrans(VT_ANY,   (NativeFunc_t)LIB_BI_get_ity_prop,      { {VT_STR} })},
-		{"set_ity_prop",     NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_BI_set_ity_prop,      { {VT_STR}, {VT_ANY} })},
+		{"get_ity_prop",     NativeFuncTrans(VT_ANY,   (NativeFunc_t)LIB_BI_get_ity_prop,      { {VT_STR} },           false)},
+		{"set_ity_prop",     NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_BI_set_ity_prop,      { {VT_STR}, {VT_ANY} }, false)},
 
-		{"system",      NativeFuncTrans(VT_UINT32, (NativeFunc_t)LIB_BI_system,     { {VT_STR} })},
+		{"system",      NativeFuncTrans(VT_UINT32, (NativeFunc_t)LIB_BI_system,     { {VT_STR} },      false)},
 		{"sleep",       NativeFuncTrans(VT_NONE,   (NativeFunc_t)LIB_BI_sleep,      { {VT_FLOAT64} })},
 		{"is_defined",  NativeFuncTrans(VT_BOOL,   (NativeFunc_t)LIB_BI_is_defined, { {VT_STR} })},
 		{"type",        NativeFuncTrans(VT_UINT8,  (NativeFunc_t)LIB_BI_type,       { {VT_ANY} })},
 		{"type_name",   NativeFuncTrans(VT_STR,    (NativeFunc_t)LIB_BI_type_name,  { {VT_UINT8} })},
 		{"size",        NativeFuncTrans(VT_INT64,                LIB_BI_size,       { {VT_ANY} })},
-		{"range",       NativeFuncTrans(VT_ARR,                  LIB_BI_range,      { {VT_INT64}, {VT_INT64, VT_NONE}, {VT_INT64, VT_NONE} })},
 
 
 		// In / Out members...
@@ -534,7 +494,7 @@ const Variant LIB_BI {
 				#endif
 		}, VM_const }},
 
-		{"signal",     NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_IO_signal, { {VT_UINT8}, {VT_FUNC} })},
+		{"signal",     NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_IO_signal, { {VT_UINT8}, {VT_FUNC} }, false)},
 
 		{"in",         NativeFuncTrans(VT_STR,   (NativeFunc_t)LIB_IO_in,     {})},
 		{"key_in",     NativeFuncTrans(VT_STR,   (NativeFunc_t)LIB_IO_key_in, {})},

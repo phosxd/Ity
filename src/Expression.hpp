@@ -5,6 +5,12 @@
 Variant call_function(ItyState& state, const FUNC_t& func, ARR_t& input_args) {
 	ARR_t args = func.bound_args + input_args;
 
+	// Emit error if in safe mode & function is unsafe.
+	if (ItyDebug::safe_mode && not func.is_safe) {
+		emit_error(ERR_unsafe);
+		return VPS.none;
+	}
+
 	// Check args against the func's schema...
 	if (not func.args_schema.empty()) {
 		int16_t i = -1; for (const std::vector<VariantType>& types : func.args_schema) {i++;
@@ -20,7 +26,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, ARR_t& input_args) {
 					break;
 				}
 			}
-			// Emit error no types match.
+			// Emit error if no types match.
 			if (not matches) {
 				emit_error(ERR_invalid_func_arg_type, {std::to_string(i), multiple_types_str(types), get_variant_type_name(var.t)});
 				return VPS.none;
@@ -112,37 +118,38 @@ struct OpDef {
 	const Operation* op;
 };
 const OpDef OPERATIONS[] = {
-	{OpSymbol_add, "+",  OP_Arith},
-	{OpSymbol_sub, "-",  OP_Arith},
-	{OpSymbol_mul, "*",  OP_Arith},
-	{OpSymbol_div, "/",  OP_Arith},
-	{OpSymbol_mod, "%",  OP_Arith},
+	{OpSymbol_add, "+", OP_Arith},
+	{OpSymbol_sub, "-", OP_Arith},
+	{OpSymbol_mul, "*", OP_Arith},
+	{OpSymbol_div, "/", OP_Arith},
+	{OpSymbol_mod, "%", OP_Arith},
 
-	{OpSymbol_set,     "=",    OP_Set},
-	{OpSymbol_add_set, "+=",   OP_Set},
-	{OpSymbol_sub_set, "-=",   OP_Set},
-	{OpSymbol_mul_set, "*=",   OP_Set},
-	{OpSymbol_div_set, "/=",   OP_Set},
-	{OpSymbol_mod_set, "%=",   OP_Set},
-	{OpSymbol_mov_set, "<<=",  OP_Set},
+	{OpSymbol_set,     "=",   OP_Set},
+	{OpSymbol_add_set, "+=",  OP_Set},
+	{OpSymbol_sub_set, "-=",  OP_Set},
+	{OpSymbol_mul_set, "*=",  OP_Set},
+	{OpSymbol_div_set, "/=",  OP_Set},
+	{OpSymbol_mod_set, "%=",  OP_Set},
+	{OpSymbol_mov_set, "<<=", OP_Set},
 
-	{OpSymbol_cmp_eq,   "==",  OP_Compare},
-	{OpSymbol_cmp_neq,  "!=",  OP_Compare},
-	{OpSymbol_cmp_gt,   ">",   OP_Compare},
-	{OpSymbol_cmp_lt,   "<",   OP_Compare},
-	{OpSymbol_cmp_gteq, ">=",  OP_Compare},
-	{OpSymbol_cmp_lteq, "<=",  OP_Compare},
-	{OpSymbol_cmp_and,  "&&",  OP_Compare},
-	{OpSymbol_cmp_or,   "||",  OP_Compare},
+	{OpSymbol_cmp_eq,   "==", OP_Compare},
+	{OpSymbol_cmp_neq,  "!=", OP_Compare},
+	{OpSymbol_cmp_gt,   ">",  OP_Compare},
+	{OpSymbol_cmp_lt,   "<",  OP_Compare},
+	{OpSymbol_cmp_gteq, ">=", OP_Compare},
+	{OpSymbol_cmp_lteq, "<=", OP_Compare},
+	{OpSymbol_cmp_and,  "&&", OP_Compare},
+	{OpSymbol_cmp_or,   "||", OP_Compare},
 
-	{OpSymbol_ternary,      "?",   OP_Ternary},
-	{OpSymbol_ternary_else, "--",  OP_Ternary},
+	{OpSymbol_ternary,      "?",  OP_Ternary},
+	{OpSymbol_ternary_else, "--", OP_Ternary},
 
-	{OpSymbol_type_cast, "->",  OP_TypeCast},
-	{OpSymbol_access,    ":",   OP_Access},
+	{OpSymbol_access, ":", OP_Access},
 
-	{OpSymbol_ref,    "@",   OP_RefOps},
-	{OpSymbol_deref,  "~",   OP_RefOps}
+	{OpSymbol_type_cast, "->", OP_TypeCast},
+
+	{OpSymbol_ref,   "@", OP_RefOps},
+	{OpSymbol_deref, "~", OP_RefOps}
 };
 const OpDef* find_OpDef(const OpSymbol& sym = OpSymbol__, const std::string& str = "") {
 	for (const OpDef& def : OPERATIONS) {
