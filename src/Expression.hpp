@@ -37,7 +37,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, ARR_t& input_args) {
 	if (func.native_callable) {
 		Variant result = func.native_callable(state, args);
 		// Check if return type matches.
-		if (result.t != func.return_type && func.return_type != VT_ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(result.t), get_variant_type_name(func.return_type)});
+		if (result.t != func.return_type && func.return_type != VT_ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func.return_type), get_variant_type_name(result.t)});
 		return result;
 	}
 

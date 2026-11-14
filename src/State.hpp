@@ -2,6 +2,11 @@
 
 #include <utility> // For "std::pair".
 
+#include "Common.hpp"
+
+using namespace Ity;
+using namespace ItyDebug;
+
 
 using ScopeMapCell_t = std::pair<uint32_t,Variant>;
 using ScopeMap_t = std::vector<ScopeMapCell_t>;
@@ -276,7 +281,7 @@ struct ItyState {
 		scope.set_data("__SCRIPT_PATH__",          Variant{VT_STR,  (STR_t)path, VM_const});
 		scope.set_data("__OS_NAME__",              Variant{VT_STR,  (STR_t)OSName, VM_const});
 		scope.set_data("__HAS_RUNTIME_DEBUG__",    Variant(VT_BOOL, has_runtime_debug, VM_const));
-		scope.set_data("__CMD_ARGS__",             Variant{VT_ARR,  ARGS, VM_const});
+		scope.set_data("__CMD_ARGS__",             Variant{VT_ARR,  *ARGS, VM_const});
 		scope.set_data("__IMPORTED__",             VPS.bool_false);
 		// Merge built-in library.
 		scope.merge_module(AnyCast(MAP_t,((Variant*)LIB_BI_G)->d));

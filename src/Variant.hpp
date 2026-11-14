@@ -16,11 +16,11 @@
 
 
 // Get string representation of a VariantType.
-#define get_variant_type_name(type) (VARIANT_TYPE_NAMES.at(type)[0])
+#define get_variant_type_name(type) (Ity::VARIANT_TYPE_NAMES.at(type)[0])
 
 
 // Get VariantType from a string representation.
-const VariantType get_variant_type_from_name(const std::string& name) {
+const Ity::VariantType get_variant_type_from_name(const std::string& name) {using namespace Ity;
 	if (name == ".") return VT_NONE;
 	for (const auto& it : VARIANT_TYPE_NAMES) {
 		if (exists_in_vec(it.second, name)) return it.first;
@@ -30,23 +30,23 @@ const VariantType get_variant_type_from_name(const std::string& name) {
 
 
 // Get highest order type.
-const VariantType get_highest_order_type(const VariantType& a, const VariantType& b) {
+const Ity::VariantType get_highest_order_type(const Ity::VariantType& a, const Ity::VariantType& b) {
 	return (a < b) ? a : b; // Enum values are arranged in order of most significant to least.
 }
 
 
 // Type categorization checkers.
 
-const bool type_is_int(const VariantType& t) {
+const bool type_is_int(const Ity::VariantType& t) {using namespace Ity;
 	return t > VT_INT64-1 && t < VT_INT8+1;
 }
-const bool type_is_uint(const VariantType& t) {
+const bool type_is_uint(const Ity::VariantType& t) {using namespace Ity;
 	return t > VT_UINT64-1 && t < VT_UINT8+1;
 }
-const bool type_is_float(const VariantType& t) {
+const bool type_is_float(const Ity::VariantType& t) {using namespace Ity;
 	return t == VT_FLOAT64;
 }
-const bool type_is_number(const VariantType& t) {
+const bool type_is_number(const Ity::VariantType& t) {
 	return type_is_int(t) || type_is_uint(t) || type_is_float(t);
 }
 
@@ -64,28 +64,23 @@ struct CompositeItem;
 struct OpDef;
 
 using var_key_t = uint32_t;
-
-using FLOAT64_t = double;
-using STR_t = std::string;
-using ARR_t = std::vector<Variant>;
-using MAP_t = std::unordered_map<STR_t,Variant>;
-using NativeFunc_t = Variant(*)(ItyState& state, ARR_t& args);
+using NativeFunc_t = Variant(*)(ItyState& state, Ity::ARR_t& args);
 
 
 #pragma pack(1)
 struct FUNC_t {
 	// Common parameters...
-	VariantType return_type = VT_NONE;
-	ARR_t bound_args = {};
+	Ity::VariantType return_type = Ity::VT_NONE;
+	Ity::ARR_t bound_args = {};
 
 	// Script functions only...
 	uint32_t token_index = 0;
 	uint32_t definition_state_id = 0;
-	STR_t script_path = "";
+	Ity::STR_t script_path = "";
 
 	// Native functions only...
 	NativeFunc_t native_callable = nullptr;
-	std::vector<std::vector<VariantType>> args_schema = {};
+	std::vector<std::vector<Ity::VariantType>> args_schema = {};
 	bool is_safe = true;
 };
 
@@ -109,17 +104,17 @@ using VariantData = std::variant<
 	uint32_t,
 	uint16_t,
 	uint8_t,
-	FLOAT64_t,
+	Ity::FLOAT64_t,
 
-	STR_t,
-	ARR_t,
-	MAP_t,
+	Ity::STR_t,
+	Ity::ARR_t,
+	Ity::MAP_t,
 	FUNC_t,
 
 	// Internal types.
 	TREF_t,
-	VariantType,
-	VariantMode,
+	Ity::VariantType,
+	Ity::VariantMode,
 
 	CompositeItem*,
 	std::vector<CompositeItem>*,
@@ -136,9 +131,9 @@ void emit_operator_overload_error(const std::string& operation, const Variant& a
 
 #pragma pack(1)
 struct Variant {
-	VariantType t = VT_NONE;
+	Ity::VariantType t = Ity::VT_NONE;
 	VariantData d = std::monostate();
-	VariantMode m = VM_dynamic_type;
+	Ity::VariantMode m = Ity::VM_dynamic_type;
 
 
 	template<class T>
@@ -147,7 +142,7 @@ struct Variant {
 	}
 
 
-	const bool type_mode_matches(const VariantType& a_t, const VariantMode& _a_m, const VariantType& b_t, const VariantMode& b_m, const bool do_emit_error = true) const {
+	const bool type_mode_matches(const Ity::VariantType& a_t, const Ity::VariantMode& _a_m, const Ity::VariantType& b_t, const Ity::VariantMode& b_m, const bool do_emit_error = true) const {using namespace Ity; using namespace ItyDebug;
 		if (b_m == VM_dynamic_type || b_t == a_t) return true;
 		if (do_emit_error) emit_error(ERR_assignment_type_mismatch, {get_variant_type_name(a_t), get_variant_type_name(b_t)});
 		return false;
@@ -159,7 +154,7 @@ struct Variant {
 
 
 	// Return the number of bytes that the Variant takes up.
-	const size_t get_size() const {
+	const size_t get_size() const {using namespace Ity;
 		return std::visit([](const auto& v) -> size_t {
 			using T = std::decay_t<decltype(v)>;
 			// Numbers.
@@ -212,7 +207,7 @@ struct Variant {
 
 
 	// Get boolean.
-	bool to_bool() const {
+	bool to_bool() const {using namespace Ity;
 		return std::visit([](const auto& v) -> bool {
 			using VT = std::decay_t<decltype(v)>;
 			if constexpr (std::is_arithmetic_v<VT>) return (bool)v;
@@ -227,7 +222,7 @@ struct Variant {
 		return std::visit([](const auto& v) -> T const {
 			using VT = std::decay_t<decltype(v)>;
 			if constexpr (std::is_arithmetic_v<VT>) return (T)v;
-			else if constexpr (std::is_same_v<VT, STR_t>) {
+			else if constexpr (std::is_same_v<VT, Ity::STR_t>) {
 				if (v.size() == 0 || NUM.find(v[0]) == std::string::npos) return 0;
 				else if constexpr (std::is_floating_point_v<T> || std::is_unsigned_v<T>) return (T)std::stod(v);
 				else return (T)std::stoll(v);
@@ -253,11 +248,11 @@ struct Variant {
 	uint8_t to_uint8()   const {return (uint8_t)to_uint64();}
 
 	// Get float.
-	FLOAT64_t to_float64() const {return _to_number<FLOAT64_t>();}
+	Ity::FLOAT64_t to_float64() const {return _to_number<Ity::FLOAT64_t>();}
 
 
 	// Get string.
-	STR_t to_str() const {
+	Ity::STR_t to_str() const {using namespace Ity;
 		switch (t) {
 			case VT_OP:   return "OP";
 			case VT_TREF: return "TREF:" + AnyCast(TREF_t,d).str;
@@ -315,7 +310,7 @@ struct Variant {
 
 
 	// Get array.
-	ARR_t to_arr() const {
+	Ity::ARR_t to_arr() const {using namespace Ity;
 		switch (t) {
 			case VT_ARR: return AnyCast(ARR_t,d);
 			default: return (ARR_t){};
@@ -324,7 +319,7 @@ struct Variant {
 
 
 	// Get map.
-	MAP_t to_map() const {
+	Ity::MAP_t to_map() const {using namespace Ity;
 		switch (t) {
 			case VT_MAP: return AnyCast(MAP_t,d);
 			default: return (MAP_t){};
@@ -333,7 +328,7 @@ struct Variant {
 
 
 	// Get func.
-	FUNC_t to_func() const {
+	FUNC_t to_func() const {using namespace Ity;
 		switch (t) {
 			case VT_FUNC: return AnyCast(FUNC_t,d);
 			default: return (FUNC_t){};
@@ -344,7 +339,7 @@ struct Variant {
 	// FULL CONVERSION FUNCTIONS
 
 
-	Variant* make_into_type(const VariantType& t_) {
+	Variant* make_into_type(const Ity::VariantType& t_) {using namespace Ity; using namespace ItyDebug;
 		if (t == t_) return this;
 		switch (t_) {
 			case VT_BOOL: {d = to_bool(); break;}
@@ -373,7 +368,7 @@ struct Variant {
 	// COMPARISON OPERATORS
 
 
-	const bool operator==(const Variant& b) const {
+	const bool operator==(const Variant& b) const {using namespace Ity;
 		if (t == VT_BOOL && b.t == VT_BOOL) return AnyCast(bool,d) == AnyCast(bool,b.d);
 
 		// Numbers...
@@ -396,7 +391,7 @@ struct Variant {
 	}
 
 
-	const bool operator>(const Variant& b) const {
+	const bool operator>(const Variant& b) const {using namespace Ity;
 		// Numbers...
 		if (is_int() && b.is_int()) return to_int64() > b.to_int64();
 		else if (is_uint() && b.is_uint()) return to_uint64() > b.to_uint64();
@@ -421,13 +416,13 @@ std::ostream& operator<<(std::ostream& os, const Variant& var) {
 }
 
 
-void emit_operator_overload_error(const std::string& operation, const Variant& a, const Variant& b) {
+void emit_operator_overload_error(const std::string& operation, const Variant& a, const Variant& b) {using namespace Ity; using namespace ItyDebug;
 	emit_error(ERR_operand_type_mismatch, {operation, get_variant_type_name(a.t), get_variant_type_name(b.t)});
 }
 
 
-ARR_t operator+(const ARR_t& a, const ARR_t& b) {
-	ARR_t result = a; result.reserve(b.size());
+Ity::ARR_t operator+(const Ity::ARR_t& a, const Ity::ARR_t& b) {
+	Ity::ARR_t result = a; result.reserve(b.size());
 	for (size_t i = 0; i < b.size(); i++) {
 		result.push_back(b[i]);
 	}
@@ -435,8 +430,8 @@ ARR_t operator+(const ARR_t& a, const ARR_t& b) {
 }
 
 
-MAP_t operator+(const MAP_t& a, const MAP_t& b) {
-	MAP_t result = a; result.reserve(b.size());
+Ity::MAP_t operator+(const Ity::MAP_t& a, const Ity::MAP_t& b) {
+	Ity::MAP_t result = a; result.reserve(b.size());
 	for (const auto& it : b) {
 		result[it.first] = it.second;
 	}
@@ -444,15 +439,15 @@ MAP_t operator+(const MAP_t& a, const MAP_t& b) {
 }
 
 
-Variant operator+(const Variant& a, const Variant& b) {
+Variant operator+(const Variant& a, const Variant& b) {using namespace Ity;
 	// Numbers...
 	if (a.is_int() && b.is_int())            return *Variant{VT_INT64, a.to_int64() + b.to_int64()}.make_into_type(get_highest_order_type(a.t, b.t));
 	else if (a.is_uint() && b.is_uint())     return *Variant{VT_UINT64, a.to_uint64() + b.to_uint64()}.make_into_type(get_highest_order_type(a.t, b.t));
 	else if (a.is_number() && b.is_number()) return *Variant{VT_FLOAT64, a.to_float64() + b.to_float64()}.make_into_type(get_highest_order_type(a.t, b.t));
 	// If both string...
 	else if (a.t == VT_STR) {
-		if (b.t == VT_STR)         return Variant{VT_STR, (AnyCast(STR_t,a.d) + AnyCast(STR_t,b.d))};
-		else if (b.is_number())    return Variant{VT_STR, (AnyCast(STR_t,a.d) + char(b.to_int64()))}; // Add character to the string, from a code.
+		if (b.t == VT_STR)      return Variant{VT_STR, (AnyCast(STR_t,a.d) + AnyCast(STR_t,b.d))};
+		else if (b.is_number()) return Variant{VT_STR, (AnyCast(STR_t,a.d) + char(b.to_int64()))}; // Add character to the string, from a code.
 	}
 	// If both array...
 	else if (a.t == VT_ARR && b.t == VT_ARR) return Variant(VT_ARR, AnyCast(ARR_t,a.d) + AnyCast(ARR_t,b.d));
@@ -465,7 +460,7 @@ Variant operator+(const Variant& a, const Variant& b) {
 }
 
 
-Variant operator-(const Variant& a, const Variant& b) {
+Variant operator-(const Variant& a, const Variant& b) {using namespace Ity;
 	// Numbers...
 	if (a.is_int() && b.is_int())            return *Variant{VT_INT64, a.to_int64() - b.to_int64()}.make_into_type(get_highest_order_type(a.t, b.t));
 	else if (a.is_uint() && b.is_uint())     return *Variant{VT_UINT64, a.to_uint64() - b.to_uint64()}.make_into_type(get_highest_order_type(a.t, b.t));
@@ -477,7 +472,7 @@ Variant operator-(const Variant& a, const Variant& b) {
 }
 
 
-Variant operator*(const Variant& a, const Variant& b) {
+Variant operator*(const Variant& a, const Variant& b) {using namespace Ity;
 	// Numbers...
 	if (a.is_int() && b.is_int())            return *Variant{VT_INT64, a.to_int64() * b.to_int64()}.make_into_type(get_highest_order_type(a.t, b.t));
 	else if (a.is_uint() && b.is_uint())     return *Variant{VT_UINT64, a.to_uint64() * b.to_uint64()}.make_into_type(get_highest_order_type(a.t, b.t));
@@ -493,7 +488,7 @@ Variant operator*(const Variant& a, const Variant& b) {
 }
 
 
-Variant operator/(const Variant& a, const Variant& b) {
+Variant operator/(const Variant& a, const Variant& b) {using namespace Ity; using namespace ItyDebug;
 	if (a.is_number() && b.is_number()) {
 		if (const FLOAT64_t& bd = b.to_float64(); bd != 0) return Variant{VT_FLOAT64, (FLOAT64_t)(a.to_float64() / b.to_float64())};
 		emit_error(ERR_zero_division);
@@ -505,7 +500,7 @@ Variant operator/(const Variant& a, const Variant& b) {
 }
 
 
-Variant operator%(const Variant& a, const Variant& b) {
+Variant operator%(const Variant& a, const Variant& b) {using namespace Ity; using namespace ItyDebug;
 	if (a.is_number() && b.is_number()) {
 		if (const FLOAT64_t& bd = b.to_float64(); bd != 0) return Variant{VT_FLOAT64, (FLOAT64_t)std::fmod(a.to_float64(), bd)};
 		emit_error(ERR_zero_division);

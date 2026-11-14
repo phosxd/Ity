@@ -1,5 +1,10 @@
 #pragma once
 
+#include "Variant.hpp"
+
+using namespace Ity;
+using namespace ItyDebug;
+
 
 // ExprToken.
 // ----------
@@ -86,7 +91,7 @@ std::ostream& operator<<(std::ostream& os, const InstToken& s) {
 
 // const std::hash<std::string> string_hasher;
 std::vector<std::string> string_hasher_id_map = {""}; // Index 0 is reserved empty.
-var_key_t string_hasher(const std::string& str) {
+const var_key_t string_hasher(const std::string& str) {
 	const var_key_t len = (var_key_t)string_hasher_id_map.size();
 	var_key_t i = 1; while (i < len) {
 		if (str == string_hasher_id_map[i]) return i;
@@ -95,6 +100,12 @@ var_key_t string_hasher(const std::string& str) {
 
 	string_hasher_id_map.push_back(str);
 	return i;
+}
+
+
+// Get the string linked to the given `key`. Make sure the key is from a valid source.
+const std::string get_var_key_string(const var_key_t key) {
+	return string_hasher_id_map[key];
 }
 
 
@@ -202,7 +213,7 @@ const STR_t var_get_obj_type(const MAP_t& map) {
 	if (const auto& it = map.find("__t"); it != map.end()) {
 		const Variant& obj_type_var = it->second;
 		if (obj_type_var.t != VT_STR) {
-			emit_error(ERR_unexpected, {"GetObjType", "Special member \"__t\" should be of type string."});
+			emit_error(ERR_unexpected, {"GetObjType", "Special member \"__t\" should be STR."});
 			return "";
 		}
 		return AnyCast(STR_t,obj_type_var.d);

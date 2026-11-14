@@ -1,5 +1,13 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
+#include <iostream>
+#include <chrono>
+
+#include "Util.hpp"
+
 
 namespace ItyDebug {
 
@@ -157,7 +165,7 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 			return "Cannot perform " + args[0] + " on " + args[1] + part;
 		}
 		case ERR_assignment_type_mismatch:          return "Cannot assign type \"" + args[0] + "\" to \"" + args[1] + "\".";
-		case ERR_return_type_mismatch:              return "Cannot return \"" + args[0] + "\" in a function that returns \"" + args[1] + "\".";
+		case ERR_return_type_mismatch:              return "Function returns \"" + args[0] + "\" not \"" + args[1] + "\".";
 		case ERR_operators_not_allowed:             return "Operators not allowed here. Wrap in grouping instead.";
 		case ERR_expected_boolean_expression:       return "Expected a boolean result in expression.";
 		case ERR_expected_string_expression:        return "Expected a string result in expression.";
@@ -199,7 +207,7 @@ const std::string get_script_pos(const unsigned int ln, const unsigned int col) 
 }
 
 
-void emit_warn(const ERR_CODE code, const std::vector<std::string> args={}) {
+void emit_warn(const ERR_CODE code, const std::vector<std::string> args={}) {using namespace Ity;
 	if (not emit_warnings) return;
 	if (emit_just_codes) std::cout << "Warning: " << std::to_string(code) << '\n';
 	else {
@@ -210,7 +218,7 @@ void emit_warn(const ERR_CODE code, const std::vector<std::string> args={}) {
 }
 
 
-void emit_error(const ERR_CODE code, const std::vector<std::string> args={}, unsigned int ln_override=0, unsigned int col_override=0) {
+void emit_error(const ERR_CODE code, const std::vector<std::string> args={}, unsigned int ln_override=0, unsigned int col_override=0) {using namespace Ity;
 	if (emit_just_codes) std::cout << "Error: " << std::to_string(code) << '\n';
 	else {
 		if (ln_override == 0) ln_override = current_line;

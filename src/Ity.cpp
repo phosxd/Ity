@@ -1,19 +1,10 @@
 #include "Ity.hpp"
 
-#include <iostream>
-#include <fstream>
-#include <chrono>
-#include <filesystem> // NOTE: "filesystem" is quirky across translation units, it is crucial it stays in the main file, otherwise we will get "std::bad_alloc" exceptions when trying to use it.
-
-using namespace Ity;
-
-#include "Util.hpp"
 #include "Debug.hpp"
-using namespace ItyDebug;
 #include "Variant.hpp"
 
-const void* LIB_BI_G = nullptr; // Global reference to built-in lib.
-ARR_t ARGS;
+using namespace Ity;
+using namespace ItyDebug;
 
 #include "Common.hpp"
 #include "State.hpp"
@@ -267,8 +258,8 @@ std::vector<InstToken> tokenize(const std::string& src) {
 					else {
 						std::string expr_string; expr_string.reserve(item.args.size());
 						uint32_t i_ = 0; for (const std::string& arg : item.args) {
-							if (i_ > 0) expr_string += ' ';
-							expr_string += arg;
+							if (i_ > 0) expr_string.push_back(' ');
+							expr_string.append(arg);
 							i_++;
 						}
 						item.expr = expr_tokenize(std::move(expr_string), item.ln, item.col-1).token;
@@ -302,7 +293,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 
 
 // Execute a sequence of instruction tokens.
-void exec(ItyState& state, const size_t& start_idx, const int& end_idx) {
+void exec(ItyState& state, const size_t start_idx, const int64_t end_idx) {
 	current_script_path = &state.path;
 	state.execution_depth += 1;
 	// Throw error if maximum execution depth is reached.
@@ -313,7 +304,7 @@ void exec(ItyState& state, const size_t& start_idx, const int& end_idx) {
 
 
 	const size_t seq_len = (end_idx > 0)
-		? std::min((int)state.seq.size(), end_idx+1)
+		? std::min(state.seq.size(), (size_t)end_idx+1)
 		: state.seq.size()
 	;
 	for (size_t i = start_idx; i < seq_len; i++) {
@@ -364,7 +355,7 @@ void start_shell(int argc, char* argv[]) {
 
 
 	// Iterate arguments.
-	for (int i = 1; i < argc; i++) {
+	for (int i=1; i < argc; i++) {
 		const std::string& s = argv[i];
 
 		// Append to script arguments.
@@ -420,7 +411,7 @@ void start_shell(int argc, char* argv[]) {
 
 
 	// Initialize state.
-	ARGS = script_args;
+	ARGS = &script_args;
 	ItyState state = ItyState{.path = source_script_path}; state.init();
 	std::vector<Clock_t> timers = {Clock::now(), Clock::now()};
 
