@@ -16,14 +16,14 @@
 
 # Return the index at which the `substr` was found. `-1` if not found.
 # Optional `start` & optional `end` arguments can be used to dictate the slice in which to search in.
-func INT STR_find; arg PTR S; arg STR substr; arg INT start = 0; arg INT end = -1;
+func INT STR_find; arg STR substr; arg INT start = 0; arg INT end = -1;
 	var INT substr_idx = 0;
 	var INT found_at_idx = 0;
 
-	if (end == -1) || (end > (S.length:[])); end = (S.length:[] - 1); /;
+	if (end == -1) || (end > (__S.length:[])); end = (__S.length:[] - 1); /;
 
 	var INT i = (start-1); while i < end; i += 1;
-		if (S:i) == (substr:substr_idx);
+		if (__S:i) == (substr:substr_idx);
 			if substr_idx == 0; found_at_idx = i; /;
 			substr_idx += 1;
 			# Return if at the end of the substr.
@@ -43,24 +43,24 @@ __tm__.set:['STR:find', STR_find];
 
 
 # Erase a character from the string, by index.
-func NONE STR_erase; arg PTR S; arg INT index;
+func NONE STR_erase; arg INT index;
 	var STR new_str;
-	var INT i = -1; while i < (S.length:[] - 1); i+=1;
+	var INT i = -1; while i < (__S.length:[] - 1); i+=1;
 		if i == index; continue; /;
-		new_str += (S:i);
+		new_str += (__S:i);
 	/;
-	S = new_str;
+	__S = new_str;
 /;
 __tm__.set:['STR:erase', STR_erase];
 
 
 # Get a slice of the string.
-func STR STR_slice; arg PTR S; arg INT start = 0; arg INT end = -1;
+func STR STR_slice; arg INT start = 0; arg INT end = -1;
 	var STR str_slice;
-	if (end == -1) || (end > (S.length:[])); end = (S.length:[] - 1); /;
+	if (end == -1) || (end > (__S.length:[])); end = (__S.length:[] - 1); /;
 
 	var INT i=start-1; while i < end; i+=1;
-		str_slice += (S:i);
+		str_slice += (__S:i);
 	/;
 	return str_slice;
 /;
@@ -68,21 +68,21 @@ __tm__.set:['STR:slice', STR_slice];
 
 
 # Find & replace the first occurance of `a` with `b` in the string, returning a new string.
-func STR STR_replace; arg PTR S; arg STR a; arg STR b;
-	const INT index = S.find:a;
-	if index == -1; return ~S; /;
+func STR STR_replace; arg STR a; arg STR b;
+	const INT index = __S.find:a;
+	if index == -1; return ~__S; /;
 
 	# Slice around `a` & return a string with `b` placed in between the slices.
-	const STR part_1 = S.slice:[0, (index-1)];
-	const STR part_2 = S.slice:[(index+(a.length:[])), -1];
+	const STR part_1 = __S.slice:[0, (index-1)];
+	const STR part_2 = __S.slice:[(index+(a.length:[])), -1];
 	return part_1 + b + part_2;
 /;
 __tm__.set:['STR:replace', STR_replace];
 
 
 # Find & replace the all occurances of `a` with `b` in the string, returning a new string.
-func STR STR_replace_all; arg PTR S; arg STR a; arg STR b;
-	var STR new_str = ~S;
+func STR STR_replace_all; arg STR a; arg STR b;
+	var STR new_str = ~__S;
 	while true;
 		var STR new_str_ = new_str.replace:[a,b];
 		if new_str_ == new_str; break; /;

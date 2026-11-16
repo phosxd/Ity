@@ -242,6 +242,11 @@ ItyScope create_new_scope(uint32_t& scope_current_id, const ScopeMap_t& data={},
 
 
 
+struct ItyStateMiscRegisters {
+	Variant* method_parent = nullptr;
+};
+
+
 struct ItyState {
 	std::string path = "";
 	std::vector<ItyState> alts = {}; // Alternate states (script modules).
@@ -249,6 +254,8 @@ struct ItyState {
 	ItyScope scope;
 	uint32_t scope_current_id = 0;
 	std::vector<InstToken*> scoped_tokens; // Tracker for tokens responsible for a scope.
+
+	ItyStateMiscRegisters reg;
 
 	uint16_t execution_depth_max = 1500;
 	uint16_t execution_depth = 0;

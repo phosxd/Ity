@@ -1,7 +1,7 @@
 #pragma once
 
 
-const bool OP_Access_type_method(const std::string& type_name, const STR_t& method_name, MAP_t& methods, Variant*& o1, Variant& result) {
+const bool OP_Access_type_method(ItyState& state, const std::string& type_name, const STR_t& method_name, MAP_t& methods, Variant*& o1, Variant& result) {
 	MAP_t::iterator it;
 
 	// Find map method.
@@ -13,12 +13,10 @@ const bool OP_Access_type_method(const std::string& type_name, const STR_t& meth
 	// Find method.
 	if (it == methods.end()) it = methods.find((type_name+':'+method_name));
 
-	// Return the method.
+	// Set result to the method.
 	if (it != methods.end()) {
-		FUNC_t func = AnyCastV(FUNC_t,it->second.d); // Copy function.
-		func.bound_args = func.bound_args + (ARR_t){Variant{VT_PTR, o1}}; // Bind first variant to the function copy.
-		// Return copied function.
-		result = Variant{VT_FUNC, std::move(func), VM_const};
+		state.reg.method_parent = o1; // Set method parent register.
+		result = it->second;
 		return true;
 	}
 	return false;
@@ -35,13 +33,13 @@ void OP_Access_exec(ItyState& state, ExprState& expr_state, Variant*& first, Var
 	// Try to access type method.
 	if (o2->t == VT_STR) {
 		// Find & return method.
-		MAP_t& methods = AnyCastV(MAP_t,state.scope.get_data_globally("__tm__", nullptr, HASHED_NAMES.__tm__)->d);
+		MAP_t& methods = AnyCast(MAP_t,state.scope.get_data_globally("__tm__", nullptr, HASHED_NAMES.__tm__)->d);
 		const STR_t& method_name = AnyCast(STR_t,second->d);
 		// Try pointer/reference type methods first.
 		if ((first->t == VT_PTR || first->t == VT_REF)
-		&& (OP_Access_type_method(get_variant_type_name(first->t), method_name, methods, first, result))) return;
+		&& (OP_Access_type_method(state, get_variant_type_name(first->t), method_name, methods, first, result))) return;
 		// Try.
-		if (OP_Access_type_method(get_variant_type_name(o1->t), method_name, methods, o1, result)) return;
+		if (OP_Access_type_method(state, get_variant_type_name(o1->t), method_name, methods, o1, result)) return;
 	}
 
 

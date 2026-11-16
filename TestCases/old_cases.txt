@@ -211,29 +211,6 @@ print:( (get_f:[]):[] );
 
 "99"
 
-# 51
-
-"
-# Custom type method
-# ------------------
-
-merge IO;
-
-func NONE INT_add; arg PTR self; arg INT value;
-	self += value;
-/;
-
-__tm__.set:['INT:add', INT_add];
-
-var INT my_int = 5;
-print:my_int;
-my_int.add:4;
-print:my_int;
-"
-
-"5
-9"
-
 # 55
 
 "

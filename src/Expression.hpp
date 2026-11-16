@@ -63,6 +63,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, ARR_t& input_args) {
 			{},
 			old_scope.get_scope_at_id(func.definition_state_id) // Use function definition scope as the parent.
 		);
+		func_state->scope.set_data("__S", Variant{VT_PTR, state.reg.method_parent, VM_const}, HASHED_NAMES.__S); // Set method parent variable.
 		func_state->scope.set_data("__AG", Variant{VT_ARR, std::move(args)}, HASHED_NAMES.__AG); // Set function arguments.
 		func_state->scope.set_data("__R", new_none(), HASHED_NAMES.__R); // Initialize return variable.
 		const VariantType return_type = func.return_type;

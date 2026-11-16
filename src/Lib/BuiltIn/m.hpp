@@ -166,7 +166,7 @@ static Variant LIB_BI_type(ItyState& _state, const ARR_t& args) {
 // Return the number of bytes taken by the given variant.
 static Variant LIB_BI_size(ItyState& state, ARR_t& args) {
 	Variant* var = &args[0];
-	return Variant{VT_INT64, (int64_t)(resovlve_potential_ref(state, var)->get_size())};
+	return Variant{VT_UINT64, (uint64_t)(resovlve_potential_ref(state, var)->get_size())};
 }
 
 
@@ -180,29 +180,27 @@ static Variant LIB_BI_size(ItyState& state, ARR_t& args) {
 // ----------
 
 // Reassign reference address.
-static Variant LIB_BI_tm_ref_reassign(ItyState& _state, ARR_t& args) {
-	// Get data.
-	Variant* data = AnyCastV(Variant*,args[0].d);
-	// Throw error if data is constant.
-	if (data->m == VM_const) {
+static Variant LIB_BI_tm_ref_reassign(ItyState& state, ARR_t& args) {
+	Variant* var = state.reg.method_parent;
+	// Throw error if var is constant.
+	if (var->m == VM_const) {
 		emit_error(ERR_cannot_change_constant);
 		return VPS.none;
 	}
 	// Reassign reference.
-	data->d = AnyCastV(STR_t,args[1].d);
+	var->d = AnyCastV(STR_t,args[0].d);
 	return VPS.none;
 }
 
 
 // Get referenced data type.
 static Variant LIB_BI_tm_ref_type(ItyState& state, const ARR_t& args) {
-	// Get data.
-	const Variant* data = AnyCastC(Variant*,args[0].d);
+	const Variant* var = state.reg.method_parent;
 	// Return type.
-	if (data->t == VT_PTR) return Variant{VT_UINT8, (uint8_t)AnyCastC(Variant*,data->d)->t};
-	const Variant* var = state.scope.get_data_globally(AnyCast(STR_t,data->d));
-	if (not var) return Variant{VT_UINT8, (uint8_t)VT_NONE};
-	return Variant{VT_UINT8, (uint8_t)var->t};
+	if (var->t == VT_PTR) return Variant{VT_UINT8, (uint8_t)AnyCastC(Variant*,var->d)->t};
+	const Variant* var2 = state.scope.get_data_globally(AnyCast(STR_t,var->d));
+	if (not var2) return Variant{VT_UINT8, (uint8_t)VT_NONE};
+	return Variant{VT_UINT8, (uint8_t)var2->t};
 }
 
 
@@ -212,9 +210,10 @@ static Variant LIB_BI_tm_ref_type(ItyState& state, const ARR_t& args) {
 // -------
 
 // Returns the raw character code for the first character in the string.
-static Variant LIB_BI_tm_str_raw(ItyState& _state, const ARR_t& args) {
+static Variant LIB_BI_tm_str_raw(ItyState& state, const ARR_t& args) {
+	Variant* var = state.reg.method_parent;
 	// Get data.
-	const STR_t& data = AnyCast(STR_t, AnyCastC(Variant*,args[0].d)->d );
+	const STR_t& data = AnyCast(STR_t, var->d );
 	// Return integer representation.
 	if (data.empty()) return Variant{VT_INT64, (int64_t)-1};
 	return Variant{VT_INT64, (int64_t)data[0]};
@@ -225,8 +224,8 @@ static Variant LIB_BI_tm_str_raw(ItyState& _state, const ARR_t& args) {
 // ---------------
 
 // Return the length of the given array or string.
-static Variant LIB_BI_tm_str_arr_length(ItyState& _state, const ARR_t& args) {
-	const Variant* var = AnyCastC(Variant*,args[0].d);
+static Variant LIB_BI_tm_str_arr_length(ItyState& state, const ARR_t& args) {
+	const Variant* var = state.reg.method_parent;
 	uint64_t size = 0;
 	switch (var->t) {
 		case VT_ARR: {size = AnyCastC(ARR_t,var->d).size(); break;}
@@ -238,8 +237,8 @@ static Variant LIB_BI_tm_str_arr_length(ItyState& _state, const ARR_t& args) {
 }
 
 
-static Variant LIB_BI_tm_str_arr_append(ItyState& _state, ARR_t& args) {
-	Variant* var = AnyCastV(Variant*,args[0].d);
+static Variant LIB_BI_tm_str_arr_append(ItyState& state, ARR_t& args) {
+	Variant* var = state.reg.method_parent;
 
 	// Throw error if the variant is a constant.
 	if (var->m == VM_const) {
@@ -250,14 +249,14 @@ static Variant LIB_BI_tm_str_arr_append(ItyState& _state, ARR_t& args) {
 	switch (var->t) {
 		case VT_ARR: {
 			ARR_t& data = AnyCastV(ARR_t,var->d);
-			data.push_back(args[1]);
+			data.push_back(args[0]);
 			break;
 		}
 		case VT_STR: {
-			if (not expect_arg_types(args[1], {VT_STR, VT_INT64}, 0)) return VPS.none;
+			if (not expect_arg_types(args[0], {VT_STR, VT_INT64}, 0)) return VPS.none;
 			STR_t& data = AnyCastV(STR_t,var->d);
-			if (args[1].t == VT_STR) data.append(AnyCast(STR_t,args[1].d));
-			else data.push_back(char(AnyCast(int64_t,args[1].d))); // Add character to the string, from a code.
+			if (args[0].t == VT_STR) data.append(AnyCast(STR_t,args[0].d));
+			else data.push_back(char(AnyCast(int64_t,args[0].d))); // Add character to the string, from a code.
 			break;
 		}
 		default: break;
@@ -267,9 +266,9 @@ static Variant LIB_BI_tm_str_arr_append(ItyState& _state, ARR_t& args) {
 }
 
 
-static Variant LIB_BI_tm_str_arr_reserve(ItyState& _state, ARR_t& args) {
-	Variant* var = AnyCastV(Variant*,args[0].d);
-	const uint64_t& count = AnyCast(uint64_t,args[1].d);
+static Variant LIB_BI_tm_str_arr_reserve(ItyState& state, ARR_t& args) {
+	Variant* var = state.reg.method_parent;
+	const uint64_t& count = AnyCast(uint64_t,args[0].d);
 
 	// Throw error if the variant is a constant.
 	if (var->m == VM_const) {
@@ -299,8 +298,8 @@ static Variant LIB_BI_tm_str_arr_reserve(ItyState& _state, ARR_t& args) {
 // Array.
 // ------
 
-static Variant LIB_BI_tm_arr_map_erase(ItyState& _state, ARR_t& args) {
-	Variant* var = AnyCastV(Variant*,args[0].d);
+static Variant LIB_BI_tm_arr_map_erase(ItyState& state, ARR_t& args) {
+	Variant* var = state.reg.method_parent;
 
 	// Throw error if the variant is a constant.
 	if (var->m == VM_const) {
@@ -309,19 +308,19 @@ static Variant LIB_BI_tm_arr_map_erase(ItyState& _state, ARR_t& args) {
 	}
 
 	if (var->t == VT_ARR) {
-		if (not expect_arg_types(args[1], {VT_UINT64}, 1)) return VPS.none;
+		if (not expect_arg_types(args[0], {VT_UINT64}, 0)) return VPS.none;
 		// Get data & index.
 		ARR_t& data = AnyCastV(ARR_t, var->d );
-		const uint64_t& index = AnyCast(uint64_t,args[1].d);
+		const uint64_t& index = AnyCast(uint64_t,args[0].d);
 		// Erase item from array reference.
 		data.erase(data.begin()+index);
 	}
 
 	else if (var->t == VT_MAP) {
-		if (not expect_arg_types(args[1], {VT_STR}, 1)) return VPS.none;
+		if (not expect_arg_types(args[0], {VT_STR}, 0)) return VPS.none;
 		// Get data & map.
 		MAP_t& data = AnyCastV(MAP_t, var->d );
-		const STR_t& key = AnyCast(STR_t,args[1].d);
+		const STR_t& key = AnyCast(STR_t,args[0].d);
 		// Erase item from map reference.
 		data.erase(key);
 	}
@@ -337,9 +336,10 @@ static Variant LIB_BI_tm_arr_map_erase(ItyState& _state, ARR_t& args) {
 
 
 // Return array of keys in the `MAP`.
-static Variant LIB_BI_tm_map_keys(ItyState& _state, ARR_t& args) {
+static Variant LIB_BI_tm_map_keys(ItyState& state, ARR_t& args) {
+	Variant* var = state.reg.method_parent;
 	// Get data.
-	const MAP_t& data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d );
+	const MAP_t& data = AnyCast(MAP_t, var->d );
 	// Get all keys.
 	ARR_t keys; keys.reserve(data.size());
 	for (const auto& it : data) {
@@ -351,17 +351,19 @@ static Variant LIB_BI_tm_map_keys(ItyState& _state, ARR_t& args) {
 
 
 // Return whether or not the `MAP` has the given key.
-static Variant LIB_BI_tm_map_has(ItyState& _state, ARR_t& args) {
-	const MAP_t& data = AnyCast(MAP_t, AnyCastV(Variant*,args[0].d)->d );
+static Variant LIB_BI_tm_map_has(ItyState& state, ARR_t& args) {
+	Variant* var = state.reg.method_parent;
+	// Get data.
+	const MAP_t& data = AnyCast(MAP_t, var->d );
 	// Return whether or not the map has the key.
-	if (data.find(AnyCast(STR_t,args[1].d)) != data.end()) return VPS.bool_true;
+	if (data.find(AnyCast(STR_t,args[0].d)) != data.end()) return VPS.bool_true;
 	return VPS.bool_false;
 }
 
 
 // Set key-value pair in the `MAP`.
-static Variant LIB_BI_tm_map_set(ItyState& _state, ARR_t& args) {
-	Variant* var = AnyCastV(Variant*,args[0].d);
+static Variant LIB_BI_tm_map_set(ItyState& state, ARR_t& args) {
+	Variant* var = state.reg.method_parent;
 
 	// Throw error if the variant is a constant.
 	if (var->m == VM_const) {
@@ -371,10 +373,10 @@ static Variant LIB_BI_tm_map_set(ItyState& _state, ARR_t& args) {
 
 	// Get data & key.
 	MAP_t& data = AnyCastV(MAP_t, var->d );
-	const STR_t& key = AnyCast(STR_t,args[1].d);
+	const STR_t& key = AnyCast(STR_t,args[0].d);
 
 	// Set new key-value pair.
-	data[key] = args[2];
+	data[key] = args[1];
 	return VPS.none;
 }
 
@@ -385,8 +387,9 @@ static Variant LIB_BI_tm_map_set(ItyState& _state, ARR_t& args) {
 // ---------
 
 // Bind arguments to the function.
-static Variant LIB_BI_tm_func_bind(ItyState& _state, ARR_t& args) {
-	FUNC_t data = AnyCastV(FUNC_t, AnyCastV(Variant*,args[0].d)->d ); // Copy the function.
+static Variant LIB_BI_tm_func_bind(ItyState& state, ARR_t& args) {
+	Variant* var = state.reg.method_parent;
+	FUNC_t data = AnyCastV(FUNC_t, var->d ); // Copy the function.
 	// Add the given args to the function's bounded arguments.
 	for (size_t i = 1; i < args.size(); i++) {
 		data.bound_args.push_back(args[i]);
@@ -410,25 +413,25 @@ const Variant LIB_BI {
 		// Type methods.
 		{"__tm", Variant{
 			VT_MAP, (MAP_t){
-				{"REF:reassign",  NativeFuncTrans(VT_NONE,  LIB_BI_tm_ref_reassign, { {VT_PTR}, {VT_REF} })},
-				{"REF:type",      NativeFuncTrans(VT_UINT8, (NativeFunc_t)LIB_BI_tm_ref_type, { {VT_PTR} })},
-				{"PTR:type",      NativeFuncTrans(VT_UINT8, (NativeFunc_t)LIB_BI_tm_ref_type, { {VT_PTR} })},
+				{"REF:reassign",  NativeFuncTrans(VT_NONE,                LIB_BI_tm_ref_reassign, { {VT_REF} })},
+				{"REF:type",      NativeFuncTrans(VT_UINT8, (NativeFunc_t)LIB_BI_tm_ref_type, { })},
+				{"PTR:type",      NativeFuncTrans(VT_UINT8, (NativeFunc_t)LIB_BI_tm_ref_type, { })},
 
-				{"STR:raw",     NativeFuncTrans(VT_INT64,  (NativeFunc_t)LIB_BI_tm_str_raw,          { {VT_PTR} })},
-				{"STR:length",  NativeFuncTrans(VT_UINT64, (NativeFunc_t)LIB_BI_tm_str_arr_length,   { {VT_PTR} })},
-				{"STR:append",  NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_append,   { {VT_PTR}, {VT_ANY} })},
-				{"STR:reserve", NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_reserve,  { {VT_PTR}, {VT_UINT64} })},
-				{"ARR:length",  NativeFuncTrans(VT_UINT64, (NativeFunc_t)LIB_BI_tm_str_arr_length,   { {VT_PTR} })},
-				{"ARR:erase",   NativeFuncTrans(VT_NONE,                 LIB_BI_tm_arr_map_erase,    { {VT_PTR}, {VT_UINT64,VT_STR} })},
-				{"ARR:append",  NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_append,   { {VT_PTR}, {VT_ANY} })},
-				{"ARR:reserve", NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_reserve,  { {VT_PTR}, {VT_UINT64} })},
+				{"STR:raw",     NativeFuncTrans(VT_INT64,  (NativeFunc_t)LIB_BI_tm_str_raw,          { })},
+				{"STR:length",  NativeFuncTrans(VT_UINT64, (NativeFunc_t)LIB_BI_tm_str_arr_length,   { })},
+				{"STR:append",  NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_append,   { {VT_ANY} })},
+				{"STR:reserve", NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_reserve,  { {VT_UINT64} })},
+				{"ARR:length",  NativeFuncTrans(VT_UINT64, (NativeFunc_t)LIB_BI_tm_str_arr_length,   { })},
+				{"ARR:erase",   NativeFuncTrans(VT_NONE,                 LIB_BI_tm_arr_map_erase,    { {VT_UINT64,VT_STR} })},
+				{"ARR:append",  NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_append,   { {VT_ANY} })},
+				{"ARR:reserve", NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_reserve,  { {VT_UINT64} })},
 
-				{"MAP:erase",   NativeFuncTrans(VT_NONE,  LIB_BI_tm_arr_map_erase, { {VT_PTR}, {VT_UINT64,VT_STR} })},
-				{"MAP:keys",    NativeFuncTrans(VT_ARR,   LIB_BI_tm_map_keys,      { {VT_PTR} })},
-				{"MAP:has",     NativeFuncTrans(VT_BOOL,  LIB_BI_tm_map_has,       { {VT_PTR}, {VT_STR} })},
-				{"MAP:set",     NativeFuncTrans(VT_NONE,  LIB_BI_tm_map_set,       { {VT_PTR}, {VT_STR}, {VT_ANY} })},
+				{"MAP:erase",   NativeFuncTrans(VT_NONE,  LIB_BI_tm_arr_map_erase, { {VT_UINT64,VT_STR} })},
+				{"MAP:keys",    NativeFuncTrans(VT_ARR,   LIB_BI_tm_map_keys,      { })},
+				{"MAP:has",     NativeFuncTrans(VT_BOOL,  LIB_BI_tm_map_has,       { {VT_STR} })},
+				{"MAP:set",     NativeFuncTrans(VT_NONE,  LIB_BI_tm_map_set,       { {VT_STR}, {VT_ANY} })},
 
-				{"FUNC:bind",  NativeFuncTrans(VT_FUNC,  LIB_BI_tm_func_bind, { {VT_PTR}, {VT_ANY} })},
+				{"FUNC:bind",  NativeFuncTrans(VT_FUNC,  LIB_BI_tm_func_bind, { {VT_ANY} })},
 		}, VM_const_type }},
 
 
@@ -465,15 +468,15 @@ const Variant LIB_BI {
 
 
 		// Utility functions.
-		{"get_ity_prop",     NativeFuncTrans(VT_ANY,   (NativeFunc_t)LIB_BI_get_ity_prop,      { {VT_STR} },           false)},
-		{"set_ity_prop",     NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_BI_set_ity_prop,      { {VT_STR}, {VT_ANY} }, false)},
+		{"get_ity_prop",  NativeFuncTrans(VT_ANY,   (NativeFunc_t)LIB_BI_get_ity_prop,      { {VT_STR} },           false)},
+		{"set_ity_prop",  NativeFuncTrans(VT_NONE,  (NativeFunc_t)LIB_BI_set_ity_prop,      { {VT_STR}, {VT_ANY} }, false)},
 
 		{"system",      NativeFuncTrans(VT_UINT32, (NativeFunc_t)LIB_BI_system,     { {VT_STR} },      false)},
 		{"sleep",       NativeFuncTrans(VT_NONE,   (NativeFunc_t)LIB_BI_sleep,      { {VT_FLOAT64} })},
 		{"is_defined",  NativeFuncTrans(VT_BOOL,   (NativeFunc_t)LIB_BI_is_defined, { {VT_STR} })},
 		{"type",        NativeFuncTrans(VT_UINT8,  (NativeFunc_t)LIB_BI_type,       { {VT_ANY} })},
 		{"type_name",   NativeFuncTrans(VT_STR,    (NativeFunc_t)LIB_BI_type_name,  { {VT_UINT8} })},
-		{"size",        NativeFuncTrans(VT_INT64,                LIB_BI_size,       { {VT_ANY} })},
+		{"size",        NativeFuncTrans(VT_UINT64,               LIB_BI_size,       { {VT_ANY} })},
 
 
 		// In / Out members...

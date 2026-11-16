@@ -1,0 +1,16 @@
+#EXPECT
+#5
+#9
+#END
+
+
+func NONE INT_add; arg INT value;
+	__S += value;
+/;
+
+__tm__.set:['I64:add', INT_add];
+
+var INT my_int = 5;
+print:my_int;
+my_int.add:4;
+print:my_int;

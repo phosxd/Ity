@@ -181,6 +181,10 @@ struct Variant {
 				}
 				return size_;
 			}
+			// Function.
+			else if constexpr (std::is_same_v<T, FUNC_t>) {
+				return sizeof(T);
+			}
 			else return 0;
 		}, d) + sizeof(t) + sizeof(m);
 	}

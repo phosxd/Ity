@@ -110,9 +110,11 @@ const std::string get_var_key_string(const var_key_t key) {
 
 
 struct HASHED_NAMES_struct {
-	const var_key_t __AG   = string_hasher("__AG");
-	const var_key_t __R    = string_hasher("__R");
-	const var_key_t __tm__ = string_hasher("__tm__");
+	const var_key_t __S    = string_hasher("__S");  // Method parent pointer.
+	const var_key_t __AG   = string_hasher("__AG"); // Function arguments.
+	const var_key_t __R    = string_hasher("__R");  // Return variable.
+
+	const var_key_t __tm__ = string_hasher("__tm__"); // Type-methods.
 	const var_key_t __IMPORTED__ = string_hasher("__IMPORTED__");
 };
 const HASHED_NAMES_struct HASHED_NAMES;
