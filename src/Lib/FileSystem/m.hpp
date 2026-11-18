@@ -5,22 +5,21 @@
 
 
 // Return whether or not a file exists or is readable.
-static Variant LIB_FS_file_exists(ItyState& _state, ARR_t& args) {
+static Variant LIB_FS_file_exists(ItyState& _state, const ARR_t& args) {
 	const STR_t path = AnyCast(STR_t,args[0].d);
 	return Variant{VT_BOOL, std::filesystem::exists(path) && not std::filesystem::is_directory(path)};
 }
 
 
 // Return whether or not a file exists or is readable.
-static Variant LIB_FS_dir_exists(ItyState& _state, ARR_t& args) {
+static Variant LIB_FS_dir_exists(ItyState& _state, const ARR_t& args) {
 	const STR_t& path = AnyCast(STR_t,args[0].d);
 	return Variant{VT_BOOL, std::filesystem::exists(path) && std::filesystem::is_directory(path)};
 }
 
 
 // Read a file & return the bytes as a string. Returns `none` if failed.
-static Variant LIB_FS_read(ItyState& _state, ARR_t& args) {
-
+static Variant LIB_FS_read(ItyState& _state, const ARR_t& args) {
 	std::ifstream f (AnyCast(STR_t,args[0].d), std::ios::in | std::ios::binary);
 	if (not f.is_open()) return VPS.none;
 	const STR_t& bytes = (std::ostringstream() << f.rdbuf()).str();
@@ -31,7 +30,7 @@ static Variant LIB_FS_read(ItyState& _state, ARR_t& args) {
 
 
 // Write a string to a file. Returns `true` if succeeded, otherwise `false`.
-static Variant LIB_FS_write(ItyState& _state, ARR_t& args) {
+static Variant LIB_FS_write(ItyState& _state, const ARR_t& args) {
 	const STR_t& bytes = AnyCast(STR_t,args[1].d);
 
 	std::ofstream f (AnyCast(STR_t,args[0].d), std::ios::out | std::ios::binary);
@@ -44,13 +43,13 @@ static Variant LIB_FS_write(ItyState& _state, ARR_t& args) {
 
 
 // Creates a directory. Returns `true` if succeeded, otherwise `false`.
-static Variant LIB_FS_make_dir(ItyState& _state, ARR_t& args) {
+static Variant LIB_FS_make_dir(ItyState& _state, const ARR_t& args) {
 	return Variant{VT_BOOL, std::filesystem::create_directory(AnyCast(STR_t,args[0].d))};
 }
 
 
 // Returns an array of strings representing all paths under the given directory.
-static Variant LIB_FS_paths_in_dir(ItyState& _state, ARR_t& args) {
+static Variant LIB_FS_paths_in_dir(ItyState& _state, const ARR_t& args) {
 	STR_t dir_path = AnyCast(STR_t,args[0].d);
 	if (dir_path.empty()) dir_path = std::filesystem::current_path().string(); // Use current path if empty string given.
 	ARR_t paths;
@@ -65,19 +64,19 @@ static Variant LIB_FS_paths_in_dir(ItyState& _state, ARR_t& args) {
 		}
 	}
 
-	return Variant{VT_ARR, paths};
+	return Variant{VT_ARR, std::move(paths)};
 }
 
 
 // Removes a file or empty directory. Returns `true` if succeeded, otherwise `false`.
-static Variant LIB_FS_remove(ItyState& _state, ARR_t& args) {
+static Variant LIB_FS_remove(ItyState& _state, const ARR_t& args) {
 	const STR_t& path = AnyCast(STR_t,args[0].d);
 	return Variant{VT_BOOL, ((not std::filesystem::is_directory(path) || std::filesystem::is_empty(path)) && std::filesystem::remove(path))};
 }
 
 
 // Moves a file or directory. Returns `true` if succeeded, otherwise `false`.
-static Variant LIB_FS_move(ItyState& _state, ARR_t& args) {
+static Variant LIB_FS_move(ItyState& _state, const ARR_t& args) {
 	const STR_t& path = AnyCast(STR_t,args[0].d);
 	if (not std::filesystem::exists(path)) return VPS.bool_false;
 	std::filesystem::rename(path, AnyCast(STR_t,args[1].d));
@@ -95,17 +94,17 @@ const Variant LIB_FileSystem {
 		{"__name",  Variant{VT_STR, (STR_t)"FileSystem", VM_const}},
 		{"__safe",  VPS.bool_false},
 
-		{"file_exists",   NativeFuncTrans(VT_BOOL,  LIB_FS_file_exists, { {VT_STR} })},
-		{"dir_exists",    NativeFuncTrans(VT_BOOL,  LIB_FS_dir_exists, { {VT_STR} })},
+		{"file_exists",   NativeFuncTrans(VT_BOOL,  (NativeFunc_t)LIB_FS_file_exists, { {VT_STR} })},
+		{"dir_exists",    NativeFuncTrans(VT_BOOL,  (NativeFunc_t)LIB_FS_dir_exists, { {VT_STR} })},
 
-		{"read",          NativeFuncTrans(VT_ANY,   LIB_FS_read,  { {VT_STR} })},
-		{"write",         NativeFuncTrans(VT_BOOL,  LIB_FS_write, { {VT_STR}, {VT_STR} })},
+		{"read",          NativeFuncTrans(VT_ANY,   (NativeFunc_t)LIB_FS_read,  { {VT_STR} })},
+		{"write",         NativeFuncTrans(VT_BOOL,  (NativeFunc_t)LIB_FS_write, { {VT_STR}, {VT_STR} })},
 
-		{"make_dir",      NativeFuncTrans(VT_BOOL,  LIB_FS_make_dir,     { {VT_STR} })},
-		{"paths_in_dir",  NativeFuncTrans(VT_ARR,   LIB_FS_paths_in_dir, { {VT_STR} })},
+		{"make_dir",      NativeFuncTrans(VT_BOOL,  (NativeFunc_t)LIB_FS_make_dir,     { {VT_STR} })},
+		{"paths_in_dir",  NativeFuncTrans(VT_ARR,   (NativeFunc_t)LIB_FS_paths_in_dir, { {VT_STR} })},
 
-		{"remove",        NativeFuncTrans(VT_BOOL,  LIB_FS_remove, { {VT_STR} })},
-		{"move",          NativeFuncTrans(VT_BOOL,  LIB_FS_move,   { {VT_STR}, {VT_STR} })},
+		{"remove",        NativeFuncTrans(VT_BOOL,  (NativeFunc_t)LIB_FS_remove, { {VT_STR} })},
+		{"move",          NativeFuncTrans(VT_BOOL,  (NativeFunc_t)LIB_FS_move,   { {VT_STR}, {VT_STR} })},
 	},
 	VM_const
 };

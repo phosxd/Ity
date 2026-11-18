@@ -18,7 +18,7 @@ struct ItyScope {
 
 
 	// Returns the first parent scope with a matching ID.
-	ItyScope* get_scope_at_id(const uint32_t& target_id) {
+	ItyScope* get_scope_at_id(const uint32_t target_id) {
 		if (id != target_id) {
 			ItyScope* current = p;
 			while (current) {
@@ -77,7 +77,7 @@ struct ItyScope {
 	}
 
 
-	ScopeMapCell_t* get_data_cell(const var_key_t key=0) {
+	ScopeMapCell_t* get_data_cell(const var_key_t& key=0) {
 		for (ScopeMapCell_t& cell : d) {
 			if (cell.first == key) return &cell;
 		}

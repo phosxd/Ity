@@ -1,0 +1,54 @@
+# Arr
+# ----
+#
+# Implements extra `ARR` type-methods:
+#	- find
+#	- slice
+#	* sort
+#	* reverse
+#
+#
+# PART OF THE STANDARD SET OF ITY MODULES.
+
+
+# Return the index at which the `item` was found. `-1` if not found.
+# Optional `start` & optional `end` arguments can be used to dictate the slice in which to search in.
+func INT ARR_find; arg ANY item; arg INT start = 0; arg INT end = -1;
+	if (end == -1) || (end > (__S.length:[])); end = (__S.length:[] - 1); /;
+
+	var INT i =(start-1); while i < end; i += 1;
+		if (type:(__S:i) == (type:(item))) && (__S:i == item); return i; /;
+	/;
+
+	return -1;
+/;
+__tm__.set:['ARR:find', ARR_find];
+
+
+# Get a slice of the array.
+# If `move_items` is true, then avoid copying items into the resulting array.
+func ARR ARR_slice; arg INT start = 0; arg INT end = -1; arg BOOL move_items = false;
+	var ARR arr_slice;
+	if (end == -1) || (end > (__S.length:[])); end = (__S.length:[] - 1); /;
+
+	var INT i=(start-1); while i < end; i+=1;
+		if move_items;
+			arr_slice.append:none;
+			arr_slice:(-1) <<= (__S:i);
+		/;
+		else; arr_slice.append:(__S:i); /;
+	/;
+	return arr_slice;
+/;
+__tm__.set:['ARR:slice', ARR_slice];
+
+
+
+
+const MAP __module__ = {
+	'__name', 'Arr',
+	'__tm', {
+		'ARR:find',   ARR_find,
+		'ARR:slice',  ARR_slice,
+	},
+};

@@ -83,7 +83,7 @@ void init() {
 
 
 std::vector<InstToken> tokenize(const std::string& src) {
-	const size_t& src_len = src.size();
+	const size_t src_len = src.size();
 	std::vector<InstToken> sequence;
 	std::string buffer; buffer.reserve(src_len);
 	InstToken item;
@@ -392,7 +392,7 @@ void start_shell(int argc, char* argv[]) {
 				debug_flags.scoping = true;
 			}
 			else if (str_starts_with(s, std::string("-t=")) || str_starts_with(s, std::string("--tabs="))) {
-				tab_col_value = std::stoi(s.substr(s.size()-1));
+				tab_col_value = (uint8_t)std::stoi(s.substr(s.size()-1));
 			}
 			#endif
 			// Set other flags.

@@ -5,23 +5,24 @@ import Time;
 import Math;
 
 
-const U8 FPS = 30u;
-const UINT FPS_ms = 1000u / FPS;
+const U8 FPS = 30;
+const INT FPS_ms = 1000 / FPS;
 
 const STR CELL_ON =  '██';
 const STR CELL_OFF = '  ';
 
 # Allow user defined world size.
-const WORLD_SIZE = {'x',25, 'y',20};
+var U64 WX = 25;
+var U64 WY = 20;
 if __CMD_ARGS__.length:() > 1;
-	WORLD_SIZE.x = (__CMD_ARGS__:0 -> UINT);
-	WORLD_SIZE.y = (__CMD_ARGS__:1 -> UINT);
+	WX = (__CMD_ARGS__:0 -> UINT);
+	WY = (__CMD_ARGS__:1 -> UINT);
 /;
 
 # Get world seed.
-var UINT SEED;
+var U64 SEED;
 var STR SEED_in = prompt:'Set seed (default 0): ';
-if SEED_in.length:() == 0u; SEED_in = '0'; /;
+if SEED_in.length:() == 0; SEED_in = '0'; /;
 for ch in SEED_in;
 	SEED += 1u;
 	SEED *= (ch.raw:()); # Convert character to ASCII code & multiply that with the seed.
@@ -29,53 +30,85 @@ for ch in SEED_in;
 Math.set_seed:SEED;
 
 
+# Define neighboring indices.
+const ARR NCOORDS = [
+	(-1),       # Left.
+	(0-(WX)-1), # Top-Left.
+	(WX-1),     # Bottom-Left.
+	(1),        # Right.
+	(0-(WX)+1), # Top-Right.
+	(WX+1),     # Bottom-Right.
+	(0-WX),     # Up.
+	(WX),       # Down.
+];
 
-func . _game_init;
+
+# Simulation variables.
+# ---------------------
+
+# Cell edges.
+var ARR cell_x = [];
+var U64 cell_count = 0;
+var U64 alive_count = 0;
+# Number of generations passed.
+var U64 gen_count = 0;
+# If true, simulation has reached a stable state, & no more frames need to be rendered.
+var BOOL stable = false;
+# Map of cells which can be on or off.
+var ARR cells = [];
+var ARR buf = [];
+
+# Current & last frames.
+var STR frame = '';
+var STR last_frame = '';
+
+
+
+func . game_init;
 	# Populate the world...
-	for y in WORLD_SIZE.y;
-		for x in WORLD_SIZE.x;
+	for y in WY;
+		for x in WX;
+			buf.append:0u;
 			# If boundary, always set to 0.
-			if x == 0 || (x == (WORLD_SIZE.x-1))
-			|| (y == 0) || (y == (WORLD_SIZE.y-1));
-				GAME.cells.append:0u;
+			if x == 0 || (x == (WX-1))
+			|| (y == 0) || (y == (WY-1));
+				cells.append:0u;
 			/;
 			# Otherwise set to random state.
-			else; GAME.cells.append:(Math.rand:[0,1] -> UINT); /;
+			else; cells.append:(Math.rand:[0,1] -> UINT); /;
 		/;
 	/;
 	# Precalculate edges.
-	GAME.cell_count = (GAME.cells.length:());
-	for i in GAME.cell_count+1;
-		GAME.cell_x.append:(i % (WORLD_SIZE.x));
+	cell_count = (cells.length:());
+	for i in cell_count+1;
+		cell_x.append:(i % (WX));
 	/;
 /;
 
 
-func . _game_next;
-	if GAME.stable; return; /;
-	GAME.last_frame <<= (GAME.frame);
-	GAME.alive_count = 0u;
-	GAME.generation += 1u;
+func . game_next;
+	if stable; return; /;
+	last_frame <<= frame;
+	alive_count = 0u;
+	gen_count += 1u;
 
-	const UINT w = WORLD_SIZE.x;
-	var ARR buf = GAME.cells; # Copy cells into writable buffer.
-	for i in GAME.cell_count;
+	for i in cell_count;
 		if is_cell_border:i; continue; /;
 
 		# Count neighboring cells...
 		const UINT neighbors = Math.sum:[
-			(GAME.cells:(i-1)),
-			(GAME.cells:(i-w-1)),
-			(GAME.cells:(i+w-1)),
-			(GAME.cells:(i+1)),
-			(GAME.cells:(i-w+1)),
-			(GAME.cells:(i+w+1)),
-			(GAME.cells:(i-w)),
-			(GAME.cells:(i+w)),
+			(cells:(i+(NCOORDS:0))),
+			(cells:(i+(NCOORDS:1))),
+			(cells:(i+(NCOORDS:2))),
+			(cells:(i+(NCOORDS:3))),
+			(cells:(i+(NCOORDS:4))),
+			(cells:(i+(NCOORDS:5))),
+			(cells:(i+(NCOORDS:6))),
+			(cells:(i+(NCOORDS:7))),
 		];
 
 		# Apply rules...
-		if GAME.cells:i == 1;
+		if cells:i == 1;
 			if (neighbors < 2) || (neighbors > 3);
 				buf:i = 0u;
 			/;
@@ -85,58 +118,41 @@ func . _game_next;
 		/;
 
 		# Put cell into frame buffer.
-		(buf:i == 1u) ? ((GAME.alive_count += 1u),(GAME.frame += CELL_ON)) -- (GAME.frame += CELL_OFF);
-		if GAME.cell_x:(i+2u) == 0u;
-			GAME.frame += '\n';
+		(buf:i == 1u) ? ((alive_count += 1u),(frame.append:CELL_ON)) -- (frame.append:CELL_OFF);
+		if cell_x:(i+2) == 0;
+			frame.append:'\n';
 		/;
 	/;
 
-	# Move buffer to the main game cell array, overwriting the data previously there.
-	GAME.cells <<= buf;
-	if GAME.frame == (GAME.last_frame); GAME.stable = true; /;
+	cells = buf;
+	if frame == last_frame; stable = true; /;
 /;
 
 
-func BOOL is_cell_border; arg INT i;
-	return (WORLD_SIZE.x > i)
-	|| (GAME.cell_x:i == 0u)
-	|| (GAME.cell_x:(i+1u) == 0u)
-	|| (i > (GAME.cell_count-(WORLD_SIZE.x)));
+func BOOL is_cell_border; arg U64 i;
+	return (WX > i)
+	|| (cell_x:i == 0)
+	|| (cell_x:(i+1) == 0)
+	|| (i > (cell_count-(WX)));
 /;
 
 
 
-const MAP GAME = {
-	'init', _game_init,
-	'next', _game_next,
-	'cell_x', [],
-	'cell_count', 0u,
 
-	'stable', false,
-	'generation', 0u,
-	'alive_count', 0u,
-	'frame', '',
-	'last_frame', '',
-	'cells', [],
-};
-
-
-GAME.init:();
-
-
+game_init:();
 
 
 while true;
 	const UINT start_time = Time.now.ms;
 
 	# Tick game.
-	GAME.next:();
+	game_next:();
 
 	# Clear screen then print frame.
 	out:[
 		'\e[H\e[0J',
 		(ANSI.reset),
-		(GAME.frame),
+		frame,
 	];
 
 	# Calculate time taken to run.
@@ -145,17 +161,17 @@ while true;
 
 	# Print details.
 	out:['Seed: ',SEED_in,' | '];
-	out:['Gen: ',(GAME.generation),' | '];
-	out:['Alive: ',(GAME.alive_count),' | '];
+	out:['Gen: ',(gen_count),' | '];
+	out:['Alive: ',(alive_count),' | '];
 	# Print frame time info.
 	out:'Frame time: ';
-	(sleep_time <= 0u) ? (out:(ANSI.fg_red)) -- (out:(ANSI.fg_green));
+	(sleep_time <= 0) ? (out:(ANSI.fg_red)) -- (out:(ANSI.fg_green));
 	out:(delta/1_000.0);
 	out:(ANSI.reset);
 	out:[' / ',(FPS_ms/1_000.0)];
 
 	# Sleep for the remainder of the frame time.
-	if sleep_time > 0u;
+	if sleep_time > 0;
 		sleep:sleep_time;
 	/;
 /;

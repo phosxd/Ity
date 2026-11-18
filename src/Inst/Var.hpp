@@ -118,27 +118,7 @@ static void INST_Var_exec(ItyState& state, InstToken& token) {
 	if (type == VT_INFERRED) type = var.t;
 	// Set value to sane default if not explicitly set.
 	else if (var.t == VT_NONE && var.t != type) {
-		Variant var_ = {.t = type};
-		switch (type) {
-			case VT_REF:    {var_.d = (STR_t)"noneref"; break;}
-			case VT_BOOL:   {var_.d = false;            break;}
-
-			case VT_INT64:    {var_.d = (int64_t)0;    break;}
-			case VT_INT32:    {var_.d = (int32_t)0;    break;}
-			case VT_INT16:    {var_.d = (int16_t)0;    break;}
-			case VT_INT8:     {var_.d = (int8_t)0;     break;}
-			case VT_UINT64:   {var_.d = (uint64_t)0;   break;}
-			case VT_UINT32:   {var_.d = (uint32_t)0;   break;}
-			case VT_UINT16:   {var_.d = (uint16_t)0;   break;}
-			case VT_UINT8:    {var_.d = (uint8_t)0;    break;}
-			case VT_FLOAT64:  {var_.d = (FLOAT64_t)0;  break;}
-
-			case VT_STR:    {var_.d = (STR_t)""; break;}
-			case VT_ARR:    {var_.d = (ARR_t){}; break;}
-			case VT_MAP:    {var_.d = (MAP_t){}; break;}
-			default: break;
-		}
-		var = var_;
+		var = {.t=type, .d=get_default_data(type)};
 	}
 
 	// Recast number type to desired variation.

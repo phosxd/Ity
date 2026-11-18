@@ -93,7 +93,7 @@ debug_flags_struct debug_flags;
 
 
 Clock_t clock_start;
-unsigned int tab_col_value = 4;
+uint8_t tab_col_value = 4;
 std::string* current_script_path = nullptr;
 unsigned int current_line = 0;
 unsigned int current_column = 0;

@@ -11,10 +11,16 @@ Variant call_function(ItyState& state, const FUNC_t& func, ARR_t& input_args) {
 		return VPS.none;
 	}
 
+	// Emit error if improper amount of args.
+	if (args.size() < func.args_schema.size()) {
+		emit_error(ERR_invalid_func_arg_count, {std::to_string(func.args_schema.size()), std::to_string(args.size())});
+		return VPS.none;
+	}
+
 	// Check args against the func's schema...
 	if (not func.args_schema.empty()) {
 		int16_t i = -1; for (const std::vector<VariantType>& types : func.args_schema) {i++;
-			const Variant& var = ((int16_t)args.size() <= i) ? new_none() : args[i]; // Assume var as type NONE if no arg supplied at this index.
+			const Variant& var = args[i];
 			bool matches = false;
 			// Iterate through each expected type in this index, in order, until one matches...
 			for (const VariantType& type : types) {
@@ -232,7 +238,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const uint32_t ln=0, c
 		}
 	}
 
-	const size_t& expr_len = expr.size();
+	const size_t expr_len = expr.size();
 	std::string buffer; buffer.reserve(expr_len);
 	std::string secondary_buffer;
 	ExprToken item = {0,0, ExprTokenType_variant, {VT_PLACEHOLDER}};

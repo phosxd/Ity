@@ -30,23 +30,23 @@ const Ity::VariantType get_variant_type_from_name(const std::string& name) {usin
 
 
 // Get highest order type.
-const Ity::VariantType get_highest_order_type(const Ity::VariantType& a, const Ity::VariantType& b) {
+const Ity::VariantType get_highest_order_type(const Ity::VariantType a, const Ity::VariantType b) {
 	return (a < b) ? a : b; // Enum values are arranged in order of most significant to least.
 }
 
 
 // Type categorization checkers.
 
-const bool type_is_int(const Ity::VariantType& t) {using namespace Ity;
+const bool type_is_int(const Ity::VariantType t) {using namespace Ity;
 	return t > VT_INT64-1 && t < VT_INT8+1;
 }
-const bool type_is_uint(const Ity::VariantType& t) {using namespace Ity;
+const bool type_is_uint(const Ity::VariantType t) {using namespace Ity;
 	return t > VT_UINT64-1 && t < VT_UINT8+1;
 }
-const bool type_is_float(const Ity::VariantType& t) {using namespace Ity;
+const bool type_is_float(const Ity::VariantType t) {using namespace Ity;
 	return t == VT_FLOAT64;
 }
-const bool type_is_number(const Ity::VariantType& t) {
+const bool type_is_number(const Ity::VariantType t) {
 	return type_is_int(t) || type_is_uint(t) || type_is_float(t);
 }
 
@@ -413,6 +413,30 @@ struct Variant {
 };
 
 
+
+
+// Get sane default value for any real Variant type.
+const VariantData get_default_data(const Ity::VariantType t) {using namespace Ity;
+	switch (t) {
+		case VT_REF:    {return (STR_t)"noneref";}
+		case VT_BOOL:   {return false;}
+
+		case VT_INT64:    {return (int64_t)0;}
+		case VT_INT32:    {return (int32_t)0;}
+		case VT_INT16:    {return (int16_t)0;}
+		case VT_INT8:     {return (int8_t)0;}
+		case VT_UINT64:   {return (uint64_t)0;}
+		case VT_UINT32:   {return (uint32_t)0;}
+		case VT_UINT16:   {return (uint16_t)0;}
+		case VT_UINT8:    {return (uint8_t)0;}
+		case VT_FLOAT64:  {return (FLOAT64_t)0;}
+
+		case VT_STR:    {return (STR_t)"";}
+		case VT_ARR:    {return (ARR_t){};}
+		case VT_MAP:    {return (MAP_t){};}
+		default: return std::monostate();
+	}
+}
 
 
 std::ostream& operator<<(std::ostream& os, const Variant& var) {

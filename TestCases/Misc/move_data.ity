@@ -1,0 +1,13 @@
+#EXPECT
+#[] ARR
+#[1, 2, 3] ARR
+#END
+
+
+var a = [1,2,3];
+var b = [];
+
+b <<= a;
+
+print:[a, ' ', (type_name:(type:[a]))];
+print:[b, ' ', (type_name:(type:[b]))];

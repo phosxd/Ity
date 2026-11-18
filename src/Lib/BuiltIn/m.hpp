@@ -165,8 +165,7 @@ static Variant LIB_BI_type(ItyState& _state, const ARR_t& args) {
 
 // Return the number of bytes taken by the given variant.
 static Variant LIB_BI_size(ItyState& state, ARR_t& args) {
-	Variant* var = &args[0];
-	return Variant{VT_UINT64, (uint64_t)(resovlve_potential_ref(state, var)->get_size())};
+	return Variant{VT_UINT64, (uint64_t)(resovlve_potential_ref(state, (&args[0]))->get_size())};
 }
 
 
@@ -392,7 +391,7 @@ static Variant LIB_BI_tm_func_bind(ItyState& state, ARR_t& args) {
 	FUNC_t data = AnyCastV(FUNC_t, var->d ); // Copy the function.
 	// Add the given args to the function's bounded arguments.
 	for (size_t i = 1; i < args.size(); i++) {
-		data.bound_args.push_back(args[i]);
+		data.bound_args.emplace_back(args[i]);
 	}
 	// Return the new function.
 	return Variant{VT_FUNC, std::move(data)};

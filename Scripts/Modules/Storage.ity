@@ -8,6 +8,45 @@
 # PART OF THE STANDARD SET OF ITY MODULES.
 
 
+import Math;
+import FileSystem as FS;
+
+
+const STR base_dir = '~/.local/share/';
+
+var STR program_dir;
+var STR program_name = '';
+
+
+# Initialize the program instance.
+func . init; arg STR program_name_;
+	program_name = program_name_;
+	program_dir = (base_dir+program_name+'/');
+/;
+
+
+# Convert an Ity variant to raw bytes, including type information.
+# BINARY FORMAT:
+#	<TypeName> (8 bytes, space character for padding)
+#	<Data>
+func STR _serialize; arg ANY origin;
+	const U8 t = type:origin;
+	const STR tn = type_name:t;
+
+	var STR data = tn+(' '*8-tn.length:[]);
+
+	data.append:(origin.interpret:STR)
+	return data;
+/;
+
+
+func BOOL store_var; arg STR name; arg ANY data;
+	var STR file_path = program_dir+name+'.dat';
+	const STR serialized_data = _serialize:[data];
+	return FS.write:[file_path, serialized_data];
+/;
+
+
 const MAP __module__ = {
 	'__name', 'Storage',
 };

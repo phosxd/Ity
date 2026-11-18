@@ -20,8 +20,8 @@ static Variant LIB_MT_log(ItyState& _state, ARR_t& args) {
 
 static Variant LIB_MT_sqrt(ItyState& _state, ARR_t& args) {
 	const Variant& v = args[0];
-	return (v.t == VT_INT64) ? Variant{v.t, (int64_t)std::sqrt((double)AnyCast(int64_t,v.d))}
-	: Variant{v.t, (FLOAT64_t)std::sqrtf((float)AnyCast(double,v.d))};
+	return (v.t == VT_INT64) ? Variant{v.t, (int64_t)std::sqrt((FLOAT64_t)AnyCast(int64_t,v.d))}
+	: Variant{v.t, (FLOAT64_t)std::sqrtf((float)AnyCast(FLOAT64_t,v.d))};
 }
 
 
@@ -55,7 +55,7 @@ static Variant LIB_MT_sum(ItyState& _state, ARR_t& args) {
 	for (size_t i = 0; i < args.size(); i++) {
 		const Variant& arg = args[i];
 		if (not arg.is_number()) {
-			expect_arg_types(arg, {VT_INT64,VT_FLOAT64}, i);
+			expect_arg_types(arg, {VT_INT64,VT_FLOAT64,VT_BOOL}, i);
 			continue;
 		}
 		sum += arg.to_float64();

@@ -50,14 +50,12 @@ void OP_Set_exec(ItyState& state, ExprState& _expr_state, Variant*& first, Varia
 		// Move second into first, unsetting the second variant.
 		case OpSymbol_mov_set: {
 			if (not o2->matches(*o1)) return;
-			// Throw error if source variant is constant.
-			if (second->m == VM_const) {
-				emit_error(ERR_cannot_change_constant);
-				return;
-			}
 			// Move second into first.
-			*o1 = std::move(*o2);
-			result_ptr = first;
+			o1->t = o2->t;
+			o1->m = o2->m;
+			o1->d = std::move(o2->d);
+			o2->d = get_default_data(o2->t);
+			result_ptr = o1;
 			break;
 		}
 
