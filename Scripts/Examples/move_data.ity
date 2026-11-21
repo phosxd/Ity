@@ -11,7 +11,7 @@ const INT start = Time.now.ms;
 
 for i in 3;
 	print:i;
-	var ARR big_data = range:1_000_000;
+	var ARR big_data = [0]*1_000_000;
 	if do_copy;
 		all_the_data.append:[big_data];
 	/;

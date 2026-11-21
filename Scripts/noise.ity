@@ -1,3 +1,4 @@
+#!/usr/local/bin/ity
 import Time;
 import Math;
 import Limits;
@@ -14,7 +15,7 @@ const UINT BYTE_COUNT = WIDTH*HEIGHT*DEPTH;
 
 
 print:'Generating...';
-const UINT start = Time.now.ms;
+const U64 start = Time.now.ms;
 
 const FUNC rand = Math.rand;
 Math.set_seed:start;

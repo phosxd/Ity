@@ -8,7 +8,7 @@
 # PART OF THE STANDARD SET OF ITY MODULES.
 
 
-func MAP VarMap_new;
+func MAP new;
 	return {
 		'__t', 'VMAP',
 		'd', {},
@@ -17,25 +17,27 @@ func MAP VarMap_new;
 
 
 # Get value in the map.
-func ANY VarMap_get; arg PTR S; arg ANY key;
+func ANY _VMAP_get; arg ANY key;
 	const STR str_key = (type:[key]->STR) + ':' + (key->STR);
-	return (S.d.has:str_key) ? (S.d:str_key) -- none;
+	return (__S.d.has:str_key) ? (__S.d:str_key) -- none;
 /;
+__tm__.set:['MAP(VMAP):get', _VMAP_get];
 
 
 # Set key-value pair in the map.
 # This overrides the default `set` method for `MAP(v)`.
-func NONE VarMap_set; arg PTR S; arg ANY key; arg ANY value;
+func NONE _VMAP_set; arg ANY key; arg ANY value;
 	const STR key_str = (type:[key]->STR) + ':' + (key->STR);
-	S.d.set:[key_str, value];
+	__S.d.set:[key_str, value];
 /;
+__tm__.set:['MAP(VMAP):set', _VMAP_set];
 
 
 const MAP __module__ = {
 	'__name', 'VarMap',
 	'__tm', {
-		'MAP(VMAP):get', VarMap_get,
-		'MAP(VMAP):set', VarMap_set,
+		'MAP(VMAP):get', _VMAP_get,
+		'MAP(VMAP):set', _VMAP_set,
 	},
-	'new', VarMap_new,
+	'new', new,
 };

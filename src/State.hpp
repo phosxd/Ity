@@ -77,7 +77,7 @@ struct ItyScope {
 	}
 
 
-	ScopeMapCell_t* get_data_cell(const var_key_t& key=0) {
+	ScopeMapCell_t* get_data_cell(const var_key_t key=0) {
 		for (ScopeMapCell_t& cell : d) {
 			if (cell.first == key) return &cell;
 		}
@@ -134,7 +134,7 @@ struct ItyScope {
 
 	// Sets the data for name in this scope.
 	void set_data(const std::string& name, const Variant& data, var_key_t key=0) {
-		if (key == 0) key = string_hasher(name.data());
+		if (key == 0) key = string_hasher(name);
 
 		// Output function call in debug mode...
 		#ifdef RUNTIME_DEBUG

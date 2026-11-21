@@ -1,0 +1,41 @@
+# PPM
+# ----
+#
+# Implements a simple file template for 255 width PPM (https://en.wikipedia.org/wiki/Netpbm) images.
+# To add pixels to the image, append a color `STR` to the `file` property.
+#
+# Colors can be constructed manually, but it is recommended to use the `RGB` module.
+#
+#
+# PART OF THE STANDARD SET OF ITY MODULES.
+
+
+func STR rgb; arg U64 r=0; arg U64 g=0; arg U64 b=0;
+	return ((''+r) + (''+g) + (''+b));
+/;
+
+
+func MAP new; arg U64 width; arg U64 height;
+	var MAP ppm = {
+		'__t', 'Image/PPM',
+
+		'_width', width,
+		'_height', height,
+		'_data_start', 0u,
+
+		'file', (
+			'P6\n' # PPM binary format.
+			+ (width->STR)+' '+(height->STR) + '\n' # Image dimensions.
+			+ '255\n' # Pixel max value.
+		),
+	};
+	ppm._data_start = (ppm.file.length:());
+	return ppm;
+/;
+
+
+
+const MAP __module__ = {
+	'__name', 'PPM',
+	'new', new,
+};

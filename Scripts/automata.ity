@@ -1,0 +1,100 @@
+#!/usr/local/bin/ity
+
+import FileSystem as FS;
+import Math;
+import Time;
+import PPM;
+import RGB;
+
+const STR PATH = 'automata.ppm';
+const ARR VARIATIONS = [
+	[0,1,1,1,0,1,1,0], # 110: https://en.wikipedia.org/wiki/Rule_110
+	[0,1,1,1,1,0,0,0], # 30:  https://en.wikipedia.org/wiki/Rule_30
+	[0,1,0,1,1,0,1,0], # 90:  https://en.wikipedia.org/wiki/Rule_90
+	[1,0,1,0,0,1,0,1], # 165: https://atlas.wolfram.com/01/01/165/
+];
+
+var U64 VARIATION_ID = 0;
+var U64 SIZE = 0;
+var STR START_ID = '0';
+
+SIZE = (prompt:'Size: ' -> U32);
+if SIZE < 15; throw 'Please choose a value above 15.'; /;
+
+const PRESET = prompt:'Preset ("custom", "110", "30", "90", "165"): ';
+if PRESET == "custom";
+	VARIATION_ID = (prompt:'Variation (0, 1, 2, 3): ' -> U64);
+	START_ID = (prompt:'Start (<number>, "many"): ');
+/;
+elif PRESET == "110";
+	VARIATION_ID = 0;
+	START_ID = (SIZE-1 -> STR);
+/;
+elif PRESET == "30";
+	VARIATION_ID = 1;
+	START_ID = (SIZE/2 -> STR);
+/;
+elif PRESET == "90";
+	VARIATION_ID = 2;
+	START_ID = (SIZE/2 -> STR);
+/;
+elif PRESET == "165";
+	VARIATION_ID = 3;
+	START_ID = (SIZE/2 -> STR);
+/;
+else; throw 'Invalid preset.'; /;
+
+const ARR VARIATION = VARIATIONS:VARIATION_ID;
+
+
+print:'Generating...';
+const U64 start = Time.now.ms;
+var MAP image = PPM.new:[SIZE, SIZE];
+# Initialize board.
+var ARR board = [];
+for i in SIZE; board.append:0u; /;
+
+
+# Set starting cells.
+# Randomized.
+if START_ID == 'many';
+	for i in SIZE;
+		board:i = (Math.rand:[0,1]);
+	/;
+/;
+# Index.
+else;
+	board:(START_ID->U64) = 1;
+/;
+
+
+var U64 i=0; while i < SIZE;
+	# Print board.
+	var U64 j=0; while j < SIZE;
+		image.file.append:((board:j == 0) ?  (RGB.BLACK) -- (RGB.WHITE));
+		j+=1u;
+	/;
+
+	# Calculate next.
+	var ARR buf = board;
+	var INT l = 0; var INT c = 0; var INT r = 0;
+	j=0; while j < SIZE;
+		l=0; c=(board:j); r=0;
+		# Check bounds before grabbing neighbors.
+		if j > 0; l = (board:(j-1)); /;
+		if j < (SIZE-1); r = (board:(j+1)); /;
+		# Set cell.
+		buf:j = (VARIATION:(l*4+(c*2)+r));
+		j+=1u;
+	/;
+	board <<= buf;
+	i+=1u;
+/;
+
+
+# Save file to disk.
+print:'Saving...';
+FS.write:[PATH, (image.file)];
+print:['\nDone in ', ((Time.now.ms-start) / 1000.0), ('s. Saved to: ' + PATH)];
+
+system:('xdg-open "'+PATH+'"'); # Open file in preferred app.

@@ -11,7 +11,7 @@ static void INST_Return_processor(InstToken& token, const InstProcArgs& args) {
 		break;
 	}
 
-	// Throw error if there if instruciton is not under a function.
+	// Throw error if instruction is not under a function.
 	if (not found) {
 		emit_error(ERR_misplaced_inst, {token.args[0]}, args.ln, args.col);
 		return;

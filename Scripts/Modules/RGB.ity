@@ -1,0 +1,49 @@
+# RGB
+# ---
+#
+# Implements tools for creating & manipulating RGB color values.
+#
+# Includes:
+#	- Binary color string constructor.
+#	- Lighten & darken functions.
+#	- Common color presets.
+#
+#
+# PART OF THE STANDARD SET OF ITY MODULES.
+
+
+import Math;
+
+
+# Construct a new binary RGB color string.
+func STR new; arg U8 r=0; arg U8 g=0; arg U8 b=0;
+	return (''+r)+(''+g)+(''+b);
+/;
+
+
+# Add `amount` to the `channel` (0=r, 1=g, 2=b) of `color`. Returns a new color string.
+func STR add; arg STR color; arg U8 channel; arg I32 amount;
+	const I8 num = (color:channel):'raw':();
+	color:channel = (Math.min:[(num + (Math.remap:[-255, 255, -128, 127, amount])), 127]);
+/;
+
+
+const MAP __module__ = {
+	'__name', 'RGB',
+
+	# Grayscale.
+	'BLACK',     (new:[0,0,0]),
+	'WHITE',     (new:[255,255,255]),
+	'GRAY',      (new:[127,127,127]),
+	'LIGHTGRAY', (new:[170,170,170]),
+	'DARKGRAY',  (new:[64,64,64]),
+
+	# Vibrant.
+	'RED',    (new:[255,0,0]),
+	'GREEN',  (new:[0,255,0]),
+	'BLUE',   (new:[0,0,255]),
+	'YELLOW', (new:[255,255,0]),
+
+	'new', new,
+	'add', add,
+};
