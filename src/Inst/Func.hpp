@@ -1,6 +1,11 @@
 #pragma once
 
 
+struct INST_Func_data {
+	uint32_t sequence_size = 0;
+};
+
+
 static void INST_Func_exec(ItyState& state, InstToken& token) {
 	std::string type_name;
 	std::string name;

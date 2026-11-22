@@ -5,7 +5,7 @@ static void INST_Exit_exec(ItyState& state, InstToken& token) {
 	// Exit with status code.
 	if (token.symbol == InstSymbol_exit) {
 		if (token.expr.seq.empty()) {
-			exit(0);
+			state.exit_cleanly();
 			return;
 		}
 

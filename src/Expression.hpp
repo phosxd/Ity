@@ -1,5 +1,8 @@
 #pragma once
 
+const bool is_valid_name(const std::string& name);
+#include "Inst/Func.hpp"
+
 
 // Call a function.
 Variant call_function(ItyState& state, const FUNC_t& func, const ARR_t& input_args) {
@@ -75,8 +78,8 @@ Variant call_function(ItyState& state, const FUNC_t& func, const ARR_t& input_ar
 		const VariantType return_type = func.return_type;
 
 		// Execute funtion.
-		std::vector<VariantData>& func_token_data = *(std::vector<VariantData>*)func_token.data;
-		Ity::exec(*func_state, func_token.i+1, AnyCast(uint32_t,func_token_data[0])); // Execute the tokens in the function.
+		INST_Func_data& func_token_data = *(INST_Func_data*)func_token.data;
+		Ity::exec(*func_state, func_token.i+1, func_token_data.sequence_size); // Execute the tokens in the function.
 		current_script_path = &state.path; // Reset current script path.
 
 		// NOTE: Use of "func" is now unsafe after this point, reference potentially modified or deleted as expression temporaries are overwritten.

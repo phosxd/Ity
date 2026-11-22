@@ -27,6 +27,7 @@ namespace Ity {
 
 	inline const void* LIB_BI_G = nullptr; // Global reference to built-in lib.
 	inline ARR_t* ARGS;
+	inline bool global_exec_jump_out = false; // If true, break all remaining execution loops.
 
 
 	void init();

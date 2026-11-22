@@ -263,7 +263,7 @@ struct ItyState {
 	Variant last_expr_result = VPS.empty;
 	// Instruction jump values.
 	int exec_jump_value = 0;
-	bool exec_jump_out = false;
+	bool exec_jump_out = false; // Break the current exeuction loop.
 
 	// This is a pool of all temporaries created in an expression.
 	// Systems have exactly until the next expr exec call to use the data of a temporary, before it gets deleted.
@@ -305,12 +305,20 @@ struct ItyState {
 
 
 	// Scope out of all ongoing scopes & call emergency cleanup functions if needed.
-	void exit_ongoing_scopes(ItyScope& scope) {
+	void exit_ongoing_scopes() {
 		for (InstToken* token : scoped_tokens) {
 			if (not token) continue;
 			if (token->inst->emergency_scope_exit) token->inst->emergency_scope_exit(token);
 			scope.out();
 		}
 		scoped_tokens.clear();
+	}
+
+
+	// Put an end to the execution.
+	void exit_cleanly() {
+		exit_ongoing_scopes();
+		exec_jump_out = true;
+		global_exec_jump_out = true;
 	}
 };
