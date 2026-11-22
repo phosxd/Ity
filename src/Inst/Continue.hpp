@@ -35,7 +35,7 @@ static void INST_Continue_exec(ItyState& state, InstToken& token) {
 	// If is "continue", jump to the end instruction, not over it.
 	if (token.symbol == InstSymbol_continue) state.exec_jump_value -= 1;
 	// If is "break", scope out if previously scoped in.
-	else if (linked_token.declarative_composite && linked_token.meta.size() > 0) {
+	else if (linked_token.declarative_composite && ((std::vector<VariantData>*)linked_token.data)->size() > 0) {
 		state.scope.out();
 		InstToken* linked_token_ptr = &linked_token;
 		linked_token.inst->emergency_scope_exit(linked_token_ptr);

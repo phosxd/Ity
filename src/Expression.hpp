@@ -75,7 +75,8 @@ Variant call_function(ItyState& state, const FUNC_t& func, const ARR_t& input_ar
 		const VariantType return_type = func.return_type;
 
 		// Execute funtion.
-		Ity::exec(*func_state, func_token.i+1, AnyCast(uint32_t,func_token.meta[0])); // Execute the tokens in the function.
+		std::vector<VariantData>& func_token_data = *(std::vector<VariantData>*)func_token.data;
+		Ity::exec(*func_state, func_token.i+1, AnyCast(uint32_t,func_token_data[0])); // Execute the tokens in the function.
 		current_script_path = &state.path; // Reset current script path.
 
 		// NOTE: Use of "func" is now unsafe after this point, reference potentially modified or deleted as expression temporaries are overwritten.

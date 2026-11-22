@@ -235,7 +235,7 @@ std::vector<InstToken> tokenize(const std::string& src) {
 								comp_item.token.composite_size = comp_item.size;
 								comp_item.token.declarative_composite = comp_item.declarative;
 								if (comp_item.token.symbol == InstSymbol_func) {
-									comp_item.token.meta = {(uint32_t)sequence.size()};
+									comp_item.token.data = new std::vector<VariantData>{(uint32_t)sequence.size()};
 								}
 								sequence[comp_item.index] = comp_item.token;
 								item.linked_inst = comp_item.token.symbol;

@@ -63,7 +63,7 @@ struct InstToken {
 	InstSymbol linked_inst = InstSymbol__;
 	int32_t linked_inst_pos = 0;
 
-	std::vector<VariantData> meta;
+	void* data = nullptr;
 };
 
 

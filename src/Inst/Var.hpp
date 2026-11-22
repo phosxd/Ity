@@ -1,5 +1,13 @@
 #pragma once
-// Fragment Size: 2880
+// Fragment Size: 2688
+
+
+struct INST_Var_data {
+	const std::string name;
+	const var_key_t key;
+	const VariantType type;
+	const VariantMode mode;
+};
 
 
 static void INST_Var_processor(InstToken& token, const InstProcArgs& args) {
@@ -72,7 +80,12 @@ static void INST_Var_processor(InstToken& token, const InstProcArgs& args) {
 	}
 
 	// Set token properties.
-	token.meta = {name, string_hasher(name), type, mode};
+	token.data = new INST_Var_data{
+		.name = name,
+		.key =  string_hasher(name),
+		.type = type,
+		.mode = mode
+	};
 	token.expr = expr_tokenize(expr, args.ln-expr_start_ln, args.col-expr_start_col).token;
 }
 
@@ -80,17 +93,16 @@ static void INST_Var_processor(InstToken& token, const InstProcArgs& args) {
 
 
 static void INST_Var_exec(ItyState& state, InstToken& token) {
-	const std::string& name = AnyCast(std::string,token.meta[0]);
-	const var_key_t& key = AnyCast(var_key_t,token.meta[1]);
+	auto& data = *(INST_Var_data*)token.data;
 
-	if (state.scope.get_data_globally(name, nullptr, key)) {
+	if (state.scope.get_data_globally(data.name, nullptr, data.key)) {
 		// Give error if the var name is not free on the current scope.
-		if (state.scope.get_data("", nullptr, key)) {
-			emit_error(ERR_name_is_taken, {name});
+		if (state.scope.get_data("", nullptr, data.key)) {
+			emit_error(ERR_name_is_taken, {data.name});
 			return;
 		}
 		// Give warning if the var name is shadowing another var name.
-		emit_warn(ERR_name_is_shadowed, {name});
+		emit_warn(ERR_name_is_shadowed, {data.name});
 	}
 
 	// Get value from expression.
@@ -114,7 +126,7 @@ static void INST_Var_exec(ItyState& state, InstToken& token) {
 	}
 
 	// Get variable type & infer it if needed.
-	VariantType type = AnyCastV(VariantType,token.meta[2]);
+	VariantType type = data.type;
 	if (type == VT_INFERRED) type = var.t;
 	// Set value to sane default if not explicitly set.
 	else if (var.t == VT_NONE && var.t != type) {
@@ -125,9 +137,8 @@ static void INST_Var_exec(ItyState& state, InstToken& token) {
 	if (var.is_number() && type_is_number(type)) var.make_into_type(type);
 
 	// Set data.
-	const VariantMode& mode = AnyCast(VariantMode,token.meta[3]);
-	if (not var.matches(Variant{type, std::monostate(), mode})) return;
-	state.scope.set_data(name, Variant{var.t, var.d, mode}, key);
+	if (not var.matches(Variant{type, std::monostate(), data.mode})) return;
+	state.scope.set_data(data.name, Variant{var.t, var.d, data.mode}, data.key);
 }
 
 

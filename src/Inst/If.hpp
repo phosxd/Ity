@@ -3,7 +3,7 @@
 
 
 static void INST_If_processor(InstToken& token, const InstProcArgs& args) {
-	token.meta = {false};
+	token.data = new std::vector<VariantData>{false};
 
 	if (token.symbol == InstSymbol_elif || token.symbol == InstSymbol_else) {
 		const CompositeItem& last_comp_item = *args.last_comp_item;
@@ -24,6 +24,7 @@ static void INST_If_processor(InstToken& token, const InstProcArgs& args) {
 
 
 static void INST_If_exec(ItyState& state, InstToken& token) {
+	std::vector<VariantData>& data = *(std::vector<VariantData>*)token.data;
 	bool expr_passed = false;
 
 	if (token.symbol != InstSymbol_else) {
@@ -40,7 +41,10 @@ static void INST_If_exec(ItyState& state, InstToken& token) {
 
 	// Check if the previous conditional statement had succeeded...
 	bool previous_conditional_passed = true;
-	if (token.linked_inst == InstSymbol_if || token.linked_inst == InstSymbol_elif) previous_conditional_passed = AnyCast(bool, state.seq[token.i + token.linked_inst_pos].meta[0]);
+	if (token.linked_inst == InstSymbol_if || token.linked_inst == InstSymbol_elif) {
+		std::vector<VariantData>& linked_data = *(std::vector<VariantData>*)state.seq[token.i + token.linked_inst_pos].data;
+		previous_conditional_passed = AnyCast(bool, linked_data[0]);
+	}
 
 	// Evaluate whether or not this conditional has succeeded...
 	bool passed = false;
@@ -51,7 +55,7 @@ static void INST_If_exec(ItyState& state, InstToken& token) {
 		default: break;
 	}
 
-	token.meta[0] = (token.symbol == InstSymbol_elif && not passed) ? previous_conditional_passed : passed;
+	data[0] = (token.symbol == InstSymbol_elif && not passed) ? previous_conditional_passed : passed;
 	// Jump past instructions in this composite if failed.
 	if (not passed) state.exec_jump_value += token.composite_size;
 	// If succeeded, then scope in if declarative.
