@@ -14,14 +14,14 @@ test_result_path="${WORKING_DIR}/TestCases/.test_result.txt"
 test_results=""
 expeted_results=""
 run_test_on_file() {
-	${WORKING_DIR}/ity.bin -c $1 2&> $test_result_path # Run test code, then output the result to a file.
+	"${WORKING_DIR}/ity.bin" -c "$1" 2&> "$test_result_path" # Run test code, then output the result to a file.
 	code=$?
-	test_results="$(cat $test_result_path)" # Get test results.
+	test_results="$(cat "$test_result_path")" # Get test results.
 
 	# Get expected results located in the script.
 	expected_results=""
 	append_text=0
-	readarray -t source <<< "$(cat $1)"
+	readarray -t source <<< "$(cat "$1")"
 	for line in "${source[@]}"; do
 		# Start looking for text.
 		if [[ "${line}" == "#EXPECT" ]]; then

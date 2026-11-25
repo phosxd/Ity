@@ -6,9 +6,13 @@
 #access
 #a
 #e
-#methods
+#method length
 #5
+#method append
 #abcdefghi
+#method erase
+#abcefghi
+#method raw
 #97
 #END
 
@@ -64,11 +68,17 @@ print:(str: -1); # e
 # Methods
 # -------
 
-print:'methods';
-
 str = 'abcde';
-
+print:'method length';
 print:(str.length:()); # 5
+
+print:'method append';
 str.append:'fghi';
 print:str; # abcdefghi
+
+print:'method erase';
+str.erase:3;
+print:str; # abcefghi
+
+print:'method raw';
 print:(str.raw:()); # Get integer representation of the first character (a = 97)

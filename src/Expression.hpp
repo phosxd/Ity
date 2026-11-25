@@ -86,7 +86,7 @@ Variant call_function(ItyState& state, const FUNC_t& func, const ARR_t& input_ar
 
 		// Get result & check if return type matches.
 		const Variant func_result = std::move(*(func_state->scope.get_data("__R", nullptr, HASHED_NAMES.__R)));
-		if (func_result.t != return_type && return_type != VT_ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(func_result.t), get_variant_type_name(return_type)});
+		if (func_result.t != return_type && return_type != VT_ANY) emit_error(ERR_return_type_mismatch, {get_variant_type_name(return_type), get_variant_type_name(func_result.t)});
 
 		// Restore original scope.
 		func_state->scope = std::move(old_scope);
@@ -683,7 +683,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 
 
 
-// Clear state temporaries then execute the expression.
+// Reset state temporary counter, then execute the expression.
 Variant* expr_exec(ItyState& state, ExprToken& token, const bool subexpr=false) {
 	state.tp_c = 0;
 	current_line = token.ln; current_column = token.col;

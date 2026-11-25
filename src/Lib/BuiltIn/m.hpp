@@ -158,8 +158,8 @@ static Variant LIB_BI_type_name(ItyState& _state, const ARR_t& args) {
 
 
 // Return the type of the given Variant.
-static Variant LIB_BI_type(ItyState& _state, const ARR_t& args) {
-	return Variant{VT_UINT8, (uint8_t)(args[0].t)};
+static Variant LIB_BI_type(ItyState& state, const ARR_t& args) {
+	return Variant{VT_UINT8, (uint8_t)(resovlve_potential_ref(state, (&args[0]))->t)};
 }
 
 
@@ -265,39 +265,11 @@ static Variant LIB_BI_tm_str_arr_append(ItyState& state, ARR_t& args) {
 }
 
 
-static Variant LIB_BI_tm_str_arr_reserve(ItyState& state, ARR_t& args) {
-	Variant* var = state.reg.method_parent;
-	const uint64_t& count = AnyCast(uint64_t,args[0].d);
 
-	// Throw error if the variant is a constant.
-	if (var->m == VM_const) {
-		emit_error(ERR_cannot_change_constant);
-		return VPS.none;
-	}
+// String / Arr / Map.
+// --------------------
 
-	switch (var->t) {
-		case VT_ARR: {
-			ARR_t& data = AnyCastV(ARR_t,var->d);
-			data.reserve(count);
-			break;
-		}
-		case VT_STR: {
-			STR_t& data = AnyCastV(STR_t,var->d);
-			data.reserve(count);
-			break;
-		}
-		default: break;
-	}
-
-	return VPS.none;
-}
-
-
-
-// Array.
-// ------
-
-static Variant LIB_BI_tm_arr_map_erase(ItyState& state, ARR_t& args) {
+static Variant LIB_BI_tm_str_arr_map_erase(ItyState& state, ARR_t& args) {
 	Variant* var = state.reg.method_parent;
 
 	// Throw error if the variant is a constant.
@@ -309,16 +281,25 @@ static Variant LIB_BI_tm_arr_map_erase(ItyState& state, ARR_t& args) {
 	if (var->t == VT_ARR) {
 		if (not expect_arg_types(args[0], {VT_UINT64}, 0)) return VPS.none;
 		// Get data & index.
-		ARR_t& data = AnyCastV(ARR_t, var->d );
+		ARR_t& data = AnyCastV(ARR_t, var->d);
 		const uint64_t& index = AnyCast(uint64_t,args[0].d);
 		// Erase item from array reference.
 		data.erase(data.begin()+index);
 	}
 
+	else if (var->t == VT_STR) {
+		if (not expect_arg_types(args[0], {VT_UINT64}, 0)) return VPS.none;
+		// Get data & index.
+		STR_t& data = AnyCastV(STR_t, var->d);
+		const uint64_t& index = AnyCast(uint64_t,args[0].d);
+		// Erase byte from string reference.
+		data.erase(index, 1);
+	}
+
 	else if (var->t == VT_MAP) {
 		if (not expect_arg_types(args[0], {VT_STR}, 0)) return VPS.none;
 		// Get data & map.
-		MAP_t& data = AnyCastV(MAP_t, var->d );
+		MAP_t& data = AnyCastV(MAP_t, var->d);
 		const STR_t& key = AnyCast(STR_t,args[0].d);
 		// Erase item from map reference.
 		data.erase(key);
@@ -403,6 +384,12 @@ static Variant LIB_BI_tm_func_bind(ItyState& state, ARR_t& args) {
 // DEFINE MAPPINGS
 // ---------------
 
+inline const Variant tm_ref_type = NativeFuncTrans(VT_UINT8, (NativeFunc_t)LIB_BI_tm_ref_type, { });
+
+inline const Variant tm_str_arr_length = NativeFuncTrans(VT_UINT64, (NativeFunc_t)LIB_BI_tm_str_arr_length, { });
+inline const Variant tm_str_arr_map_erase = NativeFuncTrans(VT_NONE, LIB_BI_tm_str_arr_map_erase, { {VT_UINT64,VT_STR} });
+inline const Variant tm_str_arr_append = NativeFuncTrans(VT_NONE, LIB_BI_tm_str_arr_append, { {VT_ANY} });
+
 const Variant LIB_BI {
 	VT_MAP, (MAP_t){
 		{"__name",  Variant{VT_STR, (STR_t)"BI", VM_const}},
@@ -412,23 +399,23 @@ const Variant LIB_BI {
 		// Type methods.
 		{"__tm", Variant{
 			VT_MAP, (MAP_t){
-				{"REF:reassign",  NativeFuncTrans(VT_NONE,                LIB_BI_tm_ref_reassign, { {VT_REF} })},
-				{"REF:type",      NativeFuncTrans(VT_UINT8, (NativeFunc_t)LIB_BI_tm_ref_type, { })},
-				{"PTR:type",      NativeFuncTrans(VT_UINT8, (NativeFunc_t)LIB_BI_tm_ref_type, { })},
+				{"REF:reassign", NativeFuncTrans(VT_NONE, LIB_BI_tm_ref_reassign, { {VT_REF} })},
+				{"REF:type",     tm_ref_type},
+				{"PTR:type",     tm_ref_type},
 
-				{"STR:raw",     NativeFuncTrans(VT_INT64,  (NativeFunc_t)LIB_BI_tm_str_raw,          { })},
-				{"STR:length",  NativeFuncTrans(VT_UINT64, (NativeFunc_t)LIB_BI_tm_str_arr_length,   { })},
-				{"STR:append",  NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_append,   { {VT_ANY} })},
-				{"STR:reserve", NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_reserve,  { {VT_UINT64} })},
-				{"ARR:length",  NativeFuncTrans(VT_UINT64, (NativeFunc_t)LIB_BI_tm_str_arr_length,   { })},
-				{"ARR:erase",   NativeFuncTrans(VT_NONE,                 LIB_BI_tm_arr_map_erase,    { {VT_UINT64,VT_STR} })},
-				{"ARR:append",  NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_append,   { {VT_ANY} })},
-				{"ARR:reserve", NativeFuncTrans(VT_NONE,                 LIB_BI_tm_str_arr_reserve,  { {VT_UINT64} })},
+				{"STR:raw",     NativeFuncTrans(VT_INT64,  (NativeFunc_t)LIB_BI_tm_str_raw, { })},
+				{"STR:length",  tm_str_arr_length},
+				{"STR:erase",   tm_str_arr_map_erase},
+				{"STR:append",  tm_str_arr_append},
 
-				{"MAP:erase",   NativeFuncTrans(VT_NONE,  LIB_BI_tm_arr_map_erase, { {VT_UINT64,VT_STR} })},
-				{"MAP:keys",    NativeFuncTrans(VT_ARR,   LIB_BI_tm_map_keys,      { })},
-				{"MAP:has",     NativeFuncTrans(VT_BOOL,  LIB_BI_tm_map_has,       { {VT_STR} })},
-				{"MAP:set",     NativeFuncTrans(VT_NONE,  LIB_BI_tm_map_set,       { {VT_STR}, {VT_ANY} })},
+				{"ARR:length",  tm_str_arr_length},
+				{"ARR:erase",   tm_str_arr_map_erase},
+				{"ARR:append",  tm_str_arr_append},
+
+				{"MAP:erase",   tm_str_arr_map_erase},
+				{"MAP:keys",    NativeFuncTrans(VT_ARR,   LIB_BI_tm_map_keys, { })},
+				{"MAP:has",     NativeFuncTrans(VT_BOOL,  LIB_BI_tm_map_has,  { {VT_STR} })},
+				{"MAP:set",     NativeFuncTrans(VT_NONE,  LIB_BI_tm_map_set,  { {VT_STR}, {VT_ANY} })},
 
 				{"FUNC:bind",  NativeFuncTrans(VT_FUNC,  LIB_BI_tm_func_bind, { {VT_ANY} })},
 		}, VM_const_type }},

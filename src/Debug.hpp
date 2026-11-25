@@ -165,7 +165,7 @@ const std::string make_err_message(const ERR_CODE code, const std::vector<std::s
 			return "Cannot perform " + args[0] + " on " + args[1] + part;
 		}
 		case ERR_assignment_type_mismatch:          return "Cannot assign type \"" + args[0] + "\" to \"" + args[1] + "\".";
-		case ERR_return_type_mismatch:              return "Function returns \"" + args[0] + "\" not \"" + args[1] + "\".";
+		case ERR_return_type_mismatch:              return "Function should return \"" + args[0] + "\" not \"" + args[1] + "\".";
 		case ERR_operators_not_allowed:             return "Operators not allowed here. Wrap in grouping instead.";
 		case ERR_expected_boolean_expression:       return "Expected a boolean result in expression.";
 		case ERR_expected_string_expression:        return "Expected a string result in expression.";

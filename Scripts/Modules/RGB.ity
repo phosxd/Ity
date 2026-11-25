@@ -13,6 +13,19 @@
 
 
 import Math;
+import Arr;
+
+
+func ANY min; arg ARR arr;
+	const ARR numbers = [(type:I64), (type:I32), (type:I16), (type:I8), (type:U64), (type:U32), (type:U16), (type:U8), (type:F64)];
+	var ANY best;
+	for i in arr;
+		if numbers.find:i == -1; continue; /;
+		if best == none || i < best; best = i; /;
+	/;
+
+	return best;
+/;
 
 
 # Construct a new binary RGB color string.
@@ -24,7 +37,8 @@ func STR new; arg U8 r=0; arg U8 g=0; arg U8 b=0;
 # Add `amount` to the `channel` (0=r, 1=g, 2=b) of `color`. Returns a new color string.
 func STR add; arg STR color; arg U8 channel; arg I32 amount;
 	const I8 num = (color:channel):'raw':();
-	color:channel = (Math.min:[(num + (Math.remap:[-255, 255, -128, 127, amount])), 127]);
+	color.set:[channel, (min:[[(num + (Math.remap:[-255, 255, -128, 127, amount])), 127]]) ];
+	return color;
 /;
 
 

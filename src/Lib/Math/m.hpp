@@ -122,7 +122,9 @@ const Variant LIB_Math {
 		{"log",        NativeFuncTrans(VT_ANY,      LIB_MT_log,      { {VT_FLOAT64} })},
 		{"sqrt",       NativeFuncTrans(VT_ANY,      LIB_MT_sqrt,     { {VT_FLOAT64} })},
 		{"pow",        NativeFuncTrans(VT_FLOAT64,  LIB_MT_pow,      { {VT_FLOAT64}, {VT_FLOAT64} })},
+
 		{"sum",        NativeFuncTrans(VT_FLOAT64,  LIB_MT_sum,      {})},
+
 		{"lerp",       NativeFuncTrans(VT_FLOAT64,  LIB_MT_lerp,     { {VT_FLOAT64}, {VT_FLOAT64}, {VT_FLOAT64} })},
 		{"remap",      NativeFuncTrans(VT_FLOAT64,  LIB_MT_remap,    { {VT_FLOAT64}, {VT_FLOAT64}, {VT_FLOAT64}, {VT_FLOAT64}, {VT_FLOAT64} })},
 		{"rand",       NativeFuncTrans(VT_INT64,    LIB_MT_rand,     { {VT_INT64}, {VT_INT64} })},

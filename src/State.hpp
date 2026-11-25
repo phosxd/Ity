@@ -64,6 +64,7 @@ struct ItyScope {
 
 		ItyScope* p_ = p;
 		*this = std::move(*p_);
+		delete p_;
 
 		#ifdef RUNTIME_DEBUG
 		if (debug_flags.scoping) std::cout << ANSI::orange << "Scope Out (" + std::to_string(id) + ")\n" << ANSI::reset;
@@ -266,7 +267,7 @@ struct ItyState {
 	bool exec_jump_out = false; // Break the current exeuction loop.
 
 	// This is a pool of all temporaries created in an expression.
-	// Systems have exactly until the next expr exec call to use the data of a temporary, before it gets deleted.
+	// Systems have exactly until the next expr exec call to use the data of a temporary, before it may get overwritten.
 	Variant temp_pool[MAX_TEMPORARY_POOL_RESERVE];
 	uint8_t tp_c = 0;
 	// Append new temporary variant. Throws error if over reserve size.
@@ -287,7 +288,6 @@ struct ItyState {
 		scope.set_data("__VERSION_STRING__",       Variant{VT_STR,  (STR_t)ItyVersionString, VM_const});
 		scope.set_data("__SCRIPT_PATH__",          Variant{VT_STR,  (STR_t)path, VM_const});
 		scope.set_data("__OS_NAME__",              Variant{VT_STR,  (STR_t)OSName, VM_const});
-		scope.set_data("__HAS_RUNTIME_DEBUG__",    Variant(VT_BOOL, has_runtime_debug, VM_const));
 		scope.set_data("__CMD_ARGS__",             Variant{VT_ARR,  *ARGS, VM_const});
 		scope.set_data("__IMPORTED__",             VPS.bool_false);
 		// Merge built-in library.
