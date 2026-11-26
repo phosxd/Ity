@@ -4,7 +4,7 @@ The language is however still meant to be a real alternative, so all the essenti
 
 After reading, or even before, I highly suggest looking at some of the example scripts in the repository. Pick apart what you can from the examples & try making something on your own!
 As a little challenge, try one of these starter projects:
-- Print a readable & formatted current date using the `IO` & `Time` modules. The time module only provides an integer representing the current time, good luck!
+- Print a readable & formatted current date using the `Time` module. The time module only provides an integer representing the current time, good luck!
 - Command line utility that sorts then returns every given argument in alphabetical order.
 
 Each statement is separated by a semi-colon `;` character. Some instructions may require white space separation between sections (E.g. `var INT x=1`). `var` & `INT` require a space, otherwise they would be treated as a single string.
@@ -19,7 +19,6 @@ Each statement is separated by a semi-colon `;` character. Some instructions may
 **Libraries & Globals:**
 A list of global variables & functions can be found [here](Lib/BuiltIn.md).
 Libraries enable you to actually do more complex things with relative ease, here are all the built-in libraries:
-- [IO](Lib/IO.md)
 - [Time](Lib/Time.md)
 - [Math](Lib/Math.md)
 - [FileSystem](Lib/FileSystem.md)

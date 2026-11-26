@@ -145,12 +145,6 @@ static Variant LIB_BI_sleep(ItyState& _state, const ARR_t& args) {
 }
 
 
-// Return `true` if the name is defined in the current scope.
-static Variant LIB_BI_is_defined(ItyState& state, const ARR_t& args) {
-	return Variant{VT_BOOL, (state.scope.get_data_globally(AnyCast(STR_t,args[0].d)) != nullptr)};
-}
-
-
 // Return the type of the given Variant, in string form.
 static Variant LIB_BI_type_name(ItyState& _state, const ARR_t& args) {
 	return Variant{VT_STR, get_variant_type_name((VariantType)AnyCast(uint8_t,args[0].d))};
@@ -459,7 +453,6 @@ const Variant LIB_BI {
 
 		{"system",      NativeFuncTrans(VT_UINT32, (NativeFunc_t)LIB_BI_system,     { {VT_STR} },      false)},
 		{"sleep",       NativeFuncTrans(VT_NONE,   (NativeFunc_t)LIB_BI_sleep,      { {VT_FLOAT64} })},
-		{"is_defined",  NativeFuncTrans(VT_BOOL,   (NativeFunc_t)LIB_BI_is_defined, { {VT_STR} })},
 		{"type",        NativeFuncTrans(VT_UINT8,  (NativeFunc_t)LIB_BI_type,       { {VT_ANY} })},
 		{"type_name",   NativeFuncTrans(VT_STR,    (NativeFunc_t)LIB_BI_type_name,  { {VT_UINT8} })},
 		{"size",        NativeFuncTrans(VT_UINT64,               LIB_BI_size,       { {VT_ANY} })},

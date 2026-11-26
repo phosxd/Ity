@@ -13,4 +13,4 @@ print:(MOD.sum:[1,1,1]);
 # ---------------------
 
 import /usr/local/share/ity/Modules/ANSI;
-print:(is_defined:'ANSI');
+print:(ANSI.has.fg_green);

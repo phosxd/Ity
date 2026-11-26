@@ -1,17 +1,17 @@
 Ity is packed with a ton of global constants & functions that any script can access without importing anything.
 
-# Standard Global Properties
-### (ARR) \_\_VERSION\_\_
+# Properties
+### (ARR) \_\_V\_\_
 An array of integer values representing the interpreter version.
 This should have exactly 4 items, with the first 3 being the actual version numbers & the last one being the release type.
 
 The release type can be `0` for release, `1` for beta / pre-release, or `2` for experimental / custom.
 
-### (STR) \_\_VERSION_STRING\_\_
+### (STR) \_\_VSTR\_\_
 A string representing the interpreter version. Does not include release type.
 
-### (STR) \_\_OS\_NAME\_\_
-A string representing the host OS' name. This will vary based on the platform the interpreter was compiled for, which is not always the platform in which the interpreter is currently running.
+### (STR) \_\_OS\_\_
+A string representing the host OS' name. This will vary based on the platform the interpreter was compiled for, which is not always the platform on which the interpreter is currently running.
 
 List of possible values:
 - `linux`
@@ -19,7 +19,6 @@ List of possible values:
 - `apple_mac`
 - `apple_iphone`
 - `unix`
-- `posix`
 - `unknown`
 
 ### (STR) \_\_SCRIPT\_PATH\_\_
@@ -28,7 +27,7 @@ This will be empty if the interpreter is running interactive mode.
 
 Note: this may not be an absolute file path, it is often relative to the current working directory.
 
-### (ARR) \_\_CMD\_ARGS\_\_
+### (ARR) \_\_ARGS\_\_
 An array representing the string arguments passed to the script via the command line.
 This does not include any interpreter flags or interpreter arguments.
 
@@ -44,7 +43,21 @@ if __IMPORTED__ == false;
 ### \[Types\]
 Every built-in data type, represented as a `U8`. They share the same names as the ones you would use to declare a variable.
 
-# Standard Global Functions
+### (MAP) SIGNAL
+A map of all supported system signals represented as a `U8`.
+
+**Map keys:**
+- `abort`
+- `illegal`
+- `interrupt`
+- `seg_fault`
+- `terminate`
+**Unix only:**
+- `quit`
+- `user1`
+- `user2`
+
+# Functions
 
 ### (ANY) get_ity_prop (STR prop)
 Get an interpreter property value.
@@ -112,16 +125,89 @@ size:{'a',1, 'b',2, 'c',3, 'd',4}; # Returns 102.
 size:{'array value',[1,2,3,4]};    # Returns 135.
 ```
 
-### (ARR) range (INT start, INT end, INT step=1)
-A function that returns an `ARR` of `INT` values in sequential range of "start" & "end", with the given "step".
+### (STR) in
+Waits for then returns an input line `STR` via `stdin` pipe.
 
 ```python
-range:[0, 5];    # Gives [0, 1, 2, 3, 4].
-range:[0, 5, 2]; # Gives [0, 2, 4].
+# Print raw input.
+const STR input = in:();
+print:input;
+
+# Print input converted to a number.
+const num_input = in:() -> FLOAT;
+print:num_input; # 0.0 if failed conversion.
 ```
 
+### (STR) key_in
+Same as `in` except it doesn't wait for a new line, instantly returns the next character in the `stdin` buffer.
 
-# Standard Global Type Methods
+```python
+# Example script that accumulates input characters.
+merge IO;
+
+var chars = [];
+while true;
+	const ch = key_in:();
+	chars.append:ch;
+	# If received ASCII code 3, then exit the loop.
+	if ch.raw:[] == 3; break; /;
+/;
+
+# Print accumulated characters.
+print:['\nGot: ', chars];
+```
+
+### (STR) prompt (STR text)
+Same as `in` except it outputs the given text before accepting input.
+
+```python
+# Without `prompt`:
+out:'Enter your name: ';
+const name = in:();
+
+# With `prompt`:
+const name = prompt:'Enter your name: ';
+```
+
+### (NONE) out (ANY ...var)
+Output the stringified variants to `stdout` directly without modification. Instantly flushes output for immediate display in the terminal.
+
+```python
+out:'Hello World!\n';
+# Hello World!
+```
+
+### (NONE) err (ANY ...var)
+Same as `out` except it writes to `stderr` instead. Text is *not* colorized.
+
+### (NONE) print (ANY ...var)
+Outputs the stringified variants to `stdout` with a new line appended to the output. Instantly flushes output.
+
+```python
+print:'Hello World!';
+# Hello World!
+```
+
+### (NONE) signal (INT signal_code, MAP(f) function)
+Connects the given function to a system signal. Refer to the [SIGNAL](#map-signal) member for valid signal codes.
+
+```python
+func NONE on_signal_interrupt_reveived;
+	print:'Received interrupt signal!';
+	exit;
+/;
+
+signal:[(SIGNAL.interrupt), on_signal_interrupt_reveived];
+sleep:999;
+
+# Program usually ends when given the interrupt signal, however we override it's default behavior when connecting to it so we have to manually call exit.
+#
+# Anything the script is currently doing will be paused to call the signal callback function & resumed when the callback returns.
+```
+
+Note: connecting to a signal will override it's system default behavior. Which means connecting to signals which would normally exit the program, will no longer do so, the functionality needs to be recreated. In simpler terms, always manually exit the program in your connected signal function for signals that would normally do so.
+
+# Type Methods
 
 ### (NONE) `REF`.reassign (REF to)
 Reassign a `REF`. Will not work on constant reference variants.
@@ -157,6 +243,8 @@ const STR string = 'a';
 string.raw:(); # Returns 97.
 ```
 
+(NONE) `STR`.set (U64 index, I8 byte)
+
 ### (U64) `STR/ARR`.length ()
 Get the string or array length. For strings, it is equal to the number of bytes representing the string, for arrays it is the length of the array.
 
@@ -168,13 +256,17 @@ const ARR array = [1,2,3];
 array.length:(); # 3.
 ```
 
-### (NONE) `ARR`.erase (U64 index)
-Delete an item inside the array.
+### (NONE) `STR/ARR`.erase (U64 index)
+Delete an item or byte at `index` inside of the array or string.
 
 ```python
 var ARR array = [1,2,3];
 array.erase:0;
 # array = [2,3]
+
+var STR string = 'abc';
+string.erase:0;
+# string = 'bc'
 ```
 
 ### (NONE) `ARR`.append (ANY var)
