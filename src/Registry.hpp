@@ -3,17 +3,31 @@
 
 // Include platform APIs
 #if _WIN32
+	#include <windows.h>
 	#include <windef.h>
 	#include <winbase.h>
 	#include <wincon.h>
-#elif defined(__linux__) || defined(__unix__) || defined(_POSIX_VERSION)
+#elif defined(__unix__)
+	#include <unistd.h>
 	#include <termios.h>
-#elif __APPLE__
+#endif
+#if __APPLE__
 	#include "TargetConditionals.h"
 #endif
 
 
 namespace Ity {
+
+
+const int64_t PID =
+#ifdef _WIN32
+	GetCurrentProcessId()
+#elif defined(__unix__)
+	getpid()
+#else
+	-1
+#endif
+;
 
 
 constexpr const char ItyVersionString[] = "0.2.0";
@@ -36,8 +50,6 @@ constexpr const char OSName[] =
 	#endif
 #elif __unix__
 	"unix"
-#elif _POSIX_VERSION
-	"posix"
 #else
 	"unknown"
 #endif
@@ -59,7 +71,7 @@ constexpr const char GLOBAL_SHARE_PATH[] =
 ;
 
 
-constexpr const unsigned int uint16_max = 65535;
+#define uint16_max 65535
 
 constexpr const char COMMENT_SYMBOL = '#';
 constexpr const char INST_END_SYMBOL = ';';

@@ -447,7 +447,7 @@ void start_shell(int argc, char* argv[]) {
 	// Run interactive interpreter...
 	#ifdef INCLUDE_SHELL
 	else {
-		std::cout << "* " << ANSI::yellow << "Ity (" << ItyVersionString << ")" << ANSI::reset << '\n'
+		std::cout << "* " << ANSI::yellow << "Ity (" << ItyVersionString << ")" << ANSI::reset << " PID:" << (PID) << '\n'
 		<< "* " << ANSI::purple << "\"q\" to quit." << ANSI::reset << '\n';
 
 		current_line = 1;
