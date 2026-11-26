@@ -17,6 +17,7 @@ struct ExprToken {
 	ExprTokenType t = ExprTokenType_variant;
 	Variant var;
 	std::vector<ExprToken> seq;
+	const OpDef* op = nullptr;
 };
 
 

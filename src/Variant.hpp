@@ -117,8 +117,7 @@ using VariantData = std::variant<
 	Ity::VariantMode,
 
 	CompositeItem*,
-	std::vector<CompositeItem>*,
-	const OpDef*
+	std::vector<CompositeItem>*
 >;
 
 
@@ -267,7 +266,6 @@ struct Variant {
 	// Get string.
 	Ity::STR_t to_str() const {using namespace Ity;
 		switch (t) {
-			case VT_OP:   return "OP";
 			case VT_TREF: return "TREF:" + AnyCast(TREF_t,d).str;
 
 			case VT_NONE:  return "none";
@@ -285,7 +283,7 @@ struct Variant {
 			case VT_UINT8:   return std::to_string(to_uint64());
 			case VT_FLOAT64: return std::to_string(AnyCast(FLOAT64_t,d));
 
-			case VT_STR:   return AnyCast(STR_t,d);
+			case VT_STR: return AnyCast(STR_t,d);
 
 			case VT_ARR: {
 				STR_t buf = "[";

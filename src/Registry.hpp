@@ -158,6 +158,7 @@ constexpr const InstSymbol DECL_INSTRUCTIONS[] = {
 enum ExprTokenType : uint8_t {
 	ExprTokenType_variant,
 	ExprTokenType_sequence,
+	ExprTokenType_op,
 };
 
 
@@ -211,7 +212,6 @@ enum VariantType : uint8_t {
 	VT_INTERNAL,    // Data not meant for in-script usage.
 	VT_INFERRED,    // Inferred type. Should not contain data.
 	VT_ANY,         // Any type. Should not contain data.
-	VT_OP,          // Operation definition pointer.
 	VT_TREF,        // Literally typed name reference.
 	VT_PTR,         // Variant pointer.
 	// Real types.
@@ -245,7 +245,6 @@ const std::unordered_map<const VariantType, const std::vector<std::string>> VARI
 	{VT_INTERNAL,     {"INTERNAL"}},
 	{VT_INFERRED,     {"*"}},
 	{VT_ANY,          {"ANY"}},
-	{VT_OP,           {"OP"}},
 	{VT_TREF,         {"TREF"}},
 	{VT_PTR,          {"PTR"}},
 

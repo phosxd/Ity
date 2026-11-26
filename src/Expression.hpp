@@ -306,7 +306,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const uint32_t ln=0, c
 				// Throw error if operator token found in array or map.
 				if (!is_grouping) {
 					for (const ExprToken& subtoken : item.seq) {
-						if (subtoken.var.t == VT_OP) {
+						if (subtoken.t == ExprTokenType_op) {
 							emit_error(ERR_operators_not_allowed, {}, ln+ln_offset, col+col_offset);
 							return result;
 						}
@@ -464,8 +464,8 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const uint32_t ln=0, c
 						result.token.seq.push_back(ExprToken{
 							.ln  = ln_offset,
 							.col = col_offset,
-							.t   = ExprTokenType_variant,
-							.var = {VT_OP, find_OpDef(OpSymbol_access)},
+							.t   = ExprTokenType_op,
+							.op = find_OpDef(OpSymbol_access)
 						});
 						buffer.clear();
 						next_ref_is_str = true;
@@ -475,7 +475,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const uint32_t ln=0, c
 				}
 			}
 
-			// End operator.
+			// End the operator.
 			if (is_operator && expr_len > i+1 && (expr[i+1] == ' ' or not is_special_symbol(expr[i+1])) ) {
 				const std::string op_symbol_str = (buffer+ch);
 				const OpDef* op_def = find_OpDef(OpSymbol__, op_symbol_str);
@@ -485,7 +485,7 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const uint32_t ln=0, c
 					return result;
 				}
 				// Throw error if previous token was also an operator.
-				if (result.token.seq.size() > 0 && result.token.seq.back().var.t == VT_OP) {
+				if (result.token.seq.size() > 0 && result.token.seq.back().t == ExprTokenType_op) {
 					emit_error(ERR_misplaced_operator, {}, ln+ln_offset, col+col_offset);
 					return result;
 				}
@@ -493,8 +493,8 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const uint32_t ln=0, c
 				result.token.seq.push_back(ExprToken{
 					.ln  = ln_offset,
 					.col = col_offset,
-					.t   = ExprTokenType_variant,
-					.var = {VT_OP, std::move(op_def)},
+					.t   = ExprTokenType_op,
+					.op = std::move(op_def)
 				});
 				buffer.clear();
 				is_operator = false;
@@ -579,12 +579,11 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 		bool is_key = true;
 		STR_t key;
 		for (ExprToken& subtoken : token.seq) {
+			Variant* var = (subtoken.t == ExprTokenType_sequence)
+				? expr_exec_(state, subtoken, expr_state, true)
+				: resolve_variant(state, expr_state, subtoken.var)
+			;
 			if (is_key) {
-				// Get key.
-				Variant* var = (subtoken.t == ExprTokenType_sequence)
-					? expr_exec_(state, subtoken, expr_state, true)
-					: resolve_variant(state, expr_state, subtoken.var)
-				;
 				// Throw error if key is not a string.
 				if (var->t != VT_STR) {
 					emit_error(ERR_invalid_syntax, {"Map key must be string"});
@@ -596,10 +595,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 			}
 			else {
 				// Apply value.
-				map[key] = (subtoken.t == ExprTokenType_sequence)
-					? *expr_exec_(state, subtoken, expr_state, true)
-					: *resolve_variant(state, expr_state, subtoken.var)
-				;
+				map[key] = *var;
 				is_key = true;
 			}
 		}
@@ -661,7 +657,7 @@ Variant* expr_exec_(ItyState& state, ExprToken& token, ExprState& expr_state, co
 		}
 
 
-		else if (item.var.t == VT_OP) op_def = AnyCast(const OpDef*,item.var.d); // Get operator.
+		else if (item.t == ExprTokenType_op) op_def = item.op; // Get operator.
 		else result = (item.t == ExprTokenType_sequence)
 			? expr_exec_(state, item, expr_state, true) // Get value from sub-sequence
 			: resolve_variant(state, expr_state, item.var) // Get variant.

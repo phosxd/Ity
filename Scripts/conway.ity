@@ -14,7 +14,7 @@ const STR CELL_OFF = '  ';
 # Allow user defined world size.
 var U64 WX = 25;
 var U64 WY = 20;
-if __CMD_ARGS__.length:() > 1;
+if __ARGS__.length:() > 1;
 	WX = (__CMD_ARGS__:0 -> UINT);
 	WY = (__CMD_ARGS__:1 -> UINT);
 /;
