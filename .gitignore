@@ -15,7 +15,7 @@
 .test_result.txt
 test.ity
 
-Shell/.Main.cpp
+src/Shell/.Main.cpp
 
 Scripts/Modules/BigInt.ity
 Scripts/Modules/Storage.ity

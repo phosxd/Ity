@@ -235,7 +235,10 @@ struct Variant {
 		}, d);
 	}
 	// Get integer.
-	int64_t to_int64() const {return _to_number<int64_t>();}
+	int64_t to_int64() const {
+		if (t == Ity::VT_INT64) return AnyCastV(int64_t,d);
+		return _to_number<int64_t>();
+	}
 	// Get i32.
 	int32_t to_int32() const {return (int32_t)to_int64();}
 	// Get i16.
@@ -243,7 +246,10 @@ struct Variant {
 	// Get i8.
 	int8_t to_int8()   const {return (int8_t)to_int64();}
 	// Get unsigned integer.
-	uint64_t to_uint64() const {return _to_number<uint64_t>();}
+	uint64_t to_uint64() const {
+		if (t == Ity::VT_UINT64) return AnyCastV(uint64_t,d);
+		return _to_number<uint64_t>();
+	}
 	// Get u32.
 	uint32_t to_uint32() const {return (uint32_t)to_uint64();}
 	// Get u16.
@@ -252,7 +258,10 @@ struct Variant {
 	uint8_t to_uint8()   const {return (uint8_t)to_uint64();}
 
 	// Get float.
-	Ity::FLOAT64_t to_float64() const {return _to_number<Ity::FLOAT64_t>();}
+	Ity::FLOAT64_t to_float64() const {
+		if (t == Ity::VT_FLOAT64) return AnyCastV(Ity::FLOAT64_t,d);
+		return _to_number<Ity::FLOAT64_t>();
+	}
 
 
 	// Get string.

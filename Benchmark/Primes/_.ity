@@ -1,7 +1,7 @@
 merge Time;
 
 
-func UINT isqrt; arg UINT n;
+func U64 isqrt; arg UINT n;
 	var x = n;
 	var y = ((x+1u) / 2u); while y < x;
 		x = y;
@@ -10,19 +10,19 @@ func UINT isqrt; arg UINT n;
 /;
 
 
-func BOOL is_prime; arg UINT n;
-	if n%2u == 0u; return n == 2u; /;
-	const r = isqrt:n + 1u;
-	var i=3u; while i < r;
-		if n%i == 0u; return false; /;
+func BOOL is_prime; arg U64 n;
+	if n%2 == 0; return n == 2; /;
+	const U64 r = isqrt:n + 1;
+	var U64 i=3; while i < r;
+		if n%i == 0; return false; /;
 		i+=2u;
 	/;
 	return true;
 /;
 
 
-const count = prompt:'Count: ' -> UINT;
-const UINT start = now.us;
+const count = prompt:'Count: ' -> U64;
+const U64 start = now.us;
 
 
 for p in count;
