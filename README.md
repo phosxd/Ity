@@ -30,7 +30,7 @@ Ity is a work-in-progress, light-weight & embeddable interpreted programming lan
 
 
 # Features
-- **Tiny & portable.** 65KB (compressed, 140kb otherwise) executable. All self-contained.
+- **Tiny & portable.** 64KB (compressed, 140kb otherwise) executable. All self-contained.
 - **Efficient memory usage.** 400KB runtime (Python: 11.2MB, Node: 45MB, Bash: 3.2MB).
 - **Platform agnostic.** No platform dependent source code.
 - **No build setup.** Requires no third-party libraries.

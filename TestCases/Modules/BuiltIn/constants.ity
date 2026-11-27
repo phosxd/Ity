@@ -1,0 +1,14 @@
+#EXPECT
+#[0, 2, 0, 1]
+#0.2.0
+#[]
+#false
+#END
+
+print:[__V__];
+
+print:__VSTR__;
+
+print:[__ARGS__];
+
+print:__IMPORTED__;

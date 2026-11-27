@@ -235,7 +235,8 @@ std::vector<InstToken> tokenize(const std::string& src) {
 								comp_item.token.composite_size = comp_item.size;
 								comp_item.token.declarative_composite = comp_item.declarative;
 								if (comp_item.token.symbol == InstSymbol_func) {
-									comp_item.token.data = new INST_Func_data{(uint32_t)sequence.size()};
+									auto& token_data = *(INST_Func_data*)comp_item.token.data;
+									token_data.sequence_size = (uint32_t)sequence.size();
 								}
 								sequence[comp_item.index] = comp_item.token;
 								item.linked_inst = comp_item.token.symbol;
@@ -325,7 +326,7 @@ void exec(ItyState& state, const size_t start_idx, const int64_t end_idx) {
 
 		// Run as expression if not an instruction.
 		if (not item.inst) {
-			state.last_expr_result = *expr_exec(state, item.expr, false);
+			state.last_expr_result = expr_exec(state, item.expr, false);
 			continue;
 		}
 
@@ -464,7 +465,7 @@ void start_shell(int argc, char* argv[]) {
 			}
 
 			command += INST_END_SYMBOL;
-			state.last_expr_result = VPS.empty;
+			state.last_expr_result = nullptr;
 
 			// Tokenize the command.
 			std::vector<InstToken> sequence = Ity::tokenize(command);
@@ -473,7 +474,7 @@ void start_shell(int argc, char* argv[]) {
 			Ity::exec(state, 0,-1);
 
 			// Print expression result if there is one.
-			if (state.last_expr_result.t != VT_PLACEHOLDER) std::cout << state.last_expr_result;
+			if (state.last_expr_result && state.last_expr_result->t != VT_PLACEHOLDER) std::cout << *state.last_expr_result;
 
 			// End loop if global exec jumped out.
 			if (Ity::global_exec_jump_out) break;

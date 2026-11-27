@@ -11,7 +11,7 @@ ORANGE=$'\x1B[33m'
 
 GPP='g++'
 MAC_GPP_PATH="/opt/local/bin/g++-mp-14" # If you installed GCC (g++) through Homebrew, you will need to change this to the proper location.
-BIN_SIZE_LIMIT=150000
+BIN_SIZE_LIMIT=140000
 COMMON_BUILD_ARGS='-std=c++26 -Wall -Wconversion -flto=4 -fno-exceptions -fno-rtti -fno-unwind-tables -fgcse-las -fno-plt -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--as-needed'
 
 DO_TEST=0
@@ -188,7 +188,7 @@ fi
 # Run through UPX.
 if [[ $USE_UPX -eq 1 ]]; then
 	if command -v upx >/dev/null 2>&1; then
-		upx --best ity.bin >/dev/null
+		upx --best --small --small ity.bin >/dev/null # "--small" x2 does actually do something, it's not documented. It removes some of the watermarking crap UPX packs into the binary.
 	else
 		echo "${ORANGE}UPX (upx) not installed, binary not compressed.${RESET}"
 	fi

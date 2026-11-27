@@ -261,7 +261,7 @@ struct ItyState {
 	uint16_t execution_depth_max = 1500;
 	uint16_t execution_depth = 0;
 
-	Variant last_expr_result = VPS.empty;
+	const Variant* last_expr_result = nullptr; // Used only in the interactive interpreter, to display expression results.
 	// Instruction jump values.
 	int exec_jump_value = 0;
 	bool exec_jump_out = false; // Break the current exeuction loop.
