@@ -54,7 +54,7 @@ void OP_Access_exec(ItyState& state, ExprState& expr_state, Variant*& first, Var
 			const size_t array_len = array.size();
 			int64_t index = o2->to_int64(); if (index < 0) index = array_len+index;
 			// Throw error if index out of range.
-			if (index >= (int64_t)array_len || index < 0) {
+			if ((size_t)index >= array_len || index < 0) {
 				emit_error(ERR_index_out_of_range, {std::to_string(o2->to_int64())}); // Use original given index for error to reduce confusion in negative index cases.
 				return;
 			}
@@ -74,7 +74,7 @@ void OP_Access_exec(ItyState& state, ExprState& expr_state, Variant*& first, Var
 			const STR_t& str = AnyCast(STR_t,o1->d);
 			const size_t str_len = str.size();
 			int64_t index = o2->to_int64(); if (index < 0) index = str_len+index;
-			if (index >= (int64_t)str_len || index < 0) {
+			if ((size_t)index >= str_len || index < 0) {
 				emit_error(ERR_index_out_of_range, {std::to_string(index)});
 				return;
 			}

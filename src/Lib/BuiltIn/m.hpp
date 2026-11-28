@@ -213,6 +213,27 @@ static Variant LIB_BI_tm_str_raw(ItyState& state, const ARR_t& args) {
 }
 
 
+// Returns the raw character code for the first character in the string.
+// Fragment Size: 448
+static Variant LIB_BI_tm_str_set(ItyState& state, const ARR_t& args) {
+	Variant* var = state.reg.method_parent;
+	// Get data.
+	STR_t& data = AnyCastV(STR_t,var->d );
+	const size_t str_len = data.size();
+	// Get index.
+	int64_t i = AnyCast(int64_t,args[0].d);
+	if (i < 0) i = str_len+i;
+	if ((size_t)i >= str_len || i < 0) {
+		emit_error(ERR_index_out_of_range, {std::to_string(i)});
+		return VPS.none;
+	}
+	// Set char.
+	if (args[1].t == VT_STR) data[i] = AnyCast(STR_t,args[1].d)[0];
+	else data[i] = char(AnyCast(int64_t,args[1].d)); // Add character to the string, from a code.
+	return VPS.none;
+}
+
+
 // String / Array.
 // ---------------
 
@@ -398,6 +419,7 @@ const Variant LIB_BI {
 				{"PTR:type",     tm_ref_type},
 
 				{"STR:raw",     NativeFuncTrans(VT_INT64,  (NativeFunc_t)LIB_BI_tm_str_raw, { })},
+				{"STR:set",     NativeFuncTrans(VT_NONE,   (NativeFunc_t)LIB_BI_tm_str_set, { {VT_STR,VT_INT64} })},
 				{"STR:length",  tm_str_arr_length},
 				{"STR:erase",   tm_str_arr_map_erase},
 				{"STR:append",  tm_str_arr_append},

@@ -12,6 +12,8 @@
 #abcdefghi
 #method erase
 #abcefghi
+#method set
+#abcefgh!
 #method raw
 #97
 #END
@@ -79,6 +81,10 @@ print:str; # abcdefghi
 print:'method erase';
 str.erase:3;
 print:str; # abcefghi
+
+print:'method set';
+str.set:[-1, '!'];
+print:str; # abcefgh!
 
 print:'method raw';
 print:(str.raw:()); # Get integer representation of the first character (a = 97)

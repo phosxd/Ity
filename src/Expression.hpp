@@ -174,7 +174,7 @@ const OpDef* find_OpDef(const OpSymbol& sym = OpSymbol__, const std::string& str
 
 
 const bool is_valid_name(const std::string& name) {
-	const size_t& name_len = name.size();
+	const size_t name_len = name.size();
 	if (name_len == 0) return false;
 	for (size_t i = 0; i < name_len; i++) {
 		const bool is_digit = (NUM.find(name[i]) != std::string::npos);
@@ -442,10 +442,9 @@ ExprTokenizeResult expr_tokenize(const std::string& expr, const uint32_t ln=0, c
 					}
 				}
 
-				else if (item.var.t == VT_BOOL || item.var.t == VT_NONE) {
-					const std::string buffer_plus_ch = (buffer+ch);
-					// If no longer matches the bool or none token, switch to a reference.
-					if (buffer_plus_ch.size() >= secondary_buffer.size() && buffer_plus_ch != secondary_buffer) {
+				// If no longer matches the expected token, switch to a typed-reference.
+				else if (not secondary_buffer.empty()) {
+					if (buffer.size()+1 >= secondary_buffer.size() && (buffer+ch) != secondary_buffer) {
 						item.var.t = VT_TREF;
 						secondary_buffer.clear();
 					}
